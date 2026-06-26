@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension version="3.7" type="package" method="upgrade">
+	<name>DJ-Accessibility</name>
+	<packagename>djaccessibility</packagename>
+	<author>DJ-Extensions.com</author>
+	<authorEmail>contact@dj-extensions.com</authorEmail>
+	<authorUrl>https://dj-extensions.com</authorUrl>
+	<creationDate>21.12.2025</creationDate>
+	<copyright>Copyright (C) 2013-2025 DJ-Extensions.com, All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses GNU/GPL</license>
+	<url>https://dj-extensions.com</url>
+	<version>1.18</version>
+	<description>Accessibility plugin by DJ-Extensions.com</description>
+	<dlid prefix="dlid=" suffix="" />
+	<files>
+		<file type="plugin" id="djaccessibility" group="system">djaccessibility_light.zip</file>
+		<file type="module" id="mod_djaccessibility" client="site">mod_djaccessibility.zip</file>
+	</files>
+	<updateservers>
+		<server type="extension" priority="1" name="DJ-Accessiblity">https://dj-extensions.com/index.php?option=com_ars&amp;view=update&amp;task=stream&amp;format=xml&amp;id=171</server>
+	</updateservers>
+</extension>

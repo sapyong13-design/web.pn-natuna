@@ -1,0 +1,140 @@
+.djacc {
+	box-sizing: border-box;
+
+	* {
+		box-sizing: inherit;
+	}
+
+	img {
+		max-width: 100%;
+		height: auto;
+	}
+
+	//reset styles
+	button, a {
+		font: inherit;
+		display: inline-block;
+		font-size: 14px;
+		line-height: 1;
+		cursor: pointer;
+		border: none;
+		box-shadow: none;
+		text-shadow: none;
+		text-transform: none;
+		letter-spacing: normal;
+		transition: none;
+		text-decoration: none;
+	}
+
+	svg {
+		vertical-align: middle;
+	}
+
+	ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	&--hidden {
+		display: none;
+	}
+
+	//positions
+	&--sticky {
+		position: fixed;
+		z-index: 99999;
+
+		&.djacc--top-left {
+			top: 0;
+			left: 0;
+		}
+		&.djacc--top-center {
+			top: 0;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		&.djacc--center-left {
+			top: 50%;
+			left: 0;
+			transform: translateY(-50%);
+		}
+		&.djacc--center-right {
+			top: 50%;
+			right: 0;
+			transform: translateY(-50%);
+		}
+		&.djacc--top-right {
+			top: 0;
+			right: 0;
+		}
+		&.djacc--bottom-left {
+			bottom: 0;
+			left: 0;
+		}
+		&.djacc--bottom-center {
+			bottom: 0;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		&.djacc--bottom-right {
+			bottom: 0;
+			right: 0;
+		}
+	}
+	
+	&--static {
+		position: relative;
+		display: inline-flex;
+		margin: 0;
+	}
+}
+
+//layouts style
+@import "popup";
+@import "toolbar";
+
+//contrast styles
+@import "contrast";
+
+//highlight links
+.djacc-highlight-links {
+	.djacc-link {
+		outline: 2px solid #ff7216 !important;
+		outline-offset: 2px !important;
+	}
+}
+
+//highlight headings
+.djacc-highlight-titles {
+	.djacc-title {
+		outline: 2px solid #639af9 !important;
+		outline-offset: 2px !important;
+	}
+}
+
+//read mode
+.djacc-read-mode body {
+	padding: 50px !important;
+	background: #f7fcff !important;
+	max-width: 600px !important;
+	margin: auto !important;
+	font-family: Arial,Helvetica,sans-serif !important;
+	font-size: 15px !important;
+	color: #222 !important;
+	line-height: 1.5 !important;
+}
+
+//screen reader
+.djacc-reader {
+	outline: 2px solid #fdf901 !important;
+	outline-offset: 2px !important;
+}
+
+//other adjustments for accessibility
+
+//visible focus
+*:focus-visible {
+	outline: 2px solid #e0600b !important;
+	outline-offset: -2px !important;
+}

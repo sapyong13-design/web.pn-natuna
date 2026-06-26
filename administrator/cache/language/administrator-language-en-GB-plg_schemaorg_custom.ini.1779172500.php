@@ -1,0 +1,9 @@
+<?php
+defined('_JEXEC') or die;
+return array (
+  'PLG_SCHEMAORG_CUSTOM' => 'Schema.org - Custom',
+  'PLG_SCHEMAORG_CUSTOM_XML_DESCRIPTION' => 'Adds a custom field to add any schema type.',
+  'PLG_SCHEMAORG_CUSTOM_DESCRIPTION_LABEL' => 'Use any JSON-LD code here to add currently unsupported schema types.',
+  'PLG_SCHEMAORG_CUSTOM_JSON_ERROR' => 'The JSON code is not valid or @context or @type is missing.',
+  'PLG_SCHEMAORG_CUSTOM_JSON_FIELD_LABEL' => 'JSON Code',
+);

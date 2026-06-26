@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+  <field name="name" type="text" default="" label="PLG_DJACCESSIBILITY_FIELD_CUSTOM_LINKS_NAME" size="10" />
+  <field name="url" type="url" default="" label="PLG_DJACCESSIBILITY_FIELD_CUSTOM_LINKS_URL" description="" size="10" />
+  <field name="target" type="list" default="" label="PLG_DJACCESSIBILITY_FIELD_CUSTOM_LINKS_TARGET" description="">
+    <option value="">_self</option>
+    <option value="_blank">_blank</option>
+  </field>
+  <field name="image" type="media" default="" label="PLG_DJACCESSIBILITY_FIELD_CUSTOM_LINKS_IMAGE" description="" />
+</form>

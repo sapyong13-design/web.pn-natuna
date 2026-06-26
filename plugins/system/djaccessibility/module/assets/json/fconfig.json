@@ -1,0 +1,195 @@
+{
+	"sections": {
+		"accessibility": {
+			"title": "Accessibility",
+			"priority": 100,
+			"fields": {
+				"djacc_style": {
+					"type": "select",
+					"label": "Theme",
+					"default": "dark",
+					"options": {
+						"Dark": "dark",
+						"Light": "light"
+					}
+				},
+				"djacc_position": {
+					"type": "select",
+					"label": "Position type",
+					"options": {
+						"Sticky (fixed)": "sticky",
+						"Custom position (static)": "custom"
+					},
+					"default": "sticky"
+				},
+				"djacc_mobile_position": {
+					"type": "select",
+					"label": "Mobile position type",
+					"options": {
+						"Sticky (fixed)": "sticky",
+						"Custom position (static)": "custom"
+					},
+					"default": "sticky"
+				},
+				"djacc_layout": {
+					"type": "select",
+					"label": "Layout",
+					"default": "popup",
+					"options": {
+						"Popup": "popup"
+					}
+				},
+				"djacc_mobile_layout": {
+					"type": "select",
+					"label": "Mobile Layout",
+					"default": "popup",
+					"options": {
+						"Popup": "popup"
+					}
+				},
+				"djacc_align_popup": {
+					"type": "select",
+					"label": "[Popup] Position",
+					"options": {
+						"top": "top center",
+						"top left": "top left",
+						"top right": "top right",
+						"left": "center left",
+						"right": "center right",
+						"bottom": "bottom center",
+						"bottom left": "bottom left",
+						"bottom right": "bottom right"
+					},
+					"default": "top right",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup'"
+				},
+				"djacc_align_mobile": {
+					"type": "select",
+					"label": "[Popup] Mobile position",
+					"options": {
+						"top": "top center",
+						"top left": "top left",
+						"top right": "top right",
+						"left": "center left",
+						"right": "center right",
+						"bottom": "bottom center",
+						"bottom left": "bottom left",
+						"bottom right": "bottom right"
+					},
+					"default": "bottom right",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup'"
+				},
+				"djacc_direction": {
+					"type": "select",
+					"label": "[Popup] Open direction",
+					"options": {
+						"down": "top center",
+						"down left": "top right",
+						"down right": "top left",
+						"left": "center left",
+						"right": "center right",
+						"up": "bottom center",
+						"up left": "bottom right",
+						"up right": "bottom left"
+					},
+					"default": "top left",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup'"
+				},
+				"djacc_image": {
+					"label": "Button",
+					"type": "image",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup'"
+				},
+				"djacc_width": {
+					"type": "number",
+					"label": "Width",
+					"default": "48",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup' && djacc_image"
+				},
+				"djacc_height": {
+					"type": "number",
+					"label": "Height",
+					"default": "48",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup' && djacc_image"
+				},
+				"djacc_voff_popup": {
+					"type": "number",
+					"label": "[Popup] Offset top/bottom",
+					"default": "20",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup'"
+				},
+				"djacc_hoff_popup": {
+					"type": "number",
+					"label": "[Popup] Offset left/right",
+					"default": "20",
+					"show": "djacc_layout=='popup' || djacc_mobile_layout=='popup'"
+				},
+				"djacc_load_font": {
+					"type": "checkbox",
+					"text": "Load Webfont"
+				},
+				"djacc_font_url": {
+					"type": "text",
+					"label": "Webfont URL",
+					"default": "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
+					"show": "djacc_load_font"
+				},
+				"djacc_font_family": {
+					"type": "text",
+					"label": "Font family",
+					"default": "Roboto, sans-serif",
+					"show": "djacc_load_font"
+				},
+				"djacc_mobile": {
+					"type": "checkbox",
+					"text": "Display on mobile",
+					"default": "true"
+				},
+				"djacc_breakpoint": {
+					"type": "number",
+					"label": "Mobile breakpoint",
+					"default": "767"
+				}
+			},
+			"fieldset": {
+				"default": {
+					"fields": [
+						"djacc_style",
+						"djacc_position",
+						"djacc_mobile_position",
+						"djacc_layout",
+						"djacc_mobile_layout",
+						"djacc_direction",
+						"djacc_align_popup",
+						"djacc_align_mobile",
+						"djacc_space",
+						{
+							"type": "grid",
+							"name": "djacc_offset_popup",
+							"width": "1-2",
+							"fields": [
+								"djacc_voff_popup",
+								"djacc_hoff_popup"
+							]
+						},
+						"djacc_mobile",
+						"djacc_breakpoint",
+						"djacc_image",
+						{
+							"type": "grid",
+							"name": "djacc_image_dimension",
+							"width": "1-2",
+							"fields": [
+								"djacc_width",
+								"djacc_height"
+							]
+						},
+						"djacc_load_font",
+						"djacc_font_url",
+						"djacc_font_family"
+					]
+				}
+			}
+		}
+	}
+}

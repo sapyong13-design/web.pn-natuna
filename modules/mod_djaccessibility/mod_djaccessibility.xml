@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.7" client="site" method="upgrade">
+	<name>DJ-Accessibility</name>
+	<creationDate>November 2021</creationDate>
+	<author>DJ-Extensions.com</author>
+	<copyright>Copyright (C) 2021 DJ-Extensions.com, All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses GNU/GPL</license>
+	<authorEmail>contact@dj-extensions.com</authorEmail>
+	<authorUrl>https://dj-extensions.com</authorUrl>
+	<version>1.00</version>
+	<description>Module which displays DJ-Accessibility tools</description>
+	<files>
+		<filename module="mod_djaccessibility">mod_djaccessibility.php</filename>
+		<filename>mod_djaccessibility.xml</filename>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field
+					name="moduleclass_sfx"
+					type="text"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="template" client="site" method="upgrade">
+  <name>pn_natuna_2026</name>
+  <version>0.1.0</version>
+  <creationDate>2026-06-17</creationDate>
+  <author>PTIP PN Natuna</author>
+  <description>Lightweight Joomla template for Pengadilan Negeri Natuna Kelas II.</description>
+  <files>
+    <filename>index.php</filename>
+    <filename>templateDetails.xml</filename>
+    <folder>css</folder>
+    <folder>js</folder>
+    <folder>images</folder>
+    <folder>html</folder>
+  </files>
+  <positions>
+    <position>topbar</position>
+    <position>header-brand</position>
+    <position>header-badges</position>
+    <position>main-menu</position>
+    <position>hero</position>
+    <position>quick-links</position>
+    <position>home-alerts</position>
+    <position>home-news</position>
+    <position>home-announcements</position>
+    <position>home-rss</position>
+    <position>home-schedule</position>
+    <position>home-video</position>
+    <position>home-contact</position>
+    <position>home-language</position>
+    <position>home-search</position>
+    <position>home-service-info</position>
+    <position>home-index</position>
+    <position>home-web-links</position>
+    <position>home-social</position>
+    <position>home-stats</position>
+    <position>breadcrumb</position>
+    <position>content-top</position>
+    <position>sidebar</position>
+    <position>content-bottom</position>
+    <position>footer-links</position>
+    <position>footer-contact</position>
+    <position>footer-bottom</position>
+  </positions>
+</extension>
