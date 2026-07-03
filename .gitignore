@@ -1,0 +1,5 @@
+﻿cache/
+administrator/cache/
+.runtime-logs/
+logs/
+administrator/logs/*.php
