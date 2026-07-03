@@ -40,6 +40,7 @@
     <position>content-bottom</position>
     <position>footer-links</position>
     <position>footer-contact</position>
+    <position>footer-social</position>
     <position>footer-bottom</position>
   </positions>
 </extension>

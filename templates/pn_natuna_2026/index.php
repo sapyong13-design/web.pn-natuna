@@ -9,6 +9,7 @@ $isHome = $menu && $menu->home;
 $hasSidebar = (bool) ($this->countModules('sidebar') || $this->countModules('sidebar-right'));
 $sippScheduleHelper = __DIR__ . '/sipp-schedule.php';
 $statsCounterHelper = __DIR__ . '/stats-counter.php';
+$instansiFeedHelper = __DIR__ . '/instansi-feed.php';
 
 if (is_file($sippScheduleHelper)) {
     require_once $sippScheduleHelper;
@@ -16,6 +17,9 @@ if (is_file($sippScheduleHelper)) {
 if (is_file($statsCounterHelper)) {
     require_once $statsCounterHelper;
     pn_natuna_track_visitor();
+}
+if (is_file($instansiFeedHelper)) {
+    require_once $instansiFeedHelper;
 }
 ?>
 <!doctype html>
@@ -92,7 +96,11 @@ if (is_file($statsCounterHelper)) {
           <jdoc:include type="modules" name="home-schedule" style="card" />
         <?php endif; ?>
         <jdoc:include type="modules" name="home-facilities" style="card" />
-        <jdoc:include type="modules" name="home-public-board" style="card" />
+        <?php if (function_exists('pn_natuna_render_instansi_feed')) : ?>
+          <?php pn_natuna_render_instansi_feed(); ?>
+        <?php else : ?>
+          <jdoc:include type="modules" name="home-public-board" style="card" />
+        <?php endif; ?>
         <jdoc:include type="modules" name="home-video" style="card" />
         <jdoc:include type="modules" name="home-contact" style="card" />
       </div>
@@ -167,6 +175,9 @@ if (is_file($statsCounterHelper)) {
     </div>
     <div class="footer-contact">
       <jdoc:include type="modules" name="footer-contact" style="none" />
+    </div>
+    <div class="footer-social">
+      <jdoc:include type="modules" name="footer-social" style="none" />
     </div>
     <div class="footer-bottom">
       <jdoc:include type="modules" name="footer-bottom" style="none" />
