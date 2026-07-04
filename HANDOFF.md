@@ -23,6 +23,7 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Cron auto-refresh: script `cron-refresh-instansi.php` + handoff `CRON-AUTOUPDATE-HANDOFF.md` untuk cPanel (Badilum+PT live, MA manual).
 - Sidebar: hapus module Indeks Pelayanan Publik + Tautan Website (unpublished di DB).
 - DB dump baru: database/pn_natuna_rebuild_20260704_1730.sql
+- Sidebar: tambah card **Indeks Survei Publik** (SKM + IPAK) di bawah Role Model. Auto-refresh dari Google Drive via `tools/refresh-survey.py` (download PDF terbaru → convert PNG → update module). Folder Gdrive: `1XVTZjSGKPzM0XPSTlYg4w7f6Ut-QyG7z`.
 
 ## Tujuan Rebuild
 

@@ -3867,3 +3867,72 @@ body.is-dark .instagram-profile span {
   padding: 2px 0 !important;
   line-height: 1.38 !important;
 }
+
+/* === Survey card (SKM + IPAK) === */
+.survey-card {
+  display: grid;
+  gap: 14px;
+}
+
+.survey-card h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.survey-item {
+  display: grid;
+  gap: 6px;
+}
+
+.survey-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.survey-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.survey-tag {
+  flex: none;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: 999px;
+  padding: 3px 9px;
+  text-transform: uppercase;
+}
+
+.survey-img-link {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  transition: box-shadow 200ms ease;
+}
+
+.survey-img-link:hover,
+.survey-img-link:focus-visible {
+  box-shadow: 0 8px 22px rgba(29, 39, 48, 0.12);
+}
+
+.survey-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 200ms ease;
+}
+
+.survey-img-link:hover .survey-img {
+  transform: scale(1.02);
+}

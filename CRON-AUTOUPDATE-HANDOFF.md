@@ -298,8 +298,57 @@ Cek dengan tes fetch manual dulu.
 | Badilum | Cron auto (live fetch) | **Harian** (jam 06:00) |
 | PT Kepri | Cron auto (live fetch) | **Harian** (jam 06:00) |
 | MA RI | Manual / Puppeteer | **1-2 minggu sekali** (atau saat ada perubahan signifikan) |
+| **Survei (SKM+IPAK)** | **Script Python** (`tools/refresh-survey.py`) | **Saat upload PDF baru ke Gdrive** (tiap triwulan) |
 
 ---
 
 *Dokumen ini pegangan setup cron auto-update feed instansi di cPanel.
 Update kalau ada perubahan struktur situs sumber atau infrastruktur server.*
+
+---
+
+## 9. Auto-Refresh Survei SKM & IPAK (Google Drive → PDF → Image)
+
+Card **Indeks Survei Publik** di sidebar (bawah Role Model) menampilkan hasil
+survei terbaru: SKM (Kepuasan Masyarakat) & IPAK (Persepsi Anti Korupsi).
+
+### Sumber data
+- Folder Google Drive (public): `SURVEI TERBARU 2026`
+- Link: `https://drive.google.com/drive/folders/1XVTZjSGKPzM0XPSTlYg4w7f6Ut-QyG7z`
+- Naming file: `{SKM|IPAK} TW{1-4} {TAHUN}.pdf` (mis. `SKM TW2 2026.pdf`)
+
+### Cara kerja script `tools/refresh-survey.py`
+1. List file di folder Gdrive via `embeddedfolderview` (tanpa API key, tanpa browser).
+2. Cari file **TERBARU** per jenis (SKM, IPAK) — sort by tahun + TW descending.
+3. Download PDF → convert ke PNG (PyMuPDF, 200 DPI) → resize web (800px).
+4. Update module Joomla (DB id 816) dengan path gambar + tag TW terbaru.
+
+### Menjalankan
+```bash
+# Prasyarat: pip install PyMuPDF Pillow
+cd /path/to/web.pn-natuna
+MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
+  python tools/refresh-survey.py
+```
+
+Output:
+```
+[1/4] List file dari Google Drive folder...
+      Ditemukan 4 file: IPAK TW1/TW2, SKM TW1/TW2
+[2/4] SKM: TW2 2026 | IPAK: TW2 2026
+[3/4] Download & convert (skip kalau sudah ada)
+[4/4] Update module Joomla (DB)
+SELESAI.
+```
+
+### Saat upload PDF baru (mis. TW3)
+1. Upload `SKM TW3 2026.pdf` & `IPAK TW3 2026.pdf` ke folder Gdrive.
+2. Jalankan `python tools/refresh-survey.py`.
+3. Script auto-detect TW3 sebagai terbaru → download → convert → update card.
+4. Hapus cache Joomla jika perlu (`rm cache/*.json`).
+
+### Konfigurasi (di `tools/refresh-survey.py` baris atas)
+- `FOLDER_ID` — gdrive folder id (dari URL folder)
+- `SURVEY_TYPES` — jenis survei yang di-track (`['SKM', 'IPAK']`)
+- `MODULE_ID` — id module Joomla (816)
+- `MYSQL_BIN`, `DB_USER`, `DB_PASS`, `DB_NAME` — via env var atau edit langsung
