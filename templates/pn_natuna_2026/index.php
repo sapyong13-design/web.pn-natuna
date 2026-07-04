@@ -29,6 +29,9 @@ if (is_file($instansiFeedHelper)) {
   <jdoc:include type="styles" />
   <link rel="icon" href="/images/brand/logo-pn-natuna.png" type="image/png" />
   <link rel="apple-touch-icon" href="/images/brand/logo-pn-natuna.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template.css" />
   <jdoc:include type="scripts" />
   <script src="/templates/<?php echo $this->template; ?>/js/template.js" defer></script>
@@ -205,5 +208,8 @@ if (is_file($instansiFeedHelper)) {
       </form>
     </div>
   </div>
+  <button id="back-to-top" class="back-to-top" type="button" aria-label="Kembali ke atas" hidden>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 4l-8 8h5v8h6v-8h5z" fill="currentColor"/></svg>
+  </button>
 </body>
 </html>

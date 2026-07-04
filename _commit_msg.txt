@@ -1,0 +1,53 @@
+feat: polish homepage, footer 3-kolom, feed instansi, font, cron auto-refresh
+
+Tipografi global:
+- Font body: Plus Jakarta Sans (ganti Trebuchet MS generik)
+- Font heading: Fraunces serif (ganti Georgia/Times, 6 occurences)
+- :root tambah --font-display & --font-body, Google Fonts link di index.php
+
+Role Model & Instagram (sidebar):
+- Box diseragamkan: container clean no-frame, radius 14, no border/gradient/shadow
+- Role Model: layout natural (tinggi adaptif gambar), no-crop, cross-fade 280ms
+- Container 3:4 fixed, object-fit contain -> gambar utuh no-crop, ukuran sama
+- Dots diseragamkan: pill 26px (active 32px + primary)
+- Instagram: hapus double-frame, notch phone-top, jadi single clean rounded
+
+Image Joko Ciptanto:
+- Dipad ke rasio 3:4 (blurred-fill background) supaya sama ukuran Marihod, no crop
+
+Jadwal Sidang (sipp-schedule):
+- Empty state "Tidak ada sidang hari ini" (centered), bukan "Data Tidak diTemukan"
+- Bump specificity selector agar override cell padding table
+
+Footer 3 kolom:
+- Kolom 1: logo + nama + alamat + telepon + email + jam layanan (ikon SVG feather)
+- Kolom 2: tautan instansi eksternal (MA RI, Badilum, PT Kepri, JDIH, SIPP)
+- Kolom 3: media sosial (Instagram, Facebook, YouTube)
+- Title kolom: plain heading Fraunces (no eyebrow frame), normal case
+- Footer-bottom: copyright paling bawah kiri (order:99 fix bug grid placement)
+- Back-to-top button (fixed, muncul saat scroll, di atas WhatsApp button)
+- Mobile: sosial icon-only (label hidden), footer stack 1 kolom
+- Link tautan: plain text list (no box/bg), hover accent emas
+
+Feed Instansi (instansi-feed.php):
+- Compaction: spacing lebih rapet (title/item/sub-grid padding & gap dikurangi ~13%)
+- MA RI: judul ASLI hasil scrape via browser real Chromium (Cloudflare blokir PHP)
+  - Berita & pengumuman distinct, link langsung ke artikel asli MA
+  - Normal case (bukan ALL CAPS seperti di situs MA)
+- Logo PT Kepri: pakai logonya sendiri (logo-pt-kepri.png, download dari pt-kepri.go.id)
+- Badilum: tetap logo MA (dibawah Mahkamah Agung)
+- UA fetch: ganti ke browser Chrome (Cloudflare/Google lebih ramah)
+- Cache dir mkdir, TTL 1 jam
+
+Cron auto-refresh (baru):
+- cron-refresh-instansi.php: script PHP CLI force-refresh cache (Badilum+PT live, MA fallback)
+- CRON-AUTOUPDATE-HANDOFF.md: panduan deploy cron ke cPanel (8 bagian lengkap)
+- Puppeteer MA scraper snippet di handoff (semi-otomatis refresh MA)
+
+Sidebar:
+- Unpublish module Indeks Pelayanan Publik (mod 811) + Tautan Website (mod 812)
+- Sidebar sekarang 5 module: Search, Jam Layanan, Role Model, Instagram, Statistik
+
+Dokumentasi:
+- HANDOFF.md: update status, stack lokal, changelog sesi, referensi cron handoff
+- DB dump baru: database/pn_natuna_rebuild_20260704_1730.sql (capture semua DB changes)

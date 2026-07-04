@@ -118,7 +118,7 @@ function pn_natuna_sipp_render_schedule(): void
                 </tr>
               <?php endforeach; ?>
             <?php else : ?>
-              <tr><td colspan="7" class="sipp-empty-state">Data Tidak diTemukan</td></tr>
+              <tr><td colspan="7" class="sipp-empty-state">Tidak ada sidang hari ini</td></tr>
             <?php endif; ?>
           </tbody>
         </table>

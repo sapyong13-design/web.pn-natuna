@@ -30,7 +30,7 @@ function pn_natuna_instansi_fetch_url(string $url): string
     $context = stream_context_create([
         'http' => [
             'timeout' => 8,
-            'header' => "User-Agent: PN-Natuna-Website/1.0\r\nAccept: text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8\r\n",
+            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36\r\nAccept: text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8\r\n",
         ],
         'ssl' => [
             'verify_peer' => true,
@@ -40,6 +40,34 @@ function pn_natuna_instansi_fetch_url(string $url): string
 
     $html = @file_get_contents($url, false, $context);
     return is_string($html) ? $html : '';
+}
+
+function pn_natuna_instansi_fetch_google_news(string $query): array
+{
+    $url = 'https://news.google.com/rss/search?q=' . rawurlencode($query) . '&hl=id&gl=ID&ceid=ID:id';
+    $xml = pn_natuna_instansi_fetch_url($url);
+    if ($xml === '' || !str_contains($xml, '<item>')) {
+        return [];
+    }
+    libxml_use_internal_errors(true);
+    $simple = @simplexml_load_string($xml);
+    if ($simple === false || !isset($simple->channel->item)) {
+        return [];
+    }
+    $items = [];
+    foreach ($simple->channel->item as $entry) {
+        $title = pn_natuna_instansi_text((string) $entry->title);
+        $title = preg_replace('/\s*[-–]\s*Mahkamah Agung$/i', '', $title);
+        $link = trim((string) $entry->link);
+        $pub = (string) $entry->pubDate;
+        $items[] = [
+            'title' => $title,
+            'url' => $link !== '' ? $link : 'https://www.mahkamahagung.go.id/',
+            'date' => pn_natuna_instansi_item_date($pub),
+            'pub' => strtotime($pub) ?: 0,
+        ];
+    }
+    return $items;
 }
 
 function pn_natuna_instansi_item_date(string $text): string
@@ -148,18 +176,18 @@ function pn_natuna_instansi_fallback(): array
             'class' => 'instansi-ma',
             'logo' => '/images/brand/logo-ma.png',
             'news' => [
-                ['date' => '26 Jun', 'title' => 'Berita resmi Mahkamah Agung Republik Indonesia', 'url' => 'https://www.mahkamahagung.go.id/id/berita'],
-                ['date' => '25 Jun', 'title' => 'Kegiatan dan kebijakan Mahkamah Agung', 'url' => 'https://www.mahkamahagung.go.id/id/berita'],
-                ['date' => '25 Jun', 'title' => 'Pembaruan peradilan dan pelayanan publik', 'url' => 'https://www.mahkamahagung.go.id/id/berita'],
-                ['date' => '23 Jun', 'title' => 'Kabar kelembagaan Mahkamah Agung', 'url' => 'https://www.mahkamahagung.go.id/id/berita'],
-                ['date' => '23 Jun', 'title' => 'Informasi kegiatan pimpinan dan satuan kerja', 'url' => 'https://www.mahkamahagung.go.id/id/berita'],
+                ['date' => '1 Jul', 'title' => 'Ketua MA Hadiri Upacara Peringatan HUT Ke-80 Bhayangkara', 'url' => 'https://mahkamahagung.go.id/id/berita/7330/ketua-ma-hadiri-upacara-peringatan-hut-ke-80-bhayangkara'],
+                ['date' => '26 Jun', 'title' => 'Sekretaris MA Harap 25 Pejabat Pengawas yang Dilantik Menjadi Motor Penggerak Perubahan', 'url' => 'https://mahkamahagung.go.id/id/berita/7323/sekretaris-ma-harap-25-pejabat-pengawas-yang-dilantik-menjadi-motor-penggerak-perubahan'],
+                ['date' => '25 Jun', 'title' => 'MA Goes to Campus 2026 Hadir di Yogyakarta, Perkuat Literasi Peradilan bagi Mahasiswa', 'url' => 'https://mahkamahagung.go.id/id/berita/7322/ma-goes-to-campus-2026-hadir-di-yogyakarta-perkuat-literasi-peradilan-bagi-mahasiswa'],
+                ['date' => '25 Jun', 'title' => 'Satu Semester KUHP Nasional, Ketua MA Jelaskan Perubahan Sudut Pandang Pemidanaan', 'url' => 'https://mahkamahagung.go.id/id/berita/7321/satu-semester-kuhp-nasional-ketua-ma-jelaskan-perubahan-sudut-pandang-pemidanaan'],
+                ['date' => '23 Jun', 'title' => 'Mahkamah Agung Terima Audiensi Serikat Buruh Jawa Timur, Bahas Persoalan Upah Proses Hingga Perlindungan Buruh', 'url' => 'https://mahkamahagung.go.id/id/berita/7320/mahkamah-agung-terima-audiensi-serikat-buruh-jawa-timur-bahas-persoalan-upah-proses-hingga-perlindungan-buruh'],
             ],
             'announcements' => [
-                ['date' => '09 Jun', 'title' => 'Undangan pembinaan teknis dan administrasi yudisial', 'url' => 'https://www.mahkamahagung.go.id/id/pengumuman'],
-                ['date' => '05 Jun', 'title' => 'Pelaksanaan Ujian Dinas Elektronik 2026 Gelombang I', 'url' => 'https://www.mahkamahagung.go.id/id/pengumuman'],
-                ['date' => '18 Mei', 'title' => 'Peringatan Hari Kebangkitan Nasional 2026', 'url' => 'https://www.mahkamahagung.go.id/id/pengumuman'],
-                ['date' => '11 Mei', 'title' => 'Seleksi terbuka jabatan panitera muda MA 2026', 'url' => 'https://www.mahkamahagung.go.id/id/pengumuman'],
-                ['date' => '09 Jan', 'title' => 'SE Sekretaris MA layanan promosi mutasi elektronik', 'url' => 'https://www.mahkamahagung.go.id/id/pengumuman'],
+                ['date' => '3 Jul', 'title' => 'Rekrutmen Calon Hakim Pengadilan Pajak Tahun Anggaran 2026', 'url' => 'https://mahkamahagung.go.id/id/pengumuman/7331/rekrutmen-calon-hakim-pengadilan-pajak-tahun-anggaran-2026'],
+                ['date' => '30 Jun', 'title' => 'Pengisian Kelengkapan Berkas Guna Pengangkatan dalam Jabatan Fungsional PNS', 'url' => 'https://mahkamahagung.go.id/id/pengumuman/7328/pengisian-kelengkapan-berkas-guna-pengangkatan-dalam-jabatan-fungsional-pns'],
+                ['date' => '30 Jun', 'title' => 'Pelaksanaan, Penyusunan dan Penyampaian Laporan Pengawasan dan Pengendalian Barang Milik Negara Semester I Tahun 2026', 'url' => 'https://mahkamahagung.go.id/id/pengumuman/7326/pelaksanaan-penyusunan-dan-penyampaian-laporan-pengawasan-dan-pengendalian-barang-milik-negara-semester-i-tahun-2026'],
+                ['date' => '29 Jun', 'title' => 'Daftar Hasil RTPM Tenaga Kesekretariatan di Lingkungan Mahkamah Agung RI dan Badan Peradilan di Bawahnya', 'url' => 'https://mahkamahagung.go.id/id/pengumuman/7324/daftar-hasil-rtpm-tenaga-kesekretariatan-di-lingkungan-mahkamah-agung-ri-dan-badan-peradilan-di-bawahnya'],
+                ['date' => '19 Jun', 'title' => 'Revisi Kebijakan Pelaksanaan Pembangunan dan Evaluasi ZI Menuju WBK/WBBM Tahun 2026', 'url' => 'https://mahkamahagung.go.id/id/pengumuman/7318/revisi-kebijakan-pelaksnaan-pembangunan-dan-evaluasi-zi-menuju-wbk-wbbm-tahun-2026'],
             ],
         ],
         'badilum' => [
@@ -184,7 +212,7 @@ function pn_natuna_instansi_fallback(): array
         'pt' => [
             'title' => 'Pengadilan Tinggi Kepulauan Riau',
             'class' => 'instansi-pt',
-            'logo' => '/images/brand/logo-ma.png',
+            'logo' => '/images/brand/logo-pt-kepri.png',
             'news' => [
                 ['date' => '09 Jun', 'title' => 'Rapat evaluasi AKIP internal PT Kepulauan Riau', 'url' => 'https://pt-kepri.go.id/'],
                 ['date' => '25 Mei', 'title' => 'Panitera PT Kepri hadiri kegiatan aksi perubahan', 'url' => 'https://pt-kepri.go.id/'],
@@ -217,10 +245,6 @@ function pn_natuna_instansi_load(): array
 
     $data = pn_natuna_instansi_fallback();
     $sources = [
-        'ma' => [
-            'news' => ['https://www.mahkamahagung.go.id/id/berita', ['berita'], ['pengumuman']],
-            'announcements' => ['https://www.mahkamahagung.go.id/id/pengumuman', ['pengumuman'], ['berita']],
-        ],
         'badilum' => [
             'news' => ['https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html', ['berita'], ['pengumuman']],
             'announcements' => ['https://badilum.mahkamahagung.go.id/berita/pengumuman-surat-dinas.html', ['pengumuman', 'undangan', 'pemanggilan', 'hasil', 'peserta', 'imbauan', 'pemberitahuan', 'informasi', 'penyampaian', 'pemantauan'], ['berita-kegiatan', 'mutasi hakim', 'mutasi panitera', 'peraturan perundangan', 'hasil survei', 'biaya mutasi', 'keuangan perkara']],
@@ -250,6 +274,7 @@ function pn_natuna_instansi_load(): array
         }
     }
 
+    @mkdir(dirname($cacheFile), 0775, true);
     @file_put_contents($cacheFile, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
     return $data;
 }

@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupInstagramPostSliders();
   setupLiveClock();
   setupDynamicServiceHours();
+  setupBackToTop();
 });
 
 function setupDynamicServiceHours() {
@@ -248,4 +249,14 @@ function setupInstagramPostSliders() {
     setActive(0);
     start();
   });
+}
+
+function setupBackToTop() {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+  btn.hidden = false;
+  const onScroll = () => btn.classList.toggle('is-visible', window.scrollY > 480);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  onScroll();
 }

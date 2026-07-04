@@ -6,12 +6,23 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 
 - Repo: https://github.com/sapyong13-design/web.pn-natuna.git
 - Branch kerja: continue-joomla-rebuild-polish
-- Folder lokal utama: D:\PN-Natuna\rebuild-joomla
-- Local URL terakhir: http://127.0.0.1:8081
+- Folder lokal utama: C:\tmp\web.pn-natuna
+- Local URL terakhir: http://127.0.0.1:8081 (PHP built-in server, Laragon MySQL di C:\laragon)
 - Database lokal: pn_natuna_rebuild
-- Dump database terakhir: database/pn_natuna_rebuild_20260703_1630.sql
-- Commit fitur terakhir: 769b259 feat: rapikan homepage dan tambah feed instansi
-- Commit cleanup terakhir: 2483762 chore: ignore runtime cache logs
+- Dump database terakhir: database/pn_natuna_rebuild_20260704_1730.sql (sebelumnya: pn_natuna_rebuild_20260703_1630.sql)
+- Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
+
+## Perubahan Sesi 04 Jul 2026 (liat commit message untuk detail lengkap)
+
+- Tipografi: font global Plus Jakarta Sans (body) + Fraunces (heading), ganti Trebuchet/Times.
+- Role Model & Instagram: box diseragamkan, frame dihapus (clean), gambar natural no-crop, dots pill.
+- Image Joko Ciptanto di-pad ke rasio 3:4 (blurred-fill) supaya sama ukuran Marihod, no crop.
+- Jadwal Sidang: empty state "Tidak ada sidang hari ini" (centered), bukan "Data Tidak diTemukan".
+- Footer: 3 kolom (kontak+logo, tautan instansi, media sosial), copyright paling bawah kiri, back-to-top button, mobile sosial icon-only.
+- Feed Instansi: compaction (spacing lebih rapet), MA RI pakai judul ASLI scrape via browser (Cloudflare blokir PHP), normal case. Logo PT Kepri pakai logonya sendiri (logo-pt-kepri.png).
+- Cron auto-refresh: script `cron-refresh-instansi.php` + handoff `CRON-AUTOUPDATE-HANDOFF.md` untuk cPanel (Badilum+PT live, MA manual).
+- Sidebar: hapus module Indeks Pelayanan Publik + Tautan Website (unpublished di DB).
+- DB dump baru: database/pn_natuna_rebuild_20260704_1730.sql
 
 ## Tujuan Rebuild
 
@@ -78,13 +89,15 @@ Perilaku:
 - TTL cache: 1 jam.
 - Badilum: fetch/scrape live untuk berita dan pengumuman.
 - PT Kepri: fetch/scrape live untuk berita dan pengumuman.
-- MA RI: situs sering terblokir Cloudflare dari PHP/PowerShell lokal, jadi renderer memakai fallback agar kolom tetap isi.
+- MA RI: situs terblokir Cloudflare dari PHP/curl server-side (halaman challenge, bukan konten). Fallback MA sekarang berisi judul ASLI terbaru hasil scrape via browser real (Chromium). Refresh manual berkala karena cron tidak bisa bypass Cloudflare.
 
 Catatan penting:
 
 - Jangan klaim MA RI live 100% sampai Cloudflare/API resmi selesai.
 - Kalau ingin update lebih aman, pakai RSS/API resmi bila tersedia.
 - Kalau struktur HTML situs sumber berubah, parser di instansi-feed.php mungkin perlu disesuaikan.
+
+Auto-refresh harian: lihat **CRON-AUTOUPDATE-HANDOFF.md** untuk setup cron job cPanel (Badilum + PT Kepri live, MA RI refresh manual/semi-otomatis). Script cron: `cron-refresh-instansi.php`.
 
 ## Instagram dan Jadwal Sidang
 
