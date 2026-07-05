@@ -29,8 +29,8 @@ from PIL import Image
 FOLDER_ID = '1XVTZjSGKPzM0XPSTlYg4w7f6Ut-QyG7z'
 SURVEY_TYPES = ['SKM', 'IPAK']
 SURVEY_LABELS = {
-    'SKM': 'SKM &mdash; Kepuasan Masyarakat',
-    'IPAK': 'IPAK &mdash; Persepsi Anti Korupsi',
+    'SKM': 'Indeks Kepuasan Masyarakat (IKM)',
+    'IPAK': 'Indeks Persepsi Anti Korupsi (IPAK)',
 }
 OUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'images', 'surveys')
 IMG_WIDTH = 800  # web display width (retina)
@@ -112,25 +112,43 @@ def convert_pdf_to_png(pdf_path, png_path, width):
 
 
 def build_module_content(latest):
-    """Build HTML content untuk Joomla module survey card."""
-    items = []
-    for stype in SURVEY_TYPES:
+    """Build HTML carousel content untuk Joomla module survey."""
+    slides = []
+    dots = []
+    first_label = ''
+    for idx, stype in enumerate(SURVEY_TYPES):
         info = latest.get(stype)
         if not info:
             continue
         img = f'/images/surveys/{stype}_TW{info["tw"]}_{info["year"]}.png'
-        label = SURVEY_LABELS.get(stype, stype)
+        base = SURVEY_LABELS.get(stype, stype)
         tag = f'TW{info["tw"]} {info["year"]}'
-        alt = f'{stype} {tag}'
-        items.append(
-            f'<div class="survey-item">'
-            f'<div class="survey-head"><span class="survey-label">{label}</span>'
-            f'<span class="survey-tag">{tag}</span></div>'
-            f'<a class="survey-img-link" href="{img}" target="_blank" rel="noopener">'
-            f'<img class="survey-img" src="{img}" alt="{alt}" loading="lazy"></a>'
+        full_label = f'{base} &mdash; {tag}'
+        if not first_label:
+            first_label = full_label
+        active = ' is-active' if idx == 0 else ''
+        short = 'IKM' if stype == 'SKM' else stype
+        slides.append(
+            f'<div class="survey-slide{active}" data-label="{full_label}">'
+            f'<a href="{img}" target="_blank" rel="noopener">'
+            f'<img src="{img}" alt="{base} {tag}" loading="lazy"></a>'
             f'</div>'
         )
-    return '<div class="survey-card">\n<h2>Indeks Survei Publik</h2>\n' + '\n'.join(items) + '\n</div>'
+        dots.append(
+            f'<button type="button" data-survey-slide="{idx}"{active} aria-label="{short}"></button>'
+        )
+    return (
+        '<h2>Indeks Pelayanan Publik</h2>\n'
+        '<div class="survey-carousel" data-interval="5000">\n'
+        '<div class="survey-carousel-viewport">\n'
+ + '\n'.join(slides) + '\n'
+        '</div>\n'
+        f'<div class="survey-caption">{first_label}</div>\n'
+        '<div class="survey-carousel-dots">\n'
+ + '\n'.join(dots) + '\n'
+        '</div>\n'
+        '</div>'
+    )
 
 
 def update_module_db(content):

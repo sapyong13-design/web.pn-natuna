@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupLiveClock();
   setupDynamicServiceHours();
   setupBackToTop();
+  setupSurveyCarousel();
 });
 
 function setupDynamicServiceHours() {
@@ -259,4 +260,44 @@ function setupBackToTop() {
   window.addEventListener('scroll', onScroll, { passive: true });
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   onScroll();
+}
+
+function setupSurveyCarousel() {
+  document.querySelectorAll('.survey-carousel').forEach((carousel) => {
+    const slides = Array.from(carousel.querySelectorAll('.survey-slide'));
+    const dots = Array.from(carousel.querySelectorAll('[data-survey-slide]'));
+    const caption = carousel.querySelector('.survey-caption');
+    if (slides.length < 2) {
+      return;
+    }
+    let activeIndex = 0;
+    let timer = null;
+    const interval = parseInt(carousel.dataset.interval || '5000', 10);
+
+    const setActive = (index) => {
+      activeIndex = (index + slides.length) % slides.length;
+      slides.forEach((slide, i) => slide.classList.toggle('is-active', i === activeIndex));
+      dots.forEach((dot, i) => dot.classList.toggle('is-active', i === activeIndex));
+      if (caption && slides[activeIndex]) {
+        caption.textContent = slides[activeIndex].dataset.label || '';
+      }
+    };
+
+    const start = () => {
+      timer = window.setInterval(() => setActive(activeIndex + 1), interval);
+    };
+
+    dots.forEach((dot, dotIndex) => {
+      dot.addEventListener('click', () => {
+        if (timer) {
+          window.clearInterval(timer);
+        }
+        setActive(dotIndex);
+        start();
+      });
+    });
+
+    setActive(0);
+    start();
+  });
 }

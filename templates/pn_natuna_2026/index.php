@@ -112,6 +112,7 @@ if (is_file($instansiFeedHelper)) {
         <jdoc:include type="modules" name="home-service-info" style="card" />
         <jdoc:include type="modules" name="home-role-model" style="card" />
         <jdoc:include type="modules" name="home-survey" style="card" />
+        <jdoc:include type="modules" name="home-dipa" style="card" />
         <jdoc:include type="modules" name="home-instagram" style="card" />
         <jdoc:include type="modules" name="home-index" style="card" />
         <jdoc:include type="modules" name="home-web-links" style="card" />

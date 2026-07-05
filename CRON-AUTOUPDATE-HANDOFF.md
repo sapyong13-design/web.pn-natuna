@@ -352,3 +352,41 @@ SELESAI.
 - `SURVEY_TYPES` — jenis survei yang di-track (`['SKM', 'IPAK']`)
 - `MODULE_ID` — id module Joomla (816)
 - `MYSQL_BIN`, `DB_USER`, `DB_PASS`, `DB_NAME` — via env var atau edit langsung
+
+---
+
+## 10. Auto-Refresh Realisasi Anggaran DIPA (Google Drive → PDF → Donut Chart)
+
+Widget **Realisasi Anggaran DIPA** di sidebar (bawah Indeks Pelayanan Publik)
+menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi.
+
+### Sumber data
+- Folder Google Drive (public): `1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV`
+- Naming: `{Laporan Realisasi/LRA} DIPA ... {Bulan} {Tahun}.pdf`
+- Latest: Juni 2026
+
+### Cara kerja `tools/refresh-dipa.py`
+1. List file folder Gdrive via `embeddedfolderview`.
+2. Cari PDF **TERBARU** (prefer "01 dan 03" combined, sort by tahun+bulan).
+3. Download → parse text → extract baris **"JUMLAH SELURUHNYA"** per Unit Organisasi (01, 03) → dapat %, pagu, realisasi.
+4. Generate donut chart HTML (CSS conic-gradient, 2 ring) + link ke PDF gdrive.
+5. Update module Joomla (DB id 817).
+
+### Menjalankan
+```bash
+MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
+  python tools/refresh-dipa.py
+```
+
+### Saat upload PDF baru (mis. Juli 2026)
+1. Upload `Laporan Realisasi Anggaran DIPA 01 dan 03 Juli 2026.pdf` ke folder.
+2. Jalankan `python tools/refresh-dipa.py`.
+3. Donut auto-update ke Juli (%, pagu, link PDF).
+
+### Konfigurasi (`tools/refresh-dipa.py`)
+- `FOLDER_ID`, `MODULE_ID` (817), `MYSQL_BIN`/`DB_USER`/`DB_NAME` (env var)
+
+### Catatan parsing
+Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
+dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
+angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.

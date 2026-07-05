@@ -2210,6 +2210,28 @@ a.instagram-post-slide {
 .content-primary p,
 .content-primary li {
   max-width: 78ch;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.content-primary .sejarah-foto {
+  float: right;
+  width: 340px;
+  max-width: 48%;
+  height: auto;
+  margin: 4px 0 10px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--color-line);
+  box-shadow: 0 8px 20px rgba(29, 39, 48, 0.1);
+}
+
+@media (max-width: 640px) {
+  .content-primary .sejarah-foto {
+    float: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 14px;
+  }
 }
 
 .content-primary blockquote {
@@ -3868,71 +3890,173 @@ body.is-dark .instagram-profile span {
   line-height: 1.38 !important;
 }
 
-/* === Survey card (SKM + IPAK) === */
-.survey-card {
+/* === Survey carousel (IKM + IPAK) === */
+.survey-carousel {
   display: grid;
-  gap: 14px;
+  gap: 10px;
+  max-width: 360px;
+  margin-inline: auto;
 }
 
-.survey-card h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-primary);
+.survey-carousel-viewport {
+  position: relative;
+  aspect-ratio: 210 / 297;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
 }
 
-.survey-item {
-  display: grid;
-  gap: 6px;
+.survey-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
 }
 
-.survey-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.survey-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.survey-label {
+.survey-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.survey-slide a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.survey-caption {
+  text-align: center;
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--color-ink);
+  line-height: 1.35;
 }
 
-.survey-tag {
-  flex: none;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #fff;
-  background: var(--color-primary);
+.survey-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.survey-carousel-dots button {
+  width: 26px;
+  height: 6px;
+  border: 0;
   border-radius: 999px;
-  padding: 3px 9px;
+  background: #d2d8de;
+  cursor: pointer;
+  transition: width 180ms ease, background 180ms ease;
+}
+
+.survey-carousel-dots button.is-active {
+  width: 32px;
+  background: var(--color-primary);
+}
+
+/* === Realisasi Anggaran DIPA (donut) === */
+.dipa-widget {
+  display: grid;
+  gap: 12px;
+}
+
+.dipa-period {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-muted);
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.survey-img-link {
-  display: block;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--color-line);
+.dipa-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dipa-item {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: var(--color-soft);
+}
+
+.dipa-ring {
+  --deg: calc(var(--pct, 0) * 3.6deg);
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: conic-gradient(var(--dipa-color, var(--color-primary)) 0deg var(--deg), #dde3e8 var(--deg) 360deg);
+  display: grid;
+  place-items: center;
+}
+
+.dipa-ring::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
   background: #fff;
-  transition: box-shadow 200ms ease;
 }
 
-.survey-img-link:hover,
-.survey-img-link:focus-visible {
-  box-shadow: 0 8px 22px rgba(29, 39, 48, 0.12);
+.dipa-ring-pct {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--dipa-color, var(--color-primary));
 }
 
-.survey-img {
+.dipa-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.dipa-amount {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.dipa-sub {
+  font-size: 0.66rem;
+  color: var(--color-muted);
+}
+
+.dipa-link {
   display: block;
-  width: 100%;
-  height: auto;
-  transition: transform 200ms ease;
+  text-decoration: none;
+  color: inherit;
 }
 
-.survey-img-link:hover .survey-img {
-  transform: scale(1.02);
+.dipa-link .dipa-item {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.dipa-link:hover .dipa-item,
+.dipa-link:focus-visible .dipa-item {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(29, 39, 48, 0.12);
+}
+
+.dipa-link-hint {
+  display: block;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-top: 4px;
 }
