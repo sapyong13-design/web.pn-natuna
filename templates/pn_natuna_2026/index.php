@@ -10,6 +10,7 @@ $hasSidebar = (bool) ($this->countModules('sidebar') || $this->countModules('sid
 $sippScheduleHelper = __DIR__ . '/sipp-schedule.php';
 $statsCounterHelper = __DIR__ . '/stats-counter.php';
 $instansiFeedHelper = __DIR__ . '/instansi-feed.php';
+$heroSliderHelper = __DIR__ . '/hero-slider.php';
 
 if (is_file($sippScheduleHelper)) {
     require_once $sippScheduleHelper;
@@ -20,6 +21,9 @@ if (is_file($statsCounterHelper)) {
 }
 if (is_file($instansiFeedHelper)) {
     require_once $instansiFeedHelper;
+}
+if (is_file($heroSliderHelper)) {
+    require_once $heroSliderHelper;
 }
 ?>
 <!doctype html>
@@ -66,7 +70,11 @@ if (is_file($instansiFeedHelper)) {
 
   <?php if ($isHome) : ?>
     <section class="hero home-slider">
-      <jdoc:include type="modules" name="hero" style="none" />
+      <?php if (function_exists('pn_natuna_render_hero_slider')) : ?>
+        <?php pn_natuna_render_hero_slider(); ?>
+      <?php else : ?>
+        <jdoc:include type="modules" name="hero" style="none" />
+      <?php endif; ?>
     </section>
     <section class="quick-links app-strip">
       <jdoc:include type="modules" name="quick-links" style="card" />

@@ -29,12 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupAccessibilityTools();
   setupSearchOverlay();
-  setupRoleCarousel();
+  setupCarousels();
   setupInstagramPostSliders();
   setupLiveClock();
   setupDynamicServiceHours();
   setupBackToTop();
-  setupSurveyCarousel();
+  setupHeroNewsTabs();
+  setupHeroGreeting();
+  setupHeroServiceStatus();
+  setupHeroPrefetch();
 });
 
 function setupDynamicServiceHours() {
@@ -157,45 +160,108 @@ function setupSearchOverlay() {
   });
 }
 
-function setupRoleCarousel() {
-  document.querySelectorAll('.role-carousel').forEach((carousel) => {
-    const slides = Array.from(carousel.querySelectorAll('.role-slide'));
-    const dots = Array.from(carousel.querySelectorAll('[data-role-slide]'));
-    if (slides.length < 2) {
+function initCarousel(root, opts) {
+  const slides = Array.from(root.querySelectorAll(opts.slide));
+  const dots = Array.from(root.querySelectorAll(opts.dot));
+  const caption = opts.caption ? root.querySelector(opts.caption) : null;
+  if (slides.length < 2) {
+    return;
+  }
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const interval = parseInt(root.dataset.interval || opts.interval || '5000', 10);
+  root.style.setProperty('--ci', interval + 'ms');
+  let activeIndex = 0;
+  let timer = null;
+
+  const setActive = (index) => {
+    activeIndex = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('is-active', i === activeIndex);
+      slide.setAttribute('aria-hidden', String(i !== activeIndex));
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === activeIndex);
+      dot.setAttribute('aria-pressed', String(i === activeIndex));
+    });
+    if (caption && slides[activeIndex]) {
+      caption.textContent = slides[activeIndex].dataset.label || '';
+    }
+  };
+
+  const stop = () => {
+    if (timer) {
+      window.clearInterval(timer);
+      timer = null;
+    }
+  };
+
+  const start = () => {
+    if (reducedMotion) {
       return;
     }
+    stop();
+    timer = window.setInterval(() => setActive(activeIndex + 1), interval);
+  };
 
-    let activeIndex = 0;
-    let timer = null;
+  dots.forEach((dot, dotIndex) => {
+    dot.addEventListener('click', () => {
+      setActive(dotIndex);
+      start();
+    });
+  });
 
-    const setActive = (index) => {
-      activeIndex = (index + slides.length) % slides.length;
-      slides.forEach((slide, slideIndex) => {
-        slide.classList.toggle('is-active', slideIndex === activeIndex);
-        slide.setAttribute('aria-hidden', String(slideIndex !== activeIndex));
-      });
-      dots.forEach((dot, dotIndex) => {
-        dot.classList.toggle('is-active', dotIndex === activeIndex);
-        dot.setAttribute('aria-pressed', String(dotIndex === activeIndex));
-      });
-    };
-
-    const start = () => {
-      timer = window.setInterval(() => setActive(activeIndex + 1), 5000);
-    };
-
-    dots.forEach((dot, dotIndex) => {
-      dot.addEventListener('click', () => {
-        if (timer) {
-          window.clearInterval(timer);
-        }
-        setActive(dotIndex);
+  if (opts.nav) {
+    root.querySelectorAll(opts.nav).forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setActive(activeIndex + (parseInt(btn.dataset.heroNav, 10) || 1));
         start();
       });
     });
+  }
 
-    setActive(0);
-    start();
+  root.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+      setActive(activeIndex - 1);
+      start();
+    } else if (event.key === 'ArrowRight') {
+      setActive(activeIndex + 1);
+      start();
+    }
+  });
+
+  let touchX = null;
+  root.addEventListener('touchstart', (event) => {
+    touchX = event.touches[0].clientX;
+  }, { passive: true });
+  root.addEventListener('touchend', (event) => {
+    if (touchX === null) {
+      return;
+    }
+    const delta = event.changedTouches[0].clientX - touchX;
+    if (Math.abs(delta) > 40) {
+      setActive(activeIndex + (delta < 0 ? 1 : -1));
+      start();
+    }
+    touchX = null;
+  }, { passive: true });
+
+  root.addEventListener('mouseenter', stop);
+  root.addEventListener('mouseleave', start);
+
+  setActive(0);
+  start();
+}
+
+function setupCarousels() {
+  document.querySelectorAll('.role-carousel').forEach((el) => {
+    initCarousel(el, { slide: '.role-slide', dot: '[data-role-slide]', interval: '5000' });
+  });
+  document.querySelectorAll('.survey-carousel').forEach((el) => {
+    initCarousel(el, { slide: '.survey-slide', dot: '[data-survey-slide]', caption: '.survey-caption' });
+  });
+  document.querySelectorAll('.hero-slider').forEach((el) => {
+    initCarousel(el, { slide: '.hero-slide', dot: '[data-hero-slide]', interval: '6000', nav: '[data-hero-nav]' });
   });
 }
 
@@ -262,42 +328,129 @@ function setupBackToTop() {
   onScroll();
 }
 
-function setupSurveyCarousel() {
-  document.querySelectorAll('.survey-carousel').forEach((carousel) => {
-    const slides = Array.from(carousel.querySelectorAll('.survey-slide'));
-    const dots = Array.from(carousel.querySelectorAll('[data-survey-slide]'));
-    const caption = carousel.querySelector('.survey-caption');
-    if (slides.length < 2) {
+function setupHeroNewsTabs() {
+  const slide = document.querySelector('.hero-slide-news');
+  if (!slide) {
+    return;
+  }
+  const tabs = Array.from(slide.querySelectorAll('[data-hero-tab]'));
+  const panels = Array.from(slide.querySelectorAll('[data-hero-panel]'));
+  const preview = document.getElementById('hero-news-preview');
+  const caption = document.getElementById('hero-news-caption');
+
+  const setPreview = (link) => {
+    if (!preview || !link) {
       return;
     }
-    let activeIndex = 0;
-    let timer = null;
-    const interval = parseInt(carousel.dataset.interval || '5000', 10);
-
-    const setActive = (index) => {
-      activeIndex = (index + slides.length) % slides.length;
-      slides.forEach((slide, i) => slide.classList.toggle('is-active', i === activeIndex));
-      dots.forEach((dot, i) => dot.classList.toggle('is-active', i === activeIndex));
-      if (caption && slides[activeIndex]) {
-        caption.textContent = slides[activeIndex].dataset.label || '';
+    slide.querySelectorAll('.hero-tab-list a.is-preview').forEach((a) => a.classList.remove('is-preview'));
+    link.classList.add('is-preview');
+    const src = link.dataset.image || '';
+    const cap = link.dataset.caption || '';
+    if (!src || preview.getAttribute('src') === src) {
+      if (caption && cap) {
+        caption.textContent = cap;
       }
-    };
+      return;
+    }
+    preview.classList.add('is-swapping');
+    window.setTimeout(() => {
+      preview.setAttribute('src', src);
+      if (caption) {
+        caption.textContent = cap;
+      }
+      preview.addEventListener('load', () => preview.classList.remove('is-swapping'), { once: true });
+      window.setTimeout(() => preview.classList.remove('is-swapping'), 700);
+    }, 180);
+  };
 
-    const start = () => {
-      timer = window.setInterval(() => setActive(activeIndex + 1), interval);
-    };
-
-    dots.forEach((dot, dotIndex) => {
-      dot.addEventListener('click', () => {
-        if (timer) {
-          window.clearInterval(timer);
-        }
-        setActive(dotIndex);
-        start();
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => {
+        t.classList.toggle('is-active', t === tab);
+        t.setAttribute('aria-selected', String(t === tab));
       });
+      panels.forEach((p) => p.classList.toggle('is-active', p.dataset.heroPanel === tab.dataset.heroTab));
+      const activePanel = panels.find((p) => p.dataset.heroPanel === tab.dataset.heroTab);
+      setPreview(activePanel ? activePanel.querySelector('a[data-image]') : null);
     });
-
-    setActive(0);
-    start();
   });
+
+  slide.querySelectorAll('.hero-tab-list a[data-image]').forEach((link) => {
+    link.addEventListener('mouseenter', () => setPreview(link));
+    link.addEventListener('focus', () => setPreview(link));
+  });
+
+  const first = slide.querySelector('.hero-tab-list.is-active a[data-image]');
+  if (first) {
+    first.classList.add('is-preview');
+  }
+}
+
+function pnNatunaJakartaNow() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+}
+
+function setupHeroGreeting() {
+  const el = document.getElementById('hero-greeting');
+  if (!el) {
+    return;
+  }
+  const now = pnNatunaJakartaNow();
+  const h = now.getHours();
+  let greet = 'Selamat Malam';
+  if (h >= 4 && h < 11) {
+    greet = 'Selamat Pagi';
+  } else if (h >= 11 && h < 15) {
+    greet = 'Selamat Siang';
+  } else if (h >= 15 && h < 19) {
+    greet = 'Selamat Sore';
+  }
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  el.textContent = greet + ' \u2014 ' + days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+}
+
+function setupHeroServiceStatus() {
+  const el = document.getElementById('hero-service-status');
+  if (!el) {
+    return;
+  }
+  const now = pnNatunaJakartaNow();
+  const day = now.getDay();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  let open = false;
+  let label = '';
+
+  if (day >= 1 && day <= 4) {
+    open = minutes >= 480 && minutes < 990;
+    label = open ? 'PTSP Buka \u2014 tutup 16.30 WIB' : 'PTSP Tutup \u2014 buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'besok 08.00 WIB');
+  } else if (day === 5) {
+    open = minutes >= 480 && minutes < 1020;
+    label = open ? 'PTSP Buka \u2014 tutup 17.00 WIB' : 'PTSP Tutup \u2014 buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'Senin 08.00 WIB');
+  } else {
+    label = 'PTSP Tutup \u2014 buka Senin 08.00 WIB';
+  }
+
+  el.textContent = label;
+  el.classList.add(open ? 'is-open' : 'is-closed');
+  el.hidden = false;
+}
+
+function setupHeroPrefetch() {
+  const run = () => {
+    const urls = new Set();
+    document.querySelectorAll('.hero-tab-list a[data-image]').forEach((a) => urls.add(a.dataset.image));
+    document.querySelectorAll('.hero-slide img').forEach((img) => urls.add(img.getAttribute('src')));
+    urls.forEach((src) => {
+      if (src) {
+        const im = new Image();
+        im.src = src;
+      }
+    });
+  };
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(run, { timeout: 4000 });
+  } else {
+    window.setTimeout(run, 2500);
+  }
 }
