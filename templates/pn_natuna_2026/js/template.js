@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroGreeting();
   setupHeroServiceStatus();
   setupHeroPrefetch();
+  setupMaklumatLightbox();
 });
 
 function setupDynamicServiceHours() {
@@ -465,6 +466,62 @@ function setupHeroServiceStatus() {
   el.textContent = label;
   el.classList.add(open ? 'is-open' : 'is-closed');
   el.hidden = false;
+}
+
+function setupMaklumatLightbox() {
+  const triggers = Array.from(document.querySelectorAll('[data-maklumat-zoom]'));
+  if (!triggers.length) {
+    return;
+  }
+
+  let overlay = null;
+  let lastFocus = null;
+
+  const close = () => {
+    if (!overlay || overlay.hidden) {
+      return;
+    }
+    overlay.hidden = true;
+    document.body.classList.remove('maklumat-lightbox-open');
+    lastFocus?.focus();
+  };
+
+  const build = () => {
+    overlay = document.createElement('div');
+    overlay.className = 'maklumat-lightbox';
+    overlay.hidden = true;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = '<button type="button" class="maklumat-lightbox-close" aria-label="Tutup pratinjau dokumen">×</button><figure><img alt=""><figcaption></figcaption></figure>';
+    overlay.querySelector('.maklumat-lightbox-close').addEventListener('click', close);
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) {
+        close();
+      }
+    });
+    document.body.appendChild(overlay);
+  };
+
+  const open = (trigger) => {
+    if (!overlay) {
+      build();
+    }
+    const image = overlay.querySelector('img');
+    image.src = trigger.dataset.maklumatZoom;
+    image.alt = trigger.dataset.maklumatLabel || '';
+    overlay.querySelector('figcaption').textContent = trigger.dataset.maklumatLabel || '';
+    overlay.hidden = false;
+    document.body.classList.add('maklumat-lightbox-open');
+    lastFocus = trigger;
+    overlay.querySelector('.maklumat-lightbox-close').focus();
+  };
+
+  triggers.forEach((trigger) => trigger.addEventListener('click', () => open(trigger)));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      close();
+    }
+  });
 }
 
 function setupHeroPrefetch() {
