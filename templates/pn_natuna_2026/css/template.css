@@ -4433,3 +4433,1394 @@ body.is-dark .instagram-profile span {
   .hero-nav-next { right: 4px; }
   .hero-nav { opacity: 0.85; }
 }
+
+/* === Sejarah Pengadilan page === */
+.sejarah-page {
+  display: grid;
+  gap: 24px;
+}
+
+.sejarah-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: clamp(20px, 3vw, 34px);
+  align-items: stretch;
+  margin-top: 4px;
+}
+
+.sejarah-hero-copy,
+.sejarah-photo-card,
+.sejarah-body-card,
+.sejarah-timeline article {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.sejarah-hero-copy {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.sejarah-hero-copy::after {
+  content: "";
+  position: absolute;
+  right: -72px;
+  bottom: -88px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(185, 143, 36, 0.16), rgba(185, 143, 36, 0));
+  pointer-events: none;
+}
+
+.sejarah-kicker {
+  display: inline-flex;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  padding: 6px 12px;
+  color: var(--color-primary-dark);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .sejarah-hero-copy h2 {
+  max-width: 760px;
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  line-height: 1.08;
+}
+
+.sejarah-lead {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(1rem, 1.25vw, 1.12rem);
+  line-height: 1.72;
+}
+
+.sejarah-fact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.sejarah-fact-grid div {
+  border: 1px solid rgba(185, 143, 36, 0.28);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fffaf0, #fff);
+  padding: 12px;
+}
+
+.sejarah-fact-grid strong,
+.sejarah-fact-grid span {
+  display: block;
+}
+
+.sejarah-fact-grid strong {
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.1;
+}
+
+.sejarah-fact-grid span {
+  margin-top: 5px;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.sejarah-photo-card {
+  overflow: hidden;
+  margin: 0;
+}
+
+.sejarah-photo-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+}
+
+.sejarah-photo-card figcaption {
+  margin: 0;
+  border-top: 1px solid var(--color-line);
+  background: #fff;
+  padding: 10px 14px;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.sejarah-story-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.sejarah-timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.sejarah-timeline article {
+  position: relative;
+  padding: 18px 18px 18px 62px;
+}
+
+.sejarah-timeline article span {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.sejarah-timeline h3 {
+  margin: 0 0 6px;
+  color: var(--color-ink);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.content-primary .sejarah-timeline p,
+.content-primary .sejarah-body-card p,
+.content-primary .sejarah-lead,
+.content-primary .sejarah-source-box {
+  text-align: left;
+  hyphens: none;
+}
+
+.sejarah-timeline p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.62;
+}
+
+.sejarah-body-card {
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.sejarah-body-card p {
+  margin: 0 0 15px;
+  color: var(--color-ink);
+  font-size: 1rem;
+  line-height: 1.76;
+}
+
+.sejarah-source-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 20px;
+  border-radius: 14px;
+  background: var(--color-accent-soft);
+  padding: 14px;
+}
+
+.sejarah-source-box strong {
+  color: var(--color-primary-dark);
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sejarah-source-box a {
+  border-radius: 999px;
+  background: #fff;
+  padding: 7px 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.sejarah-source-box a:hover,
+.sejarah-source-box a:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .sejarah-hero-card,
+  .sejarah-story-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .sejarah-fact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sejarah-photo-card img {
+    min-height: 240px;
+  }
+
+  .sejarah-timeline article {
+    padding-left: 56px;
+  }
+}
+
+/* === Tugas Pokok dan Fungsi page === */
+.tupoksi-page {
+  display: grid;
+  gap: 22px;
+}
+
+.tupoksi-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 340px);
+  gap: clamp(18px, 3vw, 30px);
+  align-items: stretch;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at top right, rgba(185, 143, 36, 0.16), transparent 34%),
+    linear-gradient(135deg, #fff, #fffaf0);
+  padding: clamp(22px, 3vw, 34px);
+  box-shadow: var(--shadow-card);
+}
+
+.tupoksi-kicker {
+  display: inline-flex;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: rgba(143, 31, 11, 0.08);
+  padding: 6px 12px;
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .tupoksi-hero-card h2 {
+  max-width: 780px;
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-size: clamp(1.65rem, 3vw, 2.55rem);
+  line-height: 1.08;
+}
+
+.content-primary .tupoksi-hero-card p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(1rem, 1.25vw, 1.1rem);
+  line-height: 1.75;
+  text-align: left;
+  hyphens: none;
+}
+
+.tupoksi-summary-card {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  border-radius: 18px;
+  background: var(--color-primary);
+  padding: 20px;
+  color: #fff;
+  box-shadow: 0 18px 34px rgba(143, 31, 11, 0.2);
+}
+
+.tupoksi-summary-card strong {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.tupoksi-summary-card span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.tupoksi-summary-card span::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.tupoksi-process {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tupoksi-process article,
+.tupoksi-panel,
+.tupoksi-service-note {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.tupoksi-process article {
+  padding: 18px;
+}
+
+.tupoksi-process span {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-primary-dark);
+  font-weight: 900;
+  font-size: 0.82rem;
+}
+
+.tupoksi-process h3 {
+  margin: 12px 0 6px;
+  color: var(--color-ink);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.content-primary .tupoksi-process p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.58;
+  text-align: left;
+  hyphens: none;
+}
+
+.tupoksi-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.tupoksi-panel {
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.tupoksi-panel-primary {
+  background: linear-gradient(180deg, #fff, #fffaf0);
+}
+
+.tupoksi-panel-label {
+  display: inline-flex;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  padding: 5px 10px;
+  color: var(--color-primary-dark);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .tupoksi-panel h3 {
+  margin: 0 0 14px;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.tupoksi-panel ul {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tupoksi-panel li {
+  position: relative;
+  padding-left: 24px;
+  color: var(--color-ink);
+  line-height: 1.62;
+}
+
+.tupoksi-panel li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(143, 31, 11, 0.08);
+}
+
+.tupoksi-function-list {
+  display: grid;
+  gap: 10px;
+}
+
+.tupoksi-function-list div {
+  border: 1px solid rgba(185, 143, 36, 0.28);
+  border-radius: 14px;
+  background: #fffaf0;
+  padding: 13px;
+}
+
+.tupoksi-function-list strong,
+.tupoksi-function-list span {
+  display: block;
+}
+
+.tupoksi-function-list strong {
+  color: var(--color-primary);
+  font-size: 0.98rem;
+}
+
+.tupoksi-function-list span {
+  margin-top: 4px;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.tupoksi-service-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  background: var(--color-primary);
+  padding: 18px 22px;
+  color: #fff;
+}
+
+.tupoksi-service-note strong {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.content-primary .tupoksi-service-note p {
+  margin: 0;
+  color: #fff;
+  line-height: 1.62;
+  text-align: left;
+  hyphens: none;
+}
+
+@media (max-width: 980px) {
+  .tupoksi-hero-card,
+  .tupoksi-grid,
+  .tupoksi-service-note {
+    grid-template-columns: 1fr;
+  }
+
+  .tupoksi-process {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .tupoksi-process {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === Content readability adjustments === */
+.sejarah-page p,
+.sejarah-page li,
+.tupoksi-page p,
+.tupoksi-page li,
+.tupoksi-function-list span {
+  text-align: justify;
+  hyphens: auto;
+}
+
+.sejarah-kicker,
+.tupoksi-kicker,
+.sejarah-fact-grid span,
+.sejarah-source-box,
+.sejarah-source-box a,
+.tupoksi-summary-card span,
+.tupoksi-panel-label,
+.tupoksi-service-note strong {
+  text-align: left;
+  hyphens: none;
+}
+
+.tupoksi-visual-stack {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tupoksi-illustration {
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid rgba(185, 143, 36, 0.28);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 14px 28px rgba(29, 39, 48, 0.08);
+}
+
+.tupoksi-illustration img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.tupoksi-illustration figcaption {
+  margin: 0;
+  border-top: 1px solid var(--color-line);
+  background: #fffaf0;
+  padding: 10px 12px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.tupoksi-visual-stack .tupoksi-summary-card {
+  min-height: 0;
+}
+
+.content-primary .sejarah-page p,
+.content-primary .sejarah-page li,
+.content-primary .tupoksi-page p,
+.content-primary .tupoksi-page li,
+.content-primary .tupoksi-function-list span {
+  text-align: justify;
+  hyphens: auto;
+}
+
+.content-primary .sejarah-kicker,
+.content-primary .tupoksi-kicker,
+.content-primary .sejarah-fact-grid span,
+.content-primary .sejarah-source-box,
+.content-primary .sejarah-source-box a,
+.content-primary .tupoksi-summary-card span,
+.content-primary .tupoksi-panel-label,
+.content-primary .tupoksi-service-note strong,
+.content-primary .tupoksi-illustration figcaption {
+  text-align: left;
+  hyphens: none;
+}
+
+/* === Visi dan Misi page === */
+.visimisi-page {
+  display: grid;
+  gap: 22px;
+}
+
+.visimisi-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+  gap: clamp(20px, 3vw, 34px);
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at top right, rgba(185, 143, 36, 0.2), transparent 35%),
+    linear-gradient(135deg, #fff, #fffaf0);
+  padding: clamp(22px, 3vw, 34px);
+  box-shadow: var(--shadow-card);
+}
+
+.visimisi-kicker {
+  display: inline-flex;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  padding: 6px 12px;
+  color: var(--color-primary-dark);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .visimisi-hero-card h2 {
+  max-width: 760px;
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-size: clamp(1.7rem, 3vw, 2.55rem);
+  line-height: 1.08;
+}
+
+.content-primary .visimisi-lead {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(1rem, 1.25vw, 1.1rem);
+  line-height: 1.75;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.visimisi-illustration {
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid rgba(185, 143, 36, 0.32);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 34px rgba(29, 39, 48, 0.1);
+}
+
+.visimisi-illustration img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.visimisi-illustration figcaption {
+  margin: 0;
+  border-top: 1px solid var(--color-line);
+  background: #fffaf0;
+  padding: 10px 12px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.visimisi-vision-card,
+.visimisi-mission-section,
+.visimisi-values-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.visimisi-vision-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(22px, 3vw, 32px);
+  background: linear-gradient(135deg, var(--color-primary), #6f160a);
+  color: #fff;
+}
+
+.visimisi-vision-card::after {
+  content: "";
+  position: absolute;
+  right: -48px;
+  top: -70px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.visimisi-vision-card span {
+  display: inline-flex;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .visimisi-vision-card blockquote {
+  margin: 16px 0 10px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  font-weight: 800;
+  line-height: 1.16;
+}
+
+.content-primary .visimisi-vision-card p {
+  max-width: 72ch;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.7;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.visimisi-mission-section {
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.visimisi-section-heading p {
+  display: inline-flex;
+  margin: 0 0 8px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  padding: 5px 11px;
+  color: var(--color-primary-dark);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .visimisi-section-heading h3 {
+  margin: 0 0 18px;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.3vw, 1.8rem);
+}
+
+.visimisi-mission-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.visimisi-mission-grid article {
+  position: relative;
+  min-height: 178px;
+  border: 1px solid rgba(185, 143, 36, 0.26);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffaf0, #fff);
+  padding: 18px 18px 18px 68px;
+}
+
+.visimisi-mission-grid article span {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.82rem;
+}
+
+.visimisi-mission-grid h4 {
+  margin: 0 0 7px;
+  color: var(--color-ink);
+  font-size: 1.02rem;
+  line-height: 1.35;
+}
+
+.content-primary .visimisi-mission-grid p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.93rem;
+  line-height: 1.64;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.visimisi-values-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.visimisi-values-card strong {
+  border-radius: 999px;
+  background: var(--color-primary);
+  padding: 8px 13px;
+  color: #fff;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.visimisi-values-card div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.visimisi-values-card span {
+  border: 1px solid rgba(185, 143, 36, 0.38);
+  border-radius: 999px;
+  background: #fffaf0;
+  padding: 8px 12px;
+  color: var(--color-primary-dark);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+@media (max-width: 980px) {
+  .visimisi-hero-card,
+  .visimisi-values-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .visimisi-mission-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .visimisi-mission-grid article {
+    min-height: 0;
+  }
+}
+
+/* === Struktur Organisasi page === */
+.struktur-page {
+  display: grid;
+  gap: 22px;
+}
+
+.struktur-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+  gap: clamp(18px, 3vw, 30px);
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at top right, rgba(185, 143, 36, 0.16), transparent 34%),
+    linear-gradient(135deg, #fff, #fffaf0);
+  padding: clamp(22px, 3vw, 34px);
+  box-shadow: var(--shadow-card);
+}
+
+.struktur-kicker {
+  display: inline-flex;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  padding: 6px 12px;
+  color: var(--color-primary-dark);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .struktur-hero-card h2 {
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  line-height: 1.08;
+}
+
+.content-primary .struktur-hero-card p {
+  max-width: 76ch;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(1rem, 1.25vw, 1.1rem);
+  line-height: 1.75;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.struktur-focus-list {
+  display: grid;
+  gap: 10px;
+  border-radius: 18px;
+  background: var(--color-primary);
+  padding: 18px;
+  color: #fff;
+  box-shadow: 0 18px 34px rgba(143, 31, 11, 0.2);
+}
+
+.struktur-focus-list span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.struktur-focus-list span::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.struktur-chart-card,
+.struktur-note-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.struktur-chart-card {
+  overflow: hidden;
+}
+
+.struktur-chart-heading {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-line);
+  background: linear-gradient(180deg, #fffaf0, #fff);
+  padding: 18px 20px;
+}
+
+.struktur-chart-heading p {
+  margin: 0 0 4px;
+  color: var(--color-primary-dark);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .struktur-chart-heading h3 {
+  margin: 0;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.struktur-chart-heading a {
+  display: inline-flex;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: var(--color-primary);
+  padding: 8px 13px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.struktur-chart-heading a:hover,
+.struktur-chart-heading a:focus-visible {
+  background: var(--color-primary-dark);
+}
+
+.struktur-chart-link {
+  display: block;
+  padding: clamp(12px, 2vw, 20px);
+  background:
+    linear-gradient(45deg, rgba(185, 143, 36, 0.05) 25%, transparent 25%, transparent 75%, rgba(185, 143, 36, 0.05) 75%),
+    #fff;
+  background-size: 18px 18px;
+}
+
+.struktur-chart-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--color-line);
+  box-shadow: 0 16px 34px rgba(29, 39, 48, 0.08);
+}
+
+.struktur-note-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  background: var(--color-accent-soft);
+  padding: 16px 20px;
+}
+
+.struktur-note-card strong {
+  border-radius: 999px;
+  background: #fff;
+  padding: 7px 12px;
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.content-primary .struktur-note-card p {
+  margin: 0;
+  color: var(--color-ink);
+  line-height: 1.62;
+  text-align: justify;
+  hyphens: auto;
+}
+
+@media (max-width: 980px) {
+  .struktur-hero-card,
+  .struktur-note-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .struktur-chart-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* === Kontak page === */
+.kontak-page {
+  display: grid;
+  gap: 22px;
+}
+
+.kontak-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 330px);
+  gap: clamp(18px, 3vw, 30px);
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at top right, rgba(185, 143, 36, 0.18), transparent 34%),
+    linear-gradient(135deg, #fff, #fffaf0);
+  padding: clamp(22px, 3vw, 34px);
+  box-shadow: var(--shadow-card);
+}
+
+.kontak-kicker,
+.kontak-label {
+  display: inline-flex;
+  margin: 0 0 9px;
+  border-radius: 999px;
+  background: var(--color-accent-soft);
+  padding: 5px 11px;
+  color: var(--color-primary-dark);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-primary .kontak-hero-card h2 {
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  line-height: 1.08;
+}
+
+.content-primary .kontak-hero-card p,
+.content-primary .kontak-info-card p,
+.content-primary .kontak-action-panel p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--color-ink);
+  line-height: 1.7;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.kontak-status-card {
+  display: grid;
+  gap: 10px;
+  border-radius: 18px;
+  background: var(--color-primary);
+  padding: 18px;
+  color: #fff;
+  box-shadow: 0 18px 34px rgba(143, 31, 11, 0.2);
+}
+
+.kontak-status-card strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.kontak-status-card span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.kontak-status-card span::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.kontak-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.kontak-info-card,
+.kontak-action-map {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.kontak-info-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 18px;
+}
+
+.kontak-address-card {
+  background: linear-gradient(180deg, #fffaf0, #fff);
+}
+
+.kontak-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.content-primary .kontak-info-card h3,
+.content-primary .kontak-action-panel h3 {
+  margin: 0 0 8px;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.08rem, 1.7vw, 1.35rem);
+}
+
+.kontak-info-card a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.kontak-info-card a:hover,
+.kontak-info-card a:focus-visible {
+  text-decoration: underline;
+}
+
+.kontak-action-map {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.22fr);
+  overflow: hidden;
+}
+
+.kontak-action-panel {
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.kontak-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.kontak-primary-link,
+.kontak-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 9px 15px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.kontak-primary-link {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.kontak-secondary-link {
+  border: 1px solid rgba(143, 31, 11, 0.22);
+  background: var(--color-accent-soft);
+  color: var(--color-primary);
+}
+
+.kontak-map-card {
+  min-height: 320px;
+  background: #f8efe0;
+}
+
+.kontak-map-card iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border: 0;
+}
+
+@media (max-width: 980px) {
+  .kontak-hero-card,
+  .kontak-action-map {
+    grid-template-columns: 1fr;
+  }
+
+  .kontak-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kontak-info-card {
+    grid-template-columns: 1fr;
+  }
+
+  .kontak-map-card,
+  .kontak-map-card iframe {
+    min-height: 260px;
+  }
+}
+
+/* === Kontak social channel refinements === */
+.kontak-status-card > img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px;
+}
+
+.kontak-icon img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.kontak-social-panel {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.68fr) minmax(0, 1.32fr);
+  gap: 18px;
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: linear-gradient(135deg, #fff, #fffaf0);
+  padding: clamp(20px, 3vw, 28px);
+  box-shadow: var(--shadow-card);
+}
+
+.content-primary .kontak-social-panel h3 {
+  margin: 0 0 8px;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+}
+
+.content-primary .kontak-social-panel p:not(.kontak-label) {
+  margin: 0;
+  color: var(--color-ink);
+  line-height: 1.7;
+  text-align: justify;
+  hyphens: auto;
+}
+
+.kontak-social-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kontak-social-link {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-height: 112px;
+  border: 1px solid rgba(185, 143, 36, 0.28);
+  border-radius: 18px;
+  background: #fff;
+  padding: 14px 10px;
+  color: var(--color-ink);
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 10px 22px rgba(29, 39, 48, 0.05);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.kontak-social-link:hover,
+.kontak-social-link:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(143, 31, 11, 0.32);
+  box-shadow: 0 16px 30px rgba(29, 39, 48, 0.1);
+}
+
+.kontak-social-link img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.kontak-social-link span,
+.kontak-social-link small {
+  display: block;
+}
+
+.kontak-social-link span {
+  color: var(--color-primary);
+  font-weight: 900;
+}
+
+.kontak-social-link small {
+  color: var(--color-muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
+.kontak-social-wa {
+  background: linear-gradient(180deg, #f5fff8, #fff);
+}
+
+@media (max-width: 980px) {
+  .kontak-social-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .kontak-social-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .kontak-social-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === Kontak requested refinements === */
+.content-primary:has(.kontak-page) .page-header {
+  display: none;
+}
+
+.kontak-info-card .kontak-icon {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(143, 31, 11, 0.14);
+  background: #fffaf0;
+  box-shadow: inset 0 0 0 6px rgba(185, 143, 36, 0.12), 0 10px 20px rgba(29, 39, 48, 0.08);
+}
+
+.kontak-info-card .kontak-icon img {
+  width: 25px;
+  height: 25px;
+  display: block;
+}
+
+.kontak-info-card:hover .kontak-icon,
+.kontak-info-card:focus-within .kontak-icon {
+  border-color: rgba(143, 31, 11, 0.28);
+  box-shadow: inset 0 0 0 6px rgba(185, 143, 36, 0.18), 0 14px 26px rgba(29, 39, 48, 0.12);
+}
+

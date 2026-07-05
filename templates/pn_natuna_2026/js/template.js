@@ -278,6 +278,14 @@ function setupInstagramPostSliders() {
 
     let activeIndex = 0;
     let timer = null;
+    let embedsEnabled = false;
+
+    const loadFrame = (slide) => {
+      const frame = slide.querySelector('iframe');
+      if (frame && !frame.src && frame.dataset.src) {
+        frame.src = frame.dataset.src;
+      }
+    };
 
     const setActive = (index) => {
       activeIndex = (index + slides.length) % slides.length;
@@ -285,9 +293,8 @@ function setupInstagramPostSliders() {
         const active = slideIndex === activeIndex;
         slide.classList.toggle('is-active', active);
         slide.setAttribute('aria-hidden', String(!active));
-        const frame = slide.querySelector('iframe');
-        if (frame && active && !frame.src) {
-          frame.src = frame.dataset.src || '';
+        if (embedsEnabled && active) {
+          loadFrame(slide);
         }
       });
       dots.forEach((dot, dotIndex) => {
@@ -300,21 +307,45 @@ function setupInstagramPostSliders() {
     };
 
     const start = () => {
-      timer = window.setInterval(() => setActive(activeIndex + 1), interval);
+      if (!timer) {
+        timer = window.setInterval(() => setActive(activeIndex + 1), interval);
+      }
+    };
+
+    const enableEmbeds = () => {
+      if (embedsEnabled) {
+        return;
+      }
+      embedsEnabled = true;
+      loadFrame(slides[activeIndex]);
+      start();
     };
 
     dots.forEach((dot, dotIndex) => {
       dot.addEventListener('click', () => {
         if (timer) {
           window.clearInterval(timer);
+          timer = null;
         }
+        enableEmbeds();
         setActive(dotIndex);
         start();
       });
     });
 
     setActive(0);
-    start();
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          enableEmbeds();
+          observer.disconnect();
+        }
+      }, { rootMargin: '240px 0px' });
+      observer.observe(slider);
+    } else {
+      window.setTimeout(enableEmbeds, 3000);
+    }
   });
 }
 
@@ -454,3 +485,4 @@ function setupHeroPrefetch() {
     window.setTimeout(run, 2500);
   }
 }
+

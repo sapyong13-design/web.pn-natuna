@@ -182,6 +182,7 @@ if (is_file($heroSliderHelper)) {
     </svg>
   </a>
 
+
   <footer class="site-footer">
     <div class="footer-links">
       <jdoc:include type="modules" name="footer-links" style="none" />
