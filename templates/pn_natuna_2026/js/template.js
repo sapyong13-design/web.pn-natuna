@@ -186,20 +186,24 @@ function setupCountUp() {
 }
 
 function setupDynamicServiceHours() {
-  const element = document.getElementById('dynamic-service-hours');
-  if (!element) return;
+  const elements = document.querySelectorAll('#dynamic-service-hours, .js-service-hours');
+  if (!elements.length) return;
 
   // Dapatkan hari ini dalam waktu Jakarta
   const today = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta', weekday: 'long' });
-  
+
+  let hours;
   if (today === 'Friday') {
-    element.textContent = '08.00-17.00 WIB';
+    hours = '08.00-17.00 WIB';
   } else if (today === 'Saturday' || today === 'Sunday') {
-    element.textContent = 'Tutup (Libur Akhir Pekan)';
+    hours = 'Tutup (Libur Akhir Pekan)';
   } else {
     // Monday, Tuesday, Wednesday, Thursday
-    element.textContent = '08.00-16.30 WIB';
+    hours = '08.00-16.30 WIB';
   }
+  elements.forEach((element) => {
+    element.textContent = hours;
+  });
 }
 
 function setupLiveClock() {
@@ -237,10 +241,7 @@ function setupAccessibilityTools() {
   const body = document.body;
   const savedScale = Number(localStorage.getItem('pnNatunaFontScale') || '0');
   const savedContrast = localStorage.getItem('pnNatunaContrast') === '1';
-  const storedDark = localStorage.getItem('pnNatunaDark');
-  const savedDark = storedDark === null
-    ? window.matchMedia('(prefers-color-scheme: dark)').matches
-    : storedDark === '1';
+  const savedDark = localStorage.getItem('pnNatunaDark') === '1';
 
   const applyScale = (scale) => {
     const next = Math.max(-1, Math.min(2, scale));

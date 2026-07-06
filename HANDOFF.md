@@ -9,14 +9,26 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Folder lokal utama: C:\tmp\web.pn-natuna
 - Local URL terakhir: http://localhost:8000 (PHP built-in server, Laragon MySQL di C:\laragon) — WAJIB port 8000 karena `live_site` di configuration.php = http://localhost:8000; port lain kena redirect-loop SEF.
 - Database lokal: pn_natuna_rebuild
-- Dump database terakhir: database/pn_natuna_rebuild_20260706_1215.sql (sebelumnya: pn_natuna_rebuild_20260706_1050.sql)
+- Dump database terakhir: database/pn_natuna_rebuild_20260706_2231.sql (sebelumnya: pn_natuna_rebuild_20260706_1215.sql)
 - Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
+
+## Perubahan Sesi 06 Jul 2026 malam (dark mode toggle, Layanan Publik, role model & IG revert)
+
+SQL: `database/_layanan_publik_redesign.sql` + `database/_role_model_instagram_restore.sql` (keduanya sudah di-apply, termasuk di dump 20260706_2231). CSS baru di blok `/* LAYANAN PUBLIK 2026-07 */` akhir template.css.
+
+- **Tombol dark mode di topbar** (index.php, sebelah jam): ikon bulan/matahari SVG, class `dark-toggle` (handler JS sudah ada sebelumnya, tombolnya yang belum pernah dibuat). **Dark mode TIDAK lagi default ikut sistem** — inline script `<body>` dan template.js kini hanya cek `localStorage pnNatunaDark === '1'`; default selalu terang, aktif hanya via tombol.
+- **Redesign 8 halaman menu Layanan Publik** (artikel 26, 11, 12, 13, 14, 15, 19, 97): hero topik + ilustrasi SVG inline duotone maroon-emas per halaman, subnav pil antar-halaman (aria-current), kartu berikon (`svc-card`), langkah bernomor (`svc-steps`), dokumen zoom (pakai lightbox global `data-maklumat-zoom`), CTA band, chip fakta flat (beda visual dari pil navigasi). Dokumen `biaya-jenis-layanan.png` + `waktu-layanan.png` yang sebelumnya tak terpakai kini tampil di halaman PTSP (zoomable).
+- **`setupDynamicServiceHours()` diperluas**: dari 1 elemen `#dynamic-service-hours` jadi `querySelectorAll('#dynamic-service-hours, .js-service-hours')` — chip "Jam layanan hari ini" di halaman layanan ikut ter-update (Jumat 08.00-17.00, akhir pekan Tutup).
+- **Role Model (modul 482) DIKEMBALIKAN ke poster khusus** `/images/role-model/joko-ciptanto-role-model-2026.png` + `marihod-tua-lubis-role-model-2026.jpg` (versi kartu HTML foto-profil-pegawai dari sesi siang dibatalkan — poster lebih bagus). Markup persis versi dump 20260706_0020.
+- **Instagram (modul 483) kembali ke slider post individual, kini 9 POST TERBARU** — profile embed dibatalkan: grid-nya hanya me-render 6 tile (baris ke-3 lazy-load tak pernah jalan di iframe scrolling=no) dan thumbnail-nya ter-crop. Slider phone-frame lama dipakai lagi dengan 9 slide + 9 dots + tombol Ikuti (class baru `instagram-follow-standalone`).
+- **CARA UPDATE 9 POST IG (penting, manual per periode):** shortcode TIDAK bisa di-scrape langsung (API 429, DOM embed tanpa link). Trik yang terbukti: render `https://www.instagram.com/pn.natuna/embed/` via reader/headless → ambil `ig_cache_key` di URL gambar (base64 dari media PK) → decode → konversi PK ke shortcode dengan base64url alphabet `A-Za-z0-9-_` (bagi 64 berulang). Script konversi contoh: C:\tmp\ig-codes.php (di luar repo). Validasi: hasil decode cocok dengan shortcode lama `DZm_mS3BaLT`. Lalu update modul 483 (geser slide, buang terlama).
+- Verifikasi: screenshot headless Edge desktop/mobile — 8 halaman layanan ✓ (hero+ilustrasi+chip dinamis terisi JS), role model poster ✓, IG slider berputar otomatis + post utuh tanpa crop ✓. Overflow mobile 390px di headless = artefak lama yang sudah dikenal (lihat catatan sesi pagi).
 
 ## Perubahan Sesi 06 Jul 2026 sore-2 (UI Polish putaran 2, 10 item)
 
 SQL modul: `database/_ui_polish_homepage_2.sql` (sudah di-apply, termasuk di dump 20260706_1215).
 
-- **Instagram AUTO-UPDATE** (modul 483): 5 iframe post hardcoded diganti **1 profile embed resmi** `https://www.instagram.com/pn.natuna/embed/` — selalu menampilkan grid 6 post TERBARU + follower count, tanpa cron/token/scraping (endpoint scraping server-side sudah diuji: 429/login-wall, tidak feasible). Lazy-load via `setupLazyIframes()` (IO rootMargin 400px). Tombol "Ikuti @pn.natuna" di bawahnya.
+- ~~**Instagram AUTO-UPDATE** (modul 483)~~ **[DIBATALKAN sesi malam — grid embed cuma render 6 tile & ter-crop; lihat seksi sesi malam]**: 5 iframe post hardcoded diganti **1 profile embed resmi** `https://www.instagram.com/pn.natuna/embed/` — selalu menampilkan grid 6 post TERBARU + follower count, tanpa cron/token/scraping (endpoint scraping server-side sudah diuji: 429/login-wall, tidak feasible). Lazy-load via `setupLazyIframes()` (IO rootMargin 400px). Tombol "Ikuti @pn.natuna" di bawahnya.
 - **Berita Terbaru bergambar**: `pn_natuna_render_latest_news()` di hero-slider.php — 3 kartu (foto artikel, tanggal, judul Fraunces, excerpt clamp-2, badge Baru) di kolom utama sebelum Kabar Instansi; mobile jadi layout horizontal foto-kiri.
 - **Jadwal Sidang redesign** (sipp-schedule.php): tabel 7 kolom → kartu per sidang (nomor perkara Fraunces + chip ruangan/agenda/sidang-keliling + tombol Detil); empty state berikon + CTA SIPP; varian dark mode lengkap.
 - **Kartu "Kinerja & Akuntabilitas"** (modul 816): gabungan skor SKM/IPAK + widget DIPA (modul 817 di-unpublish). **tools/refresh-dipa.py diarahkan ke modul 816** dan sekarang hanya me-replace blok `<div class="dipa-widget">` (regex, teruji round-trip) — konten skor survei tidak tertimpa.
