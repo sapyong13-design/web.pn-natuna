@@ -114,6 +114,40 @@ function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel,
     <?php
 }
 
+function pn_natuna_render_latest_news(): void
+{
+    $articles = pn_natuna_hero_latest_articles(12, 3);
+    if (!$articles) {
+        return;
+    }
+    $months = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    ?>
+    <div class="module-card news-cards-board">
+      <div class="news-cards-head">
+        <h2>Berita Terbaru</h2>
+        <a class="section-action" href="/berita-dan-pengumuman">Semua Berita &rarr;</a>
+      </div>
+      <div class="news-cards-grid">
+        <?php foreach ($articles as $article) :
+            $ts = strtotime($article->created);
+            $dateLabel = $ts ? date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) : '';
+        ?>
+          <a class="news-card" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($article, 12), ENT_QUOTES, 'UTF-8'); ?>">
+            <span class="news-card-media">
+              <img src="<?php echo htmlspecialchars(pn_natuna_hero_article_image($article), ENT_QUOTES, 'UTF-8'); ?>" alt="" loading="lazy">
+              <?php if (pn_natuna_hero_is_new($article->created)) : ?><span class="news-card-new">Baru</span><?php endif; ?>
+            </span>
+            <time><?php echo htmlspecialchars($dateLabel, ENT_QUOTES, 'UTF-8'); ?></time>
+            <strong><?php echo htmlspecialchars($article->title, ENT_QUOTES, 'UTF-8'); ?></strong>
+            <?php $excerpt = pn_natuna_hero_excerpt($article->introtext ?? '', 110); ?>
+            <?php if ($excerpt !== '') : ?><span class="news-card-excerpt"><?php echo $excerpt; ?></span><?php endif; ?>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php
+}
+
 function pn_natuna_render_hero_slider(): void
 {
     $berita = pn_natuna_hero_latest_articles(12, 4);

@@ -23,7 +23,7 @@ import pymupdf
 
 # ====== KONFIGURASI ======
 FOLDER_ID = '1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV'
-MODULE_ID = 817  # Joomla module id untuk DIPA widget
+MODULE_ID = 816  # Modul "Kinerja & Akuntabilitas" — blok .dipa-widget di dalamnya yang di-update
 MYSQL_BIN = os.environ.get('MYSQL_BIN', 'mysql')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
@@ -160,29 +160,40 @@ def build_html(data, period_label, file_id=''):
         )
     gdrive_url = f'https://drive.google.com/file/d/{file_id}/view' if file_id else '#'
     return (
-        f'<h2>Realisasi Anggaran DIPA</h2>\n'
-        f'<div class="dipa-widget">\n'
-        f'<div class="dipa-period">Periode {period_label}</div>\n'
-        f'<a class="dipa-link" href="{gdrive_url}" target="_blank" rel="noopener" title="Buka laporan PDF">\n'
-        f'<div class="dipa-grid">\n{chr(10).join(items)}\n</div>\n'
-        f'<span class="dipa-link-hint">Klik untuk lihat laporan PDF</span>\n'
-        f'</a>\n'
+        f'<div class="dipa-widget">'
+        f'<div class="dipa-subhead">Realisasi Anggaran DIPA</div>'
+        f'<div class="dipa-period">Periode {period_label}</div>'
+        f'<a class="dipa-link" href="{gdrive_url}" target="_blank" rel="noopener" title="Buka laporan PDF">'
+        f'<div class="dipa-grid">{"".join(items)}</div>'
+        f'<span class="dipa-link-hint">Klik untuk lihat laporan PDF</span>'
+        f'</a>'
         f'</div>'
     )
 
 
-def update_module_db(content):
-    sql_file = os.path.join(os.path.dirname(__file__), '_dipa_update.sql')
-    escaped = content.replace('\\', '\\\\').replace("'", "\\'")
-    with open(sql_file, 'w', encoding='utf-8') as f:
-        f.write(f"UPDATE pnn_modules SET content = '{escaped}' WHERE id = {MODULE_ID};\n")
+def run_mysql(sql):
     cmd = [MYSQL_BIN, '-u', DB_USER]
     if DB_PASS:
         cmd += [f'-p{DB_PASS}']
-    cmd += ['--default-character-set=utf8mb4', DB_NAME]
-    with open(sql_file, 'r', encoding='utf-8') as f:
-        result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)
-    os.remove(sql_file)
+    cmd += ['--default-character-set=utf8mb4', '-N', '-B', DB_NAME]
+    return subprocess.run(cmd, input=sql, capture_output=True, text=True, encoding='utf-8')
+
+
+def update_module_db(widget_html):
+    """Replace hanya blok <div class="dipa-widget">...</div> di akhir konten modul.
+
+    Modul 816 berisi skor SKM/IPAK + widget DIPA; jangan timpa seluruh konten.
+    """
+    result = run_mysql(f'SELECT content FROM pnn_modules WHERE id = {MODULE_ID};')
+    if result.returncode != 0:
+        return False, result.stderr
+    current = result.stdout.rstrip('\n').replace('\\n', '\n')
+    if '<div class="dipa-widget">' in current:
+        new_content = re.sub(r'<div class="dipa-widget">.*$', widget_html, current, flags=re.S)
+    else:
+        new_content = current + widget_html
+    escaped = new_content.replace('\\', '\\\\').replace("'", "\\'")
+    result = run_mysql(f"UPDATE pnn_modules SET content = '{escaped}' WHERE id = {MODULE_ID};")
     return result.returncode == 0, result.stderr
 
 

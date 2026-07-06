@@ -5,7 +5,7 @@
   --color-accent: #b98f24;
   --color-accent-soft: #fbf2d8;
   --color-ink: #1d2730;
-  --color-muted: #667481;
+  --color-muted: #57646f;
   --color-line: #d9e0e7;
   --color-surface: #ffffff;
   --color-soft: #f5f7f6;
@@ -6496,8 +6496,8 @@ body.nav-stuck .main-menu {
 }
 
 @keyframes heroBackdropZoom {
-  from { transform: scale(1); }
-  to { transform: scale(1.07); }
+  from { transform: scale(1.01); }
+  to { transform: scale(1.045); }
 }
 
 .home-slider .hero-slider {
@@ -7342,5 +7342,449 @@ body.is-dark .module-card.facility-band {
   background:
     radial-gradient(circle at 88% -10%, rgba(185, 143, 36, 0.22), transparent 42%),
     linear-gradient(120deg, #241009 0%, #2c150e 52%, #142420 100%);
+}
+
+/* ============================================================
+   UI POLISH 2026-07 PUTARAN 2 — berita bergambar, jadwal kartu,
+   instagram profil, kinerja gabungan, footer stats, kontras.
+   ============================================================ */
+
+/* --- Berita Terbaru bergambar --- */
+.news-cards-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.news-cards-head h2 {
+  margin: 0 0 12px;
+}
+
+.news-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.news-card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  padding: 10px 10px 14px;
+  background: linear-gradient(180deg, #fff, #fbfcfc);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.news-card:hover,
+.news-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: 0 12px 28px rgba(29, 39, 48, 0.1);
+}
+
+.news-card-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: calc(var(--radius-card) - 4px);
+  aspect-ratio: 16 / 10;
+}
+
+.news-card-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.news-card:hover .news-card-media img {
+  transform: scale(1.05);
+}
+
+.news-card-new {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.news-card time {
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.news-card strong {
+  color: var(--color-primary-deep);
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.news-card:hover strong {
+  color: var(--color-primary);
+}
+
+.news-card-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .news-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news-card {
+    grid-template-columns: 130px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    column-gap: 12px;
+  }
+
+  .news-card-media {
+    grid-row: 1 / 4;
+    aspect-ratio: 3 / 2.6;
+  }
+
+  .news-card time { grid-column: 2; }
+  .news-card strong { grid-column: 2; font-size: 0.95rem; }
+  .news-card-excerpt { grid-column: 2; }
+}
+
+/* --- Jadwal Sidang: kartu --- */
+.sipp-cards {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.sipp-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  border: 1px solid var(--color-line);
+  border-left: 5px solid var(--color-accent);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #fff, #fbfcfc);
+}
+
+.sipp-card-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sipp-card-case {
+  color: var(--color-primary-deep);
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.sipp-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sipp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: #fff;
+  color: var(--color-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.sipp-chip svg {
+  width: 12px;
+  height: 12px;
+  color: var(--color-accent);
+}
+
+.sipp-chip-room {
+  border-color: rgba(185, 143, 36, 0.45);
+  background: var(--color-accent-soft);
+  color: var(--color-primary-dark);
+}
+
+.sipp-chip-circuit {
+  border-color: rgba(31, 91, 75, 0.4);
+  background: rgba(31, 91, 75, 0.08);
+  color: var(--color-green);
+}
+
+.sipp-card-link {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 7px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.sipp-card-link:hover,
+.sipp-card-link:focus-visible {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.sipp-empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 34px 16px 38px;
+  text-align: center;
+}
+
+.sipp-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-primary-dark);
+}
+
+.sipp-empty strong {
+  color: var(--color-ink);
+  font-size: 1.05rem;
+}
+
+.sipp-empty span {
+  color: var(--color-muted);
+  font-size: 0.86rem;
+}
+
+.sipp-empty a {
+  margin-top: 6px;
+  color: var(--color-primary);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sipp-empty a:hover,
+.sipp-empty a:focus-visible {
+  text-decoration: underline;
+}
+
+/* --- Instagram: profile embed --- */
+.instagram-profile-card {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: #fff;
+}
+
+.instagram-profile-card iframe {
+  display: block;
+  width: 100%;
+  height: 470px;
+  min-height: 470px;
+  border: 0;
+  background: #fff;
+}
+
+.instagram-follow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.16s ease;
+}
+
+.instagram-follow-btn:hover,
+.instagram-follow-btn:focus-visible {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+/* --- Kartu Kinerja & Akuntabilitas (survei + DIPA) --- */
+.dipa-subhead {
+  margin-bottom: 2px;
+  color: var(--color-ink);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.survey-scores-note + .dipa-widget,
+.survey-scores ~ .dipa-widget {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-line);
+}
+
+/* --- Footer stats strip --- */
+.footer-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px var(--page-padding) 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.78rem;
+}
+
+.footer-stats svg {
+  opacity: 0.7;
+}
+
+.footer-stats strong {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Quick links: clamp deskripsi --- */
+.app-info span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- Tap target dots di layar sentuh --- */
+@media (pointer: coarse) {
+  .hero-slider-dots button,
+  .role-carousel-dots button,
+  .survey-carousel-dots button,
+  .instagram-slider-dots button {
+    height: 10px;
+    width: 30px;
+  }
+
+  .hero-slider-dots {
+    gap: 10px;
+  }
+}
+
+/* --- Kontras: teks di atas foto hero lebih pekat --- */
+.hero-photo-chip {
+  color: rgba(255, 248, 238, 0.95);
+}
+
+/* --- Dark mode putaran 2 --- */
+body.is-dark .home-map-card,
+body.is-dark .home-map-heading {
+  background: #151c22;
+  border-color: #46515a;
+}
+
+body.is-dark .home-map-heading h2 {
+  color: #edf2f7;
+}
+
+body.is-dark .home-map-card iframe {
+  filter: invert(0.88) hue-rotate(180deg) saturate(0.85);
+}
+
+body.is-dark .news-card,
+body.is-dark .sipp-card {
+  background: #1a232b;
+  border-color: #46515a;
+}
+
+body.is-dark .sipp-card {
+  border-left-color: var(--color-accent);
+}
+
+body.is-dark .news-card strong,
+body.is-dark .sipp-card-case {
+  color: #edf2f7;
+}
+
+body.is-dark .news-card:hover strong {
+  color: #f3c96b;
+}
+
+body.is-dark .sipp-chip {
+  background: #10181f;
+  border-color: #46515a;
+  color: #edf2f7;
+}
+
+body.is-dark .sipp-chip-room {
+  background: rgba(185, 143, 36, 0.16);
+  border-color: rgba(243, 201, 107, 0.4);
+  color: #f3c96b;
+}
+
+body.is-dark .sipp-chip-circuit {
+  background: rgba(70, 170, 135, 0.14);
+  border-color: rgba(70, 170, 135, 0.4);
+  color: #8fe6c0;
+}
+
+body.is-dark .sipp-empty-icon {
+  background: rgba(185, 143, 36, 0.16);
+  color: #f3c96b;
+}
+
+body.is-dark .sipp-empty strong {
+  color: #edf2f7;
+}
+
+body.is-dark .sipp-schedule-board {
+  background: #151c22;
+  border-color: #46515a;
+}
+
+body.is-dark .sipp-schedule-head {
+  border-color: #46515a;
+}
+
+body.is-dark .sipp-schedule-head h2 {
+  color: #edf2f7;
+}
+
+body.is-dark .instagram-profile-card {
+  border-color: #46515a;
+}
+
+body.is-dark .dipa-subhead {
+  color: #edf2f7;
 }
 

@@ -9,8 +9,24 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Folder lokal utama: C:\tmp\web.pn-natuna
 - Local URL terakhir: http://localhost:8000 (PHP built-in server, Laragon MySQL di C:\laragon) — WAJIB port 8000 karena `live_site` di configuration.php = http://localhost:8000; port lain kena redirect-loop SEF.
 - Database lokal: pn_natuna_rebuild
-- Dump database terakhir: database/pn_natuna_rebuild_20260706_1050.sql (sebelumnya: pn_natuna_rebuild_20260706_0020.sql)
+- Dump database terakhir: database/pn_natuna_rebuild_20260706_1215.sql (sebelumnya: pn_natuna_rebuild_20260706_1050.sql)
 - Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
+
+## Perubahan Sesi 06 Jul 2026 sore-2 (UI Polish putaran 2, 10 item)
+
+SQL modul: `database/_ui_polish_homepage_2.sql` (sudah di-apply, termasuk di dump 20260706_1215).
+
+- **Instagram AUTO-UPDATE** (modul 483): 5 iframe post hardcoded diganti **1 profile embed resmi** `https://www.instagram.com/pn.natuna/embed/` — selalu menampilkan grid 6 post TERBARU + follower count, tanpa cron/token/scraping (endpoint scraping server-side sudah diuji: 429/login-wall, tidak feasible). Lazy-load via `setupLazyIframes()` (IO rootMargin 400px). Tombol "Ikuti @pn.natuna" di bawahnya.
+- **Berita Terbaru bergambar**: `pn_natuna_render_latest_news()` di hero-slider.php — 3 kartu (foto artikel, tanggal, judul Fraunces, excerpt clamp-2, badge Baru) di kolom utama sebelum Kabar Instansi; mobile jadi layout horizontal foto-kiri.
+- **Jadwal Sidang redesign** (sipp-schedule.php): tabel 7 kolom → kartu per sidang (nomor perkara Fraunces + chip ruangan/agenda/sidang-keliling + tombol Detil); empty state berikon + CTA SIPP; varian dark mode lengkap.
+- **Kartu "Kinerja & Akuntabilitas"** (modul 816): gabungan skor SKM/IPAK + widget DIPA (modul 817 di-unpublish). **tools/refresh-dipa.py diarahkan ke modul 816** dan sekarang hanya me-replace blok `<div class="dipa-widget">` (regex, teruji round-trip) — konten skor survei tidak tertimpa.
+- **SEO/share**: meta viewport dari sesi sebelumnya + kini og:title/description/image (images/brand/og-image.jpg 1200×630), twitter card, theme-color maroon, favicon 32/180/512 (images/brand/), JSON-LD GovernmentOrganization (alamat, telepon, jam buka), fallback meta description via setDescription().
+- **Dark mode ikut sistem**: inline script setelah `<body>` menerapkan is-dark bila `prefers-color-scheme: dark` DAN user belum pernah memilih (localStorage pnNatunaDark null); toggle manual tetap menang. Varian gelap baru: kartu jadwal, kartu berita, map card (iframe di-invert), instagram card, dipa-subhead.
+- **Statistik pengunjung pindah ke footer** (baris kecil ikon mata: total/hari ini/online); kartu sidebar dihapus. ⚠️ CATATAN INTEGRITAS: `stats-counter.php` menambah **base_offset 24.500 palsu** ke total kunjungan (baris asli ±330) — pertimbangkan dihapus sebelum produksi. "Anomali" 15.323 kemarin cuma animasi count-up yang tertangkap screenshot.
+- **Quick links**: typo "terpad." → "terpadu." (modul 112), deskripsi line-clamp 2 baris.
+- **Kontras**: --color-muted #667481 → #57646f (≥4.5:1 di putih); dots slider lebih besar di layar sentuh (pointer:coarse).
+- **Foto hero**: Ken Burns diperkecil (1.01→1.045) untuk kurangi blur upscale. ⚠️ **Foto gedung hanya 700×523px di-stretch ke 1440px+ — PERLU FOTO HD ≥1920px** (foto ulang gedung landscape, idealnya golden hour). Tidak ada kandidat lain di repo (banner.jpg = sample Joomla).
+- Verifikasi: CDP light/dark/mobile — news 3 kartu ✓, sipp kartu ✓, DIPA tunggal di 816 ✓, typo fix ✓, footer stats ✓, IG iframe lazy ✓, mobile tanpa overflow ✓.
 
 ## Perubahan Sesi 06 Jul 2026 sore (perbaikan performa scroll)
 

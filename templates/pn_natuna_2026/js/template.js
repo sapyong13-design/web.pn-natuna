@@ -44,7 +44,31 @@ document.addEventListener('DOMContentLoaded', () => {
   setupScrollReveal();
   setupCountUp();
   setupHeroBackdropPause();
+  setupLazyIframes();
 });
+
+function setupLazyIframes() {
+  const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src]');
+  if (!frames.length) return;
+  const load = (frame) => {
+    if (!frame.src && frame.dataset.src) {
+      frame.src = frame.dataset.src;
+    }
+  };
+  if (!('IntersectionObserver' in window)) {
+    frames.forEach(load);
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        load(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '400px 0px' });
+  frames.forEach((frame) => observer.observe(frame));
+}
 
 function setupHeroBackdropPause() {
   const hero = document.querySelector('.hero.home-slider');
@@ -213,7 +237,10 @@ function setupAccessibilityTools() {
   const body = document.body;
   const savedScale = Number(localStorage.getItem('pnNatunaFontScale') || '0');
   const savedContrast = localStorage.getItem('pnNatunaContrast') === '1';
-  const savedDark = localStorage.getItem('pnNatunaDark') === '1';
+  const storedDark = localStorage.getItem('pnNatunaDark');
+  const savedDark = storedDark === null
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+    : storedDark === '1';
 
   const applyScale = (scale) => {
     const next = Math.max(-1, Math.min(2, scale));
@@ -224,6 +251,7 @@ function setupAccessibilityTools() {
   applyScale(savedScale);
   body.classList.toggle('is-contrast', savedContrast);
   body.classList.toggle('is-dark', savedDark);
+  document.querySelector('.dark-toggle')?.setAttribute('aria-pressed', String(savedDark));
 
   document.querySelectorAll('.font-scale-button').forEach((button) => {
     button.addEventListener('click', () => {

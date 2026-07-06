@@ -79,50 +79,37 @@ function pn_natuna_sipp_render_schedule(): void
         </div>
         <a class="section-action" href="<?php echo $url; ?>" target="_blank" rel="noopener">Buka jadwal lengkap di SIPP</a>
       </div>
-      <div class="sipp-table-wrap">
-        <table class="sipp-schedule-table">
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Tanggal Sidang</th>
-              <th>Nomor Perkara</th>
-              <th>Sidang Keliling</th>
-              <th>Ruangan</th>
-              <th>Agenda</th>
-              <th>Detil</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if ($hasRows) : ?>
-              <?php foreach ($schedule['rows'] as $row) : ?>
-                <tr>
-                  <td data-label="No"><?php echo htmlspecialchars($row['no'], ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td data-label="Tanggal Sidang"><?php echo htmlspecialchars($row['date'], ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td data-label="Nomor Perkara"><strong><?php echo htmlspecialchars($row['case'], ENT_QUOTES, 'UTF-8'); ?></strong></td>
-                  <td data-label="Sidang Keliling">
-                    <?php if (strtoupper(trim($row['circuit'])) === 'TIDAK') : ?>
-                      <span class="sipp-badge sipp-badge-gray">TIDAK</span>
-                    <?php else : ?>
-                      <span class="sipp-badge sipp-badge-green"><?php echo htmlspecialchars($row['circuit'], ENT_QUOTES, 'UTF-8'); ?></span>
-                    <?php endif; ?>
-                  </td>
-                  <td data-label="Ruangan"><?php echo htmlspecialchars($row['room'], ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td data-label="Agenda"><?php echo htmlspecialchars($row['agenda'], ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td data-label="Detil">
-                    <?php if ($row['detail'] !== '') : ?>
-                      <a href="<?php echo htmlspecialchars($row['detail'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Detil</a>
-                    <?php else : ?>
-                      <a href="<?php echo $url; ?>" target="_blank" rel="noopener">SIPP</a>
-                    <?php endif; ?>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            <?php else : ?>
-              <tr><td colspan="7" class="sipp-empty-state">Tidak ada sidang hari ini</td></tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
+      <?php if ($hasRows) : ?>
+        <div class="sipp-cards">
+          <?php foreach ($schedule['rows'] as $row) : ?>
+            <article class="sipp-card">
+              <div class="sipp-card-main">
+                <strong class="sipp-card-case"><?php echo htmlspecialchars($row['case'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                <div class="sipp-card-meta">
+                  <span class="sipp-chip sipp-chip-room">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="currentColor"/></svg>
+                    <?php echo htmlspecialchars($row['room'], ENT_QUOTES, 'UTF-8'); ?>
+                  </span>
+                  <span class="sipp-chip"><?php echo htmlspecialchars($row['agenda'], ENT_QUOTES, 'UTF-8'); ?></span>
+                  <?php if (strtoupper(trim($row['circuit'])) !== 'TIDAK') : ?>
+                    <span class="sipp-chip sipp-chip-circuit">Sidang Keliling</span>
+                  <?php endif; ?>
+                </div>
+              </div>
+              <a class="sipp-card-link" href="<?php echo htmlspecialchars($row['detail'] !== '' ? $row['detail'] : $url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Detil &rarr;</a>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php else : ?>
+        <div class="sipp-empty">
+          <span class="sipp-empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="30" height="30"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14zM5 8V6h14v2zm4.53 10.47-2.5-2.5 1.06-1.06 1.44 1.43 3.88-3.87 1.06 1.06z" fill="currentColor"/></svg>
+          </span>
+          <strong>Tidak ada sidang hari ini</strong>
+          <span>Jadwal diperbarui otomatis dari SIPP Pengadilan Negeri Natuna.</span>
+          <a href="<?php echo $url; ?>" target="_blank" rel="noopener">Lihat arsip jadwal di SIPP &rarr;</a>
+        </div>
+      <?php endif; ?>
     </section>
     <?php
 }

@@ -25,6 +25,11 @@ if (is_file($instansiFeedHelper)) {
 if (is_file($heroSliderHelper)) {
     require_once $heroSliderHelper;
 }
+
+$siteUrl = rtrim(Joomla\CMS\Uri\Uri::root(), '/');
+if (trim((string) $this->getDescription()) === '') {
+    $this->setDescription('Website resmi Pengadilan Negeri Natuna Kelas II — informasi layanan PTSP, jadwal sidang, perkara, berita, dan transparansi peradilan di Kabupaten Natuna, Kepulauan Riau.');
+}
 ?>
 <!doctype html>
 <html lang="<?php echo $this->language; ?>" dir="<?php echo $this->direction; ?>">
@@ -32,8 +37,43 @@ if (is_file($heroSliderHelper)) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <jdoc:include type="metas" />
   <jdoc:include type="styles" />
-  <link rel="icon" href="/images/brand/logo-pn-natuna.png" type="image/png" />
-  <link rel="apple-touch-icon" href="/images/brand/logo-pn-natuna.png" />
+  <meta name="theme-color" content="#8f1f0b">
+  <meta property="og:site_name" content="Pengadilan Negeri Natuna Kelas II">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<?php echo htmlspecialchars($this->getTitle() ?: 'Pengadilan Negeri Natuna Kelas II', ENT_QUOTES, 'UTF-8'); ?>">
+  <meta property="og:description" content="<?php echo htmlspecialchars($this->getDescription(), ENT_QUOTES, 'UTF-8'); ?>">
+  <meta property="og:url" content="<?php echo htmlspecialchars(Joomla\CMS\Uri\Uri::current(), ENT_QUOTES, 'UTF-8'); ?>">
+  <meta property="og:image" content="<?php echo $siteUrl; ?>/images/brand/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/brand/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/images/brand/favicon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/brand/apple-touch-icon.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GovernmentOrganization",
+    "name": "Pengadilan Negeri Natuna Kelas II",
+    "url": "<?php echo $siteUrl; ?>/",
+    "logo": "<?php echo $siteUrl; ?>/images/brand/logo-pn-natuna.png",
+    "image": "<?php echo $siteUrl; ?>/images/brand/og-image.jpg",
+    "telephone": "+62-773-3211203",
+    "email": "pn.natuna@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Jl. Batu Sisir, Sungai Ulu, Kecamatan Bunguran Timur",
+      "addressLocality": "Kabupaten Natuna",
+      "addressRegion": "Kepulauan Riau",
+      "addressCountry": "ID"
+    },
+    "openingHoursSpecification": [
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday"], "opens": "08:00", "closes": "16:30" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "08:00", "closes": "17:00" }
+    ],
+    "sameAs": ["https://www.instagram.com/pn.natuna/", "https://sipp.pn-natuna.go.id/"]
+  }
+  </script>
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/plus-jakarta-sans-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
   <?php $tplPath = JPATH_THEMES . '/' . $this->template; ?>
@@ -43,6 +83,16 @@ if (is_file($heroSliderHelper)) {
   <script src="/templates/<?php echo $this->template; ?>/js/template.js?v=<?php echo @filemtime($tplPath . '/js/template.js') ?: '1'; ?>" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('pnNatunaDark');
+        if (stored === null ? window.matchMedia('(prefers-color-scheme: dark)').matches : stored === '1') {
+          document.body.classList.add('is-dark');
+        }
+      } catch (e) { /* private mode */ }
+    })();
+  </script>
   <a class="skip-link" href="#content">Lewati ke konten utama</a>
 
   <header class="site-header">
@@ -109,6 +159,9 @@ if (is_file($heroSliderHelper)) {
           <jdoc:include type="modules" name="home-schedule" style="card" />
         <?php endif; ?>
         <jdoc:include type="modules" name="home-facilities" style="card" />
+        <?php if (function_exists('pn_natuna_render_latest_news')) : ?>
+          <?php pn_natuna_render_latest_news(); ?>
+        <?php endif; ?>
         <?php if (function_exists('pn_natuna_render_instansi_feed')) : ?>
           <?php pn_natuna_render_instansi_feed(); ?>
         <?php else : ?>
@@ -127,33 +180,6 @@ if (is_file($heroSliderHelper)) {
         <jdoc:include type="modules" name="home-index" style="card" />
         <jdoc:include type="modules" name="home-web-links" style="card" />
         <jdoc:include type="modules" name="home-social" style="card" />
-        <?php if (function_exists('pn_natuna_get_visitor_stats')) : 
-            $stats = pn_natuna_get_visitor_stats();
-        ?>
-          <div class="module-card stats-card">
-            <h2 class="module-title">Statistik Pengunjung</h2>
-            <div class="stats-board-grid">
-              <div class="stats-board-item">
-                <span class="stats-num" data-countup="<?php echo (int) $stats['online']; ?>"><?php echo number_format($stats['online'], 0, ',', '.'); ?></span>
-                <span class="stats-label">Pengunjung Aktif</span>
-              </div>
-              <div class="stats-board-item">
-                <span class="stats-num" data-countup="<?php echo (int) $stats['today']; ?>"><?php echo number_format($stats['today'], 0, ',', '.'); ?></span>
-                <span class="stats-label">Hari Ini</span>
-              </div>
-              <div class="stats-board-item">
-                <span class="stats-num" data-countup="<?php echo (int) $stats['month']; ?>"><?php echo number_format($stats['month'], 0, ',', '.'); ?></span>
-                <span class="stats-label">Bulan Ini</span>
-              </div>
-              <div class="stats-board-item">
-                <span class="stats-num" data-countup="<?php echo (int) $stats['total']; ?>"><?php echo number_format($stats['total'], 0, ',', '.'); ?></span>
-                <span class="stats-label">Total Kunjungan</span>
-              </div>
-            </div>
-          </div>
-        <?php else : ?>
-          <jdoc:include type="modules" name="home-stats" style="card" />
-        <?php endif; ?>
       </aside>
     </main>
   <?php else : ?>
@@ -195,6 +221,18 @@ if (is_file($heroSliderHelper)) {
     <div class="footer-social">
       <jdoc:include type="modules" name="footer-social" style="none" />
     </div>
+    <?php if (function_exists('pn_natuna_get_visitor_stats')) :
+        $stats = pn_natuna_get_visitor_stats();
+    ?>
+      <div class="footer-stats" aria-label="Statistik pengunjung situs">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="currentColor"/></svg>
+        <span><strong><?php echo number_format($stats['total'], 0, ',', '.'); ?></strong> total kunjungan</span>
+        <span aria-hidden="true">&middot;</span>
+        <span><strong><?php echo number_format($stats['today'], 0, ',', '.'); ?></strong> hari ini</span>
+        <span aria-hidden="true">&middot;</span>
+        <span><strong><?php echo number_format($stats['online'], 0, ',', '.'); ?></strong> sedang online</span>
+      </div>
+    <?php endif; ?>
     <div class="footer-bottom">
       <jdoc:include type="modules" name="footer-bottom" style="none" />
     </div>
