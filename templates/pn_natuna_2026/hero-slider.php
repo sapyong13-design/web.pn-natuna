@@ -122,13 +122,18 @@ function pn_natuna_render_hero_slider(): void
     $previewImg = $berita ? pn_natuna_hero_article_image($berita[0]) : '/images/sejarah/sejarah-pn-natuna.jpg';
     $previewCaption = $berita ? $berita[0]->title : 'Berita Pengadilan Negeri Natuna';
     ?>
-    <div class="hero-slider" data-interval="6000">
+    <div class="hero-slider hero-cinema" data-interval="7000">
+      <div class="hero-backdrop" aria-hidden="true">
+        <img src="/images/sejarah/sejarah-pn-natuna.jpg" alt="" fetchpriority="high" decoding="async">
+      </div>
+      <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna</span>
+
       <div class="hero-slides">
 
         <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
           <div class="hero-copy">
             <p class="hero-kicker"><span id="hero-greeting">Portal Resmi Pengadilan Negeri Natuna</span></p>
-            <h2>Selamat Datang di Pengadilan Negeri Natuna</h2>
+            <h2>Selamat Datang di<br>Pengadilan Negeri Natuna</h2>
             <p>Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan yang cepat, transparan, dan mudah diakses. Informasi layanan PTSP, perkara, dan kanal resmi pengadilan tersedia di beranda ini.</p>
             <div class="hero-actions">
               <a class="is-primary" href="/layanan-publik">Layanan PTSP</a>
@@ -138,14 +143,10 @@ function pn_natuna_render_hero_slider(): void
             </div>
             <p class="hero-status" id="hero-service-status" hidden></p>
           </div>
-          <figure class="hero-media">
-            <img src="/images/sejarah/sejarah-pn-natuna.jpg" alt="Gedung Pengadilan Negeri Natuna" loading="eager">
-            <figcaption>Gedung Pengadilan Negeri Natuna</figcaption>
-          </figure>
         </div>
 
         <div class="hero-slide hero-slide-news" role="group" aria-label="Berita dan pengumuman terbaru">
-          <div class="hero-copy">
+          <div class="hero-copy hero-news-panel">
             <p class="hero-kicker">Informasi Terkini</p>
             <h2>Berita &amp; Pengumuman</h2>
             <div class="hero-tabs" role="tablist" aria-label="Pilih jenis informasi">

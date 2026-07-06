@@ -291,34 +291,71 @@ function pn_natuna_instansi_render_list(array $items): void
     echo '</ul>';
 }
 
+function pn_natuna_instansi_updated_label(): string
+{
+    $cacheFile = JPATH_ROOT . '/cache/pn_natuna_instansi_feed.json';
+    if (!is_file($cacheFile)) {
+        return '';
+    }
+    $ts = filemtime($cacheFile);
+    if (!$ts) {
+        return '';
+    }
+    $months = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    return date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) . ', ' . date('H.i', $ts) . ' WIB';
+}
+
 function pn_natuna_render_instansi_feed(): void
 {
     $data = pn_natuna_instansi_load();
+    $meta = [
+        'ma' => ['short' => 'Mahkamah Agung RI', 'logo' => '/images/brand/logo-ma.png', 'site' => 'https://www.mahkamahagung.go.id/'],
+        'badilum' => ['short' => 'Ditjen Badilum', 'logo' => '/images/brand/logo-badilum.png', 'site' => 'https://badilum.mahkamahagung.go.id/'],
+        'pt' => ['short' => 'PT Kepri', 'logo' => '/images/brand/logo-pt-kepri.png', 'site' => 'https://pt-kepri.go.id/'],
+    ];
+    $updated = pn_natuna_instansi_updated_label();
     ?>
-    <div class="module-card instansi-news-board instansi-news-compact">
-
-      <div class="instansi-news-grid">
-        <?php foreach ($data as $instansi) : ?>
-          <section class="instansi-news-column <?php echo htmlspecialchars($instansi['class'], ENT_QUOTES, 'UTF-8'); ?>">
-            <h3 class="instansi-category-title">
-              <?php if (!empty($instansi['logo'])) : ?>
-                <img src="<?php echo htmlspecialchars($instansi['logo'], ENT_QUOTES, 'UTF-8'); ?>" alt="Logo">
-              <?php endif; ?>
-              <span><?php echo htmlspecialchars($instansi['title'], ENT_QUOTES, 'UTF-8'); ?></span>
-            </h3>
-            <div class="instansi-sub-grid">
-              <div class="instansi-sub-col">
-                <h3>Berita</h3>
-                <?php pn_natuna_instansi_render_list($instansi['news']); ?>
-              </div>
-              <div class="instansi-sub-col">
-                <h3>Pengumuman</h3>
-                <?php pn_natuna_instansi_render_list($instansi['announcements']); ?>
-              </div>
-            </div>
-          </section>
-        <?php endforeach; ?>
+    <div class="module-card instansi-news-board instansi-tab-board">
+      <div class="instansi-board-head">
+        <h2>Kabar Instansi Peradilan</h2>
+        <?php if ($updated !== '') : ?>
+          <span class="instansi-updated">Diperbarui <?php echo htmlspecialchars($updated, ENT_QUOTES, 'UTF-8'); ?></span>
+        <?php endif; ?>
       </div>
+      <div class="instansi-tabbar" role="tablist" aria-label="Pilih instansi peradilan">
+        <?php $i = 0; foreach ($data as $key => $instansi) : $short = $meta[$key]['short'] ?? $instansi['title']; ?>
+          <button type="button" role="tab"
+                  id="instansi-tab-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
+                  aria-controls="instansi-panel-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
+                  aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>"
+                  class="<?php echo $i === 0 ? 'is-active' : ''; ?>"
+                  data-instansi-tab="<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>">
+            <img src="<?php echo htmlspecialchars($meta[$key]['logo'] ?? ($instansi['logo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" alt="" loading="lazy">
+            <span><?php echo htmlspecialchars($short, ENT_QUOTES, 'UTF-8'); ?></span>
+          </button>
+        <?php $i++; endforeach; ?>
+      </div>
+      <?php $i = 0; foreach ($data as $key => $instansi) : ?>
+        <div class="instansi-panel<?php echo $i === 0 ? ' is-active' : ''; ?>"
+             id="instansi-panel-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
+             role="tabpanel"
+             aria-labelledby="instansi-tab-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
+             <?php echo $i === 0 ? '' : 'hidden'; ?>>
+          <div class="instansi-sub-grid">
+            <div class="instansi-sub-col">
+              <h3>Berita</h3>
+              <?php pn_natuna_instansi_render_list($instansi['news']); ?>
+            </div>
+            <div class="instansi-sub-col">
+              <h3>Pengumuman</h3>
+              <?php pn_natuna_instansi_render_list($instansi['announcements']); ?>
+            </div>
+          </div>
+          <a class="instansi-panel-link" href="<?php echo htmlspecialchars($meta[$key]['site'] ?? '#', ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+            Kunjungi situs <?php echo htmlspecialchars($instansi['title'], ENT_QUOTES, 'UTF-8'); ?> &rarr;
+          </a>
+        </div>
+      <?php $i++; endforeach; ?>
     </div>
     <?php
 }

@@ -9,8 +9,27 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Folder lokal utama: C:\tmp\web.pn-natuna
 - Local URL terakhir: http://localhost:8000 (PHP built-in server, Laragon MySQL di C:\laragon) — WAJIB port 8000 karena `live_site` di configuration.php = http://localhost:8000; port lain kena redirect-loop SEF.
 - Database lokal: pn_natuna_rebuild
-- Dump database terakhir: database/pn_natuna_rebuild_20260706_0020.sql (sebelumnya: pn_natuna_rebuild_20260704_2310.sql)
+- Dump database terakhir: database/pn_natuna_rebuild_20260706_1050.sql (sebelumnya: pn_natuna_rebuild_20260706_0020.sql)
 - Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
+
+## Perubahan Sesi 06 Jul 2026 (UI Polish beranda, 10 item)
+
+Semua CSS baru ada di blok `/* UI POLISH 2026-07 */` di akhir template.css. SQL modul: `database/_ui_polish_homepage.sql` (sudah di-apply lokal, termasuk di dump 20260706_1050).
+
+- **`<meta name="viewport">` ditambahkan di index.php** — sebelumnya TIDAK ADA, jadi di HP asli situs dirender ~980px lalu di-zoom-out. Ini fix mobile paling fundamental sesi ini.
+- **Hero sinematik full-bleed** (hero-slider.php): foto gedung jadi backdrop penuh (img `fetchpriority=high`) + scrim gradien gelap + Ken Burns pelan; teks slide 1 putih di atasnya; slide 2 (Berita & Pengumuman) jadi panel kaca putih; dots progress pindah ke bawah tengah, panah pindah ke kanan-bawah (tidak menimpa teks); chip caption "Gedung PN Natuna" kiri-bawah; interval 7 detik. Slide non-aktif kini juga `visibility:hidden` (hero/role/survey).
+- **Jam live pindah dari nav ke topbar** (`.topbar-clock` di index.php) — nav tidak overflow lagi di 1440px. **Sticky nav**: `setupStickyNav()` di template.js + `body.nav-stuck` (fixed + shadow + padding-top kompensasi).
+- **Feed instansi jadi tab** (instansi-feed.php render baru): 1 card "Kabar Instansi Peradilan" + tabbar berlogo (MA/Ditjen Badilum/PT Kepri), panel role=tabpanel + keyboard arrow, timestamp "Diperbarui ..." dari mtime cache, link "Kunjungi situs ...". JS `setupInstansiTabs()`. Halaman memendek ±1200px. Logo badilum kini pakai logo-badilum.png.
+- **Galeri Fasilitas**: band gelap maroon→hijau via moduleclass_sfx `facility-band` (bukan `:has()` — konten mod_custom terbungkus `div.custom` jadi `:has(> ...)` tidak match); foto ASLI beda per kartu via `.facility-thumb` (PTSP=briefing-ptsp, Disabilitas=**crop baru images/layanan/akses-disabilitas.jpg** dari foto PTSP bagian guiding block, Posbakum=poster posbakum, Lokasi=foto gedung); hover zoom. `.facility-card::before` lama dimatikan.
+- **Indeks Pelayanan Publik jadi tile skor** (modul 816): SKM 3,97/4,00 (99,27%) + IPAK 4,00/4,00 (100%), 61 responden TW2 2026, bar emas, klik → lightbox maklumat (data-maklumat-zoom). ⚠️ **Skor diinput manual per triwulan** — saat refresh-survey.py mengganti gambar, update angka di modul 816 juga.
+- **Role Model jadi kartu HTML** (modul 482): foto polos (joko-ciptanto.jpg / marihod.png dari images/profil/pegawai/) + badge emas (Role Model 2026 / Agen Perubahan 2026) + nama/jabatan/NIP/SK sebagai teks HTML overlay gradient. Poster lama di images/role-model/ tidak dipakai lagi di beranda.
+- **Lokasi Kami**: showtitle=0 (judul dobel hilang).
+- **Link Layanan Cepat**: semua logo dinormalisasi jadi badge lingkaran 52px putih + panah → muncul saat hover; mobile scroll-snap diberi mask fade kanan.
+- **Mobile polish**: topbar 1 baris (desc/email/jam-live disembunyikan ≤760px), bottom quick-action bar 5 kolom dengan ikon SVG (index.php), tombol WhatsApp & back-to-top & ikon aksesibilitas direposisi agar tidak saling tindih dengan bar bawah, gambar maklumat max-height 54vh.
+- **Ritme visual**: kicker emas otomatis di semua judul modul (termasuk h2 di dalam `div.custom`), scroll-reveal IntersectionObserver (`setupScrollReveal()`, guard prefers-reduced-motion), count-up statistik (`setupCountUp()`).
+- **Statistik pengunjung**: number_format Indonesia (24.502, bukan 24,502) + data-countup.
+- **Font self-host**: fonts/fraunces-var.woff2 + plus-jakarta-sans-var.woff2 (variable, latin subset) + css/fonts.css + preload; Google Fonts CDN dihapus dari index.php.
+- Catatan verifikasi: screenshot headless Chrome `--window-size=390` menyesatkan (lebar layout minimum ~400px, konten kanan terpotong padahal layout riil 390px BENAR) — untuk cek mobile akurat pakai harness iframe 390px atau CDP. Interaksi (sticky, reveal, tab, slider, count-up) diverifikasi via Chrome DevTools Protocol.
 
 ## Perubahan Sesi 05 Jul 2026
 

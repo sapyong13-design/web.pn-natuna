@@ -39,7 +39,115 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroServiceStatus();
   setupHeroPrefetch();
   setupMaklumatLightbox();
+  setupStickyNav();
+  setupInstansiTabs();
+  setupScrollReveal();
+  setupCountUp();
 });
+
+function setupStickyNav() {
+  const nav = document.querySelector('.main-menu');
+  if (!nav) return;
+  const syncHeight = () => document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
+  let threshold = 0;
+  const syncThreshold = () => {
+    if (!document.body.classList.contains('nav-stuck')) {
+      threshold = nav.getBoundingClientRect().top + window.scrollY;
+    }
+  };
+  const onScroll = () => {
+    const stuck = window.scrollY > threshold + 8;
+    if (stuck !== document.body.classList.contains('nav-stuck')) {
+      syncHeight();
+      document.body.classList.toggle('nav-stuck', stuck);
+    }
+  };
+  syncHeight();
+  syncThreshold();
+  window.addEventListener('resize', () => { document.body.classList.remove('nav-stuck'); syncThreshold(); syncHeight(); onScroll(); }, { passive: true });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('load', onScroll);
+  onScroll();
+}
+
+function setupInstansiTabs() {
+  document.querySelectorAll('.instansi-tab-board').forEach((board) => {
+    const tabs = Array.from(board.querySelectorAll('[data-instansi-tab]'));
+    const panels = Array.from(board.querySelectorAll('.instansi-panel'));
+    if (!tabs.length) return;
+    const activate = (tab) => {
+      tabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', String(active));
+      });
+      panels.forEach((p) => {
+        const active = p.id === 'instansi-panel-' + tab.dataset.instansiTab;
+        p.classList.toggle('is-active', active);
+        p.hidden = !active;
+      });
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => activate(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus();
+        activate(next);
+      });
+    });
+  });
+}
+
+function setupScrollReveal() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+    return;
+  }
+  const targets = document.querySelectorAll('.home-juknis-main > *, .home-juknis-main .home-content-pair > *, .home-juknis-main .home-briefing-pair > *, .home-juknis-sidebar > *');
+  if (!targets.length) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+  targets.forEach((el) => {
+    if (el.classList.contains('home-content-pair') || el.classList.contains('home-briefing-pair')) return;
+    el.classList.add('reveal-init');
+    observer.observe(el);
+  });
+}
+
+function setupCountUp() {
+  const nums = document.querySelectorAll('.stats-num[data-countup]');
+  if (!nums.length) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+    return;
+  }
+  const animate = (el) => {
+    const target = parseInt(el.dataset.countup, 10) || 0;
+    const duration = 900;
+    const startTime = performance.now();
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(target * eased).toLocaleString('id-ID');
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        animate(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  nums.forEach((el) => observer.observe(el));
+}
 
 function setupDynamicServiceHours() {
   const element = document.getElementById('dynamic-service-hours');

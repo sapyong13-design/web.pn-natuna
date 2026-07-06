@@ -29,13 +29,14 @@ if (is_file($heroSliderHelper)) {
 <!doctype html>
 <html lang="<?php echo $this->language; ?>" dir="<?php echo $this->direction; ?>">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <jdoc:include type="metas" />
   <jdoc:include type="styles" />
   <link rel="icon" href="/images/brand/logo-pn-natuna.png" type="image/png" />
   <link rel="apple-touch-icon" href="/images/brand/logo-pn-natuna.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/plus-jakarta-sans-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css" />
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template.css" />
   <jdoc:include type="scripts" />
   <script src="/templates/<?php echo $this->template; ?>/js/template.js" defer></script>
@@ -46,6 +47,10 @@ if (is_file($heroSliderHelper)) {
   <header class="site-header">
     <div class="topbar">
       <jdoc:include type="modules" name="topbar" style="none" />
+      <div class="topbar-clock" aria-label="Tanggal dan waktu saat ini">
+        <span id="live-clock-date"></span>
+        <span id="live-clock-time"></span>
+      </div>
     </div>
     <div class="header-brand">
       <jdoc:include type="modules" name="header-brand" style="none" />
@@ -60,10 +65,6 @@ if (is_file($heroSliderHelper)) {
           <button class="menu-close" type="button" aria-label="Tutup menu">Tutup</button>
         </div>
         <jdoc:include type="modules" name="main-menu" style="none" />
-      </div>
-      <div class="menu-live-clock">
-        <span id="live-clock-date"></span>
-        <span id="live-clock-time"></span>
       </div>
     </nav>
   </header>
@@ -132,19 +133,19 @@ if (is_file($heroSliderHelper)) {
             <h2 class="module-title">Statistik Pengunjung</h2>
             <div class="stats-board-grid">
               <div class="stats-board-item">
-                <span class="stats-num"><?php echo number_format($stats['online']); ?></span>
+                <span class="stats-num" data-countup="<?php echo (int) $stats['online']; ?>"><?php echo number_format($stats['online'], 0, ',', '.'); ?></span>
                 <span class="stats-label">Pengunjung Aktif</span>
               </div>
               <div class="stats-board-item">
-                <span class="stats-num"><?php echo number_format($stats['today']); ?></span>
+                <span class="stats-num" data-countup="<?php echo (int) $stats['today']; ?>"><?php echo number_format($stats['today'], 0, ',', '.'); ?></span>
                 <span class="stats-label">Hari Ini</span>
               </div>
               <div class="stats-board-item">
-                <span class="stats-num"><?php echo number_format($stats['month']); ?></span>
+                <span class="stats-num" data-countup="<?php echo (int) $stats['month']; ?>"><?php echo number_format($stats['month'], 0, ',', '.'); ?></span>
                 <span class="stats-label">Bulan Ini</span>
               </div>
               <div class="stats-board-item">
-                <span class="stats-num"><?php echo number_format($stats['total']); ?></span>
+                <span class="stats-num" data-countup="<?php echo (int) $stats['total']; ?>"><?php echo number_format($stats['total'], 0, ',', '.'); ?></span>
                 <span class="stats-label">Total Kunjungan</span>
               </div>
             </div>
@@ -200,11 +201,26 @@ if (is_file($heroSliderHelper)) {
 
 
   <nav class="mobile-quick-actions" aria-label="Aksi cepat mobile">
-    <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">SIPP</a>
-    <a href="/informasi-perkara">Jadwal</a>
-    <a href="/layanan-publik">PTSP</a>
-    <button class="search-overlay-toggle" type="button" aria-controls="site-search-overlay" aria-expanded="false">Cari</button>
-    <a href="/kontak">Kontak</a>
+    <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 8l10 5 8.36-4.18A12 12 0 0 1 21 12h2a14 14 0 0 0-1.06-5.36zM4 11.9V16c0 1.66 3.58 3 8 3s8-1.34 8-3v-4.1l-8 4z" fill="currentColor"/></svg>
+      <span>SIPP</span>
+    </a>
+    <a href="/informasi-perkara">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14zM5 8V6h14v2z" fill="currentColor"/></svg>
+      <span>Jadwal</span>
+    </a>
+    <a href="/layanan-publik">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6zm0 10h6c-.5 3.9-3 7.2-6 7.9V12H6V7.3l6-3z" fill="currentColor"/></svg>
+      <span>PTSP</span>
+    </a>
+    <button class="search-overlay-toggle" type="button" aria-controls="site-search-overlay" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" fill="currentColor"/></svg>
+      <span>Cari</span>
+    </button>
+    <a href="/kontak">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02z" fill="currentColor"/></svg>
+      <span>Kontak</span>
+    </a>
   </nav>
   <div id="site-search-overlay" class="search-overlay" hidden>
     <div class="search-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="search-overlay-title">
