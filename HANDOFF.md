@@ -12,6 +12,18 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Dump database terakhir: database/pn_natuna_rebuild_20260706_1050.sql (sebelumnya: pn_natuna_rebuild_20260706_0020.sql)
 - Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
 
+## Perubahan Sesi 06 Jul 2026 sore (perbaikan performa scroll)
+
+Keluhan: beranda terasa berat / tidak 60fps saat scroll setelah UI polish. Diagnosa via Chrome CDP (headed + CPU throttle 4×): di mesin dev semua varian tetap 133-144fps, jadi yang dihilangkan adalah seluruh kelas beban kontinu baru + masalah cache:
+
+- **Cache-busting `?v=filemtime`** untuk template.css/fonts.css/template.js di index.php — `php -S` (dan Apache produksi) memicu heuristic caching; browser bisa menjalankan campuran CSS/JS lama+baru setelah update (terbukti terjadi saat pengujian). Kemungkinan besar ini sumber utama keluhan.
+- **Semua `backdrop-filter: blur` dihapus** (chip hero, panel berita, panah hero, chip foto, mobile quick bar) — re-filter tiap frame di atas layer Ken Burns yang beranimasi; diganti background rgba lebih pekat, tampilan nyaris identik. Jangan tambah backdrop-filter di atas elemen yang beranimasi.
+- **Ken Burns di-pause saat hero keluar viewport** (`setupHeroBackdropPause()` + `.is-offstage`) + `will-change: transform`.
+- **Scroll reveal dipercepat**: durasi 0.55s→0.38s, translate 16→10px, dan pre-reveal 200px SEBELUM elemen masuk viewport (rootMargin positif) — kartu tidak pernah terlihat kosong saat scroll cepat (persepsi "berat" hilang).
+- **joko-ciptanto.jpg 2184×2403 (1MB) → 900×990 (142KB)**.
+- Verifikasi CDP: backdrop-filter tersisa 0, pause/resume Ken Burns bekerja, scroll throttle 4× = 133fps (0,4% frame >20ms).
+- Catatan: total kunjungan statistik pengunjung tampak berubah-ubah (24.502 → 15.323) — penyimpanan stats-counter perlu dicek nanti.
+
 ## Perubahan Sesi 06 Jul 2026 (UI Polish beranda, 10 item)
 
 Semua CSS baru ada di blok `/* UI POLISH 2026-07 */` di akhir template.css. SQL modul: `database/_ui_polish_homepage.sql` (sudah di-apply lokal, termasuk di dump 20260706_1050).

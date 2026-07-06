@@ -36,10 +36,11 @@ if (is_file($heroSliderHelper)) {
   <link rel="apple-touch-icon" href="/images/brand/logo-pn-natuna.png" />
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/plus-jakarta-sans-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css" />
-  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template.css" />
+  <?php $tplPath = JPATH_THEMES . '/' . $this->template; ?>
+  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css?v=<?php echo @filemtime($tplPath . '/css/fonts.css') ?: '1'; ?>" />
+  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template.css?v=<?php echo @filemtime($tplPath . '/css/template.css') ?: '1'; ?>" />
   <jdoc:include type="scripts" />
-  <script src="/templates/<?php echo $this->template; ?>/js/template.js" defer></script>
+  <script src="/templates/<?php echo $this->template; ?>/js/template.js?v=<?php echo @filemtime($tplPath . '/js/template.js') ?: '1'; ?>" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
   <a class="skip-link" href="#content">Lewati ke konten utama</a>

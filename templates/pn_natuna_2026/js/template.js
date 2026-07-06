@@ -43,7 +43,19 @@ document.addEventListener('DOMContentLoaded', () => {
   setupInstansiTabs();
   setupScrollReveal();
   setupCountUp();
+  setupHeroBackdropPause();
 });
+
+function setupHeroBackdropPause() {
+  const hero = document.querySelector('.hero.home-slider');
+  if (!hero || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      hero.classList.toggle('is-offstage', !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  observer.observe(hero);
+}
 
 function setupStickyNav() {
   const nav = document.querySelector('.main-menu');
@@ -112,7 +124,7 @@ function setupScrollReveal() {
         observer.unobserve(entry.target);
       }
     });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+  }, { rootMargin: '0px 0px 200px 0px', threshold: 0 });
   targets.forEach((el) => {
     if (el.classList.contains('home-content-pair') || el.classList.contains('home-briefing-pair')) return;
     el.classList.add('reveal-init');
