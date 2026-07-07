@@ -224,18 +224,6 @@ if (trim((string) $this->getDescription()) === '') {
     <div class="footer-social">
       <jdoc:include type="modules" name="footer-social" style="none" />
     </div>
-    <?php if (function_exists('pn_natuna_get_visitor_stats')) :
-        $stats = pn_natuna_get_visitor_stats();
-    ?>
-      <div class="footer-stats" aria-label="Statistik pengunjung situs">
-        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="currentColor"/></svg>
-        <span><strong><?php echo number_format($stats['total'], 0, ',', '.'); ?></strong> total kunjungan</span>
-        <span aria-hidden="true">&middot;</span>
-        <span><strong><?php echo number_format($stats['today'], 0, ',', '.'); ?></strong> hari ini</span>
-        <span aria-hidden="true">&middot;</span>
-        <span><strong><?php echo number_format($stats['online'], 0, ',', '.'); ?></strong> sedang online</span>
-      </div>
-    <?php endif; ?>
     <div class="footer-bottom">
       <jdoc:include type="modules" name="footer-bottom" style="none" />
     </div>
