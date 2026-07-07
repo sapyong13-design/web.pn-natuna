@@ -187,8 +187,10 @@ function pn_natuna_render_hero_slider(): void
               <button type="button" class="is-active" data-hero-tab="berita" role="tab" aria-selected="true">Berita</button>
               <button type="button" data-hero-tab="pengumuman" role="tab" aria-selected="false">Pengumuman</button>
             </div>
+            <div class="hero-tab-panels">
             <?php pn_natuna_hero_render_tab_list($berita, 12, 'berita', true); ?>
             <?php pn_natuna_hero_render_tab_list($pengumuman, 13, 'pengumuman', false); ?>
+            </div>
             <div class="hero-actions">
               <a class="is-primary" href="/berita-dan-pengumuman">Lihat Semua Berita &amp; Pengumuman</a>
             </div>

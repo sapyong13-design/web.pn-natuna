@@ -4708,16 +4708,28 @@ body.is-dark .maklumat-doc img {
   color: #fff;
 }
 
+.hero-tab-panels {
+  display: grid;
+}
+
 .hero-tab-list {
-  display: none;
+  grid-area: 1 / 1;
   margin: 0 0 4px;
   padding: 0;
   list-style: none;
+  display: grid;
+  gap: 6px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, visibility 0s linear 220ms;
 }
 
 .hero-tab-list.is-active {
-  display: grid;
-  gap: 6px;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 220ms ease;
 }
 
 .hero-tab-list a {
