@@ -1,0 +1,3 @@
+-- Small footer redesign 2026-07-07
+UPDATE pnn_modules SET content = '<div class="footer-signature"><div class="footer-brand"><img class="footer-logo" src="/images/brand/logo-pn-natuna.png" alt="Logo Pengadilan Negeri Natuna" width="44" height="44"><div class="footer-brand-text"><strong>Pengadilan Negeri Natuna Kelas II</strong><p>Informasi layanan dan kontak resmi pengadilan.</p><address>Jalan Batu Sisir, Desa Sungai Ulu, Kecamatan Bunguran Timur, Kabupaten Natuna, Provinsi Kepulauan Riau.</address></div></div></div>' WHERE id = 117;
+UPDATE pnn_modules SET content = '<div class="footer-bottom-inner"><span class="footer-copy">&copy; 2026 Pengadilan Negeri Natuna Kelas II</span></div>' WHERE id = 118;
