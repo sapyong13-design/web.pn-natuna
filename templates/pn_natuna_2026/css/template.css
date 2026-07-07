@@ -5001,21 +5001,14 @@ body.is-dark .maklumat-doc img {
 .hero-item-excerpt {
   display: block;
   overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
+  min-height: 34px;
+  max-height: 34px;
+  margin-top: 3px;
   color: var(--color-muted);
   font-size: 0.78rem;
   font-style: normal;
   font-weight: 500;
   line-height: 1.4;
-  transition: max-height 220ms ease, opacity 220ms ease, margin-top 220ms ease;
-}
-
-.hero-tab-list a.is-preview .hero-item-excerpt {
-  max-height: 48px;
-  opacity: 1;
-  margin-top: 3px;
 }
 
 @media (max-width: 900px) {

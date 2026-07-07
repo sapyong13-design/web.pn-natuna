@@ -101,9 +101,7 @@ function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel,
                 <?php if (pn_natuna_hero_is_new($item->created)) : ?><span class="hero-badge-new">Baru</span><?php endif; ?>
               </span>
               <?php $excerpt = pn_natuna_hero_excerpt($item->introtext ?? ''); ?>
-              <?php if ($excerpt !== '') : ?>
-                <em class="hero-item-excerpt"><?php echo $excerpt; ?></em>
-              <?php endif; ?>
+              <em class="hero-item-excerpt"><?php echo $excerpt; ?></em>
             </span>
           </a>
         </li>
