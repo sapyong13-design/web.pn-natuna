@@ -8991,3 +8991,83 @@ body.is-dark .svc-doc-ic {
     margin-right: 0;
   }
 }
+
+/* --- Dark mode untuk Halaman Kontak --- */
+body.is-dark .kontak-hero-card {
+  border-color: #46515a;
+  background:
+    radial-gradient(circle at top right, rgba(185, 143, 36, 0.22), transparent 34%),
+    linear-gradient(135deg, #19232b, #101820);
+}
+
+body.is-dark .kontak-info-card,
+body.is-dark .kontak-social-panel,
+body.is-dark .kontak-action-map {
+  border-color: #46515a;
+  background: #19232b;
+}
+
+body.is-dark .content-primary .kontak-hero-card h2,
+body.is-dark .content-primary .kontak-info-card h3,
+body.is-dark .content-primary .kontak-social-panel h3,
+body.is-dark .content-primary .kontak-action-panel h3,
+body.is-dark .kontak-info-card a,
+body.is-dark .kontak-social-link span {
+  color: #f3c96b;
+}
+
+body.is-dark .kontak-info-card a:hover,
+body.is-dark .kontak-social-link:hover span {
+  color: var(--color-accent);
+}
+
+body.is-dark .kontak-label {
+  background: rgba(185, 143, 36, 0.2);
+  color: #f3c96b;
+}
+
+body.is-dark .kontak-info-card .kontak-icon {
+  border-color: rgba(243, 201, 107, 0.28);
+  background: #101820;
+  box-shadow: inset 0 0 0 6px rgba(185, 143, 36, 0.18), 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+body.is-dark .kontak-info-card .kontak-icon img {
+  filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(345deg);
+}
+
+body.is-dark .kontak-social-link {
+  border-color: rgba(243, 201, 107, 0.22);
+  background: #19232b;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.15);
+  color: var(--color-ink);
+}
+
+body.is-dark .kontak-social-wa {
+  background: linear-gradient(180deg, #122119, #19232b);
+}
+
+body.is-dark .kontak-social-link:hover,
+body.is-dark .kontak-social-link:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+}
+
+body.is-dark .kontak-secondary-link {
+  border-color: rgba(243, 201, 107, 0.35);
+  background: rgba(185, 143, 36, 0.16);
+  color: #f3c96b;
+}
+
+body.is-dark .kontak-primary-link {
+  background: var(--color-accent);
+  color: #2b1608;
+}
+
+body.is-dark .kontak-map-card {
+  background: #101820;
+}
+
+body.is-dark .kontak-map-card iframe {
+  filter: invert(0.88) hue-rotate(180deg) saturate(0.85);
+}
