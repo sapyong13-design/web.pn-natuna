@@ -101,10 +101,6 @@ if (trim((string) $this->getDescription()) === '') {
         <span id="live-clock-date"></span>
         <span id="live-clock-time"></span>
       </div>
-      <button class="dark-toggle" type="button" aria-pressed="false" aria-label="Mode gelap" title="Aktifkan/matikan mode gelap">
-        <svg class="dark-toggle-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="dark-toggle-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
     </div>
     <div class="header-brand">
       <jdoc:include type="modules" name="header-brand" style="none" />
@@ -119,6 +115,10 @@ if (trim((string) $this->getDescription()) === '') {
           <button class="menu-close" type="button" aria-label="Tutup menu">Tutup</button>
         </div>
         <jdoc:include type="modules" name="main-menu" style="none" />
+        <button class="dark-toggle" type="button" aria-pressed="false" aria-label="Mode gelap" title="Aktifkan/matikan mode gelap">
+          <svg class="dark-toggle-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="dark-toggle-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
       </div>
     </nav>
   </header>
@@ -229,6 +229,37 @@ if (trim((string) $this->getDescription()) === '') {
     </div>
   </footer>
 
+
+  <section class="access-panel" aria-label="Panel aksesibilitas" data-access-panel>
+    <button class="access-panel-toggle" type="button" aria-expanded="false" aria-controls="access-panel-body" aria-label="Buka panel aksesibilitas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm8 6.5H4v2h6v3.2l-2.1 6.8 1.9.6L12 15l2.2 6.1 1.9-.6-2.1-6.8v-3.2h6v-2Z" fill="currentColor"/></svg>
+    </button>
+    <div id="access-panel-body" class="access-panel-body" hidden>
+      <div class="access-panel-heading">
+        <strong>Alat Aksesibilitas</strong>
+        <button class="access-panel-close" type="button" aria-label="Tutup panel aksesibilitas">Tutup</button>
+      </div>
+      <div class="access-panel-group access-panel-stack access-panel-actions" aria-label="Accessibility options">
+        <button class="access-panel-action" type="button" data-access-action="increaseText"><span aria-hidden="true">A+</span><span>Increase Text Size</span></button>
+        <button class="access-panel-action" type="button" data-access-action="decreaseText"><span aria-hidden="true">A-</span><span>Decrease Text Size</span></button>
+        <button class="access-panel-action" type="button" data-access-action="increaseTextSpacing"><span aria-hidden="true">&lt;&gt;</span><span>Increase Text Spacing</span></button>
+        <button class="access-panel-action" type="button" data-access-action="decreaseTextSpacing"><span aria-hidden="true">&gt;&lt;</span><span>Decrease Text Spacing</span></button>
+        <button class="access-panel-action" type="button" data-access-action="invertColors" aria-pressed="false"><span aria-hidden="true">◐</span><span>Invert Colours</span></button>
+        <button class="access-panel-action" type="button" data-access-action="grayHues" aria-pressed="false"><span aria-hidden="true">◒</span><span>Grey Hues</span></button>
+        <button class="access-panel-action" type="button" data-access-action="underlineLinks" aria-pressed="false"><span aria-hidden="true">U</span><span>Underline Links</span></button>
+        <button class="access-panel-action" type="button" data-access-action="bigCursor" aria-pressed="false"><span aria-hidden="true">↖</span><span>Big Cursor</span></button>
+        <button class="access-panel-action" type="button" data-access-action="readingGuide" aria-pressed="false"><span aria-hidden="true">━</span><span>Reading Guide</span></button>
+        <button class="access-panel-action" type="button" data-access-action="reset"><span aria-hidden="true">↺</span><span>Reset</span></button>
+        <button class="access-panel-dark" type="button" aria-pressed="false">Mode Gelap</button>
+        <button class="access-panel-voice" type="button" aria-pressed="false">Suara</button>
+      </div>
+      <label class="access-panel-voice-select-wrap" hidden>
+        <span>Pilihan Suara</span>
+        <select class="access-panel-voice-select"></select>
+      </label>
+      <p class="access-panel-voice-note" hidden>Suara mengikuti browser/perangkat.</p>
+    </div>
+  </section>
 
   <nav class="mobile-quick-actions" aria-label="Aksi cepat mobile">
     <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">

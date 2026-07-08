@@ -236,45 +236,361 @@ function setupLiveClock() {
   }
 }
 
+const accessStorageKeys = [
+  'pnNatunaFontScale',
+  'pnNatunaTextSpacing',
+  'pnNatunaDark',
+  'pnNatunaInvertColours',
+  'pnNatunaGreyHues',
+  'pnNatunaUnderlineLinks',
+  'pnNatunaBigCursor',
+  'pnNatunaReadingGuide',
+  'pnNatunaVoiceReader',
+  'pnNatunaVoiceName',
+  'pnNatunaContrast',
+  '_accessState'
+];
+
+function storageGet(key, fallback = '') {
+  try {
+    return localStorage.getItem(key) ?? fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    // Storage can be blocked by privacy settings; UI state still works for the page session.
+  }
+}
+
+function storageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    // Storage can be blocked by privacy settings; reset should still update DOM state.
+  }
+}
+
+function clearAccessibilityStorage() {
+  accessStorageKeys.forEach(storageRemove);
+}
+
 function setupAccessibilityTools() {
   const root = document.documentElement;
   const body = document.body;
-  const savedScale = Number(localStorage.getItem('pnNatunaFontScale') || '0');
-  const savedContrast = localStorage.getItem('pnNatunaContrast') === '1';
-  const savedDark = localStorage.getItem('pnNatunaDark') === '1';
+  const savedScale = Number(storageGet('pnNatunaFontScale', '0'));
+  const savedSpacing = Number(storageGet('pnNatunaTextSpacing', '0'));
+  const savedDark = storageGet('pnNatunaDark') === '1';
+  const savedInvert = storageGet('pnNatunaInvertColours') === '1';
+  const savedGrey = storageGet('pnNatunaGreyHues') === '1';
+  const savedUnderline = storageGet('pnNatunaUnderlineLinks') === '1';
+  const savedCursor = storageGet('pnNatunaBigCursor') === '1';
+  const savedReadingGuide = storageGet('pnNatunaReadingGuide') === '1';
+  if (storageGet('_accessState')) {
+    storageRemove('_accessState');
+    body.style.removeProperty('font-size');
+    body.style.removeProperty('word-spacing');
+    body.style.removeProperty('letter-spacing');
+  }
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const setPressed = (selector, active) => {
+    document.querySelectorAll(selector).forEach((button) => button.setAttribute('aria-pressed', String(active)));
+  };
 
   const applyScale = (scale) => {
-    const next = Math.max(-1, Math.min(2, scale));
+    const next = clamp(scale, -2, 3);
     root.style.setProperty('--font-scale-adjust', `${next * 0.0625}rem`);
-    localStorage.setItem('pnNatunaFontScale', String(next));
+    storageSet('pnNatunaFontScale', String(next));
+  };
+
+  const applySpacing = (spacing) => {
+    const next = clamp(spacing, 0, 3);
+    body.classList.toggle('access-text-spacing', next > 0);
+    root.style.setProperty('--access-letter-spacing', next > 0 ? `${next * 0.04}em` : 'normal');
+    root.style.setProperty('--access-word-spacing', next > 0 ? `${next * 0.16}em` : 'normal');
+    storageSet('pnNatunaTextSpacing', String(next));
+  };
+
+  const setReadingGuide = (active) => {
+    let guide = document.querySelector('.access-reading-guide');
+    if (active && !guide) {
+      guide = document.createElement('div');
+      guide.className = 'access-reading-guide';
+      guide.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(guide);
+    }
+    if (!active) guide?.remove();
+    setPressed('[data-access-action="readingGuide"]', active);
+    storageSet('pnNatunaReadingGuide', active ? '1' : '0');
+  };
+
+  const resetAccessibility = () => {
+    clearAccessibilityStorage();
+    applyScale(0);
+    applySpacing(0);
+    body.classList.remove('is-dark', 'access-underline-links', 'access-links-highlight');
+    root.classList.remove('access-invert', 'access-grey', 'access-big-cursor');
+    setReadingGuide(false);
+    setPressed('.access-panel-dark, .dark-toggle', false);
+    setPressed('[data-access-action="invertColors"]', false);
+    setPressed('[data-access-action="grayHues"]', false);
+    setPressed('[data-access-action="underlineLinks"]', false);
+    setPressed('[data-access-action="bigCursor"]', false);
+    const voiceButton = document.querySelector('.access-panel-voice');
+    voiceButton?.setAttribute('aria-pressed', 'false');
+    voiceButton?.classList.remove('is-active');
+    window.speechSynthesis?.cancel();
+    clearAccessibilityStorage();
+    document.dispatchEvent(new Event('pnNatunaVoiceReset'));
   };
 
   applyScale(savedScale);
-  body.classList.toggle('is-contrast', savedContrast);
+  applySpacing(savedSpacing);
+  body.classList.remove('is-contrast');
+  storageRemove('pnNatunaContrast');
   body.classList.toggle('is-dark', savedDark);
-  document.querySelector('.dark-toggle')?.setAttribute('aria-pressed', String(savedDark));
+  root.classList.toggle('access-invert', savedInvert);
+  root.classList.toggle('access-grey', savedGrey);
+  body.classList.toggle('access-underline-links', savedUnderline);
+  body.classList.toggle('access-links-highlight', savedUnderline);
+  root.classList.toggle('access-big-cursor', savedCursor);
+  setPressed('.access-panel-dark, .dark-toggle', savedDark);
+  setPressed('[data-access-action="invertColors"]', savedInvert);
+  setPressed('[data-access-action="grayHues"]', savedGrey);
+  setPressed('[data-access-action="underlineLinks"]', savedUnderline);
+  setPressed('[data-access-action="bigCursor"]', savedCursor);
+  setReadingGuide(savedReadingGuide);
 
-  document.querySelectorAll('.font-scale-button').forEach((button) => {
+  const panelToggle = document.querySelector('.access-panel-toggle');
+  const panelBody = document.querySelector('.access-panel-body');
+  const panelClose = document.querySelector('.access-panel-close');
+  const darkButtons = document.querySelectorAll('.dark-toggle, .access-panel-dark');
+
+  const setPanelOpen = (open) => {
+    if (!panelBody || !panelToggle) return;
+    panelBody.hidden = !open;
+    panelToggle.classList.toggle('is-active', open);
+    panelToggle.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('access-panel-open', open);
+  };
+
+  panelToggle?.addEventListener('click', () => setPanelOpen(panelBody?.hidden !== false));
+  panelClose?.addEventListener('click', () => setPanelOpen(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setPanelOpen(false);
+  });
+
+  document.querySelectorAll('.access-panel-action').forEach((button) => {
     button.addEventListener('click', () => {
-      const current = Number(localStorage.getItem('pnNatunaFontScale') || '0');
-      const mode = button.getAttribute('data-font-scale');
-      applyScale(mode === 'reset' ? 0 : current + (mode === 'up' ? 1 : -1));
+      const action = button.getAttribute('data-access-action');
+      if (action === 'increaseText') applyScale(Number(storageGet('pnNatunaFontScale', '0')) + 1);
+      if (action === 'decreaseText') applyScale(Number(storageGet('pnNatunaFontScale', '0')) - 1);
+      if (action === 'increaseTextSpacing') applySpacing(Number(storageGet('pnNatunaTextSpacing', '0')) + 1);
+      if (action === 'decreaseTextSpacing') applySpacing(Number(storageGet('pnNatunaTextSpacing', '0')) - 1);
+      if (action === 'invertColors') {
+        const active = !root.classList.contains('access-invert');
+        root.classList.toggle('access-invert', active);
+        setPressed('[data-access-action="invertColors"]', active);
+        storageSet('pnNatunaInvertColours', active ? '1' : '0');
+      }
+      if (action === 'grayHues') {
+        const active = !root.classList.contains('access-grey');
+        root.classList.toggle('access-grey', active);
+        setPressed('[data-access-action="grayHues"]', active);
+        storageSet('pnNatunaGreyHues', active ? '1' : '0');
+      }
+      if (action === 'underlineLinks') {
+        const active = !body.classList.contains('access-underline-links');
+        body.classList.toggle('access-underline-links', active);
+        body.classList.toggle('access-links-highlight', active);
+        setPressed('[data-access-action="underlineLinks"]', active);
+        storageSet('pnNatunaUnderlineLinks', active ? '1' : '0');
+      }
+      if (action === 'bigCursor') {
+        const active = !root.classList.contains('access-big-cursor');
+        root.classList.toggle('access-big-cursor', active);
+        setPressed('[data-access-action="bigCursor"]', active);
+        storageSet('pnNatunaBigCursor', active ? '1' : '0');
+      }
+      if (action === 'readingGuide') setReadingGuide(!document.querySelector('.access-reading-guide'));
+      if (action === 'reset') resetAccessibility();
     });
   });
 
-  document.querySelector('.contrast-toggle')?.addEventListener('click', (event) => {
-    const active = !body.classList.contains('is-contrast');
-    body.classList.toggle('is-contrast', active);
-    event.currentTarget.setAttribute('aria-pressed', String(active));
-    localStorage.setItem('pnNatunaContrast', active ? '1' : '0');
+  document.addEventListener('mousemove', (event) => {
+    const guide = document.querySelector('.access-reading-guide');
+    if (!guide) return;
+    guide.style.transform = `translateY(${Math.max(0, event.clientY - 6)}px)`;
   });
 
-  document.querySelector('.dark-toggle')?.addEventListener('click', (event) => {
-    const active = !body.classList.contains('is-dark');
-    body.classList.toggle('is-dark', active);
-    event.currentTarget.setAttribute('aria-pressed', String(active));
-    localStorage.setItem('pnNatunaDark', active ? '1' : '0');
+  darkButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const active = !body.classList.contains('is-dark');
+      body.classList.toggle('is-dark', active);
+      setPressed('.access-panel-dark, .dark-toggle', active);
+      storageSet('pnNatunaDark', active ? '1' : '0');
+    });
   });
+
+  setupVoiceReader();
+}
+
+function setupVoiceReader() {
+  const button = document.querySelector('.access-panel-voice');
+  const selectWrap = document.querySelector('.access-panel-voice-select-wrap');
+  const select = document.querySelector('.access-panel-voice-select');
+  const note = document.querySelector('.access-panel-voice-note');
+  const synth = window.speechSynthesis;
+
+  if (!button) return;
+
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    button.disabled = true;
+    button.textContent = 'Suara tidak didukung browser ini';
+    button.setAttribute('aria-pressed', 'false');
+    return;
+  }
+
+  let voices = [];
+  let selectedVoice = null;
+  let enabled = storageGet('pnNatunaVoiceReader') === '1';
+  let lastText = '';
+  let hoverTimer = null;
+
+  const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+
+  const isVisible = (element) => {
+    if (!element || element.closest('[data-access-panel]') || element.closest('script, style, meta, link, template')) return false;
+    if (element.closest('[aria-hidden="true"]')) return false;
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+    return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+  };
+
+  const getText = (element) => {
+    if (!isVisible(element)) return '';
+    const text = normalize(
+      element.getAttribute('aria-label') ||
+      element.getAttribute('title') ||
+      element.getAttribute('alt') ||
+      element.innerText ||
+      element.textContent
+    );
+    if (!text) return '';
+    return text.length > 180 ? `${text.slice(0, 177)}…` : text;
+  };
+
+  const chooseVoice = (savedName) => {
+    if (!voices.length) return null;
+    const saved = savedName ? voices.find((voice) => voice.name === savedName) : null;
+    if (saved) return saved;
+    const indonesian = voices.filter((voice) => /^id(-|$)/i.test(voice.lang || ''));
+    return indonesian.find((voice) => voice.localService) ||
+      indonesian[0] ||
+      voices.find((voice) => voice.default) ||
+      voices[0] ||
+      null;
+  };
+
+  const renderVoiceOptions = () => {
+    if (!select || !selectWrap) return;
+    select.innerHTML = '';
+    if (voices.length < 2) {
+      selectWrap.hidden = true;
+    } else {
+      voices.forEach((voice) => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang || 'default'})`;
+        option.selected = selectedVoice && voice.name === selectedVoice.name;
+        select.appendChild(option);
+      });
+      selectWrap.hidden = false;
+    }
+    const hasIndonesian = voices.some((voice) => /^id(-|$)/i.test(voice.lang || ''));
+    if (note) note.hidden = hasIndonesian || !voices.length;
+  };
+
+  const loadVoices = () => {
+    voices = synth.getVoices ? synth.getVoices() : [];
+    selectedVoice = chooseVoice(storageGet('pnNatunaVoiceName'));
+    renderVoiceOptions();
+  };
+
+  const speakText = (text) => {
+    const clean = normalize(text);
+    if (!enabled || !clean || clean === lastText) return;
+    loadVoices();
+    lastText = clean;
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(clean);
+    if (selectedVoice) utterance.voice = selectedVoice;
+    utterance.lang = selectedVoice?.lang || 'id-ID';
+    utterance.rate = 0.94;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    synth.speak(utterance);
+  };
+
+  const disableVoiceSession = () => {
+    enabled = false;
+    button.classList.remove('is-active');
+    button.setAttribute('aria-pressed', 'false');
+    synth.cancel();
+    lastText = '';
+  };
+
+  const setEnabled = (active, announce) => {
+    if (!active) {
+      disableVoiceSession();
+      storageSet('pnNatunaVoiceReader', '0');
+      return;
+    }
+    enabled = true;
+    button.classList.add('is-active');
+    button.setAttribute('aria-pressed', 'true');
+    storageSet('pnNatunaVoiceReader', '1');
+    if (announce) speakText('Selamat datang di Pengadilan Negeri Natuna Kelas II.');
+  };
+
+  document.addEventListener('pnNatunaVoiceReset', disableVoiceSession);
+
+  button.addEventListener('click', () => setEnabled(!enabled, true));
+
+  select?.addEventListener('change', (event) => {
+    storageSet('pnNatunaVoiceName', event.currentTarget.value);
+    loadVoices();
+    lastText = '';
+    if (enabled) speakText('Pilihan suara diperbarui.');
+  });
+
+  document.addEventListener('pointerover', (event) => {
+    if (!enabled) return;
+    window.clearTimeout(hoverTimer);
+    hoverTimer = window.setTimeout(() => speakText(getText(event.target)), 250);
+  });
+
+  document.addEventListener('focusin', (event) => {
+    if (!enabled) return;
+    window.clearTimeout(hoverTimer);
+    hoverTimer = window.setTimeout(() => speakText(getText(event.target)), 120);
+  });
+
+  if ('onvoiceschanged' in synth) {
+    synth.addEventListener('voiceschanged', loadVoices);
+  }
+
+  loadVoices();
+  setEnabled(enabled, false);
+
+  if (enabled) {
+    window.setTimeout(() => speakText('Selamat datang di Pengadilan Negeri Natuna Kelas II.'), 600);
+  }
 }
 
 function setupSearchOverlay() {
