@@ -26,7 +26,7 @@ class JConfig {
 	public $dbsslca = '';
 	public $dbsslcipher = '';
 	public $force_ssl = 0;
-	public $live_site = 'http://localhost:8000';
+	public $live_site = 'http://localhost:8080';
 	public $secret = 'C1ZhUcrF6MgfTvCX';
 	public $gzip = false;
 	public $error_reporting = 'default';
@@ -61,8 +61,8 @@ class JConfig {
 	public $unicodeslugs = false;
 	public $feed_limit = 10;
 	public $feed_email = 'none';
-	public $log_path = 'C:\\tmp\\web.pn-natuna\\administrator/logs';
-	public $tmp_path = 'C:\\tmp\\web.pn-natuna/tmp';
+	public $log_path = 'D:\\PN-Natuna\\rebuild-joomla\\administrator/logs';
+	public $tmp_path = 'D:\\PN-Natuna\\rebuild-joomla/tmp';
 	public $lifetime = 15;
 	public $session_handler = 'database';
 	public $shared_session = false;
