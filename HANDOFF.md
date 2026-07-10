@@ -7,10 +7,44 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Repo: https://github.com/sapyong13-design/web.pn-natuna.git
 - Branch kerja: continue-joomla-rebuild-polish
 - Folder lokal utama: C:\tmp\web.pn-natuna
-- Local URL terakhir: http://localhost:8000 (PHP built-in server, Laragon MySQL di C:\laragon) — WAJIB port 8000 karena `live_site` di configuration.php = http://localhost:8000; port lain kena redirect-loop SEF.
+- Local URL terakhir: http://localhost:8080 (PHP built-in server, Laragon MySQL di C:\laragon) — samakan dengan `live_site` di configuration.php; kalau beda port kena redirect-loop SEF.
 - Database lokal: pn_natuna_rebuild
-- Dump database terakhir: database/pn_natuna_rebuild_20260706_2231.sql (sebelumnya: pn_natuna_rebuild_20260706_1215.sql)
+- Dump database terakhir: database/pn_natuna_rebuild_20260710_mobile_hero.sql (sebelumnya: pn_natuna_rebuild_20260710_konten_layanan.sql)
 - Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
+
+## Perubahan Sesi 10 Jul 2026 (transparansi, navbar, sidebar restore, hero sinematik, mobile redesign)
+
+Semua di branch `continue-joomla-rebuild-polish`, commit `1d1514c`..`44d4b3c`. Dump `pn_natuna_rebuild_20260710_mobile_hero.sql` sudah memuat SEMUA perubahan DB di bawah.
+
+### 1. Redesign halaman /transparansi (artikel id 45, BUKAN id 8)
+- ⚠️ Route live `/transparansi` me-render artikel **id 45** (`transparansi-landing`); artikel id 8 (`transparansi`) TIDAK dipakai. Edit yang salah target tidak akan tampil.
+- 13 URL transparansi asli dipertahankan, dikelompokkan per tema dalam kartu (`.transparansi-*` di template.css). SQL: `database/_transparansi_redesign.sql` (sudah di-apply).
+
+### 2. Navbar desktop full-width
+- Wrapper menu diberi `flex: 1 1 auto` sehingga item terdistribusi merata di layar lebar (sebelumnya menggerombol kiri). Commit `97e2aaa` + `70a5908`.
+
+### 3. Restore modul sidebar yang hilang (regresi)
+- Kartu skor SKM/IPAK, widget DIPA, dan slider Instagram sempat hilang dari beranda. Dikembalikan via `database/_sidebar_modules_restore.sql` (sudah di-apply). Commit `847a870`.
+
+### 4. Hero sinematik beranda
+- Backdrop baru: `images/hero/gedung-pn-natuna-2026.webp` (234 KB, hasil kompres dari PNG di folder yang sama).
+- Teknik dual-layer: `background cover` di bawah `contain` + mask feather di tepi supaya bendera & papan nama gedung tetap terlihat di rasio lebar; plus color grade, vignette, parallax ringan. Semua di hero-slider.php + template.css. Commit `e1cafcc`..`9249086`.
+- Spec/plan: `docs/superpowers/specs/2026-07-10-cinematic-hero-design.md` + `docs/superpowers/plans/2026-07-10-cinematic-hero.md`.
+
+### 5. Redesign beranda mobile (≤760px) — commit `44d4b3c`
+- **Header kompak 84px** (identitas 2 baris via `::before/::after` di `.brand-lockup h1`); **sticky 56px** saat scroll: `body.nav-stuck .site-header` jadi `position:fixed` dengan brand + tombol Menu tetap tampil (jangan cuma fix `.main-menu` — itu regresi review pertama).
+- **Bottom bar 5 aksi** (`.mobile-quick-actions`): Beranda/Layanan/Perkara/Pengaduan/Kontak, ikon SVG, safe-area. **HANYA di homepage**: markup di index.php dibungkus `<?php if ($isHome) : ?>` — jangan dilepas, kalau global maka `aria-current="page"` Beranda salah di halaman lain.
+- **Floating controls** (WhatsApp, panel aksesibilitas, back-to-top): offset di atas bottom bar HANYA via `body.is-home ...`; `body.is-inner ...` kembali ke tepi bawah normal. Kalau nambah kontrol melayang baru, ikuti pola scoping ini.
+- **Breakpoint guard**: `.mobile-quick-actions { display:none }` di `min-width:761px` — mencegah bar mobile bocor ke tablet 768px (regresi yang pernah terjadi, jangan diulang).
+- Konten mobile: hero fokus (ribbon cuma status + jam layanan, 2 CTA), grid 2×2 "Mulai dari sini", 4 disclosure `<details>` layanan per kebutuhan, sidebar jadi horizontal snap rail, `content-visibility:auto` untuk section bawah.
+- Desktop ≥761px TIDAK berubah — semua rule mobile di dalam `@media (max-width: 760px)` di akhir template.css.
+- Spec/plan: `docs/superpowers/specs/2026-07-10-mobile-home-redesign.md` + `docs/superpowers/plans/2026-07-10-mobile-home-redesign.md`.
+- Verifikasi: QA headless 390/430/760/768/1440/1920px — tanpa overflow horizontal, touch target ≥44px, sticky brand 56px, bottom bar tidak tampil di halaman internal.
+
+### Yang belum / perhatian berikutnya
+- Foto gedung HD ≥1920px masih PR lama (webp sekarang hasil upscale terbaik yang ada).
+- `stats-counter.php` masih pakai base_offset 24.500 palsu — hapus sebelum produksi.
+- Update 9 post IG manual per periode (cara di seksi 06 Jul malam).
 
 ## Perubahan Sesi 06 Jul 2026 malam (dark mode toggle, Layanan Publik, role model & IG revert)
 
@@ -115,15 +149,15 @@ Semua CSS baru ada di blok `/* UI POLISH 2026-07 */` di akhir template.css. SQL 
 
 2. Import database dari dump:
    mysql -u root -e "CREATE DATABASE IF NOT EXISTS pn_natuna_rebuild CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-   mysql -u root pn_natuna_rebuild < database/pn_natuna_rebuild_20260703_1630.sql
+   mysql -u root pn_natuna_rebuild < database/pn_natuna_rebuild_20260710_mobile_hero.sql
 
 3. Sesuaikan configuration.php kalau path, user database, password, atau host berbeda.
 
-4. Jalankan lokal dari root Joomla:
-   php -S 127.0.0.1:8081
+4. Jalankan lokal dari root Joomla (port HARUS sama dengan `live_site` di configuration.php, saat ini 8080):
+   php -S 127.0.0.1:8080
 
 5. Buka:
-   http://127.0.0.1:8081
+   http://localhost:8080
 
 ## File Penting
 
@@ -136,7 +170,7 @@ Semua CSS baru ada di blok `/* UI POLISH 2026-07 */` di akhir template.css. SQL 
 - images/social/instagram.svg - ikon Instagram footer.
 - images/social/facebook.svg - ikon Facebook footer.
 - images/social/youtube.svg - ikon YouTube footer.
-- database/pn_natuna_rebuild_20260703_1630.sql - snapshot DB lokal terakhir.
+- database/pn_natuna_rebuild_20260710_mobile_hero.sql - snapshot DB lokal terakhir.
 - .gitignore - ignore cache/log/runtime lokal.
 
 ## Perubahan Homepage Terakhir
@@ -189,7 +223,7 @@ Beberapa perubahan homepage ada di DB Joomla, bukan cuma file:
 - Module sosial footer dipindah ke posisi footer-social.
 - Module statis Berita Instansi Terkini dinonaktifkan karena diganti renderer PHP.
 
-Karena itu dump database/pn_natuna_rebuild_20260703_1630.sql wajib di-import saat pindah device.
+Karena itu dump database/pn_natuna_rebuild_20260710_mobile_hero.sql wajib di-import saat pindah device.
 
 ## Hal yang Sengaja Tidak Dibuat Dulu
 
@@ -208,7 +242,7 @@ Tambah nanti kalau:
 
 ## Checklist Lanjut Besok
 
-- Buka http://127.0.0.1:8081 dan cek homepage visual.
+- Buka http://localhost:8080 dan cek homepage visual (desktop + mobile 390px).
 - Cek bagian feed instansi: tanggal, judul, spacing, logo.
 - Cek footer sosial: ikon, posisi, link klik.
 - Cek map Lokasi Kami di desktop dan mobile.
