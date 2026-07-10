@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!toggle || !menu) {
     setupAccessibilityTools();
+    setupEditorialArticleShare();
     return;
   }
 
@@ -150,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCountUp();
   setupHeroBackdropPause();
   setupLazyIframes();
+  setupEditorialArticleShare();
 });
 
 function setupLazyIframes() {
@@ -700,24 +702,27 @@ function setupVoiceReader() {
 
 function setupSearchOverlay() {
   const overlay = document.querySelector('.search-overlay');
-  const toggle = document.querySelector('.search-overlay-toggle');
+  const toggles = Array.from(document.querySelectorAll('.search-overlay-toggle'));
   const close = document.querySelector('.search-overlay-close');
   const input = document.querySelector('#site-search-query');
 
-  if (!overlay || !toggle) {
+  if (!overlay || !toggles.length) {
     return;
   }
 
   const setOpen = (open) => {
     overlay.hidden = !open;
     document.body.classList.toggle('search-overlay-open', open);
-    toggle.setAttribute('aria-expanded', String(open));
+    toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', String(open)));
     if (open) {
       window.setTimeout(() => input?.focus(), 40);
     }
   };
 
-  toggle.addEventListener('click', () => setOpen(overlay.hidden));
+  toggles.forEach((toggle) => toggle.addEventListener('click', () => {
+    if (toggle.closest('.mobile-menu-panel')) document.querySelector('.menu-close')?.click();
+    setOpen(overlay.hidden);
+  }));
   close?.addEventListener('click', () => setOpen(false));
   overlay.addEventListener('click', (event) => {
     if (event.target === overlay) {
@@ -1113,3 +1118,49 @@ function setupHeroPrefetch() {
   }
 }
 
+
+function setupEditorialArticleShare() {
+  document.querySelectorAll('[data-editorial-share]').forEach((share) => {
+    const title = share.dataset.title || document.title;
+    const url = share.dataset.url || window.location.href;
+    const status = share.querySelector('[data-share-status]');
+    const announce = (message) => {
+      if (status) status.textContent = message;
+    };
+    const copy = async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const input = document.createElement('textarea');
+          input.value = url;
+          input.setAttribute('readonly', '');
+          input.style.position = 'fixed';
+          input.style.opacity = '0';
+          document.body.appendChild(input);
+          input.select();
+          if (!document.execCommand('copy')) throw new Error('copy failed');
+          input.remove();
+        }
+        announce('Tautan berhasil disalin.');
+      } catch (error) {
+        announce('Tautan tidak dapat disalin.');
+      }
+    };
+    share.querySelector('[data-share-copy]')?.addEventListener('click', copy);
+    const nativeButton = share.querySelector('[data-share-native]');
+    if (!nativeButton) return;
+    if (!navigator.share) {
+      nativeButton.hidden = true;
+      return;
+    }
+    nativeButton.addEventListener('click', async () => {
+      try {
+        await navigator.share({ title, url });
+        announce('Artikel berhasil dibagikan.');
+      } catch (error) {
+        if (error?.name !== 'AbortError') announce('Artikel tidak dapat dibagikan.');
+      }
+    });
+  });
+}

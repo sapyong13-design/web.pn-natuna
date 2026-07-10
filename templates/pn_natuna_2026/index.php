@@ -112,19 +112,27 @@ if (trim((string) $this->getDescription()) === '') {
       <div id="main-menu-list" class="main-menu-list mobile-menu-panel" aria-label="Menu Navigasi">
         <div class="mobile-menu-heading">
           <div class="mobile-menu-brand" id="mobile-menu-title">
-            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-ma.png" alt="" width="40" height="40">
+            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.png" alt="" width="40" height="40">
             <span><strong>PN Natuna</strong><small>Pengadilan Negeri Kelas II</small></span>
           </div>
-          <button class="menu-close" type="button" aria-label="Tutup menu">Tutup</button>
+          <button class="menu-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
         </div>
         <div class="mobile-menu-scroll">
+          <div class="mobile-menu-actions" aria-label="Layanan utama">
+            <a href="/informasi-perkara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2H5a2 2 0 0 0-2 2v14h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm12 8v8H5v-8z" fill="currentColor"/></svg><small>Jadwal</small></a>
+            <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zm3 4v2h8V7zm0 4v2h8v-2zm0 4v2h5v-2z" fill="currentColor"/></svg><small>SIPP</small></a>
+            <a href="/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><small>Pengaduan</small></a>
+          </div>
+          <button class="mobile-menu-search search-overlay-toggle" type="button" aria-expanded="false" aria-controls="site-search-overlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 19.6-4.5-4.5a7.5 7.5 0 1 0-1.4 1.4l4.5 4.5zM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0" fill="currentColor"/></svg><span>Cari informasi</span></button>
           <jdoc:include type="modules" name="main-menu" style="none" />
         </div>
         <div class="mobile-menu-footer">
           <button class="dark-toggle" type="button" aria-pressed="false" aria-label="Mode gelap" title="Aktifkan/matikan mode gelap">
             <svg class="dark-toggle-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             <svg class="dark-toggle-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span class="dark-toggle-copy"><strong>Mode gelap</strong><small><span class="dark-status-off">Nonaktif</span><span class="dark-status-on">Aktif</span></small></span>
           </button>
+          <span class="mobile-menu-contact"><a href="tel:+627733211203" aria-label="Telepon PN Natuna"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.2c1.2.4 2.4.6 3.6.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.2.2 2.4.6 3.6a1 1 0 0 1-.3 1z" fill="currentColor"/></svg></a><a href="https://wa.me/6281261256661" target="_blank" rel="noopener" aria-label="WhatsApp PN Natuna"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l5.3-1.3A9.5 9.5 0 1 0 12 2Zm0 17a7.4 7.4 0 0 1-3.8-1.1l-.4-.2-3.1.8.8-3-.2-.5A7.5 7.5 0 1 1 12 19Zm4.1-5.6c-.2-.1-1.3-.7-1.5-.7-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6 6 0 0 1-3-2.6c-.2-.3 0-.4.1-.5l.5-.6c.1-.2.2-.4.1-.6l-.7-1.7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.8.8-1.1 1.8-.7 2.9.7 2.1 2.3 3.8 4.3 4.8 1.6.8 3.4 1.1 4.4.3.5-.4.8-1 .9-1.6 0-.2-.1-.3-.3-.4z" fill="currentColor"/></svg></a></span>
         </div>
       </div>
     </nav>
@@ -152,16 +160,6 @@ if (trim((string) $this->getDescription()) === '') {
         <a href="/permohonan-informasi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18H4zm3 4v2h10V7zm0 4v2h10v-2zm0 4v2h7v-2z" fill="currentColor"/></svg><span><strong>Ajukan Informasi</strong><small>Layanan informasi publik</small></span></a>
         <a href="/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><span><strong>Buat Pengaduan</strong><small>Sampaikan secara aman</small></span></a>
       </div>
-    </section>
-    <section class="mobile-intents" aria-labelledby="mobile-intents-title">
-      <div class="mobile-section-heading">
-        <p>Pilih sesuai kebutuhan</p>
-        <h2 id="mobile-intents-title">Apa yang ingin Anda lakukan?</h2>
-      </div>
-      <details><summary>Saya punya perkara</summary><div><a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">Telusuri perkara di SIPP</a><a href="/informasi-perkara">Lihat jadwal sidang</a></div></details>
-      <details><summary>Saya membutuhkan layanan</summary><div><a href="/layanan-publik">Layanan PTSP</a><a href="/jenis-layanan-ptsp">Jenis layanan PTSP</a></div></details>
-      <details><summary>Saya mencari informasi</summary><div><a href="/permohonan-informasi">Ajukan permohonan informasi</a><a href="/berita-dan-pengumuman">Berita dan pengumuman</a></div></details>
-      <details><summary>Saya ingin menyampaikan keluhan</summary><div><a href="/regulasi-pengaduan">Buat pengaduan</a><a href="/kontak">Hubungi PN Natuna</a></div></details>
     </section>
   <?php endif; ?>
 

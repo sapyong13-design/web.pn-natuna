@@ -23,6 +23,15 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Dark mode: default TERANG, aktif hanya via tombol (localStorage `pnNatunaDark`), TIDAK ikut sistem.
 - Mobile ≤760px: header kompak + sticky 56px, bottom bar 5 aksi khusus homepage, sidebar jadi snap rail.
 
+### Override detail berita & pengumuman (11 Jul 2026)
+- `templates/pn_natuna_2026/html/com_content/article/default.php` hanya mengambil alih artikel dalam kategori/anak kategori alias `berita` atau `pengumuman`. Kategori lain langsung `require JPATH_BASE . '/components/com_content/tmpl/article/default.php'`; jangan salin template core ke fallback.
+- Kontrak editor berita: judul, kategori Berita, intro/full image ideal ≥1200×675, alt deskriptif, paragraf pembuka 25–45 kata, isi. Prioritas hero `image_fulltext`, lalu `image_intro`; tanpa gambar memakai identitas PN Natuna.
+- Kontrak editor pengumuman: judul, kategori Pengumuman, isi, dan link PDF/lampiran melalui isi atau Joomla article links. Gambar opsional menjadi preview dokumen.
+- Override mempertahankan event plugin, akses/no-auth, edit control, status publikasi, tags, links, dan pagination. Related maksimal tiga, kategori sama, mengecualikan artikel aktif, serta mengikuti access/language/publish window.
+- CSS wajib tetap di namespace `.editorial-article*`; JS share/copy di `setupEditorialArticleShare()`. Jangan ubah category listing untuk pekerjaan detail artikel.
+- ⚠️ Data lama memakai `publish_up` sentinel sekitar `2000-01-01`; tanggal efektif harus memakai `publish_up` hanya bila `> 2000-01-02 00:00:00`, selain itu `created`. Related juga ORDER BY tanggal efektif yang sama.
+- ⚠️ JSON `images` Joomla sering memiliki `image_fulltext` sebagai string kosong sementara `image_intro` terisi. Gunakan fallback berdasarkan nilai non-kosong (bukan `??`) dan normalisasi path lokal menjadi root-relative `/images/...` agar aman pada nested SEF URL.
+
 ### Registry ID (route → artikel Joomla)
 | Route | Artikel | Catatan |
 |---|---|---|
@@ -72,6 +81,10 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - JS membuat tombol submenu dari `li.parent/li.deeper > ul`, mendukung tiga level, satu cabang terbuka per level, current branch, focus trap/return, Escape/backdrop/link close, scroll lock/restoration, dan cleanup resize desktop.
 - Drawer memakai cream/maroon/gold, `min(90vw,360px)`, `100dvh`, safe-area, target minimal 44px, dark mode, reduced motion. Bottom bar dan kontrol melayang disembunyikan selama drawer terbuka.
 - QA Chromium terfokus: 320×568, 360×800, 390×844, 430×932, 667×375, 844×390, 760/761; mobile portrait/landscape tanpa overflow, target drawer ≥44px, close tetap terjangkau, modal semantics hanya saat terbuka, fixed controls hidden. Route uji: `/`, `/transparansi`, `/profil-pengadilan/profil-kepaniteraan`.
+- Refinement lanjutan lokal: drawer header dipadatkan, logo PN Natuna, shortcut Jadwal/SIPP/Pengaduan, search overlay, footer Mode Gelap + Telepon + WhatsApp, SVG-only icons, mode ≤359px/landscape pendek, dan section `.mobile-intents` duplikatif dihapus dari markup/CSS.
+- Footer internal mobile memakai padding bawah `20px + safe-area`; padding `85px` hanya `body.is-home` ≤760px karena hanya homepage punya bottom bar.
+- Navbar desktop ≥1101px memakai grid kolom otomatis (`grid-auto-flow:column; grid-auto-columns:minmax(0,1fr)`) agar semua menu + dark toggle tetap dalam viewport meski font metric browser/Windows berbeda; jangan kembali ke flex `space-between` untuk top-level.
+- Navbar desktop 761px+ memakai padding/font fluid `clamp()` tanpa lonjakan breakpoint 1440/1441.
 
 ## Perubahan Sesi 10 Jul 2026 (transparansi, navbar, sidebar restore, hero sinematik, mobile redesign)
 
