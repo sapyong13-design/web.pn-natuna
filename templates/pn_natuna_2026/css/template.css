@@ -9401,15 +9401,19 @@ body.is-dark .trans-more {
   --hero-gold: #e2b94f;
 }
 
-.hero-cinema .hero-backdrop {
+ .hero-cinema .hero-backdrop {
   overflow: hidden;
-  background: var(--color-primary-deep);
+  background-color: var(--color-primary-deep);
+  background-image: url("/images/hero/gedung-pn-natuna-2026.webp");
+  background-position: center 44%;
+  background-size: cover;
 }
 
 .hero-cinema .hero-backdrop img {
   max-width: none;
-  object-position: 64% 42%;
-  filter: saturate(0.9) contrast(1.06);
+  object-fit: contain;
+  object-position: 100% 50%;
+  filter: saturate(0.94) contrast(1.04);
 }
 
 .hero-cinema .hero-backdrop::before {
@@ -9428,8 +9432,8 @@ body.is-dark .trans-more {
   z-index: 2;
   background:
     repeating-linear-gradient(106deg, rgba(255, 248, 237, 0.018) 0 1px, transparent 1px 4px),
-    linear-gradient(180deg, rgba(19, 10, 8, 0.04) 28%, rgba(19, 10, 8, 0.84) 100%),
-    linear-gradient(92deg, rgba(28, 12, 10, 0.96) 0%, rgba(45, 18, 13, 0.82) 28%, rgba(37, 20, 18, 0.3) 56%, rgba(18, 31, 43, 0.08) 100%);
+    linear-gradient(180deg, rgba(19, 10, 8, 0.03) 34%, rgba(19, 10, 8, 0.5) 100%),
+    linear-gradient(92deg, rgba(28, 12, 10, 0.96) 0%, rgba(45, 18, 13, 0.82) 28%, rgba(37, 20, 18, 0.24) 56%, rgba(18, 31, 43, 0.02) 100%);
 }
 
 .hero-cinema::after {
@@ -9650,7 +9654,7 @@ body.is-dark .trans-more {
 }
 
 @media (max-width: 900px) {
-  .hero-cinema .hero-backdrop img { object-position: 68% 40%; }
+  .hero-cinema .hero-backdrop img { object-fit: cover; object-position: 68% 40%; }
   .hero-cinema .hero-backdrop::after {
     background:
       repeating-linear-gradient(106deg, rgba(255, 248, 237, 0.018) 0 1px, transparent 1px 4px),
