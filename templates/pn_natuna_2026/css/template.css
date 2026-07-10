@@ -656,6 +656,7 @@ body.is-dark .access-panel-voice.is-active {
 .main-menu-list {
   display: flex;
   align-items: stretch;
+  flex: 1 1 auto;
 }
 
 .menu-live-clock {
