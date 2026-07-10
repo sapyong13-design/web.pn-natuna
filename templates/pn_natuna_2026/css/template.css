@@ -695,6 +695,8 @@ body.is-dark .access-panel-voice.is-active {
   list-style: none;
   margin: 0;
   padding: 0;
+  flex: 1 1 auto;
+  justify-content: space-between;
 }
 
 .main-menu li {
