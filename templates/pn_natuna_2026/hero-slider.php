@@ -171,7 +171,8 @@ function pn_natuna_render_hero_slider(): void
             <p class="hero-institution">Pengadilan Negeri Natuna <span>Kelas II</span></p>
             <p class="hero-kicker"><span id="hero-greeting">Portal Resmi Pengadilan Negeri Natuna</span></p>
             <h2>Selamat Datang di<br>Pengadilan Negeri Natuna</h2>
-            <p class="hero-intro">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
+            <p class="hero-intro hero-intro-desktop">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
+            <p class="hero-intro hero-intro-mobile">Layanan pengadilan yang jelas dan mudah diakses.<br>Temukan kebutuhan Anda dalam dua langkah.</p>
             <div class="hero-service-ribbon" aria-label="Informasi layanan pengadilan">
               <p class="hero-status" id="hero-service-status" hidden></p>
               <p><span>Jam layanan</span><strong class="js-service-hours">08.00-16.30 WIB</strong></p>
@@ -180,7 +181,7 @@ function pn_natuna_render_hero_slider(): void
             </div>
             <div class="hero-actions hero-actions-primary">
               <a class="is-primary" href="/layanan-publik">Layanan Pengadilan</a>
-              <a class="is-primary" href="/informasi-perkara">Telusuri Perkara</a>
+              <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">Telusuri Perkara</a>
             </div>
             <nav class="hero-actions-secondary" aria-label="Tautan layanan lainnya">
               <a href="/zona-integritas">Zona Integritas</a>

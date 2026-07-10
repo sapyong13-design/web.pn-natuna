@@ -134,6 +134,28 @@ if (trim((string) $this->getDescription()) === '') {
     <section class="quick-links app-strip">
       <jdoc:include type="modules" name="quick-links" style="card" />
     </section>
+    <section class="mobile-start-here" aria-labelledby="mobile-start-title">
+      <div class="mobile-section-heading">
+        <p>Jalan pintas layanan</p>
+        <h2 id="mobile-start-title">Mulai dari sini</h2>
+      </div>
+      <div class="mobile-start-grid">
+        <a href="/informasi-perkara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2H5a2 2 0 0 0-2 2v14h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm12 8v8H5v-8z" fill="currentColor"/></svg><span><strong>Jadwal Sidang</strong><small>Lihat agenda hari ini</small></span></a>
+        <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 4.5-9 4.5-9-4.5zm-7 8.2 7 3.5 7-3.5V17l-7 4-7-4z" fill="currentColor"/></svg><span><strong>Telusuri Perkara</strong><small>Buka layanan SIPP</small></span></a>
+        <a href="/permohonan-informasi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18H4zm3 4v2h10V7zm0 4v2h10v-2zm0 4v2h7v-2z" fill="currentColor"/></svg><span><strong>Ajukan Informasi</strong><small>Layanan informasi publik</small></span></a>
+        <a href="/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><span><strong>Buat Pengaduan</strong><small>Sampaikan secara aman</small></span></a>
+      </div>
+    </section>
+    <section class="mobile-intents" aria-labelledby="mobile-intents-title">
+      <div class="mobile-section-heading">
+        <p>Pilih sesuai kebutuhan</p>
+        <h2 id="mobile-intents-title">Apa yang ingin Anda lakukan?</h2>
+      </div>
+      <details><summary>Saya punya perkara</summary><div><a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">Telusuri perkara di SIPP</a><a href="/informasi-perkara">Lihat jadwal sidang</a></div></details>
+      <details><summary>Saya membutuhkan layanan</summary><div><a href="/layanan-publik">Layanan PTSP</a><a href="/jenis-layanan-ptsp">Jenis layanan PTSP</a></div></details>
+      <details><summary>Saya mencari informasi</summary><div><a href="/permohonan-informasi">Ajukan permohonan informasi</a><a href="/berita-dan-pengumuman">Berita dan pengumuman</a></div></details>
+      <details><summary>Saya ingin menyampaikan keluhan</summary><div><a href="/regulasi-pengaduan">Buat pengaduan</a><a href="/kontak">Hubungi PN Natuna</a></div></details>
+    </section>
   <?php endif; ?>
 
   <?php if ($isHome) : ?>
@@ -261,28 +283,25 @@ if (trim((string) $this->getDescription()) === '') {
     </div>
   </section>
 
-  <nav class="mobile-quick-actions" aria-label="Aksi cepat mobile">
-    <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 8l10 5 8.36-4.18A12 12 0 0 1 21 12h2a14 14 0 0 0-1.06-5.36zM4 11.9V16c0 1.66 3.58 3 8 3s8-1.34 8-3v-4.1l-8 4z" fill="currentColor"/></svg>
-      <span>SIPP</span>
-    </a>
-    <a href="/informasi-perkara">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14zM5 8V6h14v2z" fill="currentColor"/></svg>
-      <span>Jadwal</span>
+  <?php if ($isHome) : ?>
+  <nav class="mobile-quick-actions" aria-label="Navigasi utama mobile">
+    <a class="is-active" href="/" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3z" fill="currentColor"/></svg><span>Beranda</span>
     </a>
     <a href="/layanan-publik">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6zm0 10h6c-.5 3.9-3 7.2-6 7.9V12H6V7.3l6-3z" fill="currentColor"/></svg>
-      <span>PTSP</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6zm0 4 5 2.5V12c0 3.4-2 6.4-5 7.5-3-1.1-5-4.1-5-7.5V8.5z" fill="currentColor"/></svg><span>Layanan</span>
     </a>
-    <button class="search-overlay-toggle" type="button" aria-controls="site-search-overlay" aria-expanded="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" fill="currentColor"/></svg>
-      <span>Cari</span>
-    </button>
+    <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zm3 4v2h8V7zm0 4v2h8v-2zm0 4v2h5v-2z" fill="currentColor"/></svg><span>Perkara</span>
+    </a>
+    <a href="/regulasi-pengaduan">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><span>Pengaduan</span>
+    </a>
     <a href="/kontak">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02z" fill="currentColor"/></svg>
-      <span>Kontak</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.2c1.2.4 2.4.6 3.6.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.2.2 2.4.6 3.6a1 1 0 0 1-.3 1z" fill="currentColor"/></svg><span>Kontak</span>
     </a>
   </nav>
+  <?php endif; ?>
   <div id="site-search-overlay" class="search-overlay" hidden>
     <div class="search-overlay-panel" role="dialog" aria-modal="true" aria-labelledby="search-overlay-title">
       <div class="search-overlay-heading">
