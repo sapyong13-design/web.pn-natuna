@@ -151,29 +151,41 @@ function pn_natuna_render_hero_slider(): void
     $berita = pn_natuna_hero_latest_articles(12, 4);
     $pengumuman = pn_natuna_hero_latest_articles(13, 4);
 
+    $today = Factory::getDate('now', 'Asia/Jakarta');
+    $dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    $monthNames = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    $todayLabel = $dayNames[(int) $today->format('w')] . ', ' . $today->format('j') . ' ' . $monthNames[(int) $today->format('n')] . ' ' . $today->format('Y');
     $previewImg = $berita ? pn_natuna_hero_article_image($berita[0]) : '/images/sejarah/sejarah-pn-natuna.jpg';
     $previewCaption = $berita ? $berita[0]->title : 'Berita Pengadilan Negeri Natuna';
     ?>
     <div class="hero-slider hero-cinema" data-interval="7000">
       <div class="hero-backdrop" aria-hidden="true">
-        <img src="/images/sejarah/sejarah-pn-natuna.jpg" alt="" fetchpriority="high" decoding="async">
+        <img src="/images/hero/gedung-pn-natuna-2026.webp" alt="" width="1536" height="1024" fetchpriority="high" decoding="async">
       </div>
-      <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna</span>
+      <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna &middot; Ranai, Kepulauan Riau</span>
 
       <div class="hero-slides">
 
         <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
-          <div class="hero-copy">
+          <div class="hero-copy hero-welcome-copy">
+            <p class="hero-institution">Pengadilan Negeri Natuna <span>Kelas II</span></p>
             <p class="hero-kicker"><span id="hero-greeting">Portal Resmi Pengadilan Negeri Natuna</span></p>
             <h2>Selamat Datang di<br>Pengadilan Negeri Natuna</h2>
-            <p>Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan yang cepat, transparan, dan mudah diakses. Informasi layanan PTSP, perkara, dan kanal resmi pengadilan tersedia di beranda ini.</p>
-            <div class="hero-actions">
-              <a class="is-primary" href="/layanan-publik">Layanan PTSP</a>
-              <a href="/informasi-perkara">Informasi Perkara</a>
+            <p class="hero-intro">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
+            <div class="hero-service-ribbon" aria-label="Informasi layanan pengadilan">
+              <p class="hero-status" id="hero-service-status" hidden></p>
+              <p><span>Jam layanan</span><strong class="js-service-hours">08.00-16.30 WIB</strong></p>
+              <p><span>Hari ini</span><strong><?php echo htmlspecialchars($todayLabel, ENT_QUOTES, 'UTF-8'); ?></strong></p>
+              <p><span>Lokasi</span><strong>Ranai, Kepulauan Riau</strong></p>
+            </div>
+            <div class="hero-actions hero-actions-primary">
+              <a class="is-primary" href="/layanan-publik">Layanan Pengadilan</a>
+              <a class="is-primary" href="/informasi-perkara">Telusuri Perkara</a>
+            </div>
+            <nav class="hero-actions-secondary" aria-label="Tautan layanan lainnya">
               <a href="/zona-integritas">Zona Integritas</a>
               <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">SIPP</a>
-            </div>
-            <p class="hero-status" id="hero-service-status" hidden></p>
+            </nav>
           </div>
         </div>
 
