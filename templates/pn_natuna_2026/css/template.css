@@ -9528,20 +9528,20 @@ body.is-dark .trans-more {
   align-items: stretch;
   width: fit-content;
   max-width: 100%;
-  margin: 0 0 18px;
-  border-block: 1px solid rgba(255, 248, 237, 0.24);
+  margin: 0 0 17px;
+  border-block: 1px solid rgba(255, 248, 237, 0.16);
   color: var(--hero-cream);
-  background: rgba(35, 17, 14, 0.66);
+  background: rgba(35, 17, 14, 0.52);
 }
 
 .home-slider .hero-service-ribbon p {
   display: grid;
   align-content: center;
   gap: 2px;
-  min-height: 54px;
+  min-height: 50px;
   margin: 0;
-  padding: 8px 14px;
-  border-right: 1px solid rgba(255, 248, 237, 0.18);
+  padding: 7px 13px;
+  border-right: 1px solid rgba(255, 248, 237, 0.12);
   color: var(--hero-cream);
   text-shadow: none;
 }
@@ -9619,8 +9619,31 @@ body.is-dark .trans-more {
   border-radius: 0;
   padding: 0;
   background: transparent;
-  color: rgba(255, 248, 237, 0.72);
-  letter-spacing: 0.04em;
+  color: rgba(255, 248, 237, 0.82);
+  font-size: 0.78rem;
+  letter-spacing: 0.045em;
+}
+.hero-cinema .hero-nav {
+  width: 38px;
+  height: 38px;
+  border-color: rgba(226, 185, 79, 0.52);
+  background: rgba(35, 17, 14, 0.58);
+  color: var(--hero-gold);
+  font-size: 1.28rem;
+}
+
+.hero-cinema .hero-nav:hover,
+.hero-cinema .hero-nav:focus-visible {
+  border-color: var(--hero-gold);
+  background: rgba(47, 20, 14, 0.88);
+}
+
+.hero-cinema .hero-backdrop::after {
+  background:
+    repeating-radial-gradient(circle at 30% 40%, rgba(255, 248, 237, 0.018) 0 0.6px, transparent 0.8px 3px),
+    radial-gradient(ellipse at 76% 67%, rgba(255, 228, 180, 0.13) 0%, transparent 29%),
+    linear-gradient(180deg, rgba(19, 10, 8, 0.01) 42%, rgba(19, 10, 8, 0.34) 100%),
+    linear-gradient(92deg, rgba(28, 12, 10, 0.96) 0%, rgba(45, 18, 13, 0.74) 27%, rgba(37, 20, 18, 0.1) 48%, rgba(18, 31, 43, 0) 68%);
 }
 
 @media (prefers-reduced-motion: no-preference) {
