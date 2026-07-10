@@ -3,27 +3,121 @@ document.addEventListener('DOMContentLoaded', () => {
   const menu = document.querySelector('.main-menu-list');
   const close = document.querySelector('.menu-close');
   const backdrop = document.querySelector('.menu-backdrop');
+  const mobileQuery = window.matchMedia('(max-width: 760px)');
 
   if (!toggle || !menu) {
     setupAccessibilityTools();
     return;
   }
 
-  const setMenuOpen = (open) => {
+  let trigger = toggle;
+  let lockedScrollY = 0;
+  const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const parents = Array.from(menu.querySelectorAll('li.parent, li.deeper')).filter((item) => {
+    const child = Array.from(item.children).find((element) => element.tagName === 'UL');
+    return Boolean(child);
+  });
+
+  parents.forEach((item, index) => {
+    const child = Array.from(item.children).find((element) => element.tagName === 'UL');
+    const link = Array.from(item.children).find((element) => element.matches('a, span'));
+    if (!child || !link || item.querySelector(':scope > .submenu-toggle')) return;
+    child.id ||= `mobile-submenu-${index + 1}`;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'submenu-toggle';
+    button.setAttribute('aria-controls', child.id);
+    button.setAttribute('aria-label', `Buka submenu ${link.textContent.trim()}`);
+    const currentBranch = item.matches('.active, .current') || Boolean(item.querySelector('.active, .current, [aria-current="page"]'));
+    child.hidden = mobileQuery.matches && !currentBranch;
+    item.classList.toggle('submenu-open', currentBranch);
+    link.insertAdjacentElement('afterend', button);
+    button.addEventListener('click', () => {
+      const opening = button.getAttribute('aria-expanded') !== 'true';
+      if (opening) {
+        const level = item.parentElement;
+        Array.from(level.children).forEach((sibling) => {
+          if (sibling === item) return;
+          const siblingButton = sibling.querySelector(':scope > .submenu-toggle');
+          const siblingList = siblingButton && sibling.querySelector(':scope > ul');
+          if (siblingButton && siblingList) {
+            siblingButton.setAttribute('aria-expanded', 'false');
+            siblingButton.setAttribute('aria-label', siblingButton.getAttribute('aria-label').replace(/^Tutup/, 'Buka'));
+            siblingList.hidden = true;
+            sibling.classList.remove('submenu-open');
+          }
+        });
+      }
+      button.setAttribute('aria-expanded', String(opening));
+      button.setAttribute('aria-label', button.getAttribute('aria-label').replace(opening ? /^Buka/ : /^Tutup/, opening ? 'Tutup' : 'Buka'));
+      child.hidden = !opening;
+      item.classList.toggle('submenu-open', opening);
+    });
+  });
+
+  const setMenuOpen = (open, options = {}) => {
+    open = Boolean(open && mobileQuery.matches);
     toggle.setAttribute('aria-expanded', String(open));
     menu.classList.toggle('is-open', open);
     document.body.classList.toggle('menu-drawer-open', open);
-    if (backdrop) {
-      backdrop.hidden = !open;
+    backdrop.hidden = !open;
+    if (open) {
+      trigger = options.trigger || document.activeElement || toggle;
+      lockedScrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${lockedScrollY}px`;
+      document.body.style.width = '100%';
+      menu.setAttribute('role', 'dialog');
+      menu.setAttribute('aria-modal', 'true');
+      menu.setAttribute('aria-labelledby', 'mobile-menu-title');
+      close?.focus();
+    } else {
+      menu.removeAttribute('role');
+      menu.removeAttribute('aria-modal');
+      menu.removeAttribute('aria-labelledby');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      if (options.restoreScroll !== false) window.scrollTo(0, lockedScrollY);
+      if (options.restoreFocus !== false && trigger instanceof HTMLElement) trigger.focus();
     }
   };
 
-  toggle.addEventListener('click', () => setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  toggle.addEventListener('click', () => setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true', { trigger: toggle }));
   close?.addEventListener('click', () => setMenuOpen(false));
   backdrop?.addEventListener('click', () => setMenuOpen(false));
+  menu.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href]');
+    if (link && !link.hasAttribute('target')) setMenuOpen(false, { restoreFocus: false });
+  });
   document.addEventListener('keydown', (event) => {
+    if (!menu.classList.contains('is-open')) return;
     if (event.key === 'Escape') {
+      event.preventDefault();
       setMenuOpen(false);
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(menu.querySelectorAll(focusableSelector)).filter((element) => !element.closest('[hidden]'));
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+  mobileQuery.addEventListener('change', (event) => {
+    if (!event.matches) {
+      setMenuOpen(false, { restoreScroll: true, restoreFocus: false });
+      parents.forEach((item) => {
+        const child = item.querySelector(':scope > ul');
+        if (child) child.hidden = false;
+      });
+    } else {
+      parents.forEach((item) => {
+        const child = item.querySelector(':scope > ul');
+        const button = item.querySelector(':scope > .submenu-toggle');
+        if (child && button) child.hidden = button.getAttribute('aria-expanded') !== 'true';
+      });
     }
   });
 
