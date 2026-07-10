@@ -9404,16 +9404,18 @@ body.is-dark .trans-more {
  .hero-cinema .hero-backdrop {
   overflow: hidden;
   background-color: var(--color-primary-deep);
-  background-image: url("/images/hero/gedung-pn-natuna-2026.webp");
-  background-position: center 44%;
-  background-size: cover;
 }
 
 .hero-cinema .hero-backdrop img {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: auto;
   max-width: none;
-  object-fit: contain;
-  object-position: 100% 50%;
+  height: 100%;
+  object-fit: fill;
   filter: saturate(0.94) contrast(1.04);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%);
 }
 
 .hero-cinema .hero-backdrop::before {
@@ -9654,7 +9656,15 @@ body.is-dark .trans-more {
 }
 
 @media (max-width: 900px) {
-  .hero-cinema .hero-backdrop img { object-fit: cover; object-position: 68% 40%; }
+  .hero-cinema .hero-backdrop img {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 68% 40%;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
   .hero-cinema .hero-backdrop::after {
     background:
       repeating-linear-gradient(106deg, rgba(255, 248, 237, 0.018) 0 1px, transparent 1px 4px),
