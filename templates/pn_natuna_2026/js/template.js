@@ -27,8 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     button.type = 'button';
     button.className = 'submenu-toggle';
     button.setAttribute('aria-controls', child.id);
-    button.setAttribute('aria-label', `Buka submenu ${link.textContent.trim()}`);
     const currentBranch = item.matches('.active, .current') || Boolean(item.querySelector('.active, .current, [aria-current="page"]'));
+    button.setAttribute('aria-label', `${currentBranch ? 'Tutup' : 'Buka'} submenu ${link.textContent.trim()}`);
+    button.setAttribute('aria-expanded', String(currentBranch));
     child.hidden = mobileQuery.matches && !currentBranch;
     item.classList.toggle('submenu-open', currentBranch);
     link.insertAdjacentElement('afterend', button);
@@ -55,15 +56,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  menu.inert = mobileQuery.matches;
+  let scrollLocked = false;
   const setMenuOpen = (open, options = {}) => {
     open = Boolean(open && mobileQuery.matches);
+    const wasOpen = menu.classList.contains('is-open');
     toggle.setAttribute('aria-expanded', String(open));
     menu.classList.toggle('is-open', open);
+    menu.inert = mobileQuery.matches && !open;
     document.body.classList.toggle('menu-drawer-open', open);
     backdrop.hidden = !open;
     if (open) {
       trigger = options.trigger || document.activeElement || toggle;
       lockedScrollY = window.scrollY;
+      scrollLocked = true;
       document.body.style.position = 'fixed';
       document.body.style.top = `-${lockedScrollY}px`;
       document.body.style.width = '100%';
@@ -78,8 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      if (options.restoreScroll !== false) window.scrollTo(0, lockedScrollY);
-      if (options.restoreFocus !== false && trigger instanceof HTMLElement) trigger.focus();
+      if (scrollLocked && options.restoreScroll !== false) window.scrollTo(0, lockedScrollY);
+      scrollLocked = false;
+      if (wasOpen && options.restoreFocus !== false && trigger instanceof HTMLElement) trigger.focus();
     }
   };
 
@@ -107,7 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   mobileQuery.addEventListener('change', (event) => {
     if (!event.matches) {
-      setMenuOpen(false, { restoreScroll: true, restoreFocus: false });
+      setMenuOpen(false, { restoreScroll: scrollLocked, restoreFocus: false });
+      menu.inert = false;
       parents.forEach((item) => {
         const child = item.querySelector(':scope > ul');
         if (child) child.hidden = false;
