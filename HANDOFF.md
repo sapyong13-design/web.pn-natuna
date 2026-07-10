@@ -65,6 +65,14 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 9. NIP Ardiansyah 19 digit (artikel 114) — belum dikonfirmasi kepegawaian.
 10. Foto gedung sumber hanya 700×523 — butuh foto HD ≥1920px (PR lama).
 
+## Perubahan Sesi 11 Jul 2026 (mobile navigation repair)
+
+- Drawer mobile aktif hanya pada `max-width:760px`; desktop `min-width:761px` mempertahankan menu biasa tanpa `role="dialog"` atau `aria-modal`.
+- Hook stabil: `#main-menu-list`, `.menu-toggle`, `.menu-close`, `.menu-backdrop`, `.mobile-menu-scroll`, `.mobile-menu-footer`, `.submenu-toggle`, `body.menu-drawer-open`.
+- JS membuat tombol submenu dari `li.parent/li.deeper > ul`, mendukung tiga level, satu cabang terbuka per level, current branch, focus trap/return, Escape/backdrop/link close, scroll lock/restoration, dan cleanup resize desktop.
+- Drawer memakai cream/maroon/gold, `min(90vw,360px)`, `100dvh`, safe-area, target minimal 44px, dark mode, reduced motion. Bottom bar dan kontrol melayang disembunyikan selama drawer terbuka.
+- QA Chromium terfokus: 320×568, 360×800, 390×844, 430×932, 667×375, 844×390, 760/761; mobile portrait/landscape tanpa overflow, target drawer ≥44px, close tetap terjangkau, modal semantics hanya saat terbuka, fixed controls hidden. Route uji: `/`, `/transparansi`, `/profil-pengadilan/profil-kepaniteraan`.
+
 ## Perubahan Sesi 10 Jul 2026 (transparansi, navbar, sidebar restore, hero sinematik, mobile redesign)
 
 Semua di branch `continue-joomla-rebuild-polish`, commit `1d1514c`..`44d4b3c`. Dump `pn_natuna_rebuild_20260710_mobile_hero.sql` sudah memuat SEMUA perubahan DB di bawah.
