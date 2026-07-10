@@ -112,22 +112,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
-  mobileQuery.addEventListener('change', (event) => {
-    if (!event.matches) {
+  const syncMenuBreakpoint = () => {
+    if (!mobileQuery.matches) {
       setMenuOpen(false, { restoreScroll: scrollLocked, restoreFocus: false });
       menu.inert = false;
       parents.forEach((item) => {
         const child = item.querySelector(':scope > ul');
         if (child) child.hidden = false;
       });
-    } else {
-      parents.forEach((item) => {
-        const child = item.querySelector(':scope > ul');
-        const button = item.querySelector(':scope > .submenu-toggle');
-        if (child && button) child.hidden = button.getAttribute('aria-expanded') !== 'true';
-      });
+      return;
     }
-  });
+    menu.inert = !menu.classList.contains('is-open');
+    parents.forEach((item) => {
+      const child = item.querySelector(':scope > ul');
+      const button = item.querySelector(':scope > .submenu-toggle');
+      if (child && button) child.hidden = button.getAttribute('aria-expanded') !== 'true';
+    });
+  };
+  mobileQuery.addEventListener('change', syncMenuBreakpoint);
+  window.addEventListener('resize', syncMenuBreakpoint, { passive: true });
 
   setupAccessibilityTools();
   setupSearchOverlay();
