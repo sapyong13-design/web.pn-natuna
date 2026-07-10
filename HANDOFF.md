@@ -12,6 +12,59 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Dump database terakhir: database/pn_natuna_rebuild_20260710_mobile_hero.sql (sebelumnya: pn_natuna_rebuild_20260710_konten_layanan.sql)
 - Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
 
+## PETA CEPAT (baca ini dulu — cukup seksi ini + sesi terbaru)
+
+> Hemat token: agent baru cukup baca **Status Terakhir + Peta Cepat + seksi sesi TERBARU**. Seksi sesi lama = arsip; baca hanya kalau menyentuh area terkait. Sesi lama bisa saling kontradiksi — yang menang selalu sesi TERBARU.
+
+### State kini (sudah final, jangan di-"perbaiki" lagi)
+- Hero beranda: sinematik full-bleed, backdrop `images/hero/gedung-pn-natuna-2026.webp`, dual-layer cover/contain + mask feather.
+- Role Model (modul 482): POSTER dari `images/role-model/` (versi kartu HTML sudah dibatalkan — jangan dikembalikan).
+- Instagram (modul 483): slider 9 post individual phone-frame (profile-embed grid sudah dibatalkan — hanya render 6 tile & crop).
+- Dark mode: default TERANG, aktif hanya via tombol (localStorage `pnNatunaDark`), TIDAK ikut sistem.
+- Mobile ≤760px: header kompak + sticky 56px, bottom bar 5 aksi khusus homepage, sidebar jadi snap rail.
+
+### Registry ID (route → artikel Joomla)
+| Route | Artikel | Catatan |
+|---|---|---|
+| `/transparansi` | **45** | ⚠️ BUKAN id 8 — id 8 tidak dirender |
+| Layanan Publik (8 halaman) | 26, 11, 12, 13, 14, 15, 19, 97 | id 13 = Maklumat |
+| Profil Hakim / Kepaniteraan / Kesekretariatan | 58 / 59 / 60 | |
+| Unit kepaniteraan | 107-110 | URL nested `/profil-pengadilan/profil-kepaniteraan/...` |
+| Profil PPPK | 114 | menu id 278 |
+| Sejarah | 54 | |
+
+### Registry modul
+| Modul | Isi |
+|---|---|
+| 482 | Role Model (poster) |
+| 483 | Instagram slider 9 post (update manual — cara di sesi 06 Jul malam) |
+| 808 | Maklumat duo panel (home-alerts) |
+| 816 | Kinerja & Akuntabilitas: skor SKM/IPAK **manual per triwulan** + widget DIPA (`tools/refresh-dipa.py` menimpa HANYA blok `.dipa-widget`) |
+| 817 | DIPA lama — UNPUBLISHED, jangan dipakai |
+| 112 | Quick links |
+
+### File kunci
+- `templates/pn_natuna_2026/index.php` — shell, meta/SEO, bottom bar mobile (guard `$isHome`).
+- `templates/pn_natuna_2026/css/template.css` (~9900 baris) — blok mobile `@media (max-width:760px)` di AKHIR file; blok bertanda komentar `/* UI POLISH 2026-07 */` dst.
+- `templates/pn_natuna_2026/template.js` — semua interaksi (`setupStickyNav`, `initCarousel`, `setupMaklumatLightbox`, dll).
+- `templates/pn_natuna_2026/hero-slider.php` — hero + berita terbaru beranda.
+- `templates/pn_natuna_2026/instansi-feed.php` — scraper feed MA/Badilum/PT Kepri (cache 1 jam).
+- `templates/pn_natuna_2026/sipp-schedule.php`, `stats-counter.php`, `html/layouts/chromes/card.php`.
+- `tools/refresh-survey.py`, `tools/refresh-dipa.py`, `cron-refresh-instansi.php` (lihat CRON-AUTOUPDATE-HANDOFF.md).
+- `database/_*.sql` = delta yang SUDAH di-apply; `database/pn_natuna_rebuild_YYYYMMDD_*.sql` = snapshot penuh. **Konten artikel/modul hidup di DB, bukan file — setiap ubah DB wajib bikin delta SQL + dump baru.**
+
+### Jebakan (pelajaran mahal, jangan diulang)
+1. Port server HARUS sama dengan `live_site` di configuration.php (kini 8080) — beda port = redirect-loop SEF.
+2. `/transparansi` = artikel 45. Edit id 8 tidak berefek.
+3. Bottom bar mobile hanya homepage (`$isHome`); floating controls scoped `body.is-home`/`body.is-inner`; guard `display:none` ≥761px. Lepas salah satu = regresi tablet/aria.
+4. Sticky mobile: fix seluruh `.site-header`, bukan cuma `.main-menu`. `.header-brand` punya `min-height:84px` — override butuh `min-height:56px` juga.
+5. JANGAN pakai `backdrop-filter` di atas layer beranimasi (Ken Burns) — jank; pakai rgba pekat.
+6. `:has()` tidak match konten mod_custom (terbungkus `div.custom`) — pakai moduleclass_sfx.
+7. Screenshot headless `--window-size=390` menyesatkan (layout min ~400px) — cek mobile via CDP/`page.setViewport`.
+8. `stats-counter.php` masih menambah base_offset 24.500 PALSU ke total kunjungan — HAPUS sebelum produksi.
+9. NIP Ardiansyah 19 digit (artikel 114) — belum dikonfirmasi kepegawaian.
+10. Foto gedung sumber hanya 700×523 — butuh foto HD ≥1920px (PR lama).
+
 ## Perubahan Sesi 10 Jul 2026 (transparansi, navbar, sidebar restore, hero sinematik, mobile redesign)
 
 Semua di branch `continue-joomla-rebuild-polish`, commit `1d1514c`..`44d4b3c`. Dump `pn_natuna_rebuild_20260710_mobile_hero.sql` sudah memuat SEMUA perubahan DB di bawah.
@@ -172,21 +225,6 @@ Semua CSS baru ada di blok `/* UI POLISH 2026-07 */` di akhir template.css. SQL 
 - images/social/youtube.svg - ikon YouTube footer.
 - database/pn_natuna_rebuild_20260710_mobile_hero.sql - snapshot DB lokal terakhir.
 - .gitignore - ignore cache/log/runtime lokal.
-
-## Perubahan Homepage Terakhir
-
-- Kotak quick link lama dihapus: PPID Informasi, Biaya Perkara, Kontak PTSP, Standar Layanan.
-- Quick link sosial media dipindah ke footer.
-- Ikon sosial media memakai SVG lokal, bukan embed eksternal.
-- Footer sosial diletakkan di bawah teks Pengadilan Negeri Natuna.
-- Map Lokasi Kami dibuat lebih pendek, lebar tetap sama.
-- Section informasi instansi dibuat compact.
-- Judul besar Berita dan Pengumuman Instansi dihapus sesuai permintaan terakhir.
-- Tiap instansi tampil 1 baris/kartu sendiri.
-- Dalam tiap instansi: kolom kiri Berita, kolom kanan Pengumuman.
-- Tiap kolom maksimal 5 item, dengan tanggal posting.
-- Logo instansi kecil ditaruh kiri judul instansi.
-- Teks judul instansi dibuat putih dan lebih besar.
 
 ## Feed Instansi
 
