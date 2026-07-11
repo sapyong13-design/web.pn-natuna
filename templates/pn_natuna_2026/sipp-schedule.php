@@ -74,7 +74,9 @@ function pn_natuna_sipp_render_schedule(): void
     <section class="sipp-schedule-board" aria-labelledby="sipp-schedule-title">
       <div class="sipp-schedule-head sipp-schedule-head-simple">
         <div>
+          <p class="section-kicker">Informasi Perkara</p>
           <h2 id="sipp-schedule-title">Jadwal Sidang Hari Ini</h2>
+          <p class="section-desc">Agenda persidangan resmi yang tersinkron langsung dari SIPP.</p>
           <span><?php echo htmlspecialchars($dateLabel, ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
         <a class="section-action" href="<?php echo $url; ?>" target="_blank" rel="noopener">Buka jadwal lengkap di SIPP</a>

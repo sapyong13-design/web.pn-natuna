@@ -37,6 +37,13 @@
 *.zip
 *.7z
 
+# Archived original heavy images (pre-WebP compression, kept locally only)
+/images/_originals/
+
+# Generated Python bytecode
+__pycache__/
+*.py[cod]
+
 
 # Security tools, design docs, and handoff runbooks remain tracked; the deployment
 # allowlist excludes them from public_html.

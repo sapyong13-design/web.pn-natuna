@@ -364,7 +364,7 @@ menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi.
 2. Cari PDF **TERBARU** (prefer "01 dan 03" combined, sort by tahun+bulan).
 3. Download → parse text → extract baris **"JUMLAH SELURUHNYA"** per Unit Organisasi (01, 03) → dapat %, pagu, realisasi.
 4. Generate donut chart HTML (CSS conic-gradient, 2 ring) + link ke PDF gdrive.
-5. Update module Joomla (DB id 817).
+5. Update hanya blok `.dipa-widget` pada module Joomla aktif (DB id 816); module 817 adalah versi lama yang unpublished.
 
 ### Menjalankan
 ```bash
@@ -378,7 +378,7 @@ MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
 3. Donut auto-update ke Juli (%, pagu, link PDF).
 
 ### Konfigurasi (`tools/refresh-dipa.py`)
-- `FOLDER_ID`, `MODULE_ID` (817), `MYSQL_BIN`/`DB_USER`/`DB_NAME` (env var)
+- `FOLDER_ID`, `MODULE_ID` (816), `MYSQL_BIN`/`DB_USER`/`DB_NAME` (env var)
 
 ### Catatan parsing
 Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`

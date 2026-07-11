@@ -317,7 +317,11 @@ function pn_natuna_render_instansi_feed(): void
     ?>
     <div class="module-card instansi-news-board instansi-tab-board">
       <div class="instansi-board-head">
-        <h2>Kabar Instansi Peradilan</h2>
+        <div class="section-head">
+          <p class="section-kicker">Jejaring Peradilan</p>
+          <h2>Kabar Instansi Peradilan</h2>
+          <p class="section-desc">Berita dan pengumuman resmi dari Mahkamah Agung serta pengadilan tingkat banding.</p>
+        </div>
         <?php if ($updated !== '') : ?>
           <span class="instansi-updated">Diperbarui <?php echo htmlspecialchars($updated, ENT_QUOTES, 'UTF-8'); ?></span>
         <?php endif; ?>
@@ -330,7 +334,7 @@ function pn_natuna_render_instansi_feed(): void
                   aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>"
                   class="<?php echo $i === 0 ? 'is-active' : ''; ?>"
                   data-instansi-tab="<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>">
-            <img src="<?php echo htmlspecialchars($meta[$key]['logo'] ?? ($instansi['logo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" alt="" loading="lazy">
+            <img src="<?php echo htmlspecialchars($meta[$key]['logo'] ?? ($instansi['logo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="26" height="26" loading="lazy" decoding="async">
             <span><?php echo htmlspecialchars($short, ENT_QUOTES, 'UTF-8'); ?></span>
           </button>
         <?php $i++; endforeach; ?>

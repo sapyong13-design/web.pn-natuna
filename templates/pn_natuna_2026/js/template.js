@@ -246,21 +246,41 @@ function setupScrollReveal() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
     return;
   }
-  const targets = document.querySelectorAll('.home-juknis-main > *, .home-juknis-main .home-content-pair > *, .home-juknis-main .home-briefing-pair > *, .home-juknis-sidebar > *');
+  // PERF-MOTION 2026-07-11: section-level containers only — one observed
+  // element per card/band, never per inner item; pairs reveal as one unit.
+  const targets = document.querySelectorAll('.home-juknis-main > *, .home-juknis-sidebar > *');
   if (!targets.length) return;
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-revealed');
-        observer.unobserve(entry.target);
-      }
+  const reveal = (el) => {
+    el.classList.add('is-revealed');
+    observer.unobserve(el);
+  };
+  // Fast flicks past content-visibility layout shifts can carry a section
+  // through the viewport without a rendered frame; whenever anything observed
+  // intersects, everything already above the viewport has been scrolled past
+  // and must reveal too — nothing may stay stuck at opacity:0.
+  const sweepAbove = () => {
+    targets.forEach((el) => {
+      if (!el.classList.contains('is-revealed') && el.getBoundingClientRect().bottom < 0) reveal(el);
     });
+  };
+  const observer = new IntersectionObserver((entries) => {
+    let hit = false;
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      hit = true;
+      if (entry.target.classList.contains('reveal-init')) reveal(entry.target);
+      else observer.unobserve(entry.target);
+    });
+    if (hit) sweepAbove();
   }, { rootMargin: '0px 0px 200px 0px', threshold: 0 });
   targets.forEach((el) => {
-    if (el.classList.contains('home-content-pair') || el.classList.contains('home-briefing-pair')) return;
     el.classList.add('reveal-init');
     observer.observe(el);
   });
+  // Footer sentinel: catches a single mega-jump to page bottom where no
+  // reveal target itself gets an intersection frame.
+  const sentinel = document.querySelector('.site-footer');
+  if (sentinel) observer.observe(sentinel);
 }
 
 function setupCountUp() {

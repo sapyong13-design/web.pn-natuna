@@ -122,7 +122,11 @@ function pn_natuna_render_latest_news(): void
     ?>
     <div class="module-card news-cards-board">
       <div class="news-cards-head">
-        <h2>Berita Terbaru</h2>
+        <div class="section-head">
+          <p class="section-kicker">Berita</p>
+          <h2>Berita Terbaru</h2>
+          <p class="section-desc">Kabar kegiatan, layanan, dan capaian terbaru Pengadilan Negeri Natuna.</p>
+        </div>
         <a class="section-action" href="/berita-dan-pengumuman">Semua Berita &rarr;</a>
       </div>
       <div class="news-cards-grid">
@@ -132,7 +136,7 @@ function pn_natuna_render_latest_news(): void
         ?>
           <a class="news-card" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($article, 12), ENT_QUOTES, 'UTF-8'); ?>">
             <span class="news-card-media">
-              <img src="<?php echo htmlspecialchars(pn_natuna_hero_article_image($article), ENT_QUOTES, 'UTF-8'); ?>" alt="" loading="lazy">
+              <img src="<?php echo htmlspecialchars(pn_natuna_hero_article_image($article), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="480" height="300" loading="lazy" decoding="async">
               <?php if (pn_natuna_hero_is_new($article->created)) : ?><span class="news-card-new">Baru</span><?php endif; ?>
             </span>
             <time><?php echo htmlspecialchars($dateLabel, ENT_QUOTES, 'UTF-8'); ?></time>
@@ -207,7 +211,7 @@ function pn_natuna_render_hero_slider(): void
             </div>
           </div>
           <figure class="hero-media hero-news-media">
-            <img id="hero-news-preview" src="<?php echo htmlspecialchars($previewImg, ENT_QUOTES, 'UTF-8'); ?>" alt="Pratinjau berita" loading="lazy">
+            <img id="hero-news-preview" src="<?php echo htmlspecialchars($previewImg, ENT_QUOTES, 'UTF-8'); ?>" alt="Pratinjau berita" width="800" height="600" loading="lazy" decoding="async">
             <figcaption id="hero-news-caption"><?php echo htmlspecialchars($previewCaption, ENT_QUOTES, 'UTF-8'); ?></figcaption>
           </figure>
         </div>

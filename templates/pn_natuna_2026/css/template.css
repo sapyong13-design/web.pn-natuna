@@ -40,13 +40,6 @@ body {
   line-height: 1.55;
 }
 
-body.is-contrast {
-  --color-primary: #7b1605;
-  --color-accent: #f5c542;
-  --color-ink: #091016;
-  --color-muted: #2f3a42;
-  --color-line: #8a949d;
-}
 
 body.is-dark {
   --color-ink: #edf2f7;
@@ -259,7 +252,7 @@ body.is-dark .topbar-clock #live-clock-time {
   padding: 14px;
   color: var(--color-ink);
   background: var(--color-surface);
-  box-shadow: 0 22px 60px rgba(29, 39, 48, 0.2);
+  box-shadow: var(--shadow-overlay);
   max-height: calc(100dvh - 96px);
   overflow-y: auto;
 }
@@ -659,25 +652,6 @@ body.is-dark .access-panel-voice.is-active {
   flex: 1 1 auto;
 }
 
-.menu-live-clock {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.menu-live-clock #live-clock-time {
-  font-weight: 700;
-  font-feature-settings: "tnum" 1;
-  font-variant-numeric: tabular-nums;
-  padding-left: 8px;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-}
 
 .menu-toggle {
   display: none;
@@ -1464,7 +1438,7 @@ body.is-dark .access-panel-voice.is-active {
   text-decoration: none;
   font-weight: 700;
   background: #fff;
-  box-shadow: 0 8px 20px rgba(29, 39, 48, 0.05);
+  box-shadow: var(--shadow-subtle);
 }
 
 .service-links a:hover,
@@ -1517,7 +1491,7 @@ body.is-dark .access-panel-voice.is-active {
   border-radius: var(--radius);
   overflow: hidden;
   background: #fff;
-  box-shadow: 0 10px 26px rgba(29, 39, 48, 0.06);
+  box-shadow: var(--shadow-card);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
@@ -1995,7 +1969,7 @@ a.instagram-post-slide {
   border: 1px solid var(--color-line);
   border-radius: var(--radius);
   background: #fff;
-  box-shadow: 0 10px 24px rgba(29, 39, 48, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .news-card {
@@ -2329,7 +2303,7 @@ a.instagram-post-slide {
   border-radius: var(--radius);
   background: #fff;
   padding: 14px;
-  box-shadow: 0 8px 20px rgba(29, 39, 48, 0.05);
+  box-shadow: var(--shadow-subtle);
 }
 
 .staff-card img {
@@ -2892,7 +2866,7 @@ body.is-dark .roster-vacant-badge {
   border: 1px solid var(--color-line);
   border-radius: var(--radius);
   padding: clamp(20px, 3vw, 34px);
-  box-shadow: 0 10px 26px rgba(29, 39, 48, 0.05);
+  box-shadow: var(--shadow-card);
 }
 
 .content-layout.no-sidebar .content-primary {
@@ -2965,7 +2939,7 @@ body.is-dark .roster-vacant-badge {
   border-radius: var(--radius);
   background: #fff;
   padding: 10px;
-  box-shadow: 0 10px 24px rgba(29, 39, 48, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .content-primary table {
@@ -3811,11 +3785,6 @@ body.is-dark .instagram-profile span {
   }
 }
 
-@media (max-width: 900px) {
-  .menu-live-clock {
-    display: none;
-  }
-}
 
 @media (max-width: 560px) {
   .topbar .custom,
@@ -3918,6 +3887,8 @@ body.is-dark .instagram-profile span {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+  width: 70%;
+  margin-inline: auto;
 }
 
 .maklumat-panel {
@@ -3979,7 +3950,7 @@ body.is-dark .instagram-profile span {
   transition: transform .25s ease, box-shadow .25s ease;
 }
 .maklumat-duo .maklumat-doc {
-  width: 70%;
+  width: 49%;
   margin-inline: auto;
 }
 
@@ -4055,6 +4026,7 @@ body.is-dark .instagram-profile span {
   gap: 8px;
   align-self: flex-start;
   padding: 9px 18px;
+  min-height: 44px;
   background: var(--color-primary);
   color: #fff;
   border-radius: 999px;
@@ -4191,6 +4163,9 @@ body.is-dark .maklumat-doc img {
   .maklumat-duo {
     grid-template-columns: 1fr;
   }
+  .maklumat-duo {
+    width: 100%;
+  }
 }
 
 .instansi-news-board {
@@ -4225,7 +4200,7 @@ body.is-dark .maklumat-doc img {
   border: 1px solid #ead8a7;
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 10px 26px rgba(29, 39, 48, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .instansi-ma .instansi-category-title {
@@ -6761,7 +6736,7 @@ body.is-dark .maklumat-doc img {
   color: var(--color-ink);
   text-align: center;
   text-decoration: none;
-  box-shadow: 0 10px 22px rgba(29, 39, 48, 0.05);
+  box-shadow: var(--shadow-subtle);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
@@ -10189,3 +10164,216 @@ body.is-dark .profile-note { color: #e8e1d8; background: #252d30; }
 @media (max-width: 760px) { .profile-groups { grid-template-columns: 1fr; } .profile-unit-group { grid-column: auto; } .profile-unit-links, .profile-unit-nav > div { grid-template-columns: 1fr 1fr; } .sejarah-cinema, .sejarah-photo-card.sejarah-cinema img { min-height: 300px; } .roster-meta > div { align-items: flex-start; flex-wrap: wrap; } .roster-meta dd { width: 100%; text-align: left; } }
 @media (max-width: 360px) { .profile-unit-links, .profile-unit-nav > div { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .sejarah-cinema::before { animation: none; transform: none; } }
+
+/* PERF-MOTION 2026-07-11 */
+/* #9 Shadow tokens: --shadow-card / --shadow-soft already on :root (line ~17).
+   New tokens below consolidate the dominant "subtle card" and "overlay" families.
+   Explicit body.is-dark box-shadow rules elsewhere are intentionally untouched. */
+:root {
+  --shadow-subtle: 0 8px 20px rgba(29, 39, 48, 0.05);
+  --shadow-overlay: 0 22px 60px rgba(29, 39, 48, 0.2);
+}
+
+/* #7 Reveal: belt-and-suspenders reduced-motion guard (JS also skips setup). */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* #10 Below-fold homepage sections skip offscreen rendering. Never hero/nav.
+   contain-intrinsic-size uses `auto` so the last rendered size is remembered
+   and scroll position stays stable when scrolling back up. */
+.home-juknis-main > .news-cards-board,
+.home-juknis-main > .instansi-news-board,
+.home-juknis-main > .module-card:last-child,
+.home-juknis-sidebar > .module-card:last-child {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
+.home-juknis-main > .instansi-news-board {
+  contain-intrinsic-size: auto 660px;
+}
+
+.home-juknis-sidebar > .module-card:last-child {
+  contain-intrinsic-size: auto 730px;
+}
+/* END PERF-MOTION 2026-07-11 */
+
+/* EDITORIAL 2026-07-11 */
+/* #1 Hirarki seksi beranda: kicker -> h2 -> deskripsi satu baris -> konten -> satu aksi.
+   Markup datang dari template/chrome (card.php, sipp-schedule.php, hero-slider.php,
+   instansi-feed.php); konten artikel/modul di database tidak diubah. */
+.section-kicker {
+  margin: 0 0 6px;
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.section-kicker::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-accent), #ecd08a);
+}
+
+.section-desc {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.section-head {
+  min-width: 0;
+}
+
+.section-head h2 {
+  margin: 0 0 4px;
+}
+
+/* Head kicker/desc di dalam sipp-schedule-head (p di sana di-reset margin:0). */
+.sipp-schedule-head .section-kicker {
+  margin-bottom: 6px;
+}
+
+.sipp-schedule-head .section-desc {
+  margin-top: 4px;
+}
+
+/* Kicker yang diemit chrome di atas konten DB (showtitle=0). */
+.module-card > .section-kicker {
+  margin-bottom: 8px;
+}
+
+/* Kicker menggantikan garis emas otomatis pada judul konten. */
+.module-card > .section-kicker + .custom > h2:first-child::before {
+  display: none;
+}
+
+.module-card.facility-band > .section-kicker {
+  color: #f3c96b;
+}
+
+body.is-dark .section-kicker {
+  color: #f3c96b;
+}
+
+body.is-dark .section-desc {
+  color: #a8b4be;
+}
+
+/* #2 Navigasi aktif berbasis rute (desktop, tanpa JS): mod_menu memberi
+   li.current (persis) dan li.active (jejak rute) — keduanya digarisbawahi emas. */
+@media (min-width: 761px) {
+  .main-menu .mod-menu > li.active > a,
+  .main-menu .mod-menu > li.current > a {
+    color: #ffe9b8;
+    background: rgba(255, 255, 255, 0.08);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: #f3c96b;
+    text-underline-offset: 8px;
+  }
+
+  body.is-dark .main-menu .mod-menu > li.active > a,
+  body.is-dark .main-menu .mod-menu > li.current > a {
+    color: #ffedc2;
+    text-decoration-color: #e5bd55;
+  }
+}
+
+/* #4 Irama seksi: latar selang-seling putih/krem + pembatas statis + padding bervariasi. */
+.home-juknis-main > .sipp-schedule-board,
+.home-juknis-main > .instansi-news-board {
+  background: var(--color-soft);
+}
+
+body.is-dark .home-juknis-main > .sipp-schedule-board,
+body.is-dark .home-juknis-main > .instansi-news-board {
+  background: #19232b;
+}
+
+.home-section-divider {
+  position: relative;
+  height: 18px;
+  margin: 6px 0;
+}
+
+/* Lindungi dari aturan mobile lama `.home-juknis-main > :nth-child(n+8)
+   { contain-intrinsic-size: 520px }` yang memberi lebar intrinsik 520px
+   pada elemen kosong ini (menyebabkan overflow horizontal di 390px). */
+.home-juknis-main > .home-section-divider {
+  min-width: 0;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+}
+
+.home-section-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background:
+    linear-gradient(90deg, rgba(185, 143, 36, 0), #ddc98f) left center / calc(50% - 18px) 1px no-repeat,
+    linear-gradient(90deg, #ddc98f, rgba(185, 143, 36, 0)) right center / calc(50% - 18px) 1px no-repeat;
+}
+
+.home-section-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--color-accent);
+}
+
+body.is-dark .home-section-divider::before {
+  background:
+    linear-gradient(90deg, rgba(243, 201, 107, 0), rgba(243, 201, 107, 0.38)) left center / calc(50% - 18px) 1px no-repeat,
+    linear-gradient(90deg, rgba(243, 201, 107, 0.38), rgba(243, 201, 107, 0)) right center / calc(50% - 18px) 1px no-repeat;
+}
+
+body.is-dark .home-section-divider::after {
+  background: #e5bd55;
+}
+
+@media (min-width: 761px) {
+  .home-juknis-layout {
+    padding: 32px var(--page-padding) 72px;
+  }
+
+  .home-juknis-main > .module-card {
+    padding: 24px 26px;
+  }
+
+  /* Sekitar pembatas: 16 (gap) + 16 + 24 + 16 + 16 (margin-bottom kartu) ~= 72px. */
+  .home-section-divider {
+    height: 24px;
+    margin: 16px 0;
+  }
+}
+
+@media (max-width: 760px) {
+  /* Mobile: 16 + 4 + 16 + 4 ~= 40-48px antar seksi besar. */
+  .home-section-divider {
+    height: 16px;
+    margin: 4px 0;
+  }
+}
+/* END EDITORIAL 2026-07-11 */

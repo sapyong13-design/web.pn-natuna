@@ -113,7 +113,7 @@ if (trim((string) $this->getDescription()) === '') {
       <div id="main-menu-list" class="main-menu-list mobile-menu-panel" aria-label="Menu Navigasi">
         <div class="mobile-menu-heading">
           <div class="mobile-menu-brand" id="mobile-menu-title">
-            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.png" alt="" width="40" height="40">
+            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.png" alt="" width="40" height="40" loading="lazy" decoding="async">
             <span><strong>PN Natuna</strong><small>Pengadilan Negeri Kelas II</small></span>
           </div>
           <button class="menu-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -184,12 +184,14 @@ if (trim((string) $this->getDescription()) === '') {
         </div>
         <jdoc:include type="modules" name="home-integrity" style="card" />
         <jdoc:include type="modules" name="home-rss" style="card" />
+        <div class="home-section-divider" aria-hidden="true"></div>
         <?php if (function_exists('pn_natuna_sipp_render_schedule')) : ?>
           <?php pn_natuna_sipp_render_schedule(); ?>
         <?php else : ?>
           <jdoc:include type="modules" name="home-schedule" style="card" />
         <?php endif; ?>
         <jdoc:include type="modules" name="home-facilities" style="card" />
+        <div class="home-section-divider" aria-hidden="true"></div>
         <?php if (function_exists('pn_natuna_render_latest_news')) : ?>
           <?php pn_natuna_render_latest_news(); ?>
         <?php endif; ?>
@@ -198,6 +200,7 @@ if (trim((string) $this->getDescription()) === '') {
         <?php else : ?>
           <jdoc:include type="modules" name="home-public-board" style="card" />
         <?php endif; ?>
+        <div class="home-section-divider" aria-hidden="true"></div>
         <jdoc:include type="modules" name="home-video" style="card" />
         <jdoc:include type="modules" name="home-contact" style="card" />
       </div>
