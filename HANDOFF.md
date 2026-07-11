@@ -20,11 +20,11 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB harus disertai delta S
 - Role Model, modul **482**: dua poster dari `images/role-model/` (Joko Ciptanto kini `joko-ciptanto-role-model-2026.webp`).
 - Instagram: feed otomatis dari RSS.app melalui `tools/cron-refresh-instagram.php` setiap jam, cache JSON + WebP lokal; homepage memakai carousel satu kartu 5 detik dan modul **483** iframe manual hanya sebagai fallback.
 - Mode gelap: default terang, aktif melalui tombol dan `localStorage` key `pnNatunaDark`; state disinkronkan ke `<html>`/`color-scheme`/theme-color, termasuk surface mobile dan dialog.
-- Mobile `≤760px`: header kompak/sticky, drawer bertingkat, bottom bar lima aksi hanya di homepage, sidebar snap rail tanpa nested vertical scroll; `content-visibility` homepage dinonaktifkan pada mobile untuk mencegah layout jump/blinking.
+- Mobile `≤760px`: header kompak/sticky, drawer bertingkat, bottom bar lima aksi hanya di homepage, sidebar snap rail tanpa nested vertical scroll; `content-visibility` dan section-level scroll reveal dinonaktifkan pada homepage mobile untuk mencegah layout jump/blinking.
 - Detail artikel kategori Berita/Pengumuman memakai override `templates/pn_natuna_2026/html/com_content/article/default.php`; kategori lain memakai template core secara langsung.
 - Transparansi dan keluarga Profil Pengadilan sudah memakai route canonical, shell terakses, state fokus/gelap/reduced-motion, dan konten DB terbaru.
 - Editorial 2026-07-11: section homepage memakai pola `.section-kicker → h2 → .section-desc → konten → satu aksi` (7 section), nav desktop menandai route aktif via `li.active/.current` underline gold, 3 divider statis `.home-section-divider`, board Jadwal/Instansi berlatar `--color-soft`. Blok CSS: `/* EDITORIAL 2026-07-11 */` dan `/* PERF-MOTION 2026-07-11 */` di akhir `template.css`.
-- Performa: token shadow `--shadow-subtle/card/overlay`, reveal one-shot maks 10px/380ms, Instagram memakai WebP lokal tanpa iframe saat cache aktif, gambar berat utama sudah dikonversi WebP; original di `images/_originals/` dan runtime Instagram di `media/instagram/` ter-ignore.
+- Performa: token shadow `--shadow-subtle/card/overlay`; reveal one-shot maks 10px/380ms hanya pada viewport `≥761px`, sedangkan section homepage mobile selalu `opacity:1`, `transform:none`, `transition:none`; Instagram memakai WebP lokal tanpa iframe saat cache aktif; runtime Instagram di `media/instagram/` ter-ignore.
 - Maklumat modul **808**: compact document row, satu heading section, dua dokumen utuh tanpa crop, lightbox keyboard-safe; desktop horizontal, mobile responsif.
 - Map modul **810** tetap memakai iframe Google Maps `loading="lazy"` seperti state sebelumnya; eksperimen click-to-load sudah direvert sesuai keputusan pemilik.
 - Kabar Instansi: judul PT Kepri dipulihkan dari slug bila source terpotong; Badilum selalu memakai `logo-badilum.png`; regression test di `tools/test-instansi-feed.php`.
@@ -97,7 +97,7 @@ Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pen
 - Foto gedung sumber hanya 700×523; ganti dengan foto HD landscape minimal 1920px saat tersedia.
 - Tanggal artikel lama: gunakan `publish_up` hanya bila lebih baru dari `2000-01-02 00:00:00`, selain itu gunakan `created`.
 - Referensi gambar WebP dimigrasikan di DB (`pnn_content` 105/13, `pnn_modules` 808/482); file JPG/PNG lama sudah dihapus dari `images/`. Jangan mengembalikan referensi lama.
-- Rule legacy mobile `content-visibility/contain-intrinsic-size` dapat menyebabkan scroll blinking; override `MOBILE SCROLL STABILITY 2026-07-11` wajib mempertahankan `content-visibility:visible` pada homepage `≤760px`.
+- Rule legacy mobile `content-visibility/contain-intrinsic-size` dan section scroll reveal dapat menyebabkan blinking; override `MOBILE SCROLL STABILITY 2026-07-11` wajib mempertahankan `content-visibility:visible`, `opacity:1`, `transform:none`, dan `transition:none` pada direct-child homepage `≤760px`.
 - JSON `images` Joomla dapat berisi `image_fulltext` kosong; fallback harus berdasarkan nilai non-kosong ke `image_intro`, dengan path lokal root-relative.
 
 ## Prinsip pemeliharaan

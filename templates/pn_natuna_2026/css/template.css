@@ -1562,6 +1562,7 @@ body.is-dark .access-panel-voice.is-active {
   gap: 14px;
   width: 100%;
   min-width: 0;
+  overflow: clip;
 }
 
 .module-card:has(> .custom > .instagram-cache) > .custom {
@@ -11006,6 +11007,13 @@ body.is-dark .content-primary a {
   body.is-home .home-juknis-sidebar > * {
     content-visibility: visible;
     contain-intrinsic-size: none;
+  }
+
+  body.is-home .home-juknis-main > .reveal-init,
+  body.is-home .home-juknis-sidebar > .reveal-init {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 /* END MOBILE SCROLL STABILITY 2026-07-11 */
