@@ -1,5 +1,45 @@
-﻿cache/
-administrator/cache/
-.runtime-logs/
-logs/
-administrator/logs/*.php
+﻿# Runtime state and writable data (never deploy from source control)
+/cache/
+/administrator/cache/
+/.runtime-logs/
+/logs/
+/administrator/logs/
+/tmp/
+
+# Production secrets and local environment overrides
+/configuration.php
+/.env
+/.env.*
+!/.env.example
+/.user.ini
+/php.ini
+/.htpasswd
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Database exports, backups, archives, logs, and editor residue
+/database/
+*.sql
+*.sql.gz
+*.dump
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swp
+*.log
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+
+
+# Security tools, design docs, and handoff runbooks remain tracked; the deployment
+# allowlist excludes them from public_html.
+# Ignore rules do not remove files already tracked or erase Git history.
+# Use `git rm --cached` only after preserving required local data; purge leaked
+# history with git-filter-repo/BFG and rotate exposed credentials before release.

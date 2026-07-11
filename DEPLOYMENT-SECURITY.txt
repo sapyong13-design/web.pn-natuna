@@ -1,0 +1,49 @@
+SECURE CPANEL DEPLOYMENT
+
+Build package:
+  python tools/build-deploy-package.py C:/path/outside/source/pn-natuna-deploy.zip
+
+The builder uses an explicit Joomla allowlist. It never packages configuration.php,
+database/, docs/, tools/, handoff files, Git metadata, runtime cache/log/tmp data,
+environment files, private keys, database dumps, or backup/archive residue. Upload
+and extract the ZIP into the cPanel document root. Create configuration.php on the
+server from trusted values already held by the owner; never copy it into an archive.
+Keep permissions at 0644 for files and 0755 for directories, with only Joomla runtime
+directories writable by the cPanel account. Do not use 0777.
+
+
+Sanitized database handoff (private CLI only):
+  Set MYSQL_PWD in the private shell environment; never put it in command history.
+  python tools/export-sanitized-db.py C:/private/export/site-sanitized.sql --host DB_HOST --user DB_USER --database DB_NAME --prefix DB_PREFIX_
+  Schema for every table is retained. Row data is omitted for Joomla users, user
+  credentials/MFA/profiles/groups/notes, sessions, action logs, privacy records, and
+  content history. Review export for site-specific personal data before sharing.
+  Store output outside webroot and repository. This utility is for sanitized staging
+  or review data, not a complete backup or production restore source.
+
+Configuration sample:
+  Copy configuration.production.example.php to configuration.php on server, replace
+  every CHANGE_ME placeholder through a private channel, then chmod 0640. Sample is
+  source guidance only and deployment builder intentionally excludes it.
+Apache:
+  .htaccess is deployable now. htaccess.txt is the Joomla template and contains the
+  same added sensitive-file denial before SEF routing. Confirm Apache AllowOverride
+  permits FileInfo, Options, and AuthConfig (or remove unsupported Options line only).
+  Test homepage, one SEF article, /administrator/, /api/index.php, CSS/JS/images, and
+  confirm configuration.php, /.git/, /database/, and backup extensions return 403.
+  images/.htaccess and files/.htaccess deny PHP/script execution while allowing normal
+  static Joomla media. Copy equivalent denial into any future user-writable public dir.
+
+Tracked sensitive artifacts and Git history:
+  .gitignore prevents future accidental additions but does not affect files already
+  tracked and does not erase prior commits. Preserve required local DB dumps outside
+  deployment packages. After owner backup and review, remove sensitive paths from the
+  index with `git rm --cached` (never delete needed local copies), then purge exposed
+  history using git-filter-repo or BFG. Coordinate rewritten-history force-push with
+  every collaborator. Rotate every credential/token/key found in any commit after the
+  purge; history rewriting alone does not invalidate a leaked secret.
+
+Pre-release checks:
+  python tools/build-deploy-package.py --list
+  Inspect ZIP paths before upload. Never upload source-tree database/docs/tools,
+  configuration.php, .git, logs, cache, tmp, or handoff material separately.

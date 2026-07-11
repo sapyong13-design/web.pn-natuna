@@ -1,65 +1,60 @@
 <?php
 defined('_JEXEC') or die;
 
-function pn_natuna_track_visitor()
+
+function pn_natuna_track_visitor(): void
 {
     $db = Joomla\CMS\Factory::getContainer()->get('DatabaseDriver');
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-    
-    // Jangan catat IP lokal / loopback jika ingin simulasi data (tapi untuk tracking nyata kita catat saja)
-    // Cek apakah IP ini sudah berkunjung dalam 30 detik terakhir agar tidak spamming baris database
-    $query = $db->getQuery(true)
-        ->select('COUNT(*)')
-        ->from($db->quoteName('pnn_visitor_stats'))
-        ->where($db->quoteName('ip_address') . ' = ' . $db->quote($ip))
-        ->where($db->quoteName('visit_time') . ' >= NOW() - INTERVAL 30 SECOND');
-    
-    $db->setQuery($query);
-    $exists = (int) $db->loadResult();
-    
-    if (!$exists) {
-        $query = $db->getQuery(true)
-            ->insert($db->quoteName('pnn_visitor_stats'))
-            ->columns([$db->quoteName('ip_address')])
-            ->values($db->quote($ip));
-        $db->setQuery($query);
+
+    try {
+        // One row per five-minute UTC bucket bounds growth regardless of source-IP churn.
+        // The per-bucket cap limits bot inflation while preserving ordinary counters.
+        $db->setQuery(
+            "INSERT INTO pnn_visitor_aggregates (bucket_start, hits) "
+            . "VALUES (FROM_UNIXTIME(UNIX_TIMESTAMP(UTC_TIMESTAMP()) - MOD(UNIX_TIMESTAMP(UTC_TIMESTAMP()), 300)), 1) "
+            . "ON DUPLICATE KEY UPDATE hits = LEAST(hits + 1, 100), updated_at = UTC_TIMESTAMP()"
+        );
         $db->execute();
+
+        // Lifetime total has one fixed row and receives the same capped bucket contribution.
+        $db->setQuery(
+            "INSERT INTO pnn_visitor_totals (counter_id, total_hits, current_bucket, bucket_hits) "
+            . "VALUES (1, 1, FROM_UNIXTIME(UNIX_TIMESTAMP(UTC_TIMESTAMP()) - MOD(UNIX_TIMESTAMP(UTC_TIMESTAMP()), 300)), 1) "
+            . "ON DUPLICATE KEY UPDATE "
+            . "total_hits = total_hits + IF(current_bucket = VALUES(current_bucket), IF(bucket_hits < 100, 1, 0), 1), "
+            . "bucket_hits = IF(current_bucket = VALUES(current_bucket), LEAST(bucket_hits + 1, 100), 1), "
+            . "current_bucket = VALUES(current_bucket)"
+        );
+        $db->execute();
+
+        // Deterministic retention: detailed buckets expire after 32 days on every write.
+        $db->setQuery("DELETE FROM pnn_visitor_aggregates WHERE bucket_start < UTC_TIMESTAMP() - INTERVAL 32 DAY");
+        $db->execute();
+    } catch (Throwable $error) {
+        // Conservative fallback for pre-migration/read-only DBs: render zeroes, write nothing.
     }
 }
 
 function pn_natuna_get_visitor_stats(): array
 {
+    $stats = ['online' => 0, 'today' => 0, 'month' => 0, 'total' => 0];
     $db = Joomla\CMS\Factory::getContainer()->get('DatabaseDriver');
-    
-    // 1. Pengunjung Aktif (Online dalam 5 menit terakhir)
-    $q1 = "SELECT COUNT(DISTINCT ip_address) FROM pnn_visitor_stats WHERE visit_time >= NOW() - INTERVAL 5 MINUTE";
-    $db->setQuery($q1);
-    $online = (int) $db->loadResult();
-    if ($online === 0) $online = 1; // Default minimal 1 (pengunjung saat ini)
 
-    // 2. Kunjungan Hari Ini
-    $q2 = "SELECT COUNT(DISTINCT ip_address) FROM pnn_visitor_stats WHERE DATE(visit_time) = CURDATE()";
-    $db->setQuery($q2);
-    $today = (int) $db->loadResult();
-    if ($today === 0) $today = 1;
+    try {
+        $db->setQuery("SELECT COALESCE(SUM(hits), 0) FROM pnn_visitor_aggregates WHERE bucket_start >= UTC_TIMESTAMP() - INTERVAL 5 MINUTE");
+        $stats['online'] = (int) $db->loadResult();
 
-    // 3. Kunjungan Bulan Ini
-    $q3 = "SELECT COUNT(DISTINCT ip_address) FROM pnn_visitor_stats WHERE MONTH(visit_time) = MONTH(CURDATE()) AND YEAR(visit_time) = YEAR(CURDATE())";
-    $db->setQuery($q3);
-    $month = (int) $db->loadResult();
-    if ($month === 0) $month = 1;
+        $db->setQuery("SELECT COALESCE(SUM(hits), 0) FROM pnn_visitor_aggregates WHERE bucket_start >= UTC_DATE()");
+        $stats['today'] = (int) $db->loadResult();
 
-    // 4. Total Kunjungan (Kita bisa tambah base offset agar angkanya terlihat profesional seperti web yang sudah lama berjalan)
-    $q4 = "SELECT COUNT(DISTINCT ip_address) FROM pnn_visitor_stats";
-    $db->setQuery($q4);
-    $total = (int) $db->loadResult();
-    $base_offset = 24500; // Base offset agar counter terlihat nyata dan profesional
-    $total += $base_offset;
+        $db->setQuery("SELECT COALESCE(SUM(hits), 0) FROM pnn_visitor_aggregates WHERE bucket_start >= DATE_FORMAT(UTC_DATE(), '%Y-%m-01')");
+        $stats['month'] = (int) $db->loadResult();
 
-    return [
-        'online' => $online,
-        'today' => $today,
-        'month' => $month,
-        'total' => $total
-    ];
+        $db->setQuery("SELECT total_hits FROM pnn_visitor_totals WHERE counter_id = 1");
+        $stats['total'] = (int) $db->loadResult();
+    } catch (Throwable $error) {
+        // Keep the four-key display contract when migration is absent or DB is unavailable.
+    }
+
+    return $stats;
 }

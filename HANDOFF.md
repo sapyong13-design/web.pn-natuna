@@ -9,12 +9,16 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 - Folder lokal utama: C:\tmp\web.pn-natuna
 - Local URL terakhir: http://localhost:8080 (PHP built-in server, Laragon MySQL di C:\laragon) — samakan dengan `live_site` di configuration.php; kalau beda port kena redirect-loop SEF.
 - Database lokal: pn_natuna_rebuild
-- Dump database terakhir: database/pn_natuna_rebuild_20260710_mobile_hero.sql (sebelumnya: pn_natuna_rebuild_20260710_konten_layanan.sql)
-- Stack lokal: PHP 8.3.30 (C:\laragon\bin\php), MySQL 8.4.3 (C:\laragon\bin\mysql)
+- Dump database terakhir: `database/pn_natuna_rebuild_20260711_transparency.sql` (sebelumnya: `pn_natuna_rebuild_20260710_mobile_hero.sql`)
+- Stack lokal: PHP 8.3.30 (`C:\laragon\bin\php`), MySQL 8.4.3 (`C:\laragon\bin\mysql`)
 
 ## PETA CEPAT (baca ini dulu — cukup seksi ini + sesi terbaru)
 
 > Hemat token: agent baru cukup baca **Status Terakhir + Peta Cepat + seksi sesi TERBARU**. Seksi sesi lama = arsip; baca hanya kalau menyentuh area terkait. Sesi lama bisa saling kontradiksi — yang menang selalu sesi TERBARU.
+
+> **PREFLIGHT PRODUKSI WAJIB:** sebelum deploy/go-live, baca dan tuntaskan `SECURITY-DEPLOYMENT-HANDOFF.md`. Dokumen itu memisahkan perubahan repo dari langkah manual dashboard serta memuat P0 Cloudflare Access/cPanel Directory Privacy, MFA dan isolasi akun Joomla, invalidasi sesi/token, WAF/rate limit, origin lock, installer/extension allowlist, backup/monitoring/IR, break-glass, rollback, dan verifikasi. Bila password Joomla yang pernah terekspos belum boleh dirotasi, ikuti kontrol kompensasi §1.2 dan catat residual risk: password tetap kompromi sampai benar-benar diganti. Semua setting adalah instruksi—jangan dianggap aktif tanpa bukti dashboard dan hasil uji bertanggal.
+
+> **OPERASI BACKUP/MONITORING:** jadwal cron privat, backup DB tanpa password di process list, retensi, alert, respons judol, dan restore clean-room ada di `SECURITY-BACKUP-MONITORING-RUNBOOK.md`.
 
 ### State kini (sudah final, jangan di-"perbaiki" lagi)
 - Hero beranda: sinematik full-bleed, backdrop `images/hero/gedung-pn-natuna-2026.webp`, dual-layer cover/contain + mask feather.
@@ -41,6 +45,7 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 | Unit kepaniteraan | 107-110 | URL nested `/profil-pengadilan/profil-kepaniteraan/...` |
 | Profil PPPK | 114 | menu id 278 |
 | Sejarah | 54 | |
+| Transparansi family | **45** landing; **37, 38, 39, 40, 86, 41, 42, 43, 85, 87, 88, 115, 116** children | menu parent 108; menu children 244,245,246,275,276,247,248,249,250,251,252,279,280 |
 
 ### Registry modul
 | Modul | Isi |
@@ -73,6 +78,25 @@ Dokumen ini pegangan cepat kalau kerja pindah device. Repo ini berisi rebuild we
 8. `stats-counter.php` masih menambah base_offset 24.500 PALSU ke total kunjungan — HAPUS sebelum produksi.
 9. NIP Ardiansyah 19 digit (artikel 114) — belum dikonfirmasi kepegawaian.
 10. Foto gedung sumber hanya 700×523 — butuh foto HD ≥1920px (PR lama).
+
+## Perubahan Sesi 11 Jul 2026 (court profile family)
+
+- Seluruh 14 route canonical keluarga `/profil-pengadilan` tetap memakai menu yang ada; artikel 25 kini gateway terkelompok dengan tautan nested canonical.
+- Sejarah artikel 54 memakai hero sinematik `images/hero/gedung-pn-natuna-2026.webp`, dual-layer cover/contain, caption 2026, dan animasi dimatikan pada `prefers-reduced-motion`.
+- Yurisdiksi artikel 57 kini status publik yang jujur tanpa daftar/batas geografis rekaan; struktur organisasi mendapat status dan padanan teks hierarki fungsi.
+- Profil hakim, kepaniteraan, kesekretariatan, PPPK mempertahankan data/NIP yang dipublikasikan serta menambah catatan status dan wrapping mobile. Kepaniteraan dan empat unit mendapat navigator sibling/current; bagan alur mendapat konteks/provenance tanpa langkah baru.
+- CSS scoped ditambahkan pada akhir `templates/pn_natuna_2026/css/template.css`: `.profile-*`, `.sejarah-cinema`, dark/focus/touch/mobile/reduced-motion.
+- SQL idempotent: `database/_court_profile_family_redesign.sql`; dump penuh: `database/pn_natuna_rebuild_20260711_court_profile.sql`.
+- QA lokal Chromium: 14/14 route HTTP 200, tepat satu content h1, tanpa overflow desktop; matrix 320/390/760/761/1280/1440, current unit state, dark/focus/touch, dan reduced-motion diperiksa pada sesi ini.
+
+## Perubahan Sesi 11 Jul 2026 (transparency family)
+
+- `/transparansi` tetap artikel 45. Tiga belas route canonical kini sama persis dengan 13 child menu published di parent 108.
+- Artikel baru: 115 Lelang Barang dan Jasa, 116 Laporan Pelayanan Informasi Publik. Menu baru: 279 dan 280. Asset baru: 101 dan 102.
+- Semua 64 URL Google Drive lama dipertahankan byte-for-byte. Arsip memakai shell `.transparency-*`, penanda Google Drive/tab baru, navigasi saudara/current, status jujur untuk periode hilang, dark/focus/reduced-motion, dan target minimal 44px.
+- Status eksplisit: Laporan Tahunan 2023; Realisasi Anggaran April 2026; Survei Harian November–Desember 2025 dan periode berjalan 2026. Peraturan memakai status kurasi publik.
+- SQL delta: `database/_transparansi_redesign.sql`; dump penuh: `database/pn_natuna_rebuild_20260711_transparency.sql`.
+- Template memaksa `lang="id-ID"` dan JSON-LD `inLanguage: id-ID`.
 
 ## Perubahan Sesi 11 Jul 2026 (mobile navigation repair)
 

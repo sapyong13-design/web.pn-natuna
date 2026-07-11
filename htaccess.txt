@@ -57,6 +57,25 @@ Options -Indexes
   </IfModule>
 </FilesMatch>
 
+## Deny direct access to secrets, repository metadata, backups, and operational files.
+## Keep this before Joomla SEF rewrites so denied files never reach index.php.
+<IfModule mod_authz_core.c>
+	<FilesMatch "(^\.|configuration\.php$|(?:^|\.)(?:env|ini|log|sql|sqlite|dump|bak|backup|old|orig|save|swp|pem|key|p12|pfx)(?:\.|$)|(?:composer|package)-lock\.json$|composer\.json$)">
+		Require all denied
+	</FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+	<FilesMatch "(^\.|configuration\.php$|(?:^|\.)(?:env|ini|log|sql|sqlite|dump|bak|backup|old|orig|save|swp|pem|key|p12|pfx)(?:\.|$)|(?:composer|package)-lock\.json$|composer\.json$)">
+		Order allow,deny
+		Deny from all
+	</FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteRule "(?:^|/)(?:\.git|\.svn|database|docs|tools)(?:/|$)" - [F,END,NC]
+</IfModule>
+
 ## These directives are only enabled if the Apache mod_rewrite module is enabled
 <IfModule mod_rewrite.c>
 	RewriteEngine On

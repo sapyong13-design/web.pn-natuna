@@ -19,31 +19,37 @@ Panduan setup cron job harian untuk auto-refresh berita & pengumuman instansi
 
 | File | Fungsi |
 |---|---|
-| `cron-refresh-instansi.php` | Script cron — hapus cache lama, re-fetch, tulis cache baru |
-| `templates/pn_natuna_2026/instansi-feed.php` | Logic fetch + parse + fallback + render |
-| `cache/pn_natuna_instansi_feed.json` | Cache hasil fetch (TTL 1 jam di runtime) |
-| `cache/instansi-refresh.log` | Log cron (append tiap run) |
+| `/home/USER/private/cron/cron-refresh-instansi.php` | Script CLI-only — WAJIB di luar `public_html` |
+| `public_html/templates/pn_natuna_2026/instansi-feed.php` | Logic fetch + parse + fallback + render |
+| `public_html/cache/pn_natuna_instansi_feed.json` | Cache hasil fetch; lindungi via `.htaccess` |
+| `/home/USER/private/logs/instansi-refresh.log` | Log cron private |
 
 ---
 
 ## 1. Deploy ke cPanel
 
-### 1a. Upload file
-Upload repo ke cPanel (`public_html/` atau subfolder). Pastikan ada:
+### 1a. Tempatkan runtime dan cron secara terpisah
+Joomla berada di `public_html`, tetapi cron dan log WAJIB di luar document root:
 ```
-public_html/
-├── cron-refresh-instansi.php
-├── templates/pn_natuna_2026/instansi-feed.php
-├── cache/                          ← folder ini HARUS ada & writable
-│   └── (kosong, cron akan isi)
+/home/USER/
+├── public_html/
+│   ├── templates/pn_natuna_2026/instansi-feed.php
+│   └── cache/
+└── private/
+    ├── cron/cron-refresh-instansi.php
+    └── logs/
 ```
 
-### 1b. Pastikan folder cache writable
 Via cPanel File Manager atau SSH:
 ```bash
-mkdir -p public_html/cache
-chmod 755 public_html/cache
+mkdir -p /home/USER/public_html/cache /home/USER/private/cron /home/USER/private/logs
+chmod 755 /home/USER/public_html/cache
+chmod 750 /home/USER/private /home/USER/private/cron /home/USER/private/logs
+chmod 640 /home/USER/private/cron/cron-refresh-instansi.php
 ```
+Script menolak semua request non-CLI dengan HTTP 404. Tetap jangan menaruhnya di `public_html`.
+
+> `tools/build-deploy-package.py` sengaja TIDAK memasukkan cron ke ZIP web. Ambil `cron-refresh-instansi.php` dari repository private/source workstation, lalu upload sebagai file terpisah langsung ke `/home/USER/private/cron/`. Jangan menyalinnya melalui `public_html`, bahkan sementara.
 
 ### 1c. Cari path PHP CLI
 cPanel biasanya punya beberapa versi PHP. Cari path binary PHP:
@@ -58,20 +64,14 @@ cPanel biasanya punya beberapa versi PHP. Cari path binary PHP:
 ### 1d. Tes script manual dulu
 Via Terminal/SSH:
 ```bash
-php -f /home/USER/public_html/cron-refresh-instansi.php
+PN_NATUNA_JPATH_ROOT=/home/USER/public_html \
+PN_NATUNA_LOG_FILE=/home/USER/private/logs/instansi-refresh.log \
+php -f /home/USER/private/cron/cron-refresh-instansi.php
 ```
-Output harusnya:
-```
-[2026-07-04 06:00:00] Mulai refresh instansi feed...
-  - Mahkamah Agung RI: 5 berita, 5 pengumuman
-  - Badilum: 5 berita, 5 pengumuman
-  - PT Kepri: 5 berita, 5 pengumuman
-[2026-07-04 06:00:00] SELESAI. Cache ditulis: .../cache/pn_natuna_instansi_feed.json
-```
-Kalau error, cek:
-- Path `JPATH_ROOT` benar (script pakai `dirname(__FILE__)` = folder script berada).
-- PHP versi ≥ 8.0 (butuh `str_contains`, arrow functions, named args).
-- Ekstensi `openssl`, `json`, `libxml`, `simplexml`, `mbstring` aktif.
+Output harus menunjukkan proses refresh dan berakhir sukses. Kalau error, cek:
+- `PN_NATUNA_JPATH_ROOT` menunjuk root Joomla yang berisi `templates/pn_natuna_2026/instansi-feed.php`.
+- PHP versi ≥8.0 dan ekstensi openssl/json/libxml/simplexml/mbstring aktif.
+- Cache Joomla writable dan folder private log permission benar.
 
 ---
 
@@ -92,34 +92,26 @@ Pilih **Once Per Day** (atau custom). Rekomendasi jam **06:00** pagi (sebelum ja
 | Weekday | `*` |
 
 ### 2c. Command cron
+```bash
+PN_NATUNA_JPATH_ROOT=/home/USER/public_html PN_NATUNA_LOG_FILE=/home/USER/private/logs/instansi-refresh.log PATH_PHP -f /home/USER/private/cron/cron-refresh-instansi.php
 ```
-PATH_PHP -f /home/USER/public_html/cron-refresh-instansi.php
-```
-Ganti:
-- `PATH_PHP` → path PHP CLI dari langkah 1c (mis. `/usr/local/bin/php`)
-- `USER` → username cPanel
-- `public_html` → path folder Joomla
-
-Contoh lengkap:
-```
-/usr/local/bin/php -f /home/pnnatuna/public_html/cron-refresh-instansi.php
+Ganti `PATH_PHP` dan `USER` sesuai cPanel. Contoh:
+```bash
+PN_NATUNA_JPATH_ROOT=/home/pnnatuna/public_html PN_NATUNA_LOG_FILE=/home/pnnatuna/private/logs/instansi-refresh.log /usr/local/bin/php -f /home/pnnatuna/private/cron/cron-refresh-instansi.php
 ```
 
 ### 2d. Email notifikasi
-cPanel Cron Jobs → **Email** → isi email untuk terima output cron.
-Setiap run kirim log (berhasil/error). Kalau tidak mau email, tambahkan
-`> /dev/null 2>&1` di akhir command (tapi log tetap masuk
-`cache/instansi-refresh.log`).
+cPanel Cron Jobs → **Email** → isi alamat operasional. Jangan membuang stderr sebelum monitoring cron tersedia; script mengembalikan exit code nonzero pada gagal dan detail hanya masuk log/stderr.
 
 ---
 
 ## 3. Verifikasi Cron Berjalan
 
-### 3a. Cek log
+### 3a. Cek log private
 ```bash
-cat public_html/cache/instansi-refresh.log
+tail -n 50 /home/USER/private/logs/instansi-refresh.log
 ```
-Harus ada entry baru tiap hari dengan timestamp jam 06:00.
+Harus ada entry baru sesuai jadwal. Log tidak boleh dapat diakses dari HTTP.
 
 ### 3b. Cek cache file
 ```bash
@@ -247,10 +239,10 @@ Cek dengan tes fetch manual dulu.
 ## 6. Troubleshooting
 
 ### Cron tidak jalan
-- Cek **cPanel → Cron Jobs → Email** untuk error.
-- Cek path PHP CLI benar (`which php`).
-- Tes command manual via Terminal: `php -f /path/cron-refresh-instansi.php`.
-- Cek permission: `chmod 644 cron-refresh-instansi.php`.
+- Cek cPanel Cron Jobs → Email untuk error.
+- Cek path PHP CLI (`which php`).
+- Tes command lengkap dengan `PN_NATUNA_JPATH_ROOT` dan `PN_NATUNA_LOG_FILE`.
+- Pastikan cron file 0640 dan folder private 0750.
 
 ### Badilum / PT Kepri tidak update
 - Tes fetch manual:
@@ -266,9 +258,9 @@ Cek dengan tes fetch manual dulu.
 - Refresh manual (lihat bagian 4). Atau pakai script Puppeteer semi-otomatis.
 
 ### Cache tidak ter-update
-- Cek `cache/` folder writable: `chmod 755 cache`.
-- Cek `cache/instansi-refresh.log` untuk error.
-- Hapus cache manual, tunggu cron, cek lagi.
+- Cek `public_html/cache/` writable (0755, bukan 0777).
+- Cek log private `/home/USER/private/logs/instansi-refresh.log`.
+- Hapus cache manual, jalankan cron CLI, lalu periksa ulang.
 
 ### Feed kosong / 0 item
 - Bisa terjadi kalau semua fetch timeout (server sumber lambat).
@@ -279,15 +271,17 @@ Cek dengan tes fetch manual dulu.
 
 ## 7. Checklist Sebelum Deploy cPanel
 
-- [ ] `cron-refresh-instansi.php` ter-upload ke root Joomla
-- [ ] Folder `cache/` ada & writable (chmod 755)
-- [ ] PHP CLI ≥ 8.0 dengan ekstensi: openssl, json, mbstring, simplexml, libxml
-- [ ] Tes `php -f cron-refresh-instansi.php` sukses via Terminal
-- [ ] Cron job dibuat (daily, jam 06:00) dengan path PHP benar
-- [ ] Email notifikasi cron di-set
-- [ ] Hapus `cache/pn_natuna_instansi_feed.json` setelah deploy (force refresh pertama)
-- [ ] MA RI fallback sudah ter-update dengan judul terbaru (refresh manual)
-- [ ] Cek homepage setelah cron pertama jalan: Badilum & PT update, MA tampil fallback
+- [ ] Cron berada di `/home/USER/private/cron`, BUKAN `public_html`
+- [ ] `cron-refresh-instansi.php` diambil terpisah dari repository private, bukan dari ZIP web
+- [ ] Log berada di `/home/USER/private/logs`, BUKAN cache publik
+- [ ] Request HTTP ke `/cron-refresh-instansi.php` menghasilkan 404
+- [ ] Folder cache Joomla writable 0755; folder private 0750; cron file 0640
+- [ ] PHP CLI ≥8.0 dengan openssl/json/mbstring/simplexml/libxml
+- [ ] Tes command dengan environment root/log sukses
+- [ ] Cron harian dibuat dengan path private dan email alert aktif
+- [ ] Cache lama dihapus lalu cron pertama berhasil
+- [ ] MA RI fallback diperbarui manual bila perlu
+- [ ] Homepage diverifikasi setelah cron pertama
 
 ---
 

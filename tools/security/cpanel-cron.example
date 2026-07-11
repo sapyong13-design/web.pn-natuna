@@ -1,0 +1,5 @@
+# Install tools outside public_html, mode 0700 directory / 0750 script.
+# Replace paths and MAILTO. Exit 2 means findings; exit 3 means scanner error.
+MAILTO=security@example.invalid
+17 2 * * * /usr/local/bin/python3 /home/CPANEL_USER/private/security/security_cli.py integrity check /home/CPANEL_USER/public_html --baseline /home/CPANEL_USER/private/security/integrity-baseline.json --json
+37 2 * * * /usr/local/bin/python3 /home/CPANEL_USER/private/security/security_cli.py judol --root /home/CPANEL_USER/public_html --records /home/CPANEL_USER/private/security/joomla-content-export.json --allowlist /home/CPANEL_USER/private/security/judol-allowlist.txt --json

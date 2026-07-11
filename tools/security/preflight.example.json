@@ -1,0 +1,10 @@
+{
+  "https": true,
+  "admin_outer_gate": true,
+  "mfa_admins": true,
+  "origin_restricted": true,
+  "config_outside_webroot": true,
+  "archive_outside_webroot": true,
+  "security_headers": ["Content-Security-Policy", "Strict-Transport-Security", "X-Content-Type-Options", "Referrer-Policy"],
+  "permissions": {"files": "0644", "dirs": "0755"}
+}

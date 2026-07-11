@@ -13,12 +13,16 @@ Jalankan saat ada PDF baru:
     MYSQL_BIN=/path/to/mysql python tools/refresh-dipa.py
 """
 
-import urllib.request
-import re
+import html
 import os
+import re
 import ssl
-import sys
 import subprocess
+import sys
+import tempfile
+import urllib.parse
+import urllib.request
+
 import pymupdf
 
 # ====== KONFIGURASI ======
@@ -29,10 +33,11 @@ DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
 # ==========================
+MAX_HTML_BYTES = 2 * 1024 * 1024
+MAX_PDF_BYTES = 25 * 1024 * 1024
+ALLOWED_HOSTS = frozenset({'drive.google.com', 'drive.usercontent.google.com', 'docs.google.com'})
 
 SSL_CTX = ssl.create_default_context()
-SSL_CTX.check_hostname = False
-SSL_CTX.verify_mode = ssl.CERT_NONE
 
 MONTHS = {
     'januari': 1, 'februari': 2, 'maret': 3, 'april': 4, 'mei': 5, 'juni': 6,
@@ -42,11 +47,39 @@ MONTHS = {
 }
 
 
-def fetch(url):
+class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        parsed = urllib.parse.urlsplit(newurl)
+        host = (parsed.hostname or '').lower()
+        if parsed.scheme != 'https' or host not in ALLOWED_HOSTS:
+            raise ValueError('Redirect HTTPS/host tidak diizinkan')
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+OPENER = urllib.request.build_opener(
+    urllib.request.HTTPSHandler(context=SSL_CTX), SafeRedirectHandler()
+)
+
+
+def fetch(url, max_bytes=MAX_HTML_BYTES, allowed_mimes=()):
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.scheme != 'https' or (parsed.hostname or '').lower() not in ALLOWED_HOSTS:
+        raise ValueError('URL unduhan tidak diizinkan')
     req = urllib.request.Request(url, headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'PN-Natuna secure refresh/1.0',
+        'Accept-Encoding': 'identity',
     })
-    return urllib.request.urlopen(req, context=SSL_CTX, timeout=30).read()
+    with OPENER.open(req, timeout=30) as response:
+        mime = response.headers.get_content_type().lower()
+        if allowed_mimes and mime not in allowed_mimes:
+            raise ValueError('Tipe konten unduhan tidak valid')
+        declared = response.headers.get('Content-Length')
+        if declared and int(declared) > max_bytes:
+            raise ValueError('Unduhan terlalu besar')
+        data = response.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise ValueError('Unduhan terlalu besar')
+    return data
 
 
 def list_folder(folder_id):
@@ -92,13 +125,27 @@ def find_latest(files):
 
 def gdrive_download(file_id, dest):
     url = f'https://drive.google.com/uc?export=download&id={file_id}'
-    data = fetch(url)
-    if data[:1] in (b'<',) and b'confirm' in data:
+    data = fetch(url, MAX_PDF_BYTES, ('application/pdf', 'application/octet-stream', 'text/html'))
+    if data[:1] == b'<' and b'confirm' in data:
         m = re.search(rb'confirm=([a-zA-Z0-9_-]+)', data)
         if m:
-            data = fetch(f'https://drive.google.com/uc?export=download&id={file_id}&confirm={m.group(1).decode()}')
-    with open(dest, 'wb') as f:
-        f.write(data)
+            data = fetch(f'https://drive.google.com/uc?export=download&id={file_id}&confirm={m.group(1).decode()}', MAX_PDF_BYTES, ('application/pdf', 'application/octet-stream'))
+    if not data.startswith(b'%PDF-'):
+        raise ValueError('Berkas unduhan bukan PDF')
+    directory = os.path.dirname(os.path.abspath(dest))
+    fd, staged = tempfile.mkstemp(prefix='.dipa-', suffix='.pdf', dir=directory)
+    try:
+        with os.fdopen(fd, 'wb') as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(staged, dest)
+    except BaseException:
+        try:
+            os.remove(staged)
+        except FileNotFoundError:
+            pass
+        raise
     return len(data)
 
 
@@ -141,6 +188,7 @@ def format_rp(amount):
 
 def build_html(data, period_label, file_id=''):
     """Generate donut chart HTML."""
+    period_label = html.escape(str(period_label), quote=True)
     colors = {'01': '#1f5b4b', '03': '#8f1f0b'}
     labels = {'01': 'DIPA 01', '03': 'DIPA 03'}
     items = []
@@ -237,10 +285,14 @@ def main():
     if ok:
         print('      Module updated.')
     else:
-        print(f'      [ERROR] DB: {err}')
+        print('      [ERROR] Pembaruan database gagal.', file=sys.stderr)
 
     print(f'\nSELESAI. DIPA widget menampilkan data {period_label}.')
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        print('[ERROR] Refresh DIPA gagal.', file=sys.stderr)
+        sys.exit(1)

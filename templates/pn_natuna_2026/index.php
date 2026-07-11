@@ -32,7 +32,7 @@ if (trim((string) $this->getDescription()) === '') {
 }
 ?>
 <!doctype html>
-<html lang="<?php echo $this->language; ?>" dir="<?php echo $this->direction; ?>">
+<html lang="id-ID" dir="<?php echo $this->direction; ?>">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <jdoc:include type="metas" />
@@ -54,6 +54,7 @@ if (trim((string) $this->getDescription()) === '') {
   {
     "@context": "https://schema.org",
     "@type": "GovernmentOrganization",
+    "inLanguage": "id-ID",
     "name": "Pengadilan Negeri Natuna Kelas II",
     "url": "<?php echo $siteUrl; ?>/",
     "logo": "<?php echo $siteUrl; ?>/images/brand/logo-pn-natuna.png",

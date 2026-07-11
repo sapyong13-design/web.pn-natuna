@@ -1,0 +1,31 @@
+PRIVATE JOOMLA SECURITY UTILITIES
+
+Deployment
+Copy this directory to /home/CPANEL_USER/private/security, never public_html. Set directory 0700, security_cli.py 0750, baselines/exports 0600. Python 3 standard library only. Scanner output never includes content bodies, password hashes, session IDs, or token values.
+
+Commands
+  python3 security_cli.py integrity baseline /home/USER/public_html --baseline /home/USER/private/security/integrity-baseline.json
+  python3 security_cli.py integrity check /home/USER/public_html --baseline /home/USER/private/security/integrity-baseline.json --json
+  python3 security_cli.py accounts /home/USER/private/security/account-audit.json --json
+  python3 security_cli.py judol --root /home/USER/public_html --records /home/USER/private/security/content-audit.json --allowlist judol-allowlist.txt --json
+  python3 security_cli.py preflight preflight.example.json --json
+
+Exit codes: 0 clean; 2 findings; 3 invalid input/read failure. Cron emails stdout through MAILTO. For external alerting, wrapper must alert on exit 2 or 3 and keep JSON in a private, access-controlled log. Never place exports or baseline in web root.
+
+Integrity baseline
+Create only after known-clean incident recovery and extension/core verification. Scanner hashes PHP, .htaccess, INI, and configuration.php, then reports new/modified/missing files plus high-confidence PHP execution indicators. It does not quarantine or delete.
+
+DB export contract
+Generate account-audit.json and content-audit.json using a private mysql client job or phpMyAdmin export. Do not export credential/token columns. account-audit.json shape:
+  {"admins":[{"name":"Named Person","username":"login","groups":["Super Users"],"mfa":true}],"sessions":[{"user_id":1}],"tokens":[{"user_id":1}]}
+Only counts from sessions/tokens are emitted. content-audit.json is an array of objects with source, id, title, alias, body, meta, link, params. Sources should cover #__content, #__content_frontpage metadata where used, #__menu, and #__modules. Replace #__ with configured prefix in private queries. Never include user password, cookie/session identifiers, MFA secrets, API token values, or configuration.php credentials.
+
+Judol scanner
+Built-in Indonesian gambling/SEO terms can be extended one term per line with --keywords. Put approved exact terms one per line in --allowlist. Matches are case-insensitive whole terms and report source/id/path plus keyword, never content. Review findings manually; no destructive action.
+
+Preflight
+Populate template from cPanel and Cloudflare observations. Checks HTTPS, outer admin gate, admin MFA, direct-origin restriction, private archive/config placement, required headers, and conservative file/directory modes. Cloudflare Access/WAF must protect /administrator while origin authentication remains enabled. Restrict origin to Cloudflare IP ranges or authenticated tunnel only; confirm emergency access before enforcement.
+
+Tests
+  python3 -m unittest test_security_cli.py
+Fixtures are temporary and plant encoded-eval webshell, casino/slot SEO, admin without MFA, and unsafe preflight settings. Tests assert secret marker values never appear.
