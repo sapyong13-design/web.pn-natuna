@@ -11,6 +11,7 @@ $sippScheduleHelper = __DIR__ . '/sipp-schedule.php';
 $statsCounterHelper = __DIR__ . '/stats-counter.php';
 $instansiFeedHelper = __DIR__ . '/instansi-feed.php';
 $heroSliderHelper = __DIR__ . '/hero-slider.php';
+$instagramFeedHelper = __DIR__ . '/instagram-feed.php';
 
 if (is_file($sippScheduleHelper)) {
     require_once $sippScheduleHelper;
@@ -25,6 +26,9 @@ if (is_file($instansiFeedHelper)) {
 if (is_file($heroSliderHelper)) {
     require_once $heroSliderHelper;
 }
+if (is_file($instagramFeedHelper)) {
+    require_once $instagramFeedHelper;
+}
 
 $siteUrl = rtrim(Joomla\CMS\Uri\Uri::root(), '/');
 if (trim((string) $this->getDescription()) === '') {
@@ -32,7 +36,7 @@ if (trim((string) $this->getDescription()) === '') {
 }
 ?>
 <!doctype html>
-<html lang="id-ID" dir="<?php echo $this->direction; ?>">
+<html lang="id-ID" dir="<?php echo $this->direction; ?>" data-theme="light">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <jdoc:include type="metas" />
@@ -88,7 +92,10 @@ if (trim((string) $this->getDescription()) === '') {
     (function () {
       try {
         if (localStorage.getItem('pnNatunaDark') === '1') {
+          document.documentElement.dataset.theme = 'dark';
+          document.documentElement.style.colorScheme = 'dark';
           document.body.classList.add('is-dark');
+          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#101820');
         }
       } catch (e) { /* private mode */ }
     })();
@@ -210,7 +217,12 @@ if (trim((string) $this->getDescription()) === '') {
         <jdoc:include type="modules" name="home-role-model" style="card" />
         <jdoc:include type="modules" name="home-survey" style="card" />
         <jdoc:include type="modules" name="home-dipa" style="card" />
-        <jdoc:include type="modules" name="home-instagram" style="card" />
+        <?php $instagramCache = function_exists('pn_natuna_instagram_load_cache') ? pn_natuna_instagram_load_cache() : null; ?>
+        <?php if ($instagramCache && function_exists('pn_natuna_instagram_render')) : ?>
+          <?php echo pn_natuna_instagram_render($instagramCache); ?>
+        <?php else : ?>
+          <jdoc:include type="modules" name="home-instagram" style="card" />
+        <?php endif; ?>
         <jdoc:include type="modules" name="home-index" style="card" />
         <jdoc:include type="modules" name="home-web-links" style="card" />
         <jdoc:include type="modules" name="home-social" style="card" />

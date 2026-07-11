@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSearchOverlay();
   setupCarousels();
   setupInstagramPostSliders();
+  setupInstagramCarousels();
   setupLiveClock();
   setupDynamicServiceHours();
   setupBackToTop();
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupLazyIframes();
   setupEditorialArticleShare();
 });
+
 
 function setupLazyIframes() {
   const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src]');
@@ -190,27 +192,20 @@ function setupHeroBackdropPause() {
 
 function setupStickyNav() {
   const nav = document.querySelector('.main-menu');
-  if (!nav) return;
+  if (!nav || !('IntersectionObserver' in window)) return;
+  const sentinel = document.createElement('div');
+  sentinel.className = 'sticky-nav-sentinel';
+  sentinel.setAttribute('aria-hidden', 'true');
+  nav.before(sentinel);
   const syncHeight = () => document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
-  let threshold = 0;
-  const syncThreshold = () => {
-    if (!document.body.classList.contains('nav-stuck')) {
-      threshold = nav.getBoundingClientRect().top + window.scrollY;
-    }
+  const setStuck = (stuck) => {
+    if (stuck === document.body.classList.contains('nav-stuck')) return;
+    syncHeight();
+    document.body.classList.toggle('nav-stuck', stuck);
   };
-  const onScroll = () => {
-    const stuck = window.scrollY > threshold + 8;
-    if (stuck !== document.body.classList.contains('nav-stuck')) {
-      syncHeight();
-      document.body.classList.toggle('nav-stuck', stuck);
-    }
-  };
+  new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), { threshold: 0 }).observe(sentinel);
   syncHeight();
-  syncThreshold();
-  window.addEventListener('resize', () => { document.body.classList.remove('nav-stuck'); syncThreshold(); syncHeight(); onScroll(); }, { passive: true });
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('load', onScroll);
-  onScroll();
+  window.addEventListener('resize', syncHeight, { passive: true });
 }
 
 function setupInstansiTabs() {
@@ -219,26 +214,34 @@ function setupInstansiTabs() {
     const panels = Array.from(board.querySelectorAll('.instansi-panel'));
     if (!tabs.length) return;
     const activate = (tab) => {
-      tabs.forEach((t) => {
-        const active = t === tab;
-        t.classList.toggle('is-active', active);
-        t.setAttribute('aria-selected', String(active));
+      tabs.forEach((candidate) => {
+        const active = candidate === tab;
+        candidate.classList.toggle('is-active', active);
+        candidate.setAttribute('aria-selected', String(active));
+        candidate.tabIndex = active ? 0 : -1;
       });
-      panels.forEach((p) => {
-        const active = p.id === 'instansi-panel-' + tab.dataset.instansiTab;
-        p.classList.toggle('is-active', active);
-        p.hidden = !active;
+      panels.forEach((panel) => {
+        const active = panel.id === 'instansi-panel-' + tab.dataset.instansiTab;
+        panel.classList.toggle('is-active', active);
+        panel.hidden = !active;
       });
     };
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => activate(tab));
       tab.addEventListener('keydown', (event) => {
-        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-        const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        next.focus();
+        let nextIndex = index;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        else if (event.key === 'ArrowLeft') nextIndex = (index + tabs.length - 1) % tabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        const next = tabs[nextIndex];
         activate(next);
+        next.focus();
       });
     });
+    activate(tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') || tabs[0]);
   });
 }
 
@@ -456,14 +459,22 @@ function setupAccessibilityTools() {
     storageSet('pnNatunaReadingGuide', active ? '1' : '0');
   };
 
+  const applyTheme = (active) => {
+    body.classList.toggle('is-dark', active);
+    root.dataset.theme = active ? 'dark' : 'light';
+    root.style.colorScheme = active ? 'dark' : 'light';
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', active ? '#101820' : '#8f1f0b');
+    setPressed('.access-panel-dark, .dark-toggle', active);
+  };
+
   const resetAccessibility = () => {
     clearAccessibilityStorage();
     applyScale(0);
     applySpacing(0);
-    body.classList.remove('is-dark', 'access-underline-links', 'access-links-highlight');
+    applyTheme(false);
+    body.classList.remove('access-underline-links', 'access-links-highlight');
     root.classList.remove('access-invert', 'access-grey', 'access-big-cursor');
     setReadingGuide(false);
-    setPressed('.access-panel-dark, .dark-toggle', false);
     setPressed('[data-access-action="invertColors"]', false);
     setPressed('[data-access-action="grayHues"]', false);
     setPressed('[data-access-action="underlineLinks"]', false);
@@ -480,13 +491,12 @@ function setupAccessibilityTools() {
   applySpacing(savedSpacing);
   body.classList.remove('is-contrast');
   storageRemove('pnNatunaContrast');
-  body.classList.toggle('is-dark', savedDark);
+  applyTheme(savedDark);
   root.classList.toggle('access-invert', savedInvert);
   root.classList.toggle('access-grey', savedGrey);
   body.classList.toggle('access-underline-links', savedUnderline);
   body.classList.toggle('access-links-highlight', savedUnderline);
   root.classList.toggle('access-big-cursor', savedCursor);
-  setPressed('.access-panel-dark, .dark-toggle', savedDark);
   setPressed('[data-access-action="invertColors"]', savedInvert);
   setPressed('[data-access-action="grayHues"]', savedGrey);
   setPressed('[data-access-action="underlineLinks"]', savedUnderline);
@@ -558,8 +568,7 @@ function setupAccessibilityTools() {
   darkButtons.forEach((button) => {
     button.addEventListener('click', () => {
       const active = !body.classList.contains('is-dark');
-      body.classList.toggle('is-dark', active);
-      setPressed('.access-panel-dark, .dark-toggle', active);
+      applyTheme(active);
       storageSet('pnNatunaDark', active ? '1' : '0');
     });
   });
@@ -720,39 +729,63 @@ function setupVoiceReader() {
   }
 }
 
+function createModalLifecycle(container, dialog) {
+  const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  let opener = null;
+  let background = [];
+  const close = () => {
+    if (container.hidden) return;
+    container.hidden = true;
+    background.forEach(({ element, inert }) => { element.inert = inert; });
+    background = [];
+    container.dispatchEvent(new Event('modalclose'));
+    opener?.focus();
+  };
+  const open = (trigger, initialFocus) => {
+    opener = trigger instanceof HTMLElement ? trigger : document.activeElement;
+    background = Array.from(document.body.children)
+      .filter((element) => element !== container)
+      .map((element) => ({ element, inert: element.inert }));
+    background.forEach(({ element }) => { element.inert = true; });
+    container.inert = false;
+    container.hidden = false;
+    (initialFocus || dialog.querySelector(focusableSelector))?.focus();
+  };
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') { event.preventDefault(); close(); return; }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(dialog.querySelectorAll(focusableSelector)).filter((element) => !element.closest('[hidden]'));
+    if (!focusable.length) { event.preventDefault(); return; }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+  return { open, close };
+}
+
 function setupSearchOverlay() {
   const overlay = document.querySelector('.search-overlay');
+  const dialog = overlay?.querySelector('.search-overlay-panel');
   const toggles = Array.from(document.querySelectorAll('.search-overlay-toggle'));
-  const close = document.querySelector('.search-overlay-close');
-  const input = document.querySelector('#site-search-query');
-
-  if (!overlay || !toggles.length) {
-    return;
-  }
-
-  const setOpen = (open) => {
-    overlay.hidden = !open;
+  const closeButton = overlay?.querySelector('.search-overlay-close');
+  const input = overlay?.querySelector('#site-search-query');
+  if (!overlay || !dialog || !toggles.length) return;
+  const modal = createModalLifecycle(overlay, dialog);
+  const setOpen = (open, trigger) => {
     document.body.classList.toggle('search-overlay-open', open);
     toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', String(open)));
-    if (open) {
-      window.setTimeout(() => input?.focus(), 40);
-    }
+    if (open) modal.open(trigger, input); else modal.close();
   };
-
   toggles.forEach((toggle) => toggle.addEventListener('click', () => {
     if (toggle.closest('.mobile-menu-panel')) document.querySelector('.menu-close')?.click();
-    setOpen(overlay.hidden);
+    setOpen(overlay.hidden, toggle);
   }));
-  close?.addEventListener('click', () => setOpen(false));
-  overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) {
-      setOpen(false);
-    }
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !overlay.hidden) {
-      setOpen(false);
-    }
+  closeButton?.addEventListener('click', () => setOpen(false));
+  overlay.addEventListener('click', (event) => { if (event.target === overlay) setOpen(false); });
+  overlay.addEventListener('modalclose', () => {
+    document.body.classList.remove('search-overlay-open');
+    toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', 'false'));
   });
 }
 
@@ -764,87 +797,59 @@ function initCarousel(root, opts) {
     return;
   }
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const interval = parseInt(root.dataset.interval || opts.interval || '5000', 10);
   root.style.setProperty('--ci', interval + 'ms');
   let activeIndex = 0;
   let timer = null;
+  let focused = false;
+  let hovered = false;
+  let intersecting = true;
 
   const setActive = (index) => {
     activeIndex = (index + slides.length) % slides.length;
     slides.forEach((slide, i) => {
-      slide.classList.toggle('is-active', i === activeIndex);
-      slide.setAttribute('aria-hidden', String(i !== activeIndex));
+      const inactive = i !== activeIndex;
+      slide.classList.toggle('is-active', !inactive);
+      slide.setAttribute('aria-hidden', String(inactive));
+      slide.inert = inactive;
     });
     dots.forEach((dot, i) => {
       dot.classList.toggle('is-active', i === activeIndex);
       dot.setAttribute('aria-pressed', String(i === activeIndex));
     });
-    if (caption && slides[activeIndex]) {
-      caption.textContent = slides[activeIndex].dataset.label || '';
-    }
+    if (caption && slides[activeIndex]) caption.textContent = slides[activeIndex].dataset.label || '';
   };
-
-  const stop = () => {
-    if (timer) {
-      window.clearInterval(timer);
-      timer = null;
-    }
-  };
-
+  const stop = () => { if (timer) { window.clearInterval(timer); timer = null; } };
   const start = () => {
-    if (reducedMotion) {
-      return;
-    }
     stop();
+    if (reducedMotion.matches || focused || hovered || !intersecting || document.hidden) return;
     timer = window.setInterval(() => setActive(activeIndex + 1), interval);
   };
-
-  dots.forEach((dot, dotIndex) => {
-    dot.addEventListener('click', () => {
-      setActive(dotIndex);
-      start();
-    });
-  });
-
-  if (opts.nav) {
-    root.querySelectorAll(opts.nav).forEach((btn) => {
-      btn.addEventListener('click', () => {
-        setActive(activeIndex + (parseInt(btn.dataset.heroNav, 10) || 1));
-        start();
-      });
-    });
-  }
-
+  dots.forEach((dot, dotIndex) => dot.addEventListener('click', () => { setActive(dotIndex); start(); }));
+  if (opts.nav) root.querySelectorAll(opts.nav).forEach((btn) => btn.addEventListener('click', () => { setActive(activeIndex + (parseInt(btn.dataset.heroNav, 10) || 1)); start(); }));
   root.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') {
-      setActive(activeIndex - 1);
-      start();
-    } else if (event.key === 'ArrowRight') {
-      setActive(activeIndex + 1);
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      setActive(activeIndex + (event.key === 'ArrowRight' ? 1 : -1));
       start();
     }
   });
-
   let touchX = null;
-  root.addEventListener('touchstart', (event) => {
-    touchX = event.touches[0].clientX;
-  }, { passive: true });
+  root.addEventListener('touchstart', (event) => { touchX = event.touches[0].clientX; }, { passive: true });
   root.addEventListener('touchend', (event) => {
-    if (touchX === null) {
-      return;
-    }
+    if (touchX === null) return;
     const delta = event.changedTouches[0].clientX - touchX;
-    if (Math.abs(delta) > 40) {
-      setActive(activeIndex + (delta < 0 ? 1 : -1));
-      start();
-    }
+    if (Math.abs(delta) > 40) { setActive(activeIndex + (delta < 0 ? 1 : -1)); start(); }
     touchX = null;
   }, { passive: true });
-
-  root.addEventListener('mouseenter', stop);
-  root.addEventListener('mouseleave', start);
-
+  root.addEventListener('mouseenter', () => { hovered = true; stop(); });
+  root.addEventListener('mouseleave', () => { hovered = false; start(); });
+  root.addEventListener('focusin', () => { focused = true; stop(); });
+  root.addEventListener('focusout', () => { window.setTimeout(() => { focused = root.contains(document.activeElement); start(); }, 0); });
+  document.addEventListener('visibilitychange', start);
+  reducedMotion.addEventListener('change', start);
+  if ('IntersectionObserver' in window) new IntersectionObserver(([entry]) => { intersecting = entry.isIntersecting; start(); }, { threshold: 0.01 }).observe(root);
   setActive(0);
   start();
 }
@@ -858,6 +863,98 @@ function setupCarousels() {
   });
   document.querySelectorAll('.hero-slider').forEach((el) => {
     initCarousel(el, { slide: '.hero-slide', dot: '[data-hero-slide]', interval: '6000', nav: '[data-hero-nav]' });
+  });
+}
+
+function setupInstagramCarousels() {
+  document.querySelectorAll('[data-instagram-carousel]').forEach((carousel) => {
+    const track = carousel.querySelector('.instagram-carousel-track');
+    const slides = Array.from(carousel.querySelectorAll('.instagram-carousel-slide'));
+    const dots = Array.from(carousel.querySelectorAll('[data-instagram-carousel-dot]'));
+    const previous = carousel.querySelector('[data-instagram-carousel-prev]');
+    const next = carousel.querySelector('[data-instagram-carousel-next]');
+    const count = carousel.querySelector('.instagram-carousel-count');
+    const status = carousel.querySelector('.instagram-carousel-status');
+    if (!track || slides.length < 2 || !previous || !next) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let activeIndex = 0;
+    let timer = null;
+    let pointerStartX = null;
+    let hovered = false;
+    let focused = false;
+    let intersecting = !('IntersectionObserver' in window);
+
+    const canAutoplay = () => !reducedMotion.matches && !document.hidden && !hovered && !focused && intersecting;
+    const stop = () => {
+      if (timer !== null) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    };
+    const start = () => {
+      stop();
+      if (canAutoplay()) timer = window.setInterval(() => setActive(activeIndex + 1, false), 5000);
+    };
+    const reset = () => start();
+    const setActive = (index, announce) => {
+      activeIndex = (index + slides.length) % slides.length;
+      track.style.transform = `translateX(-${activeIndex * 100}%)`;
+      slides.forEach((slide, slideIndex) => {
+        const active = slideIndex === activeIndex;
+        const link = slide.querySelector('a');
+        slide.setAttribute('aria-hidden', String(!active));
+        slide.toggleAttribute('inert', !active);
+        if (link) link.tabIndex = active ? 0 : -1;
+      });
+      dots.forEach((dot, dotIndex) => {
+        const active = dotIndex === activeIndex;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-current', String(active));
+      });
+      if (count) {
+        const value = `${activeIndex + 1}/${slides.length}`;
+        count.value = value;
+        count.textContent = value;
+      }
+      if (announce && status) status.textContent = `Posting ${activeIndex + 1} dari ${slides.length}`;
+    };
+    const move = (offset) => { setActive(activeIndex + offset, true); reset(); };
+
+    previous.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+    dots.forEach((dot, index) => dot.addEventListener('click', () => { setActive(index, true); reset(); }));
+    carousel.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
+    });
+    carousel.addEventListener('pointerdown', (event) => { pointerStartX = event.clientX; }, { passive: true });
+    carousel.addEventListener('pointerup', (event) => {
+      if (pointerStartX === null) return;
+      const delta = event.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(delta) >= 40) move(delta < 0 ? 1 : -1);
+    }, { passive: true });
+    carousel.addEventListener('pointercancel', () => { pointerStartX = null; }, { passive: true });
+    carousel.addEventListener('pointerenter', (event) => { if (event.pointerType === 'mouse') { hovered = true; stop(); } });
+    carousel.addEventListener('pointerleave', (event) => { if (event.pointerType === 'mouse') { hovered = false; start(); } });
+    carousel.addEventListener('focusin', () => { focused = true; stop(); });
+    carousel.addEventListener('focusout', () => { window.setTimeout(() => { focused = carousel.contains(document.activeElement); start(); }, 0); });
+    document.addEventListener('visibilitychange', start);
+    reducedMotion.addEventListener('change', start);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        const entry = entries.find((candidate) => candidate.target === carousel);
+        intersecting = Boolean(entry?.isIntersecting && entry.intersectionRatio > 0);
+        carousel.dataset.instagramIntersecting = String(intersecting);
+        start();
+      }, { threshold: 0.01 }).observe(carousel);
+    }
+    setActive(0, false);
+    const initialRect = carousel.getBoundingClientRect();
+    intersecting = initialRect.right > 0 && initialRect.left < window.innerWidth && initialRect.bottom > 0 && initialRect.top < window.innerHeight;
+    carousel.dataset.instagramIntersecting = String(intersecting);
+    start();
   });
 }
 
@@ -1065,58 +1162,32 @@ function setupHeroServiceStatus() {
 
 function setupMaklumatLightbox() {
   const triggers = Array.from(document.querySelectorAll('[data-maklumat-zoom]'));
-  if (!triggers.length) {
-    return;
-  }
-
+  if (!triggers.length) return;
   let overlay = null;
-  let lastFocus = null;
-
-  const close = () => {
-    if (!overlay || overlay.hidden) {
-      return;
-    }
-    overlay.hidden = true;
-    document.body.classList.remove('maklumat-lightbox-open');
-    lastFocus?.focus();
-  };
-
+  let modal = null;
   const build = () => {
     overlay = document.createElement('div');
     overlay.className = 'maklumat-lightbox';
     overlay.hidden = true;
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.innerHTML = '<button type="button" class="maklumat-lightbox-close" aria-label="Tutup pratinjau dokumen">×</button><figure><img alt=""><figcaption></figcaption></figure>';
-    overlay.querySelector('.maklumat-lightbox-close').addEventListener('click', close);
-    overlay.addEventListener('click', (event) => {
-      if (event.target === overlay) {
-        close();
-      }
-    });
+    overlay.setAttribute('aria-labelledby', 'maklumat-lightbox-title');
+    overlay.innerHTML = '<button type="button" class="maklumat-lightbox-close" aria-label="Tutup pratinjau dokumen">×</button><figure><img alt=""><figcaption id="maklumat-lightbox-title"></figcaption></figure>';
     document.body.appendChild(overlay);
+    modal = createModalLifecycle(overlay, overlay);
+    overlay.querySelector('.maklumat-lightbox-close').addEventListener('click', () => { modal.close(); document.body.classList.remove('maklumat-lightbox-open'); });
+    overlay.addEventListener('click', (event) => { if (event.target === overlay) { modal.close(); document.body.classList.remove('maklumat-lightbox-open'); } });
+    overlay.addEventListener('modalclose', () => document.body.classList.remove('maklumat-lightbox-open'));
   };
-
-  const open = (trigger) => {
-    if (!overlay) {
-      build();
-    }
+  triggers.forEach((trigger) => trigger.addEventListener('click', () => {
+    if (!overlay) build();
     const image = overlay.querySelector('img');
     image.src = trigger.dataset.maklumatZoom;
     image.alt = trigger.dataset.maklumatLabel || '';
-    overlay.querySelector('figcaption').textContent = trigger.dataset.maklumatLabel || '';
-    overlay.hidden = false;
+    overlay.querySelector('figcaption').textContent = trigger.dataset.maklumatLabel || 'Pratinjau dokumen';
     document.body.classList.add('maklumat-lightbox-open');
-    lastFocus = trigger;
-    overlay.querySelector('.maklumat-lightbox-close').focus();
-  };
-
-  triggers.forEach((trigger) => trigger.addEventListener('click', () => open(trigger)));
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      close();
-    }
-  });
+    modal.open(trigger, overlay.querySelector('.maklumat-lightbox-close'));
+  }));
 }
 
 function setupHeroPrefetch() {

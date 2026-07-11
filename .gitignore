@@ -5,6 +5,7 @@
 /logs/
 /administrator/logs/
 /tmp/
+/media/instagram/
 
 # Production secrets and local environment overrides
 /configuration.php

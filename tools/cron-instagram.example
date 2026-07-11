@@ -1,0 +1,2 @@
+# Store env file outside document root with mode 0600.
+# 17 * * * * INSTAGRAM_ENV_FILE=/home/ACCOUNT/private/instagram-rss.env /usr/local/bin/php /home/ACCOUNT/public_html/tools/cron-refresh-instagram.php >/dev/null 2>&1

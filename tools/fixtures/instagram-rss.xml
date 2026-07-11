@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>PN Natuna Instagram</title><lastBuildDate>Sat, 11 Jul 2026 10:00:00 +0000</lastBuildDate>
+    <item>
+      <guid isPermaLink="false">Dam_Dx1hlc4</guid><title>Caption lengkap untuk post Dam…</title>
+      <description><![CDATA[<p>Caption lengkap untuk post Dam.</p>]]></description>
+      <link>https://www.instagram.com/p/Dam_Dx1hlc4/</link><pubDate>Sat, 11 Jul 2026 09:00:00 +0000</pubDate>
+      <media:content url="https://cdn.rss.app/images/dam.jpg" type="image/jpeg" width="1080" height="1350" />
+    </item>
+    <item>
+      <guid isPermaLink="false">Dsecond</guid><title>Post kedua</title><description>Post kedua</description>
+      <link>https://www.instagram.com/p/Dsecond/</link><pubDate>Fri, 10 Jul 2026 09:00:00 +0000</pubDate>
+      <media:content url="https://cdn.rss.app/images/second.jpg" type="image/jpeg" width="1080" height="1080" />
+    </item>
+    <item><guid>bad</guid><title>Bad</title><link>https://example.com/post</link><media:content url="https://example.com/a.jpg" /></item>
+  </channel>
+</rss>

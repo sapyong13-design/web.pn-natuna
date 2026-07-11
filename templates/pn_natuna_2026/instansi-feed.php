@@ -91,6 +91,30 @@ function pn_natuna_instansi_item_date(string $text): string
     return 'Baru';
 }
 
+function pn_natuna_instansi_full_title(DOMElement $anchor, string $href): string
+{
+    $visible = pn_natuna_instansi_text($anchor->textContent ?? '');
+    if (!preg_match('/(?:\.{3}|…)$\s*/u', $visible)) {
+        return $visible;
+    }
+
+    foreach (['title', 'aria-label'] as $attribute) {
+        $candidate = pn_natuna_instansi_text($anchor->getAttribute($attribute));
+        if ($candidate !== '' && !preg_match('/(?:\.{3}|…)$\s*/u', $candidate)) {
+            return $candidate;
+        }
+    }
+
+    $path = (string) (parse_url($href, PHP_URL_PATH) ?? '');
+    $slug = pathinfo(basename(rtrim($path, '/')), PATHINFO_FILENAME);
+    $slug = preg_replace('/^\d+-/', '', $slug);
+    if ($slug === '' || !str_contains($slug, '-')) {
+        return $visible;
+    }
+    return mb_convert_case(str_replace('-', ' ', $slug), MB_CASE_TITLE, 'UTF-8');
+}
+
+
 function pn_natuna_instansi_parse_items(string $html, string $baseUrl, array $include, array $exclude = []): array
 {
     $items = [];
@@ -105,8 +129,8 @@ function pn_natuna_instansi_parse_items(string $html, string $baseUrl, array $in
     $xpath = new DOMXPath($dom);
 
     foreach ($xpath->query('//a[@href]') as $anchor) {
-        $title = pn_natuna_instansi_text($anchor->textContent ?? '');
         $href = trim((string) $anchor->getAttribute('href'));
+        $title = pn_natuna_instansi_full_title($anchor, $href);
 
         if ($title === "" || mb_strlen($title) < 18 || $href === "#" || $href === "http://-" || $href === "https://-") {
             continue;
@@ -193,7 +217,7 @@ function pn_natuna_instansi_fallback(): array
         'badilum' => [
             'title' => 'Direktorat Jenderal Badilum',
             'class' => 'instansi-badilum',
-            'logo' => '/images/brand/logo-ma.png',
+            'logo' => '/images/brand/logo-badilum.png',
             'news' => [
                 ['date' => '05 Jun', 'title' => 'Berita kegiatan Direktorat Jenderal Badilum', 'url' => 'https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html'],
                 ['date' => '05 Jun', 'title' => 'Asesmen AMPUH satuan kerja peradilan umum', 'url' => 'https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html'],
