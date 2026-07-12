@@ -34,4 +34,5 @@ check(substr_count($carousel, 'instagram-carousel-slide') === 2, 'Renderer creat
 check(substr_count($carousel, 'data-instagram-carousel-dot') === 2, 'Renderer creates carousel dots');
 check(str_contains($carousel, 'data-instagram-carousel-prev') && str_contains($carousel, 'data-instagram-carousel-next'), 'Renderer includes previous and next controls');
 check(str_contains($carousel, 'instagram-carousel-status'), 'Renderer includes restrained status region');
+check(!str_contains($html, 'instagram-carousel-controls'), 'Single-item carousel hides controls');
 echo "instagram feed tests: OK\n";

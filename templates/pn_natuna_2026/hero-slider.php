@@ -15,16 +15,25 @@ function pn_natuna_hero_latest_articles(int $catId, int $limit = 4): array
 {
     try {
         $db = Factory::getDbo();
+        $now = Factory::getDate()->toSql();
         $query = $db->getQuery(true)
-            ->select($db->quoteName(['id', 'title', 'alias', 'created', 'images', 'introtext']))
+            ->select($db->quoteName(['id', 'title', 'alias', 'catid', 'created', 'publish_up', 'images', 'introtext']))
             ->from($db->quoteName('#__content'))
             ->where($db->quoteName('state') . ' = 1')
             ->where($db->quoteName('catid') . ' = ' . (int) $catId)
             ->where($db->quoteName('alias') . ' NOT LIKE ' . $db->quote('%berita-dan-pengumuman%'))
-            ->order($db->quoteName('created') . ' DESC')
+            ->where('(' . $db->quoteName('publish_up') . ' IS NULL OR ' . $db->quoteName('publish_up') . ' = ' . $db->quote($db->getNullDate()) . ' OR ' . $db->quoteName('publish_up') . ' <= ' . $db->quote($now) . ')')
+            ->where('(' . $db->quoteName('publish_down') . ' IS NULL OR ' . $db->quoteName('publish_down') . ' = ' . $db->quote($db->getNullDate()) . ' OR ' . $db->quoteName('publish_down') . ' >= ' . $db->quote($now) . ')')
+            ->order('CASE WHEN ' . $db->quoteName('publish_up') . ' > ' . $db->quote('2000-01-02 00:00:00') . ' THEN ' . $db->quoteName('publish_up') . ' ELSE ' . $db->quoteName('created') . ' END DESC')
             ->setLimit($limit);
         $db->setQuery($query);
-        return $db->loadObjectList() ?: [];
+        $items = $db->loadObjectList() ?: [];
+        foreach ($items as $item) {
+            if (!empty($item->publish_up) && $item->publish_up > '2000-01-02 00:00:00') {
+                $item->created = $item->publish_up;
+            }
+        }
+        return $items;
     } catch (Throwable $e) {
         return [];
     }
@@ -69,7 +78,9 @@ function pn_natuna_hero_article_url(object $article, int $catId): string
 
 function pn_natuna_hero_article_image(object $article): string
 {
-    $fallback = '/images/sejarah/sejarah-pn-natuna.jpg';
+    $fallback = (int) ($article->catid ?? 0) === 13
+        ? '/images/brand/pengumuman-resmi-pn-natuna.webp'
+        : '/images/sejarah/sejarah-pn-natuna.jpg';
     if (empty($article->images)) {
         return $fallback;
     }

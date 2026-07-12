@@ -36,7 +36,7 @@ if (trim((string) $this->getDescription()) === '') {
 }
 ?>
 <!doctype html>
-<html lang="id-ID" dir="<?php echo $this->direction; ?>" data-theme="light">
+<html lang="id-ID" dir="<?php echo $this->direction; ?>">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <jdoc:include type="metas" />
@@ -92,10 +92,7 @@ if (trim((string) $this->getDescription()) === '') {
     (function () {
       try {
         if (localStorage.getItem('pnNatunaDark') === '1') {
-          document.documentElement.dataset.theme = 'dark';
-          document.documentElement.style.colorScheme = 'dark';
           document.body.classList.add('is-dark');
-          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#101820');
         }
       } catch (e) { /* private mode */ }
     })();

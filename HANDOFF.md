@@ -18,17 +18,26 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB harus disertai delta S
 
 - Hero beranda: sinematik full-bleed memakai `images/hero/gedung-pn-natuna-2026.webp`, dua layer cover/contain dan mask feather; slide pertama `fetchpriority=high`, tidak lazy.
 - Role Model, modul **482**: dua poster dari `images/role-model/` (Joko Ciptanto kini `joko-ciptanto-role-model-2026.webp`).
-- Instagram: feed otomatis dari RSS.app melalui `tools/cron-refresh-instagram.php` setiap jam, cache JSON + WebP lokal; homepage memakai carousel satu kartu 5 detik dan modul **483** iframe manual hanya sebagai fallback.
-- Mode gelap: default terang, aktif melalui tombol dan `localStorage` key `pnNatunaDark`; state disinkronkan ke `<html>`/`color-scheme`/theme-color, termasuk surface mobile dan dialog.
-- Mobile `≤760px`: header kompak/sticky, drawer bertingkat, bottom bar lima aksi hanya di homepage, sidebar snap rail tanpa nested vertical scroll; `content-visibility` dan section-level scroll reveal dinonaktifkan pada homepage mobile untuk mencegah layout jump/blinking.
+- Instagram: feed otomatis dari RSS.app melalui `tools/cron-refresh-instagram.php` (cron per jam, URL feed di private env), cache JSON + thumbnail WebP lokal di `cache/`+`media/instagram/` (ter-ignore); homepage merender carousel satu kartu 5 detik dari cache; modul **483** iframe manual hanya fallback saat cache tidak valid.
+- Kabar Instansi: judul PT Kepri dipulihkan dari slug bila source terpotong; Badilum selalu `logo-badilum.png`; regression test `tools/test-instansi-feed.php`.
+- Mode gelap: default terang, aktif hanya melalui tombol dan `localStorage` key `pnNatunaDark`; tidak mengikuti preferensi sistem.
+- Mobile `≤760px`: header kompak/sticky, drawer bertingkat, bottom bar lima aksi hanya di homepage, sidebar menjadi snap rail.
 - Detail artikel kategori Berita/Pengumuman memakai override `templates/pn_natuna_2026/html/com_content/article/default.php`; kategori lain memakai template core secara langsung.
 - Transparansi dan keluarga Profil Pengadilan sudah memakai route canonical, shell terakses, state fokus/gelap/reduced-motion, dan konten DB terbaru.
 - Editorial 2026-07-11: section homepage memakai pola `.section-kicker → h2 → .section-desc → konten → satu aksi` (7 section), nav desktop menandai route aktif via `li.active/.current` underline gold, 3 divider statis `.home-section-divider`, board Jadwal/Instansi berlatar `--color-soft`. Blok CSS: `/* EDITORIAL 2026-07-11 */` dan `/* PERF-MOTION 2026-07-11 */` di akhir `template.css`.
-- Performa: token shadow `--shadow-subtle/card/overlay`; reveal one-shot maks 10px/380ms hanya pada viewport `≥761px`, sedangkan section homepage mobile selalu `opacity:1`, `transform:none`, `transition:none`; Instagram memakai WebP lokal tanpa iframe saat cache aktif; runtime Instagram di `media/instagram/` ter-ignore.
-- Maklumat modul **808**: compact document row, satu heading section, dua dokumen utuh tanpa crop, lightbox keyboard-safe; desktop horizontal, mobile responsif.
-- Map modul **810** tetap memakai iframe Google Maps `loading="lazy"` seperti state sebelumnya; eksperimen click-to-load sudah direvert sesuai keputusan pemilik.
-- Kabar Instansi: judul PT Kepri dipulihkan dari slug bila source terpotong; Badilum selalu memakai `logo-badilum.png`; regression test di `tools/test-instansi-feed.php`.
-- Aksesibilitas: search overlay dan Maklumat lightbox trap focus/inert/Escape/focus-return; carousel tersembunyi inert; tab Instansi roving tabindex; sticky nav memakai IntersectionObserver tanpa continuous scroll handler.
+- Performa: token shadow `--shadow-subtle/card/overlay`, reveal one-shot maks 10px/380ms (opacity+transform saja), `content-visibility:auto` pada 4 section bawah fold, gambar berat dikonversi WebP (berita pelantikan 157KB, maklumat 332KB, role model 65KB; original di `images/_originals/`, gitignored).
+- Maklumat modul **808**: compact document row (intro + dua dokumen utuh berdampingan), satu heading section (chrome), lightbox tetap; desktop horizontal, mobile bertumpuk.
+
+## Pembaruan 12 Jul 2026: Berita, Pengumuman, dan Transparansi
+
+- Portal artikel **53** dirender khusus di `/berita-dan-pengumuman`; artikel landing lama **6** unpublished dan artikel 53 dipindahkan ke kategori netral agar tidak masuk pagination Berita.
+- Kanal kategori memiliki dua entry point yang tetap aktif: `/berita` (menu 141) dan `/berita-dan-pengumuman/berita` (233); `/pengumuman` (142) dan `/berita-dan-pengumuman/pengumuman` (234). Keempat menu wajib memakai `num_leading_articles=0`, `num_intro_articles=6`, `num_columns=3`, `num_links=0`, `orderby_sec=rdate`, `order_date=published`.
+- Data lama kategori Berita **12** dan Pengumuman **13** dinormalisasi: `publish_up <= 2000-01-02` diganti `created`. Karena itu category listing, portal, dan hero menggunakan tanggal publikasi terbaru-ke-terlama tanpa sentinel Joomla.
+- Menambah article ke kategori 12/13 otomatis memperbarui kanal, portal, dan hero homepage. Gambar memilih `image_fulltext` non-empty lalu `image_intro`; Pengumuman tanpa gambar memakai `images/brand/pengumuman-resmi-pn-natuna.webp`.
+- Pagination Berita/Pengumuman berisi tepat enam card per halaman desktop, tiga kolom × dua baris; mobile menjadi compact list. Jangan menyembunyikan `link_items` lewat CSS. Delta deployment: `database/_news_channels_ordering.sql`.
+- Keluarga Transparansi memakai renderer terpusat `html/com_content/article/transparency-family.php` untuk artikel 45 dan child 37, 38, 39, 40, 86, 41, 42, 43, 85, 87, 88, 115, 116. Renderer mempertahankan seluruh link arsip, menghapus shell DB duplikat, memberi satu hero h1, breadcrumb, dan navigasi empat kelompok.
+- Kelompok Transparansi: **Akuntabilitas Kinerja**, **Keuangan**, **Survei dan Integritas**, **Informasi Publik**. Desktop memakai grouped dropdown/disclosure; mobile accordion hanya membuka kelompok aktif. Semua route lama dipertahankan.
+- Focused contracts: `tools/test_news_portal_renderer.php`, `tools/test_news_portal_renderer.py`, `tools/test_news_category_channels.php`, dan `tools/test_transparency_family_renderer.php`.
 
 Spesifikasi serta rencana desain aktif tersedia di [`docs/superpowers/specs/`](docs/superpowers/specs/) dan [`docs/superpowers/plans/`](docs/superpowers/plans/).
 
@@ -80,7 +89,7 @@ Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pen
 ## Menjalankan di device lain
 
 1. Clone repo dan checkout branch kerja.
-2. Import snapshot lokal terbaru yang tercantum pada bagian Lingkungan kerja ke database `pn_natuna_rebuild`.
+2. Import `database/pn_natuna_rebuild_20260711_security.sql` ke database `pn_natuna_rebuild`.
 3. Sesuaikan `configuration.php` untuk path, DB, host, kredensial, dan `live_site` lokal; file ini tidak dilacak Git.
 4. Dari root Joomla jalankan `php -S 127.0.0.1:8080`.
 5. Verifikasi `/`, `/transparansi`, `/profil-pengadilan`, artikel Berita/Pengumuman, desktop `≥761px`, dan mobile `≤760px`.
@@ -97,7 +106,7 @@ Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pen
 - Foto gedung sumber hanya 700×523; ganti dengan foto HD landscape minimal 1920px saat tersedia.
 - Tanggal artikel lama: gunakan `publish_up` hanya bila lebih baru dari `2000-01-02 00:00:00`, selain itu gunakan `created`.
 - Referensi gambar WebP dimigrasikan di DB (`pnn_content` 105/13, `pnn_modules` 808/482); file JPG/PNG lama sudah dihapus dari `images/`. Jangan mengembalikan referensi lama.
-- Rule legacy mobile `content-visibility/contain-intrinsic-size` dan section scroll reveal dapat menyebabkan blinking; override `MOBILE SCROLL STABILITY 2026-07-11` wajib mempertahankan `content-visibility:visible`, `opacity:1`, `transform:none`, dan `transition:none` pada direct-child homepage `≤760px`.
+- Rule mobile lama `.home-juknis-main > :nth-child(n+8) { contain-intrinsic-size:520px }` berbahaya untuk elemen kosong baru; divider dikecualikan via override di blok EDITORIAL.
 - JSON `images` Joomla dapat berisi `image_fulltext` kosong; fallback harus berdasarkan nilai non-kosong ke `image_intro`, dengan path lokal root-relative.
 
 ## Prinsip pemeliharaan
