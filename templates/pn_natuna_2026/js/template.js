@@ -162,6 +162,7 @@ function setupAmpuhDirectory() {
 
   const toggles = Array.from(root.querySelectorAll('[data-ampuh-toggle]'));
   const items = Array.from(root.querySelectorAll('[data-search-text]'));
+  const resultNodes = Array.from(root.querySelectorAll('[data-ampuh-result]'));
   const search = root.querySelector('[data-ampuh-search]');
   const filter = root.querySelector('[data-ampuh-gobi-filter]');
   const closeAll = root.querySelector('[data-ampuh-close-all]');
@@ -197,7 +198,8 @@ function setupAmpuhDirectory() {
     if (!query && !selectedGobi) {
       items.forEach((item) => { item.hidden = false; });
       closeEveryPanel();
-      syncResults(items.filter((item) => !item.querySelector('[data-search-text]')).length);
+      syncResults(resultNodes.length);
+      if (tree) tree.classList.remove('ampuh-directory__empty');
       return;
     }
     items.forEach((item) => {
@@ -206,7 +208,11 @@ function setupAmpuhDirectory() {
       item.hidden = !(inSelectedGobi && matchesQuery(item, query));
       if (!item.hidden && query) showAncestors(item);
     });
-    const matches = items.filter((item) => !item.hidden && !item.querySelector('[data-search-text]')).length;
+    const matches = resultNodes.filter((item) => {
+      const gobi = item.closest('[data-ampuh-gobi]');
+      const resultText = normalize(item.getAttribute('data-search-text') || item.textContent);
+      return !item.hidden && (!selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi) && resultText.includes(query);
+    }).length;
     syncResults(matches);
     if (tree) tree.classList.toggle('ampuh-directory__empty', matches === 0);
   };

@@ -33,16 +33,17 @@ const fs = require('fs');
 const vm = require('vm');
 const source = fs.readFileSync(process.argv[2], 'utf8');
 class Node {
-  constructor(tag = 'div', attrs = {}, text = '') { this.tagName = tag.toUpperCase(); this.attrs = {...attrs}; this.ownText = text; this.children = []; this.parentElement = null; this.hidden = false; this.listeners = {}; this.classList = { toggle() {}, add() {}, remove() {} }; }
+  constructor(tag = 'div', attrs = {}, text = '') { this.tagName = tag.toUpperCase(); this.attrs = {...attrs}; this.ownText = text; this.children = []; this.parentElement = null; this.hidden = false; this.listeners = {}; this.classes = new Set(); this.classList = { toggle: (name, enabled) => enabled ? this.classes.add(name) : this.classes.delete(name), contains: name => this.classes.has(name), add: name => this.classes.add(name), remove: name => this.classes.delete(name) }; }
   get textContent() { return [this.ownText, ...this.children.map(child => child.textContent)].join(' ').trim(); }
   set textContent(value) { this.ownText = value; }
+  get id() { return this.attrs.id || ''; }
   append(...nodes) { nodes.forEach(node => { node.parentElement = this; this.children.push(node); }); return this; }
   setAttribute(name, value) { this.attrs[name] = String(value); }
   getAttribute(name) { return this.attrs[name] ?? null; }
   hasAttribute(name) { return Object.hasOwn(this.attrs, name); }
   addEventListener(type, listener) { (this.listeners[type] ||= []).push(listener); }
   fire(type) { (this.listeners[type] || []).forEach(listener => listener({ currentTarget: this, target: this })); }
-  matches(selector) { return selector.split(',').some(part => { part = part.trim(); if (part === '[hidden]') return this.hidden; const data = part.match(/^\[data-([^\]=]+)(?:="([^"]+)")?\]$/); if (data) return Object.hasOwn(this.attrs, `data-${data[1]}`) && (!data[2] || this.attrs[`data-${data[1]}`] === data[2]); return false; }); }
+  matches(selector) { return selector.split(',').some(part => { part = part.trim(); if (part === '[hidden]') return this.hidden; if (part.startsWith('.')) return (this.attrs.class || '').split(/\s+/).includes(part.slice(1)); const data = part.match(/^\[data-([^\]=]+)(?:="([^"]+)")?\]$/); if (data) return Object.hasOwn(this.attrs, `data-${data[1]}`) && (!data[2] || this.attrs[`data-${data[1]}`] === data[2]); return false; }); }
   closest(selector) { for (let node = this; node; node = node.parentElement) if (node.matches(selector)) return node; return null; }
   querySelectorAll(selector) { const result = []; const visit = node => node.children.forEach(child => { if (child.matches(selector)) result.push(child); visit(child); }); visit(this); return result; }
   querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
@@ -54,18 +55,19 @@ const one = new Node('button', {'data-ampuh-filter-value': '1'}, 'GOBI Satu');
 const two = new Node('button', {'data-ampuh-filter-value': '2'}, 'GOBI Dua');
 const close = new Node('button', {'data-ampuh-close-all': ''});
 const results = new Node('p', {'data-ampuh-results': ''});
-const tree = new Node('div');
+const tree = new Node('div', {class: 'ampuh-directory__tree'});
 const gobi1 = new Node('section', {'data-ampuh-gobi': '1', 'data-search-text': 'gobi pelayanan'}, 'GOBI pelayanan');
 const toggle1 = new Node('button', {'data-ampuh-toggle': '', 'aria-controls': 'panel-1', 'aria-expanded': 'false'}, 'Buka GOBI');
 const panel1 = new Node('div', {'data-ampuh-panel': '', id: 'panel-1'}); panel1.hidden = true;
 const checklist = new Node('section', {'data-search-text': 'checklist layanan publik'}, 'Checklist layanan publik');
 const toggle2 = new Node('button', {'data-ampuh-toggle': '', 'aria-controls': 'panel-2', 'aria-expanded': 'false'}, 'Buka checklist');
 const panel2 = new Node('div', {'data-ampuh-panel': '', id: 'panel-2'}); panel2.hidden = true;
-const sub = new Node('section', {'data-search-text': 'sub checklist layanan'}, 'Sub checklist layanan');
-const files = new Node('ul', {}, 'Surat Keputusan ÁMPUH.pdf');
+const sub = new Node('section', {'data-search-text': 'sub checklist layanan', 'data-ampuh-result': ''}, 'Sub checklist layanan');
+const files = new Node('ul');
+const file = new Node('li', {'data-search-text': 'surat keputusan ampuh.pdf', 'data-ampuh-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
 const gobi2 = new Node('section', {'data-ampuh-gobi': '2', 'data-search-text': 'gobi hukum'}, 'GOBI hukum');
 const legal = new Node('section', {'data-search-text': 'checklist perkara'}, 'Checklist perkara');
-root.append(search, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(files))))), gobi2.append(legal)));
+root.append(search, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(files.append(file)))))), gobi2.append(legal)));
 const document = { addEventListener: () => {}, querySelector: selector => selector === '[data-ampuh-directory]' ? root : null, getElementById: id => root.querySelectorAll('[data-ampuh-panel]').find(node => node.attrs.id === id) || null, createElement: tag => new Node(tag) };
 const context = { document, window: {}, console };
 vm.createContext(context); vm.runInContext(source, context);
@@ -75,20 +77,23 @@ toggle1.fire('click');
 if (toggle1.getAttribute('aria-expanded') !== 'true' || panel1.hidden) throw Error('toggle must synchronize aria-expanded and panel hidden');
 close.fire('click');
 if (toggle1.getAttribute('aria-expanded') !== 'false' || !panel1.hidden) throw Error('close all must close every disclosure');
-search.value = 'LAYANAN'; search.fire('input');
-if (gobi1.hidden || !gobi2.hidden) throw Error(`search must be case-insensitive and hide non-matches: ${gobi1.hidden}/${gobi2.hidden}, ${gobi1.textContent}`);
-if (!results.textContent.includes('1')) throw Error('search must report matching sub-checklist or file count');
+search.value = 'SUB CHECKLIST'; search.fire('input');
+if (gobi1.hidden || !gobi2.hidden || !results.textContent.includes('1')) throw Error('sub-checklist title search must produce one countable result');
+search.value = 'KEPUTUSAN'; search.fire('input');
+if (gobi1.hidden || !gobi2.hidden || !results.textContent.includes('1') || toggle1.getAttribute('aria-expanded') !== 'true' || toggle2.getAttribute('aria-expanded') !== 'true') throw Error('file search must count result and open ancestors');
 one.fire('click');
 if (gobi1.hidden || !gobi2.hidden) throw Error('GOBI filter must intersect active search');
 search.value = ''; search.fire('input');
-if (gobi1.hidden || gobi2.hidden) throw Error('empty search must restore all items');
+if (gobi1.hidden || gobi2.hidden || tree.classList.contains('ampuh-directory__empty')) throw Error('empty search must restore all items and clear empty state');
 if (toggle1.getAttribute('aria-expanded') !== 'false' || toggle2.getAttribute('aria-expanded') !== 'false') throw Error('empty search must reset disclosures to closed');
 two.fire('click');
 if (!gobi1.hidden || gobi2.hidden) throw Error('GOBI filter must select requested GOBI');
 two.fire('click');
 if (gobi1.hidden || gobi2.hidden) throw Error('second filter click must clear filter');
 search.value = 'tidak-ditemukan'; search.fire('input');
-if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.') throw Error('no match must show empty state and live message');
+if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('no match must show empty state and live message');
+search.value = ''; search.fire('input');
+if (tree.classList.contains('ampuh-directory__empty')) throw Error('clearing no-match query must remove empty state');
 context.document = { querySelector: () => null };
 context.setupAmpuhDirectory();
 '''
