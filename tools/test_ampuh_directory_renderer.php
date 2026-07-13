@@ -97,6 +97,10 @@ $expect(str_contains($html, 'class="ampuh-directory__file-name"'), 'Document nam
 $expect(!str_contains($html, '<section class="ampuh-directory__subchecklist" data-ampuh-result'), 'Branch nodes must not be document result nodes.');
 $expect(str_contains($html, 'class="ampuh-directory__check-number"'), 'Checklist number needs a dedicated hook.');
 $expect(str_contains($html, 'class="ampuh-directory__check-title"'), 'Checklist title needs a dedicated hook.');
+$expect(str_contains($html, 'name="q"'), 'Document search needs semantic query naming.');
+$expect(str_contains($html, 'data-ampuh-filter-prev aria-label="Gulir GOBI ke kiri"'), 'Desktop GOBI rail needs a labeled previous control.');
+$expect(str_contains($html, 'data-ampuh-filter-next aria-label="Gulir GOBI ke kanan"'), 'Desktop GOBI rail needs a labeled next control.');
+$expect(str_contains($html, 'class="ampuh-directory__filter-window"'), 'GOBI rail needs a bounded fade viewport.');
 $expect(!str_contains($html, '1 Checklist &lt;svg&gt;'), 'Checklist title must not duplicate its leading number.');
 $expect(str_contains($html, 'placeholder="Cari GOBI, checklist, atau nama dokumen…"'), 'Search placeholder must end with an ellipsis.');
 
@@ -124,8 +128,8 @@ $expect(!(bool) preg_match('/\.ampuh-directory__hero\s*[,\{]/', $css), 'Dead AMP
 $expect($cssRule('.ampuh-directory [hidden]', 'display\s*:\s*none\s*!important'), 'Hidden panels must not occupy layout space.');
 $expect($cssRule('.ampuh-directory__drive, .ampuh-directory__tools button, .ampuh-directory [data-ampuh-toggle]', 'min-height\s*:\s*44px'), 'All primary AMPUH interactive controls need 44px minimum targets.');
 $expect($cssRule('.ampuh-directory__subchecklist li', 'overflow-wrap\s*:\s*anywhere'), 'File names must wrap anywhere.');
-$expect((bool) preg_match('/\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*210px/s', $ampuhCss), 'Desktop toolbar needs a 210px height ceiling.');
-$expect((bool) preg_match('/\.ampuh-directory__header\s*\{[^}]*max-height\s*:\s*360px/s', $ampuhCss), 'Desktop hero needs a 360px height ceiling.');
+$expect((bool) preg_match('/\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*220px/s', $ampuhCss), 'Desktop command toolbar needs a 220px height ceiling.');
+$expect((bool) preg_match('/\.ampuh-directory__header\s*\{[^}]*min-height\s*:\s*350px/s', $ampuhCss), 'Desktop command hero needs a stable 350px minimum composition.');
 $expect((bool) preg_match('/\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*88px/s', $ampuhCss), 'Desktop dossier rows need a strong 88px minimum hierarchy.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*220px.*?\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*80px/s', $ampuhCss), 'Mobile toolbar and dossier rows need scoped compact bounds.');
 $expect($cssRule('body.nav-stuck .ampuh-directory__tools', 'top\s*:\s*var\(--nav-height,\s*56px\)'), 'Desktop sticky tools must clear the fixed navigation.');
@@ -145,6 +149,10 @@ $expect($cssRule('.ampuh-directory__tools', 'position\s*:\s*sticky'), 'AMPUH sea
 $expect($cssRule('.ampuh-directory__match', 'background\s*:\s*var\(--color-accent-soft\)'), 'Search matches need token-based highlighting.');
 $expect($cssRule('.ampuh-directory__subchecklist li', 'transition\s*:\s*(?:opacity|transform)'), 'Document rows need restrained state motion.');
 $expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\).*?\.ampuh-directory \*[^}]*transition\s*:\s*none\s*!important/s', $ampuhCss), 'Reduced-motion mode must disable every AMPUH transition.');
+$expect($cssRule('.ampuh-directory__filter-window', 'overflow\s*:\s*hidden'), 'GOBI filter window must hide native scrollbar overflow.');
+$expect((bool) preg_match('/\.ampuh-directory__filter-nav\s*\{[^}]*display\s*:\s*grid/s', $ampuhCss), 'Desktop GOBI rail needs visible arrow navigation.');
+$expect((bool) preg_match('/\.ampuh-directory__hero-main\s*>\s*\*\s*\{[^}]*animation\s*:\s*ampuh-command-enter/s', $ampuhCss), 'Command header content needs restrained entrance choreography.');
+$expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\).*?\.ampuh-directory__hero-main\s*>\s*\*[^}]*animation\s*:\s*none\s*!important/s', $ampuhCss), 'Reduced motion must disable command-header entrance choreography.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s', $ampuhCss), 'Mobile collection index must use a compact 2x2 grid.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
 $hexToLuminance = static function (string $hex): float {

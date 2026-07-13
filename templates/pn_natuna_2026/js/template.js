@@ -166,6 +166,8 @@ function setupAmpuhDirectory() {
   const search = root.querySelector('[data-ampuh-search]');
   const filter = root.querySelector('[data-ampuh-gobi-filter]');
   const gobiSelect = root.querySelector('[data-ampuh-gobi-select]');
+  const filterPrev = root.querySelector('[data-ampuh-filter-prev]');
+  const filterNext = root.querySelector('[data-ampuh-filter-next]');
   const closeAll = root.querySelector('[data-ampuh-close-all]');
   const clearSearch = root.querySelector('[data-ampuh-clear-search]');
   const results = root.querySelector('[data-ampuh-results]');
@@ -271,6 +273,13 @@ function setupAmpuhDirectory() {
     const value = button.getAttribute('data-ampuh-filter-value');
     setSelectedGobi(selectedGobi === value ? '' : value);
   }));
+  const scrollFilter = (direction) => {
+    if (!filter || typeof filter.scrollBy !== 'function') return;
+    const distance = Math.max(240, Math.round(filter.clientWidth * .72));
+    filter.scrollBy({ left: direction * distance, behavior: 'smooth' });
+  };
+  filterPrev?.addEventListener('click', () => scrollFilter(-1));
+  filterNext?.addEventListener('click', () => scrollFilter(1));
   gobiSelect?.addEventListener('change', () => setSelectedGobi(gobiSelect.value));
   apply();
 }
