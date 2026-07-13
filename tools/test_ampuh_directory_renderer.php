@@ -61,6 +61,7 @@ preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
 $toggleIds = $toggleMatches[1];
 $panelIds = $panelMatches[1];
 $expect(count($toggleIds) === 4, 'Fixture must render four closed disclosure levels.');
+$expect((bool) preg_match('/\sdata-ampuh-result(?:\s|>)/', $html), 'Searchable result nodes need behavior hooks.');
 $expect(count($toggleIds) === count(array_unique($toggleIds)), 'Disclosure IDs must be unique.');
 $expect(count($panelIds) === count(array_unique($panelIds)), 'Panel IDs must be unique.');
 $expect($toggleIds === $panelIds, 'Every toggle aria-controls must match its hidden panel.');
