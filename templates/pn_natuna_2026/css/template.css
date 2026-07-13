@@ -11061,7 +11061,7 @@ body.is-dark .maklumat-compact-doc h3 {
 .ampuh-directory__hero-secondary { z-index: 1; position: relative; display: grid; align-content: end; gap: 5px; padding: 36px 40px; border-inline-start: 1px solid var(--color-line); color: var(--color-primary-deep); }
 .ampuh-directory__hero-secondary p { margin: 0; color: var(--color-muted); font-size: .72rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
 .ampuh-directory__hero-secondary strong { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; }
-.ampuh-directory__watermark { position: absolute; inset: 22px 22px auto auto; color: color-mix(in srgb, var(--color-primary) 10%, transparent); font-family: var(--font-display); font-size: clamp(5.5rem, 11vw, 9rem); font-weight: 700; line-height: 1; }
+.ampuh-directory__watermark { position: absolute; inset: 26px 28px auto auto; color: color-mix(in srgb, var(--color-primary) 10%, transparent); font-family: var(--font-display); font-size: clamp(4.8rem, 8.8vw, 7.5rem); font-weight: 700; line-height: 1; }
 .ampuh-directory__drive, .ampuh-directory__tools button, .ampuh-directory [data-ampuh-toggle] { min-height: 44px; font: inherit; }
 .ampuh-directory select { min-height: 44px; font: inherit; }
 .ampuh-directory__hero-main > .ampuh-directory__drive { justify-self: start; display: inline-flex; align-items: center; padding: 12px 20px; border: 1px solid var(--color-primary); border-radius: var(--radius); color: var(--color-surface); background: var(--color-primary); font-weight: 800; text-decoration: none; transition: transform 180ms cubic-bezier(.16,1,.3,1); }
