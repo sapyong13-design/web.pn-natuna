@@ -183,8 +183,9 @@ function setupAmpuhDirectory() {
     panel.hidden = false;
     panel.classList.add('is-revealing');
     const reveal = () => panel.classList.remove('is-revealing');
-    if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(reveal);
-    else reveal();
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(reveal));
+    } else reveal();
   };
   const closeEveryPanel = () => toggles.forEach((toggle) => setExpanded(toggle, false));
   const normalize = (value) => value.toLocaleLowerCase('id-ID').trim();
