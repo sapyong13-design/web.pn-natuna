@@ -48,7 +48,7 @@ GREEN: canonical renderer selectors align with scoped CSS rules; mobile inventor
 
 RED: deterministic contrast contract failed because dark hero heading inherited `--color-primary-deep` and CTA used dark `--color-surface` as foreground.
 
-GREEN: scoped dark heading and CTA normal/hover/focus states use `--color-ink` (`#edf2f7`). Calculated WCAG ratios: heading against `--color-surface` (`#151c22`) is `15.27:1`; CTA against `--color-primary` (`#8f1f0b`) is `7.87:1`.
+GREEN: scoped dark heading and CTA normal/hover/focus states use `--color-ink` (`#edf2f7`). Calculated WCAG ratios: heading against `--color-surface` (`#151c22`) is `15.27:1`; CTA against `--color-primary` (`#8f1f0b`) is `7.87:1`; CTA hover/focus against `--color-primary-dark` (`#671607`) is `11.00:1`. Contract resolves all three exact tokens and asserts each ratio is at least `4.5:1`.
 
 ## Concerns
 
