@@ -49,15 +49,15 @@ $driveAction = static function (string $url, string $label) use ($escape): void 
     echo '<a class="ampuh-directory__drive" href="' . $escape($url) . '" target="_blank" rel="noopener noreferrer">' . $escape($label) . '</a>';
 };
 
-$checklistCount = 0;
+$checklistNumbers = [];
 $subchecklistCount = 0;
 $fileCount = 0;
 foreach ($directory['gobis'] as $gobi) {
     if (!is_array($gobi) || !is_array($gobi['checklists'] ?? null)) {
         throw new RuntimeException('AMPUH GOBI data has an invalid shape.');
     }
-    $checklistCount += count($gobi['checklists']);
     foreach ($gobi['checklists'] as $checklist) {
+        $checklistNumbers[(int) ($checklist['number'] ?? 0)] = true;
         if (!is_array($checklist) || !is_array($checklist['subchecklists'] ?? null)) {
             throw new RuntimeException('AMPUH checklist data has an invalid shape.');
         }
@@ -76,7 +76,7 @@ foreach ($directory['gobis'] as $gobi) {
     <p>Direktori dokumen</p><h1><?php echo $escape((string) ($directory['title'] ?? 'AMPUH 2026 Checklist')); ?></h1>
     <p><?php echo $escape((string) ($directory['summary'] ?? '')); ?></p><?php $driveAction($directory['main_drive_url'], 'Buka Folder Utama AMPUH 2026'); ?>
   </header>
-  <section class="ampuh-directory__summary" aria-label="Ringkasan inventaris"><dl><div><dt>GOBI</dt><dd><?php echo count($directory['gobis']); ?></dd></div><div><dt>Checklist</dt><dd><?php echo $checklistCount; ?></dd></div><div><dt>Sub-checklist</dt><dd><?php echo $subchecklistCount; ?></dd></div><div><dt>Dokumen</dt><dd><?php echo $fileCount; ?></dd></div></dl></section>
+  <section class="ampuh-directory__summary" aria-label="Ringkasan inventaris"><dl><div><dt>GOBI</dt><dd><?php echo count($directory['gobis']); ?></dd></div><div><dt>Checklist</dt><dd><?php echo count($checklistNumbers); ?></dd></div><div><dt>Sub-checklist</dt><dd><?php echo $subchecklistCount; ?></dd></div><div><dt>Dokumen</dt><dd><?php echo $fileCount; ?></dd></div></dl></section>
   <section class="ampuh-directory__tools" aria-label="Pencarian direktori"><label for="ampuh-directory-search">Cari dokumen AMPUH</label><input id="ampuh-directory-search" type="search" data-ampuh-search autocomplete="off" placeholder="Cari GOBI, checklist, atau nama dokumen"><div data-ampuh-gobi-filter aria-label="Filter GOBI"><?php foreach ($directory['gobis'] as $gobi) : ?><button type="button" data-ampuh-filter-value="<?php echo $escape((string) (int) $gobi['number']); ?>" aria-pressed="false"><?php echo $escape($gobiLabel($gobi)); ?></button><?php endforeach; ?></div><button type="button" data-ampuh-close-all>Tutup semua</button><p data-ampuh-results aria-live="polite"></p></section>
   <div class="ampuh-directory__tree">
     <?php foreach ($directory['gobis'] as $gobi) : $gobiId = 'ampuh-gobi-' . (int) $gobi['number']; $gobiDisplay = $gobiLabel($gobi); $gobiText = $normalized($gobiDisplay . ' ' . (string) $gobi['name']); ?>

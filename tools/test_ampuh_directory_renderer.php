@@ -17,7 +17,8 @@ $fixture = [
     'title' => 'AMPUH <script>alert(1)</script>',
     'main_drive_url' => 'https://drive.google.com/drive/folders/main',
     'summary' => 'Ringkasan <b>berbahaya</b>',
-    'gobis' => [[
+    'gobis' => [
+    [
         'number' => 1, 'name' => '1.0 <img>',
         'checklists' => [[
             'number' => 1, 'title' => 'Checklist <svg>', 'drive_url' => 'javascript:alert(1)',
@@ -27,7 +28,17 @@ $fixture = [
                 'files' => ['Bukti <script>alert(1)</script>.pdf', 'Rekap.xlsx', 'Berita.docx', 'Foto.png', 'Catatan.txt'],
             ]],
         ]],
-    ]],
+    ],
+    [
+        'number' => 2, 'name' => 'Kedua',
+        'checklists' => [[
+            'number' => 1, 'title' => 'Checklist <svg>', 'drive_url' => 'javascript:alert(1)',
+            'subchecklists' => [[
+                'number' => '1.2', 'title' => 'Sub kedua',
+                'document_count' => 0, 'drive_url' => '', 'files' => [],
+            ]],
+        ]],
+    ],
 ];
 file_put_contents($fixturePath . '/ampuh-2026.json', json_encode($fixture, JSON_THROW_ON_ERROR));
 
@@ -53,8 +64,8 @@ $expect(str_contains($html, '&lt;script&gt;alert(1)&lt;/script&gt;'), 'Escaped h
 $expect((bool) preg_match('/href="https:\/\/drive\.google\.com\/[^\"]+" target="_blank" rel="noopener noreferrer">Buka Folder Utama AMPUH 2026/', $html), 'Main Drive action must be isolated.');
 $expect(!str_contains($html, 'href="javascript:alert(1)"'), 'JavaScript Drive URL must never render as a link.');
 $expect(!str_contains($html, 'href="https://example.com/not-drive"'), 'Non-Drive URL must never render as a link.');
-$expect(substr_count($html, 'Tautan belum tersedia') === 2, 'Invalid nonempty Drive URLs must yield unavailable labels.');
-$expect(str_contains($html, '<dd>1</dd>'), 'Fixture aggregate counts must render.');
+$expect(substr_count($html, 'Tautan belum tersedia') === 4, 'Invalid or absent Drive URLs must yield unavailable labels.');
+$expect(str_contains($html, '<dd>1</dd>'), 'Global summary must count split checklist number once.');
 $expect(str_contains($html, '>GOBI 1 · &lt;img&gt;</button>'), 'Integral GOBI filter and disclosure labels must be informative and omit decimal suffixes.');
 $expect(!str_contains($html, '>1.0 &lt;img&gt;</button>'), 'Bare dataset GOBI names must not become control labels.');
 $expect((bool) preg_match('/data-ampuh-filter-value="1" aria-pressed="false"/', $html), 'Rendered GOBI filters must expose an initial unpressed state.');
@@ -70,7 +81,7 @@ preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^
 preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
 $toggleIds = $toggleMatches[1];
 $panelIds = $panelMatches[1];
-$expect(count($toggleIds) === 4, 'Fixture must render four closed disclosure levels.');
+$expect(count($toggleIds) === 6, 'Fixture must render six closed disclosure levels across split checklist branches.');
 $expect((bool) preg_match('/\sdata-ampuh-result(?:\s|>)/', $html), 'Searchable result nodes need behavior hooks.');
 $expect(count($toggleIds) === count(array_unique($toggleIds)), 'Disclosure IDs must be unique.');
 $expect(count($panelIds) === count(array_unique($panelIds)), 'Panel IDs must be unique.');

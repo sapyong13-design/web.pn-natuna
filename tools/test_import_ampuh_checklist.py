@@ -96,6 +96,29 @@ class AmpuhImporterTests(unittest.TestCase):
         self.assertEqual([sub["number"] for sub in checklist_one["subchecklists"]], ["1.1", "1.2"])
         self.assertEqual(data["gobis"][1]["checklists"][0]["number"], 2)
 
+    def test_splits_checklist_when_gobi_changes_mid_checklist(self) -> None:
+        data = IMPORTER.build_dataset([
+            ["GOBI 1", "1", "Layanan", "1", "Pertama", "0", ""],
+            [None, None, None, "2", "Kedua", "0", ""],
+            ["GOBI 2", None, None, "3", "Ketiga", "0", ""],
+        ], [], {})
+        self.assertEqual([item["number"] for item in data["gobis"][0]["checklists"]], [1])
+        self.assertEqual([item["number"] for item in data["gobis"][1]["checklists"]], [1])
+        self.assertEqual(
+            [item["number"] for item in data["gobis"][0]["checklists"][0]["subchecklists"]],
+            ["1.1", "1.2"],
+        )
+        self.assertEqual(
+            [item["number"] for item in data["gobis"][1]["checklists"][0]["subchecklists"]],
+            ["1.3"],
+        )
+        self.assertFalse(IMPORTER.validate_dataset({
+            "gobis": [{"checklists": [
+                {"number": value, "title": "x", "subchecklists": []}
+                for value in range(1, 83)
+            ]}, {"checklists": [{"number": 1, "title": "x", "subchecklists": []}]}]
+        }))
+
     def test_uses_stable_fallback_for_blank_l1_title(self) -> None:
         data = IMPORTER.parse_workbook(self.fixture)
         self.assertEqual(data["gobis"][1]["checklists"][0]["title"], "Checklist 2")
@@ -106,11 +129,21 @@ class AmpuhImporterTests(unittest.TestCase):
         self.assertNotIn("📁 ARSIP", files)
         self.assertNotIn("(KOSONG)", files)
 
-    def test_validation_rejects_missing_or_duplicate_checklist_numbers(self) -> None:
+    def test_validation_rejects_duplicate_subchecklist_numbers(self) -> None:
         errors = IMPORTER.validate_dataset({"gobis": [{"checklists": [
-            {"number": 1, "subchecklists": []}, {"number": 1, "subchecklists": []}
-        ]}]})
-        self.assertTrue(any("duplicate" in error.lower() for error in errors))
+            {"number": value, "title": "x", "subchecklists": []} for value in range(1, 83)
+        ]}, {"checklists": [{"number": 1, "title": "x", "subchecklists": [
+            {"number": "1.1", "document_count": 0, "files": []},
+        ]}]}]})
+        self.assertFalse(errors)
+        errors = IMPORTER.validate_dataset({"gobis": [{"checklists": [
+            {"number": value, "title": "x", "subchecklists": [
+                {"number": "1.1", "document_count": 0, "files": []}
+            ] if value == 1 else []} for value in range(1, 83)
+        ]}, {"checklists": [{"number": 1, "title": "x", "subchecklists": [
+            {"number": "1.1", "document_count": 0, "files": []},
+        ]}]}]})
+        self.assertTrue(any("duplicate sub-checklist" in error.lower() for error in errors))
 
     def test_validation_requires_exactly_checklist_numbers_one_through_82(self) -> None:
         checklists = [{"number": value, "title": "x", "subchecklists": []} for value in range(1, 82)]

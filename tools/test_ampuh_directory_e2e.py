@@ -31,21 +31,27 @@ def main() -> None:
     gobis = directory["gobis"]
     checklists = [checklist for gobi in gobis for checklist in gobi["checklists"]]
     subchecklists = [sub for checklist in checklists for sub in checklist["subchecklists"]]
+    unique_checklists = {checklist["number"] for checklist in checklists}
     summary = {
         "gobis": len(gobis),
-        "checklists": len(checklists),
+        "checklists": len(unique_checklists),
         "subchecklists": len(subchecklists),
         "documents": sum(len(sub["files"]) for sub in subchecklists),
     }
 
     checklist_numbers = [checklist["number"] for checklist in checklists]
-    assert checklist_numbers == list(range(1, 83))
+    assert unique_checklists == set(range(1, 83))
+    assert [gobi["number"] for gobi in gobis] == list(range(1, 28))
+    assert len(subchecklists) == len({sub["number"] for sub in subchecklists})
     assert all(
         sub["number"].startswith(f'{checklist["number"]}.')
         for checklist in checklists
         for sub in checklist["subchecklists"]
     )
-    assert summary == {"gobis": 24, "checklists": 82, "subchecklists": 405, "documents": 2043}
+    assert summary == {"gobis": 27, "checklists": 82, "subchecklists": 405, "documents": 2043}
+    assert [sub["number"] for checklist in gobis[2]["checklists"] if checklist["number"] == 6 for sub in checklist["subchecklists"]] == ["6.5"]
+    assert [sub["number"] for checklist in gobis[10]["checklists"] if checklist["number"] == 31 for sub in checklist["subchecklists"]] == ["31.4", "31.5"]
+    assert [sub["number"] for checklist in gobis[17]["checklists"] if checklist["number"] == 44 for sub in checklist["subchecklists"]] == ["44.4", "44.5", "44.6", "44.7", "44.8"]
     assert all(
         sub["document_count"] == len(sub["files"])
         for sub in subchecklists
@@ -71,7 +77,7 @@ def main() -> None:
     assert not is_public_drive_url("https://drive.google.com/file/d/public/view")
     assert not is_public_drive_url("https://drive.google.com/drive/folders/public/edit")
     assert not is_public_drive_url("https://evil.example/drive/folders/public")
-    print("AMPUH directory E2E dataset contract: 24 GOBI, 82 checklists, 405 sub-checklists, 2043 documents")
+    print("AMPUH directory E2E dataset contract: 27 GOBI, 82 unique checklists, 405 sub-checklists, 2043 documents")
 
 
 if __name__ == "__main__":

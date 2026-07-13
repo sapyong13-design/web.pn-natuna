@@ -57,7 +57,7 @@ def shared_strings(archive: zipfile.ZipFile) -> list[str]:
 def read_rows(archive: zipfile.ZipFile, sheet_path: str) -> list[list[str]]:
     strings = shared_strings(archive)
     root = ET.fromstring(archive.read(sheet_path))
-    rows: list[list[str]] = []
+    rows_by_number: dict[int, dict[int, str]] = {}
     for row in root.findall(".//m:sheetData/m:row", NS):
         cells: dict[int, str] = {}
         for cell in row.findall("m:c", NS):
@@ -70,8 +70,20 @@ def read_rows(archive: zipfile.ZipFile, sheet_path: str) -> list[list[str]]:
                 value = raw
             cells[column_index(cell.attrib["r"])] = text(value)
         if cells:
-            rows.append([cells.get(index, "") for index in range(max(cells) + 1)])
-    return rows
+            rows_by_number[int(row.attrib["r"])] = cells
+    for merge in root.findall(".//m:mergeCells/m:mergeCell", NS):
+        start, end = merge.attrib["ref"].split(":")
+        start_column, start_row = column_index(start), int(re.search(r"[0-9]+$", start).group(0))
+        end_column, end_row = column_index(end), int(re.search(r"[0-9]+$", end).group(0))
+        value = rows_by_number.get(start_row, {}).get(start_column, "")
+        for row_number in range(start_row, end_row + 1):
+            cells = rows_by_number.setdefault(row_number, {})
+            for column in range(start_column, end_column + 1):
+                cells.setdefault(column, value)
+    return [
+        [cells.get(index, "") for index in range(max(cells) + 1)]
+        for _, cells in sorted(rows_by_number.items()) if cells
+    ]
 
 
 def row_value(row: list[str], index: int) -> str:
@@ -148,6 +160,15 @@ def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: di
         sub_number = number(raw_sub)
         if sub_number is None or not text(sub_title):
             continue
+        if current["_gobi"] != pending_gobi:
+            current = {
+                "number": current["number"],
+                "title": current["title"],
+                "drive_url": "",
+                "subchecklists": [],
+                "_gobi": pending_gobi,
+            }
+            checklists.append(current)
         listed = files_from(raw_files)
         key = (current["number"], normalized(sub_title))
         authoritative = detail_index.get(key)
@@ -182,20 +203,25 @@ def validate_dataset(data: dict) -> list[str]:
     errors: list[str] = []
     checklists = [checklist for gobi in data.get("gobis", []) for checklist in gobi.get("checklists", [])]
     numbers = [item.get("number") for item in checklists]
-    if len(numbers) != len(set(numbers)):
-        errors.append("Duplicate checklist number")
-    if numbers != list(range(1, 83)):
+    unique_numbers = set(numbers)
+    if unique_numbers != set(range(1, 83)):
         errors.append("Checklist numbers must be exactly 1..82")
+    sub_numbers: list[str] = []
     for checklist in checklists:
         if not text(checklist.get("title")):
             errors.append(f"Checklist {checklist.get('number')}: blank title")
-        for index, sub in enumerate(checklist.get("subchecklists", []), start=1):
-            if sub.get("number") != f"{checklist.get('number')}.{index}":
+        for sub in checklist.get("subchecklists", []):
+            expected_prefix = f"{checklist.get('number')}."
+            if not isinstance(sub.get("number"), str) or not sub["number"].startswith(expected_prefix):
                 errors.append(f"Checklist {checklist.get('number')}: invalid sub-number {sub.get('number')}")
+            else:
+                sub_numbers.append(sub["number"])
             if sub.get("document_count") != len(sub.get("files", [])):
                 errors.append(f"Checklist {checklist.get('number')} sub {sub.get('number')}: document count mismatch")
             if any(file.startswith("📁") or file == "(KOSONG)" for file in sub.get("files", [])):
                 errors.append(f"Checklist {checklist.get('number')} sub {sub.get('number')}: invalid filename")
+    if len(sub_numbers) != len(set(sub_numbers)):
+        errors.append("Duplicate sub-checklist number")
     return errors
 
 
@@ -215,9 +241,10 @@ def main() -> int:
     args.output.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     for warning in WARNINGS:
         print(f"warning: {warning}", file=sys.stderr)
+    unique_checklists = {checklist["number"] for gobi in data["gobis"] for checklist in gobi["checklists"]}
     subs = sum(len(checklist["subchecklists"]) for gobi in data["gobis"] for checklist in gobi["checklists"])
     files = sum(len(sub["files"]) for gobi in data["gobis"] for checklist in gobi["checklists"] for sub in checklist["subchecklists"])
-    print(f"{len([c for g in data['gobis'] for c in g['checklists']])} checklists, {subs} sub-checklists, {files} files")
+    print(f"{len(unique_checklists)} checklists, {subs} sub-checklists, {files} files")
     return 0
 
 
