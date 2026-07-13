@@ -109,4 +109,4 @@ Corrected public inventory is 2043 files: original 2008 less three non-file stat
 
 ## Commits
 - `3470637` initial importer implementation.
-- Review remediation commit pending.
+- `cc3b4f2` review remediation: strict counts and verified 78.3 Drive override.
