@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menu = document.querySelector('.main-menu-list');
   const close = document.querySelector('.menu-close');
   const backdrop = document.querySelector('.menu-backdrop');
+  setupAmpuhDirectory();
   const mobileQuery = window.matchMedia('(max-width: 760px)');
 
   if (!toggle || !menu) {
@@ -154,6 +155,80 @@ document.addEventListener('DOMContentLoaded', () => {
   setupLazyIframes();
   setupEditorialArticleShare();
 });
+
+function setupAmpuhDirectory() {
+  const root = document.querySelector('[data-ampuh-directory]');
+  if (!root) return;
+
+  const toggles = Array.from(root.querySelectorAll('[data-ampuh-toggle]'));
+  const items = Array.from(root.querySelectorAll('[data-search-text]'));
+  const search = root.querySelector('[data-ampuh-search]');
+  const filter = root.querySelector('[data-ampuh-gobi-filter]');
+  const closeAll = root.querySelector('[data-ampuh-close-all]');
+  const results = root.querySelector('[data-ampuh-results]');
+  const tree = root.querySelector('.ampuh-directory__tree');
+  let selectedGobi = '';
+
+  const setExpanded = (toggle, expanded) => {
+    const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+    toggle.setAttribute('aria-expanded', String(expanded));
+    if (panel) panel.hidden = !expanded;
+  };
+  const closeEveryPanel = () => toggles.forEach((toggle) => setExpanded(toggle, false));
+  const normalize = (value) => value.toLocaleLowerCase('id-ID').trim();
+  const syncResults = (count) => {
+    if (!results) return;
+    results.textContent = count ? `${count} dokumen cocok.` : 'Tidak ada dokumen yang cocok.';
+    results.classList.toggle('ampuh-directory__empty', count === 0);
+  };
+  const showAncestors = (item) => {
+    let parent = item.parentElement;
+    while (parent && parent !== root) {
+      if (parent.matches('[data-ampuh-panel]')) {
+        const toggle = toggles.find((candidate) => candidate.getAttribute('aria-controls') === parent.id);
+        if (toggle) setExpanded(toggle, true);
+      }
+      parent = parent.parentElement;
+    }
+  };
+  const matchesQuery = (item, query) => !query || normalize(item.textContent).includes(query) || Array.from(item.querySelectorAll('[data-search-text]')).some((child) => normalize(child.textContent).includes(query));
+  const apply = () => {
+    const query = normalize(search?.value || '');
+    if (!query && !selectedGobi) {
+      items.forEach((item) => { item.hidden = false; });
+      closeEveryPanel();
+      syncResults(items.filter((item) => !item.querySelector('[data-search-text]')).length);
+      return;
+    }
+    items.forEach((item) => {
+      const gobi = item.closest('[data-ampuh-gobi]');
+      const inSelectedGobi = !selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi;
+      item.hidden = !(inSelectedGobi && matchesQuery(item, query));
+      if (!item.hidden && query) showAncestors(item);
+    });
+    const matches = items.filter((item) => !item.hidden && !item.querySelector('[data-search-text]')).length;
+    syncResults(matches);
+    if (tree) tree.classList.toggle('ampuh-directory__empty', matches === 0);
+  };
+
+  toggles.forEach((toggle) => toggle.addEventListener('click', () => setExpanded(toggle, toggle.getAttribute('aria-expanded') !== 'true')));
+  closeAll?.addEventListener('click', closeEveryPanel);
+  search?.addEventListener('input', () => {
+    if (!normalize(search.value)) {
+      selectedGobi = '';
+      filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+    }
+    apply();
+  });
+  filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.addEventListener('click', () => {
+    const value = button.getAttribute('data-ampuh-filter-value');
+    selectedGobi = selectedGobi === value ? '' : value;
+    filter.querySelectorAll('[data-ampuh-filter-value]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button && selectedGobi)));
+    apply();
+  }));
+  closeEveryPanel();
+  apply();
+}
 
 function setupLazyIframes() {
   const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src]');
