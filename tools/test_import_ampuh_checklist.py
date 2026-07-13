@@ -138,11 +138,13 @@ class AmpuhImporterTests(unittest.TestCase):
         self.assertEqual(sub["drive_url"], "https://example.test/1.1")
         self.assertFalse(any("document count mismatch" in error.lower() for error in IMPORTER.validate_dataset(data)))
 
-    def test_normalizes_numeric_gobi_name_but_preserves_meaningful_name(self) -> None:
-        numeric = IMPORTER.build_dataset([["1.0", "1", "Checklist", "1", "Sub", "0", ""]], [], {})
+    def test_normalizes_any_numeric_gobi_name_but_preserves_meaningful_name(self) -> None:
+        numeric = IMPORTER.build_dataset([["4.0", "1", "Checklist", "1", "Sub", "0", ""]], [], {})
+        shifted_numeric = IMPORTER.build_dataset([["4.0", "3", "Checklist", "1", "Sub", "0", ""]], [], {})
         named = IMPORTER.build_dataset([["GOBI Alpha", "1", "Checklist", "1", "Sub", "0", ""]], [], {})
-        self.assertEqual(numeric["gobis"][0]["number"], 1)
         self.assertEqual(numeric["gobis"][0]["name"], "")
+        self.assertEqual(shifted_numeric["gobis"][0]["number"], 1)
+        self.assertEqual(shifted_numeric["gobis"][0]["name"], "")
         self.assertEqual(named["gobis"][0]["name"], "GOBI Alpha")
 
 

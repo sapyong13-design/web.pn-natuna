@@ -107,7 +107,7 @@ def load_overrides(path: Path | None) -> dict[str, dict]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 def gobi_name(value: str, group_number: int) -> str:
-    return "" if number(value) == group_number else value
+    return "" if number(value) is not None else value
 def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: dict[str, dict] | None = None) -> dict:
     global WARNINGS
     WARNINGS = []

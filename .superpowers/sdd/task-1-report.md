@@ -123,3 +123,14 @@ GREEN output: `Ran 10 tests in 0.081s` and `OK`.
 Regeneration command: `python tools/import-ampuh-checklist.py "C:/Users/faris/Downloads/ampuh-checklist-2026-merged (1).xlsx" --output templates/pn_natuna_2026/data/ampuh-2026.json`
 
 Regeneration output: `82 checklists, 405 sub-checklists, 2043 files` (plus required Checklist 24 fallback warning). Numeric-equivalent GOBI labels now normalize to empty strings; meaningful labels remain unchanged. Renderer contract attempted with `php tools/test_ampuh_directory_renderer.php`, but `php` is unavailable in this environment (`error: command not found: php`).
+
+## Numeric GOBI contamination remediation
+RED command: `python tools/test_import_ampuh_checklist.py`
+
+RED output: `test_normalizes_any_numeric_gobi_name_but_preserves_meaningful_name ... FAIL` with `AssertionError: '4.0' != ''`.
+
+GREEN command: `python tools/test_import_ampuh_checklist.py`
+
+GREEN output: `Ran 10 tests in 0.076s` and `OK`.
+
+Generation command completed with required warning and `82 checklists, 405 sub-checklists, 2043 files`. Any numeric-equivalent GOBI name is now empty, including a contaminated `4.0` value on current group 3; meaningful text remains unchanged. Renderer contract attempted with `php tools/test_ampuh_directory_renderer.php`; environment result: `error: command not found: php`.
