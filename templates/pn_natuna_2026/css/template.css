@@ -11053,8 +11053,7 @@ body.is-dark .maklumat-compact-doc h3 {
   font-family: var(--font-body);
 }
 
-.ampuh-directory__header,
-.ampuh-directory__hero {
+.ampuh-directory__header {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -11065,8 +11064,7 @@ body.is-dark .maklumat-compact-doc h3 {
   background: var(--color-soft);
 }
 
-.ampuh-directory__header::before,
-.ampuh-directory__hero::before {
+.ampuh-directory__header::before {
   content: "AMPUH 2026";
   grid-column: 1 / -1;
   color: var(--color-primary);
@@ -11076,13 +11074,11 @@ body.is-dark .maklumat-compact-doc h3 {
   text-transform: uppercase;
 }
 
-.ampuh-directory__header > p:first-child,
-.ampuh-directory__hero > p:first-child {
+.ampuh-directory__header > p:first-child {
   display: none;
 }
 
-.ampuh-directory__header h1,
-.ampuh-directory__hero h1 {
+.ampuh-directory__header h1 {
   max-width: 14ch;
   margin: 0;
   color: var(--color-primary-deep);
@@ -11093,8 +11089,7 @@ body.is-dark .maklumat-compact-doc h3 {
   letter-spacing: -.035em;
 }
 
-.ampuh-directory__header > p:not(:first-child),
-.ampuh-directory__hero > p:not(:first-child) {
+.ampuh-directory__header > p:not(:first-child) {
   grid-column: 1;
   max-width: 68ch;
   margin: 0;
@@ -11108,8 +11103,7 @@ body.is-dark .maklumat-compact-doc h3 {
   font: inherit;
 }
 
-.ampuh-directory__header > .ampuh-directory__drive,
-.ampuh-directory__hero > .ampuh-directory__drive {
+.ampuh-directory__header > .ampuh-directory__drive {
   grid-column: 2;
   grid-row: 2 / span 2;
   align-self: end;
@@ -11124,7 +11118,7 @@ body.is-dark .maklumat-compact-doc h3 {
   font-weight: 800;
   text-align: center;
   text-decoration: none;
-  transition: transform 160ms cubic-bezier(.16, 1, .3, 1), background-color 160ms ease;
+  transition: transform 160ms cubic-bezier(.16, 1, .3, 1);
 }
 
 .ampuh-directory__summary {
@@ -11201,26 +11195,31 @@ body.is-dark .maklumat-compact-doc h3 {
 .ampuh-directory__header > .ampuh-directory__drive:hover,
 .ampuh-directory__header > .ampuh-directory__drive:focus-visible { background: var(--color-primary-dark); transform: translateY(-2px); }
 .ampuh-directory [data-ampuh-toggle]:hover { background-color: var(--color-accent-soft); }
+.ampuh-directory__checklist > .ampuh-directory__drive:hover,
+.ampuh-directory__checklist > .ampuh-directory__drive:focus-visible,
+.ampuh-directory__subchecklist > .ampuh-directory__drive:hover,
+.ampuh-directory__subchecklist > .ampuh-directory__drive:focus-visible {
+  color: var(--color-primary-dark);
+  background: var(--color-accent-soft);
+  text-decoration-thickness: 2px;
+}
 
-body.is-dark .ampuh-directory { --color-primary-deep: #f2d7b0; --color-accent-soft: #322b1e; }
+body.is-dark .ampuh-directory { color: var(--color-ink); }
 body.is-dark .ampuh-directory__header,
-body.is-dark .ampuh-directory__hero,
 body.is-dark .ampuh-directory__tools,
 body.is-dark .ampuh-directory__summary,
 body.is-dark .ampuh-directory__tree,
 body.is-dark .ampuh-directory__gobi,
 body.is-dark .ampuh-directory__subchecklist,
 body.is-dark .ampuh-directory__subchecklist ul { background: var(--color-surface); }
-body.is-dark .ampuh-directory__header > .ampuh-directory__drive { color: #f5f7f6; }
+body.is-dark .ampuh-directory__header > .ampuh-directory__drive { color: var(--color-surface); }
 body.is-dark .ampuh-directory__tools input { background: var(--color-soft); }
 
 @media (max-width: 760px) {
   .ampuh-directory { width: 100%; overflow: clip; }
-  .ampuh-directory__header,
-  .ampuh-directory__hero { grid-template-columns: minmax(0, 1fr); padding: 28px 20px; }
-  .ampuh-directory__header > .ampuh-directory__drive,
-  .ampuh-directory__hero > .ampuh-directory__drive { grid-column: 1; grid-row: auto; width: 100%; }
-  .ampuh-directory__summary dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ampuh-directory__header { grid-template-columns: minmax(0, 1fr); padding: 28px 20px; }
+  .ampuh-directory__header > .ampuh-directory__drive { grid-column: 1; grid-row: auto; width: 100%; }
+  .ampuh-directory__summary dl { grid-template-columns: minmax(0, 1fr); }
   .ampuh-directory__summary dl > div { padding-inline: 0; border-inline-end: 0; border-bottom: 1px solid var(--color-line); }
   .ampuh-directory__tools { grid-template-columns: minmax(0, 1fr); }
   .ampuh-directory__tools > [data-ampuh-close-all] { grid-column: 1; grid-row: auto; width: 100%; }

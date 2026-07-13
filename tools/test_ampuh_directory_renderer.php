@@ -55,6 +55,8 @@ $expect(!str_contains($html, 'href="javascript:alert(1)"'), 'JavaScript Drive UR
 $expect(!str_contains($html, 'href="https://example.com/not-drive"'), 'Non-Drive URL must never render as a link.');
 $expect(substr_count($html, 'Tautan belum tersedia') === 2, 'Invalid nonempty Drive URLs must yield unavailable labels.');
 $expect(str_contains($html, '<dd>1</dd>'), 'Fixture aggregate counts must render.');
+$expect(str_contains($html, '>GOBI 1 · &lt;img&gt;</button>'), 'Integral GOBI filter and disclosure labels must be informative and omit decimal suffixes.');
+$expect(!str_contains($html, '>1.0 &lt;img&gt;</button>'), 'Bare dataset GOBI names must not become control labels.');
 
 preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^>]*>/', $html, $toggleMatches);
 preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
@@ -68,19 +70,26 @@ $expect($toggleIds === $panelIds, 'Every toggle aria-controls must match its hid
 $expect(str_contains($html, 'data-ampuh-panel'), 'Disclosure panels need behavior hooks.');
 $expect(str_contains($html, 'data-ampuh-gobi-filter'), 'GOBI filter needs behavior hook.');
 $css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
-foreach ([
-    'AMPUH DIRECTORY 2026-07-13',
-    '.ampuh-directory__hero',
-    '.ampuh-directory__gobi',
-    '.ampuh-directory__checklist',
-    '.ampuh-directory__subchecklist',
-    'body.is-dark .ampuh-directory',
-    '@media (max-width: 760px)',
-    '@media (prefers-reduced-motion: reduce)',
-    ':focus-visible',
-] as $token) {
-    $expect(str_contains($css, $token), "Missing CSS contract {$token}.");
+$ampuhCss = substr($css, strpos($css, '/* AMPUH DIRECTORY 2026-07-13 */'));
+$cssRule = static function (string $selector, string $declarations) use ($ampuhCss): bool {
+    return (bool) preg_match('/' . preg_quote($selector, '/') . '\s*\{(?=[^}]*' . $declarations . ')[^}]*\}/s', $ampuhCss);
+};
+$expect(str_contains($css, 'AMPUH DIRECTORY 2026-07-13'), 'Missing AMPUH CSS section marker.');
+foreach (['.ampuh-directory__header', '.ampuh-directory__gobi', '.ampuh-directory__checklist', '.ampuh-directory__subchecklist'] as $selector) {
+    $expect($cssRule($selector, '[a-z-]+\s*:'), "Renderer selector {$selector} needs a CSS rule.");
 }
+$expect(!str_contains($css, '.ampuh-directory__hero'), 'Dead AMPUH hero alias must not remain.');
+$expect($cssRule('.ampuh-directory [hidden]', 'display\s*:\s*none\s*!important'), 'Hidden panels must not occupy layout space.');
+$expect((bool) preg_match('/\.ampuh-directory__drive\s*,\s*\.ampuh-directory__tools button\s*,\s*\.ampuh-directory \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*44px/s', $css), 'All AMPUH interactive controls need 44px minimum targets.');
+$expect($cssRule('.ampuh-directory__subchecklist li', 'overflow-wrap\s*:\s*anywhere'), 'File names must wrap anywhere.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\)\s*\{.*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*minmax\(0,\s*1fr\)/s', $ampuhCss), 'Mobile inventory must use one column.');
+$expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
+$expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\)\s*\{.*transition\s*:\s*none\s*!important.*transform\s*:\s*none/s', $ampuhCss), 'Reduced motion must remove transitions and transforms.');
+preg_match_all('/transition\s*:\s*([^;}{]+)/', $ampuhCss, $transitionMatches);
+foreach ($transitionMatches[1] as $transition) {
+    $expect(trim($transition) === 'none !important' || !preg_match('/(?:^|,)\s*(?!opacity\b|transform\b)[a-z-]+/i', $transition), "AMPUH transitions permit only opacity or transform: {$transition}.");
+}
+$expect((bool) preg_match('/\.ampuh-directory__checklist > \.ampuh-directory__drive:hover[^\{]*\.ampuh-directory__subchecklist > \.ampuh-directory__drive:focus-visible\s*\{[^}]+\}/s', $css), 'Nested Drive links need hover and focus-visible states.');
 
 $expect(str_contains($migration, "alias = 'ampuh-2026' AND catid = 9"), 'Article migration must scope canonical alias to category.');
 $expect(str_contains($migration, "menu.menutype = 'hidden'"), 'Menu migration must canonicalize hidden menu location.');

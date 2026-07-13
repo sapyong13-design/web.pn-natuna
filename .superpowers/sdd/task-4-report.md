@@ -36,8 +36,14 @@ Same focused command exited 0:
 - All renderer classes receive layout or hierarchy coverage.
 - Existing color, radius, shadow, and font tokens reused; no new design-system fork.
 - Main action remains visually dominant; nested Drive actions use quiet text-link treatment.
-- Motion limited to transform/background transition and removed under reduced-motion preference.
+- Motion limited to transform and removed under reduced-motion preference.
+
+## Review follow-up
+
+RED: strengthened behavioral CSS assertions failed for dead hero alias, two-column mobile inventory, hardcoded dark palette, disallowed background-color transition, missing nested Drive states, and incomplete reduced-motion proof.
+
+GREEN: canonical renderer selectors align with scoped CSS rules; mobile inventory is one column; dark styling uses existing tokens; nested Drive links expose hover/focus-visible feedback; transitions permit only transform/opacity; reduced motion disables transitions and transforms. GOBI filter and disclosure controls now show `GOBI {number}` without decimal suffixes and preserve meaningful group names. Focused renderer contract exits 0.
 
 ## Concerns
 
-Renderer currently emits `.ampuh-directory__header`; `.ampuh-directory__hero` is supported as contract-compatible alias for future markup naming consistency. No renderer or JS changes made per Task 4 scope.
+Minimal renderer label formatting added for visual and accessible GOBI identification; JS remains unchanged.
