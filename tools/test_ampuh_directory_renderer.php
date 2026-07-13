@@ -101,6 +101,7 @@ $expect($cssRule('body.is-dark .ampuh-directory__header h1', 'color\s*:\s*var\(-
 preg_match('/:root\s*\{[^}]*--color-primary-dark:\s*(#[0-9a-f]{6})/is', $css, $primaryDarkToken);
 $expect(isset($primaryDarkToken[1]), 'Primary hover color token must resolve to a hex value.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory__header > \.ampuh-directory__drive:hover\s*,\s*body\.is-dark \.ampuh-directory__header > \.ampuh-directory__drive:focus-visible\s*\{[^}]*color\s*:\s*var\(--color-ink\)/s', $ampuhCss), 'Dark primary action hover and focus must retain light foreground token.');
+$expect((bool) preg_match('/\.ampuh-directory__header > \.ampuh-directory__drive:hover\s*,\s*\.ampuh-directory__header > \.ampuh-directory__drive:focus-visible\s*\{[^}]*background\s*:\s*var\(--color-primary-dark\)/s', $ampuhCss), 'Primary action hover and focus must use the contrast-tested primary-dark background token.');
 $expect($cssRule('body.is-dark .ampuh-directory__header > .ampuh-directory__drive', 'color\s*:\s*var\(--color-ink\)'), 'Dark primary action must use light foreground token.');
 if (isset($darkTokens[1], $darkTokens[2], $primaryToken[1])) {
     $expect($contrast($darkTokens[1], $darkTokens[2]) >= 4.5, 'Dark hero heading contrast must meet WCAG AA.');
