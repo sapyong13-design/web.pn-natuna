@@ -84,6 +84,25 @@ $expect((bool) preg_match('/\.ampuh-directory__drive\s*,\s*\.ampuh-directory__to
 $expect($cssRule('.ampuh-directory__subchecklist li', 'overflow-wrap\s*:\s*anywhere'), 'File names must wrap anywhere.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\)\s*\{.*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*minmax\(0,\s*1fr\)/s', $ampuhCss), 'Mobile inventory must use one column.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
+$hexToLuminance = static function (string $hex): float {
+    $channels = array_map(static fn (string $channel): float => hexdec($channel) / 255, str_split(ltrim($hex, '#'), 2));
+    $linear = array_map(static fn (float $channel): float => $channel <= 0.04045 ? $channel / 12.92 : (($channel + 0.055) / 1.055) ** 2.4, $channels);
+    return 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2];
+};
+$contrast = static function (string $foreground, string $background) use ($hexToLuminance): float {
+    $light = max($hexToLuminance($foreground), $hexToLuminance($background));
+    $dark = min($hexToLuminance($foreground), $hexToLuminance($background));
+    return ($light + 0.05) / ($dark + 0.05);
+};
+preg_match('/body\.is-dark\s*\{[^}]*--color-ink:\s*(#[0-9a-f]{6})[^}]*--color-surface:\s*(#[0-9a-f]{6})/is', $css, $darkTokens);
+preg_match('/:root\s*\{[^}]*--color-primary:\s*(#[0-9a-f]{6})/is', $css, $primaryToken);
+$expect(isset($darkTokens[1], $darkTokens[2], $primaryToken[1]), 'Required dark and primary color tokens must resolve to hex values.');
+$expect($cssRule('body.is-dark .ampuh-directory__header h1', 'color\s*:\s*var\(--color-ink\)'), 'Dark hero heading must use light foreground token.');
+$expect($cssRule('body.is-dark .ampuh-directory__header > .ampuh-directory__drive', 'color\s*:\s*var\(--color-ink\)'), 'Dark primary action must use light foreground token.');
+if (isset($darkTokens[1], $darkTokens[2], $primaryToken[1])) {
+    $expect($contrast($darkTokens[1], $darkTokens[2]) >= 4.5, 'Dark hero heading contrast must meet WCAG AA.');
+    $expect($contrast($darkTokens[1], $primaryToken[1]) >= 4.5, 'Dark primary action contrast must meet WCAG AA.');
+}
 $expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\)\s*\{.*transition\s*:\s*none\s*!important.*transform\s*:\s*none/s', $ampuhCss), 'Reduced motion must remove transitions and transforms.');
 preg_match_all('/transition\s*:\s*([^;}{]+)/', $ampuhCss, $transitionMatches);
 foreach ($transitionMatches[1] as $transition) {

@@ -11212,7 +11212,10 @@ body.is-dark .ampuh-directory__tree,
 body.is-dark .ampuh-directory__gobi,
 body.is-dark .ampuh-directory__subchecklist,
 body.is-dark .ampuh-directory__subchecklist ul { background: var(--color-surface); }
-body.is-dark .ampuh-directory__header > .ampuh-directory__drive { color: var(--color-surface); }
+body.is-dark .ampuh-directory__header h1 { color: var(--color-ink); }
+body.is-dark .ampuh-directory__header > .ampuh-directory__drive { color: var(--color-ink); }
+body.is-dark .ampuh-directory__header > .ampuh-directory__drive:hover,
+body.is-dark .ampuh-directory__header > .ampuh-directory__drive:focus-visible { color: var(--color-ink); }
 body.is-dark .ampuh-directory__tools input { background: var(--color-soft); }
 
 @media (max-width: 760px) {

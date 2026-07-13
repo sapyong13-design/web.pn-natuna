@@ -44,6 +44,12 @@ RED: strengthened behavioral CSS assertions failed for dead hero alias, two-colu
 
 GREEN: canonical renderer selectors align with scoped CSS rules; mobile inventory is one column; dark styling uses existing tokens; nested Drive links expose hover/focus-visible feedback; transitions permit only transform/opacity; reduced motion disables transitions and transforms. GOBI filter and disclosure controls now show `GOBI {number}` without decimal suffixes and preserve meaningful group names. Focused renderer contract exits 0.
 
+### Dark contrast follow-up
+
+RED: deterministic contrast contract failed because dark hero heading inherited `--color-primary-deep` and CTA used dark `--color-surface` as foreground.
+
+GREEN: scoped dark heading and CTA normal/hover/focus states use `--color-ink` (`#edf2f7`). Calculated WCAG ratios: heading against `--color-surface` (`#151c22`) is `15.27:1`; CTA against `--color-primary` (`#8f1f0b`) is `7.87:1`.
+
 ## Concerns
 
 Minimal renderer label formatting added for visual and accessible GOBI identification; JS remains unchanged.
