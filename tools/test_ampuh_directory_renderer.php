@@ -127,9 +127,9 @@ $expect((bool) preg_match('/\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s
 $expect((bool) preg_match('/\.ampuh-directory__gobi\s*\{[^}]*box-shadow\s*:\s*none/s', $ampuhCss), 'Dossier rows must not use per-row shadows.');
 $expect((bool) preg_match('/\.ampuh-directory__gobi-select\s*\{[^}]*display\s*:\s*none/s', $ampuhCss), 'Mobile GOBI select must remain hidden on desktop.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*230px.*?\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*72px[^}]*max-height\s*:\s*82px/s', $ampuhCss), 'Mobile toolbar and dossier rows need scoped height bounds.');
-$expect($cssRule('.ampuh-directory__gobi-title', 'font-size\s*:\s*1\.3rem'), 'Desktop GOBI title needs prominent 1.3rem hierarchy.');
+$expect($cssRule('.ampuh-directory__gobi-title', 'font-size\s*:\s*1\.4rem'), 'Desktop GOBI title needs prominent 1.4rem hierarchy.');
 $expect((bool) preg_match('/\.ampuh-directory__meta\s*\{[^}]*margin-top\s*:\s*7px[^}]*font-size\s*:\s*\.72rem[^}]*font-weight\s*:\s*600/s', $ampuhCss), 'GOBI metadata needs smaller, lighter type with clear title spacing.');
-$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__gobi-title\s*\{[^}]*font-size\s*:\s*1\.08rem/s', $ampuhCss), 'Mobile GOBI title needs prominent 1.08rem hierarchy.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__gobi-title\s*\{[^}]*font-size\s*:\s*1\.15rem/s', $ampuhCss), 'Mobile GOBI title needs prominent 1.15rem hierarchy.');
 $expect($cssRule('.ampuh-directory__checklist', 'grid-template-columns\s*:\s*64px\s+minmax\(0,\s*1fr\)\s+190px'), 'Desktop checklist rows need stable number, content, and action columns.');
 $expect($cssRule('.ampuh-directory__subchecklist', 'grid-template-columns\s*:\s*56px\s+minmax\(0,\s*1fr\)\s+180px'), 'Desktop sub-checklist rows need stable number, content, and action columns.');
 $expect($cssRule('.ampuh-directory__check-title', 'font-size\s*:\s*1\.05rem') && $cssRule('.ampuh-directory__check-title', 'line-height\s*:\s*1\.45'), 'Checklist titles need readable desktop type.');

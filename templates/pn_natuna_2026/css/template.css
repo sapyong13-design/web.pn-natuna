@@ -11089,7 +11089,7 @@ body.is-dark .maklumat-compact-doc h3 {
 .ampuh-directory__gobi > h2 [data-ampuh-toggle] { display: grid; grid-template-columns: 66px minmax(0,1fr); align-items: center; min-height: 76px; max-height: 88px; color: var(--color-primary-deep); font-weight: 800; }
 .ampuh-directory__gobi-number { display: grid; color: var(--color-primary); font-family: var(--font-display); font-size: 2rem; line-height: .8; }
 .ampuh-directory__gobi-number small { font-family: var(--font-body); font-size: .55rem; letter-spacing: .12em; }
-.ampuh-directory__gobi-title { font-size: 1.3rem; line-height: 1.25; }
+.ampuh-directory__gobi-title { font-size: 1.4rem; line-height: 1.2; letter-spacing: -.015em; }
 .ampuh-directory__gobi > [data-ampuh-panel] { padding: 0 16px 16px; background: var(--color-soft); }
 .ampuh-directory__checklist { display: grid; grid-template-columns: 64px minmax(0,1fr) 190px; align-items: start; border-top: 1px solid var(--color-line); }
 .ampuh-directory__subchecklist { display: grid; grid-template-columns: 56px minmax(0,1fr) 180px; align-items: start; border-top: 1px solid var(--color-line); }
@@ -11135,7 +11135,7 @@ body.is-dark .ampuh-directory__hero-main > .ampuh-directory__drive:hover, body.i
   .ampuh-directory__tree { padding: 8px 12px 32px; }
   .ampuh-directory__gobi > h2 [data-ampuh-toggle] { grid-template-columns: 52px minmax(0,1fr); min-height: 72px; max-height: 82px; padding: 8px 42px 8px 10px; }
   .ampuh-directory__gobi-number { font-size: 1.65rem; }
-  .ampuh-directory__gobi-title { font-size: 1.08rem; line-height: 1.3; }
+  .ampuh-directory__gobi-title { font-size: 1.15rem; line-height: 1.25; letter-spacing: -.01em; }
   .ampuh-directory__checklist { grid-template-columns: 52px minmax(0,1fr); }
   .ampuh-directory__subchecklist { grid-template-columns: 48px minmax(0,1fr); }
   .ampuh-directory__check-number, .ampuh-directory__sub-number { padding: 14px 8px 14px 0; }
