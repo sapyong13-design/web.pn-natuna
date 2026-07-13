@@ -77,6 +77,15 @@ $expect(str_contains($html, 'aria-hidden="true">SHEET</span>Rekap.xlsx'), 'Sprea
 $expect(str_contains($html, 'aria-hidden="true">WORD</span>Berita.docx'), 'Word files need deterministic type markers.');
 $expect(str_contains($html, 'aria-hidden="true">IMAGE</span>Foto.png'), 'Image files need deterministic type markers.');
 $expect(str_contains($html, 'aria-hidden="true">FILE</span>Catatan.txt'), 'Unknown extensions need generic type markers.');
+$expect(str_contains($html, 'ampuh-directory__hero-secondary'), 'Hero needs institutional secondary field.');
+$expect(str_contains($html, 'ampuh-directory__watermark') && str_contains($html, 'aria-hidden="true">2026'), 'Hero needs decorative 2026 watermark.');
+$expect(str_contains($html, 'Indeks Koleksi'), 'Inventory needs an explicit collection-index label.');
+$expect((bool) preg_match('/<select[^>]*data-ampuh-gobi-select[^>]*>.*?<option value="">Semua GOBI<\/option>.*?<option value="1">GOBI 1/s', $html), 'Mobile GOBI select needs all-GOBI and dataset options.');
+$expect(substr_count($html, '<option value=') === 3, 'Fixture mobile select needs one all-GOBI option plus every GOBI.');
+$expect(str_contains($html, 'ampuh-directory__gobi-number') && str_contains($html, 'ampuh-directory__gobi-title'), 'GOBI row needs separate number and title hooks.');
+$expect(str_contains($html, 'ampuh-directory__sub-number') && str_contains($html, 'ampuh-directory__sub-title'), 'Sub-checklist row needs separate contents-style number and title hooks.');
+$expect(!str_contains($html, '1.1. 1.1.'), 'Sub-checklist numbering must never duplicate visually.');
+$expect(str_contains($html, 'ampuh-directory__files'), 'Attachments need a file-list hook.');
 
 preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^>]*>/', $html, $toggleMatches);
 preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
@@ -98,12 +107,18 @@ $expect(str_contains($css, 'AMPUH DIRECTORY 2026-07-13'), 'Missing AMPUH CSS sec
 foreach (['.ampuh-directory__header', '.ampuh-directory__gobi', '.ampuh-directory__checklist', '.ampuh-directory__subchecklist'] as $selector) {
     $expect($cssRule($selector, '[a-z-]+\s*:'), "Renderer selector {$selector} needs a CSS rule.");
 }
-$expect(!str_contains($css, '.ampuh-directory__hero'), 'Dead AMPUH hero alias must not remain.');
+$expect(!(bool) preg_match('/\.ampuh-directory__hero\s*[,\{]/', $css), 'Dead AMPUH hero alias must not remain.');
 $expect($cssRule('.ampuh-directory [hidden]', 'display\s*:\s*none\s*!important'), 'Hidden panels must not occupy layout space.');
 $expect((bool) preg_match('/\.ampuh-directory__drive\s*,\s*\.ampuh-directory__tools button\s*,\s*\.ampuh-directory \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*44px/s', $css), 'All AMPUH interactive controls need 44px minimum targets.');
 $expect($cssRule('.ampuh-directory__subchecklist li', 'overflow-wrap\s*:\s*anywhere'), 'File names must wrap anywhere.');
 $expect($cssRule('.ampuh-directory__file-icon', 'display\s*:\s*inline-flex'), 'File type markers need compact inline styling.');
-$expect((bool) preg_match('/@media \(max-width:\s*760px\)\s*\{.*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*minmax\(0,\s*1fr\)/s', $ampuhCss), 'Mobile inventory must use one column.');
+$expect((bool) preg_match('/\.ampuh-directory__header\s*\{[^}]*max-height\s*:\s*360px/s', $ampuhCss), 'Desktop hero needs a 360px height ceiling.');
+$expect((bool) preg_match('/\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*190px/s', $ampuhCss), 'Desktop toolbar needs a 190px height ceiling.');
+$expect((bool) preg_match('/\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*76px[^}]*max-height\s*:\s*88px/s', $ampuhCss), 'Desktop dossier rows need 76-88px bounds.');
+$expect((bool) preg_match('/\.ampuh-directory__gobi\s*\{[^}]*box-shadow\s*:\s*none/s', $ampuhCss), 'Dossier rows must not use per-row shadows.');
+$expect((bool) preg_match('/\.ampuh-directory__gobi-select\s*\{[^}]*display\s*:\s*none/s', $ampuhCss), 'Mobile GOBI select must remain hidden on desktop.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*230px.*?\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*72px[^}]*max-height\s*:\s*82px/s', $ampuhCss), 'Mobile toolbar and dossier rows need scoped height bounds.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s', $ampuhCss), 'Mobile collection index must use a compact 2x2 grid.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
 $hexToLuminance = static function (string $hex): float {
     $channels = array_map(static fn (string $channel): float => hexdec($channel) / 255, str_split(ltrim($hex, '#'), 2));
@@ -121,9 +136,9 @@ $expect(isset($darkTokens[1], $darkTokens[2], $primaryToken[1]), 'Required dark 
 $expect($cssRule('body.is-dark .ampuh-directory__header h1', 'color\s*:\s*var\(--color-ink\)'), 'Dark hero heading must use light foreground token.');
 preg_match('/:root\s*\{[^}]*--color-primary-dark:\s*(#[0-9a-f]{6})/is', $css, $primaryDarkToken);
 $expect(isset($primaryDarkToken[1]), 'Primary hover color token must resolve to a hex value.');
-$expect((bool) preg_match('/body\.is-dark \.ampuh-directory__header > \.ampuh-directory__drive:hover\s*,\s*body\.is-dark \.ampuh-directory__header > \.ampuh-directory__drive:focus-visible\s*\{[^}]*color\s*:\s*var\(--color-ink\)/s', $ampuhCss), 'Dark primary action hover and focus must retain light foreground token.');
-$expect((bool) preg_match('/\.ampuh-directory__header > \.ampuh-directory__drive:hover\s*,\s*\.ampuh-directory__header > \.ampuh-directory__drive:focus-visible\s*\{[^}]*background\s*:\s*var\(--color-primary-dark\)/s', $ampuhCss), 'Primary action hover and focus must use the contrast-tested primary-dark background token.');
-$expect($cssRule('body.is-dark .ampuh-directory__header > .ampuh-directory__drive', 'color\s*:\s*var\(--color-ink\)'), 'Dark primary action must use light foreground token.');
+$expect((bool) preg_match('/body\.is-dark \.ampuh-directory__hero-main > \.ampuh-directory__drive:hover\s*,\s*body\.is-dark \.ampuh-directory__hero-main > \.ampuh-directory__drive:focus-visible\s*\{[^}]*color\s*:\s*var\(--color-ink\)/s', $ampuhCss), 'Dark primary action hover and focus must retain light foreground token.');
+$expect((bool) preg_match('/\.ampuh-directory__hero-main > \.ampuh-directory__drive:hover\s*,\s*\.ampuh-directory__hero-main > \.ampuh-directory__drive:focus-visible\s*\{[^}]*background\s*:\s*var\(--color-primary-dark\)/s', $ampuhCss), 'Primary action hover and focus must use the contrast-tested primary-dark background token.');
+$expect($cssRule('body.is-dark .ampuh-directory__hero-main > .ampuh-directory__drive', 'color\s*:\s*var\(--color-ink\)'), 'Dark primary action must use light foreground token.');
 if (isset($darkTokens[1], $darkTokens[2], $primaryToken[1])) {
     $expect($contrast($darkTokens[1], $darkTokens[2]) >= 4.5, 'Dark hero heading contrast must meet WCAG AA.');
     $expect($contrast($darkTokens[1], $primaryToken[1]) >= 4.5, 'Dark primary action contrast must meet WCAG AA.');
