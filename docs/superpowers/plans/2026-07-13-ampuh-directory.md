@@ -37,7 +37,7 @@
 
 - [ ] **Step 1: Tulis failing tests importer**
 
-Buat workbook OOXML fixture minimal langsung dengan `zipfile` pada test, tanpa dependency eksternal. Fixture harus mencakup sel merged/blank, dua GOBI, checklist `1` dan `2`, sub-checklist `1.1`, `1.2`, `2.1`, detail file yang lebih panjang dari ringkasan sheet utama, dan ekstensi campuran.
+Buat workbook OOXML fixture langsung dengan `zipfile`, tanpa dependency eksternal. Fixture harus mencakup sel merged/blank, dua GOBI, checklist `1` dan `2`, sub-checklist `1.1`, `1.2`, `2.1`, detail file yang lebih panjang dari ringkasan sheet utama, ekstensi campuran, judul L1 kosong, marker GOBI yang baru muncul di tengah sub-checklist checklist sebelumnya, baris folder `📁`, placeholder `(KOSONG)`, serta marker truncation persis `… (+2 baris nama file lainnya) → lihat sheet 'Detail File'`.
 
 ```python
 class AmpuhImporterTests(unittest.TestCase):
@@ -53,6 +53,21 @@ class AmpuhImporterTests(unittest.TestCase):
         data = IMPORTER.parse_workbook(self.fixture)
         files = data["gobis"][0]["checklists"][0]["subchecklists"][0]["files"]
         self.assertEqual(files, ["Bukti A.pdf", "Rekap B.xlsx"])
+
+    def test_assigns_gobi_once_per_checklist_not_per_row(self):
+        data = IMPORTER.parse_workbook(self.fixture)
+        checklist_one = data["gobis"][0]["checklists"][0]
+        self.assertEqual([sub["number"] for sub in checklist_one["subchecklists"]], ["1.1", "1.2"])
+
+    def test_uses_stable_fallback_for_blank_l1_title(self):
+        data = IMPORTER.parse_workbook(self.fixture)
+        self.assertEqual(data["gobis"][1]["checklists"][0]["title"], "Checklist 2")
+
+    def test_folder_tree_and_empty_markers_are_not_filenames(self):
+        data = IMPORTER.parse_workbook(self.fixture)
+        files = data["gobis"][0]["checklists"][0]["subchecklists"][0]["files"]
+        self.assertNotIn("📁 ARSIP", files)
+        self.assertNotIn("(KOSONG)", files)
 
     def test_validation_rejects_missing_or_duplicate_checklist_numbers(self):
         errors = IMPORTER.validate_dataset({"gobis": [{"checklists": [
@@ -84,7 +99,9 @@ def parse_workbook(path: Path) -> dict:
     return build_dataset(rows, details)
 ```
 
-Gunakan forward-fill hanya untuk GOBI, nomor checklist besar, dan judul checklist besar. Jangan forward-fill nomor sub-checklist. Detail file dikelompokkan dengan `(checklist_number, sub_number)`.
+Forward-fill nomor dan judul checklist besar untuk mengelompokkan baris terlebih dahulu. Tetapkan GOBI sekali pada tingkat checklist, memakai marker GOBI pertama yang terkait dengan checklist tersebut; marker GOBI yang muncul pada sub-baris berikutnya menjadi calon GOBI checklist berikutnya dan tidak boleh memindahkan sebagian checklist aktif. Jangan forward-fill nomor sub-checklist. Bila judul L1 tetap kosong setelah pengelompokan, gunakan fallback publik stabil `Checklist {number}` dan laporkan warning. Detail file dikelompokkan dengan `(checklist_number, sub_number)`.
+
+Parser file-cell harus mengenali marker truncation dengan pola penuh `^… \(\+[0-9]+ baris nama file lainnya\) → lihat sheet 'Detail File'$`, lalu memakai sheet `Detail File` sebagai sumber authoritative. Baris yang diawali `📁` dimodelkan hanya sebagai konteks folder internal bila diperlukan dan tidak masuk `files`; `(KOSONG)` menandai folder tanpa file dan tidak masuk `files`.
 
 - [ ] **Step 4: Tambahkan validasi penuh**
 
@@ -95,6 +112,9 @@ numbers == list(range(1, 83))
 len(numbers) == len(set(numbers))
 sub["number"] == f'{checklist["number"]}.{sub_index}'
 sub["document_count"] == len(sub["files"])
+all(checklist["title"].strip() for checklist in checklists)
+all(not file.startswith("📁") and file != "(KOSONG)" for sub in subchecklists for file in sub["files"])
+all(len({owner_gobi_by_checklist[number]}) == 1 for number in numbers)
 ```
 
 Perbedaan count harus dilaporkan ke stderr dan membuat command exit nonzero; data tidak boleh dipotong.
