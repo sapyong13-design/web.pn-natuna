@@ -48,6 +48,9 @@
 __pycache__/
 *.py[cod]
 
+# Local isolated development worktrees
+/.worktrees/
+
 
 # Security tools, design docs, and handoff runbooks remain tracked; the deployment
 # allowlist excludes them from public_html.
