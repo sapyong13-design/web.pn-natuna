@@ -41,7 +41,8 @@ $fileType = static function (string $file): string {
     };
 };
 $withoutLeadingNumber = static function (string $number, string $title): string {
-    return (string) preg_replace('/^\s*' . preg_quote($number, '/') . '\s*[.:-]?\s*/u', '', $title);
+    $ordinal = str_contains($number, '.') ? substr($number, strrpos($number, '.') + 1) : $number;
+    return (string) preg_replace('/^\s*(?:' . preg_quote($number, '/') . '|' . preg_quote($ordinal, '/') . ')\s*[.:-]?\s*/u', '', $title);
 };
 $driveAction = static function (string $url, string $label) use ($escape): void {
     $parts = parse_url($url);
@@ -114,10 +115,9 @@ foreach ($directory['gobis'] as $gobi) {
             <?php foreach ($checklist['subchecklists'] as $subchecklist) :
                 $subNumber = (string) $subchecklist['number'];
                 $subId = $checklistId . '-sub-' . preg_replace('/[^a-z0-9]+/i', '-', $subNumber);
-                $filesId = $subId . '-files';
                 $subText = $normalized((string) $subchecklist['title']);
             ?>
-              <section class="ampuh-directory__subchecklist" data-search-text="<?php echo $escape($subText); ?>"><span class="ampuh-directory__sub-number"><?php echo $escape($subNumber); ?></span><h4><button type="button" data-ampuh-toggle aria-expanded="false" aria-controls="<?php echo $escape($subId); ?>"><span class="ampuh-directory__sub-title"><?php echo $escape($withoutLeadingNumber($subNumber, (string) $subchecklist['title'])); ?></span></button></h4><?php $driveAction((string) ($subchecklist['drive_url'] ?? ''), 'Buka folder sub-checklist'); ?><div id="<?php echo $escape($subId); ?>" data-ampuh-panel hidden><h5><button type="button" data-ampuh-toggle aria-expanded="false" aria-controls="<?php echo $escape($filesId); ?>">Daftar dokumen (<?php echo count($subchecklist['files']); ?>)</button></h5><div id="<?php echo $escape($filesId); ?>" data-ampuh-panel hidden><ul class="ampuh-directory__files"><?php foreach ($subchecklist['files'] as $file) : ?><li data-ampuh-file-result data-search-text="<?php echo $escape($normalized((string) $file)); ?>"><span class="ampuh-directory__file-icon" aria-hidden="true"><?php echo $fileType((string) $file); ?></span><?php echo $escape((string) $file); ?></li><?php endforeach; ?></ul></div></div></section>
+              <section class="ampuh-directory__subchecklist" data-search-text="<?php echo $escape($subText); ?>"><span class="ampuh-directory__sub-number"><?php echo $escape($subNumber); ?></span><h4><button type="button" data-ampuh-toggle aria-expanded="false" aria-controls="<?php echo $escape($subId); ?>"><span class="ampuh-directory__sub-title"><?php echo $escape($withoutLeadingNumber($subNumber, (string) $subchecklist['title'])); ?></span></button></h4><?php $driveAction((string) ($subchecklist['drive_url'] ?? ''), 'Buka folder sub-checklist'); ?><div id="<?php echo $escape($subId); ?>" data-ampuh-panel hidden><h5 class="ampuh-directory__files-heading">Daftar dokumen (<?php echo count($subchecklist['files']); ?>)</h5><ul class="ampuh-directory__files"><?php foreach ($subchecklist['files'] as $file) : ?><li data-ampuh-file-result data-search-text="<?php echo $escape($normalized((string) $file)); ?>"><span class="ampuh-directory__file-icon" aria-hidden="true"><?php echo $fileType((string) $file); ?></span><?php echo $escape((string) $file); ?></li><?php endforeach; ?></ul></div></section>
             <?php endforeach; ?>
           </div></section>
         <?php endforeach; ?>

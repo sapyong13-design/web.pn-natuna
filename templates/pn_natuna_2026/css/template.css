@@ -11102,7 +11102,7 @@ body.is-dark .maklumat-compact-doc h3 {
 .ampuh-directory__checklist > .ampuh-directory__drive, .ampuh-directory__subchecklist > .ampuh-directory__drive, .ampuh-directory__checklist > .ampuh-directory__drive-unavailable, .ampuh-directory__subchecklist > .ampuh-directory__drive-unavailable { justify-self: end; margin: 14px 16px 0 0; padding: 8px; color: var(--color-primary); font-size: .78rem; font-weight: 800; line-height: 1.45; }
 .ampuh-directory__drive-unavailable { color: var(--color-muted); }
 .ampuh-directory__checklist > [data-ampuh-panel], .ampuh-directory__subchecklist > [data-ampuh-panel] { grid-column: 1/-1; padding: 0 12px 12px; }
-.ampuh-directory__subchecklist h5 [data-ampuh-toggle] { color: var(--color-muted); font-size: .78rem; font-weight: 800; }
+.ampuh-directory__files-heading { margin: 0; padding: 9px 12px; color: var(--color-muted); font-size: .78rem; font-weight: 800; }
 .ampuh-directory__files { margin: 0; padding: 0; list-style: none; background: var(--color-surface); }
 .ampuh-directory__subchecklist li { display: flex; min-width: 0; padding: 9px 12px; border-top: 1px solid var(--color-line); color: var(--color-muted); font-size: .8rem; overflow-wrap: anywhere; }
 .ampuh-directory__meta { display: block; margin-top: 5px; color: var(--color-muted); font-size: .78rem; font-weight: 700; line-height: 1.45; }
