@@ -15,6 +15,7 @@ REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 TRUNCATED = re.compile(r"^… \(\+[0-9]+ baris nama file lainnya\) → lihat sheet 'Detail File'$")
 WARNINGS: list[str] = []
 DEFAULT_OVERRIDES = Path(__file__).with_name("ampuh-2026-overrides.json")
+DEFAULT_CHECKLIST_LINKS = Path(__file__).with_name("ampuh-2026-checklist-links.json")
 MAIN_DRIVE_URL = "https://drive.google.com/drive/folders/1x6yBB_YxHRKGsuxgkN1enrWXiV3P2NWH?usp=sharing"
 CHECKLIST_DRIVE_URLS = {78: "https://drive.google.com/drive/folders/12aqCl7P5I0Gg97p4Ch9IGZtMga93d62o?usp=sharing"}
 
@@ -106,12 +107,26 @@ def load_overrides(path: Path | None) -> dict[str, dict]:
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
 
+
+def validate_checklist_links(raw_links: dict[str, str]) -> dict[int, str]:
+    try:
+        links = {int(key): text(value) for key, value in raw_links.items()}
+    except (TypeError, ValueError) as error:
+        raise ValueError("Checklist links must map exact numbers 1..82") from error
+    if list(sorted(links)) != list(range(1, 83)) or len(links) != 82:
+        raise ValueError("Checklist links must map exact numbers 1..82")
+    return links
+
+
+def load_checklist_links(path: Path) -> dict[int, str]:
+    return validate_checklist_links(json.loads(path.read_text(encoding="utf-8")))
 def gobi_name(value: str, group_number: int) -> str:
     return "" if number(value) is not None else value
-def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: dict[str, dict] | None = None) -> dict:
+def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: dict[str, dict] | None = None, checklist_links: dict[int, str] | None = None) -> dict:
     global WARNINGS
     WARNINGS = []
     overrides = overrides or {}
+    checklist_links = checklist_links or {}
     detail_index, detail_order = detail_files(details)
     pending_gobi = "Tidak Ditentukan"
     checklists: list[dict] = []
@@ -155,13 +170,13 @@ def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: di
     gobis: dict[str, list[dict]] = defaultdict(list)
     for checklist in checklists:
         gobis[checklist.pop("_gobi")].append(checklist)
-    return {"title": "AMPUH 2026 Checklist", "main_drive_url": MAIN_DRIVE_URL, "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.", "gobis": [{"number": index, "name": gobi_name(name, index), "checklists": [{**checklist, "drive_url": CHECKLIST_DRIVE_URLS.get(checklist["number"], "")} for checklist in items]} for index, (name, items) in enumerate(gobis.items(), start=1)]}
+    return {"title": "AMPUH 2026 Checklist", "main_drive_url": MAIN_DRIVE_URL, "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.", "gobis": [{"number": index, "name": gobi_name(name, index), "checklists": [{**checklist, "drive_url": checklist_links.get(checklist["number"], "")} for checklist in items]} for index, (name, items) in enumerate(gobis.items(), start=1)]}
 
 
-def parse_workbook(path: Path, override_path: Path | None = DEFAULT_OVERRIDES) -> dict:
+def parse_workbook(path: Path, override_path: Path | None = DEFAULT_OVERRIDES, checklist_links_path: Path = DEFAULT_CHECKLIST_LINKS) -> dict:
     with zipfile.ZipFile(path) as archive:
         sheets = load_sheets(archive)
-        return build_dataset(read_rows(archive, sheets["AMPUH 2026 Checklist"]), read_rows(archive, sheets["Detail File"]), load_overrides(override_path))
+        return build_dataset(read_rows(archive, sheets["AMPUH 2026 Checklist"]), read_rows(archive, sheets["Detail File"]), load_overrides(override_path), load_checklist_links(checklist_links_path))
 
 
 def validate_dataset(data: dict) -> list[str]:
@@ -190,8 +205,9 @@ def main() -> int:
     parser.add_argument("workbook", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
+    parser.add_argument("--checklist-links", type=Path, default=DEFAULT_CHECKLIST_LINKS)
     args = parser.parse_args()
-    data = parse_workbook(args.workbook, args.overrides)
+    data = parse_workbook(args.workbook, args.overrides, args.checklist_links)
     errors = validate_dataset(data)
     if errors:
         print("\n".join(errors), file=sys.stderr)

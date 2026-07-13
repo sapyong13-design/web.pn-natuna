@@ -147,6 +147,20 @@ class AmpuhImporterTests(unittest.TestCase):
         self.assertEqual(shifted_numeric["gobis"][0]["name"], "")
         self.assertEqual(named["gobis"][0]["name"], "GOBI Alpha")
 
+    def test_checklist_link_map_requires_exact_numbers_one_through_82(self) -> None:
+        with self.assertRaisesRegex(ValueError, "1..82"):
+            IMPORTER.validate_checklist_links({str(value): "https://drive.google.com/folder" for value in range(1, 82)})
+        links = IMPORTER.validate_checklist_links({str(value): f"https://drive.google.com/folders/{value}" for value in range(1, 83)})
+        self.assertEqual(links[1], "https://drive.google.com/folders/1")
+        self.assertEqual(links[82], "https://drive.google.com/folders/82")
+
+    def test_checklist_link_map_sets_checklist_not_subchecklist_urls(self) -> None:
+        links = {value: f"https://drive.google.com/folders/{value}" for value in range(1, 83)}
+        data = IMPORTER.build_dataset([["GOBI", "1", "Checklist", "1", "Sub", "0", ""]], [], {}, links)
+        checklist = data["gobis"][0]["checklists"][0]
+        self.assertEqual(checklist["drive_url"], "https://drive.google.com/folders/1")
+        self.assertEqual(checklist["subchecklists"][0]["drive_url"], "")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

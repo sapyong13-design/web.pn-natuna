@@ -134,3 +134,16 @@ GREEN command: `python tools/test_import_ampuh_checklist.py`
 GREEN output: `Ran 10 tests in 0.076s` and `OK`.
 
 Generation command completed with required warning and `82 checklists, 405 sub-checklists, 2043 files`. Any numeric-equivalent GOBI name is now empty, including a contaminated `4.0` value on current group 3; meaningful text remains unchanged. Renderer contract attempted with `php tools/test_ampuh_directory_renderer.php`; environment result: `error: command not found: php`.
+
+## Checklist Drive link map remediation
+RED command: `python tools/test_import_ampuh_checklist.py`
+
+RED output: `Ran 12 tests in 0.084s`, with two errors: missing `validate_checklist_links` and unsupported checklist-link argument to `build_dataset`.
+
+GREEN command: `python tools/test_import_ampuh_checklist.py`
+
+GREEN output: `Ran 12 tests in 0.088s` and `OK`.
+
+Generation output: required fallback warning plus `82 checklists, 405 sub-checklists, 2043 files`. Tracked `tools/ampuh-2026-checklist-links.json` is exact 1..82 and importer rejects any missing/out-of-range mapping. Every checklist receives its verified URL. Sub-checklist URLs remain empty unless explicitly overridden; 78.3 provenance override remains unchanged.
+
+Renderer contract attempted: `php tools/test_ampuh_directory_renderer.php` returned `error: command not found: php`. E2E interaction contract: `python tools/test_ampuh_directory_interactions.py` returned `AMPUH directory interaction contract: ok`.
