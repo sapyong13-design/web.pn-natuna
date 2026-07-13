@@ -2,7 +2,7 @@
 /** Canonical AMPUH 2026 evidence directory renderer. */
 defined('_JEXEC') or die;
 
-if ((string) $item->alias !== 'ampuh-2026') {
+if ((string) $item->alias !== 'ampuh-2026' || (int) $item->catid !== 9) {
     return false;
 }
 

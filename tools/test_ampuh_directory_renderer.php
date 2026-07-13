@@ -20,10 +20,10 @@ $fixture = [
     'gobis' => [[
         'number' => 1, 'name' => '1.0 <img>',
         'checklists' => [[
-            'number' => 1, 'title' => 'Checklist <svg>', 'drive_url' => '',
+            'number' => 1, 'title' => 'Checklist <svg>', 'drive_url' => 'javascript:alert(1)',
             'subchecklists' => [[
                 'number' => '1.1', 'title' => 'Sub <i>',
-                'document_count' => 1, 'drive_url' => 'https://drive.google.com/drive/folders/sub',
+                'document_count' => 1, 'drive_url' => 'https://example.com/not-drive',
                 'files' => ['Bukti <script>alert(1)</script>.pdf'],
             ]],
         ]],
@@ -33,7 +33,7 @@ file_put_contents($fixturePath . '/ampuh-2026.json', json_encode($fixture, JSON_
 
 define('_JEXEC', 1);
 define('JPATH_THEMES', $fixtureRoot);
-$item = (object) ['alias' => 'ampuh-2026'];
+$item = (object) ['alias' => 'ampuh-2026', 'catid' => 9];
 ob_start();
 $returned = require $renderer;
 $html = ob_get_clean();
@@ -42,6 +42,8 @@ $expect($returned === true, 'Canonical AMPUH alias must dispatch.');
 $nonCanonicalItem = (object) ['alias' => 'other'];
 $item = $nonCanonicalItem;
 $expect((require $renderer) === false, 'Non-canonical aliases must not dispatch.');
+$item = (object) ['alias' => 'ampuh-2026', 'catid' => 99];
+$expect((require $renderer) === false, 'Canonical alias in another category must not dispatch.');
 $expect(str_contains($dispatcher, "require __DIR__ . '/ampuh-directory.php'"), 'Missing dispatcher.');
 $expect(str_contains($html, 'data-ampuh-directory'), 'Missing AMPUH root hook.');
 $expect(str_contains($html, 'Buka Folder Utama AMPUH 2026'), 'Missing main Drive action.');
@@ -49,6 +51,9 @@ $expect(str_contains($html, 'Tautan belum tersedia'), 'Missing unavailable Drive
 $expect(!str_contains($html, '<script>alert(1)</script>'), 'Hostile workbook content must be escaped.');
 $expect(str_contains($html, '&lt;script&gt;alert(1)&lt;/script&gt;'), 'Escaped hostile filename missing.');
 $expect((bool) preg_match('/href="https:\/\/drive\.google\.com\/[^\"]+" target="_blank" rel="noopener noreferrer">Buka Folder Utama AMPUH 2026/', $html), 'Main Drive action must be isolated.');
+$expect(!str_contains($html, 'href="javascript:alert(1)"'), 'JavaScript Drive URL must never render as a link.');
+$expect(!str_contains($html, 'href="https://example.com/not-drive"'), 'Non-Drive URL must never render as a link.');
+$expect(substr_count($html, 'Tautan belum tersedia') === 2, 'Invalid nonempty Drive URLs must yield unavailable labels.');
 $expect(str_contains($html, '<dd>1</dd>'), 'Fixture aggregate counts must render.');
 
 preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^>]*>/', $html, $toggleMatches);
