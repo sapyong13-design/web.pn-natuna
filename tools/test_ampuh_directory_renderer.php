@@ -176,6 +176,12 @@ if (isset($darkTokens[1], $darkTokens[2], $primaryToken[1])) {
 $expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\)\s*\{.*transition\s*:\s*none\s*!important.*transform\s*:\s*none/s', $ampuhCss), 'Reduced motion must remove transitions and transforms.');
 $expect((bool) preg_match('/\.ampuh-directory \[data-ampuh-panel\]\.is-revealing\s*\{[^}]*opacity\s*:\s*0[^}]*transform\s*:\s*translateY\(6px\)[^}]*transition\s*:\s*opacity\s+220ms\s+cubic-bezier\(\.16,1,\.3,1\),\s*transform\s+220ms\s+cubic-bezier\(\.16,1,\.3,1\)/s', $ampuhCss), 'Panels need a 220ms ease-out-quart opacity and 6px reveal state.');
 $expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\).*?\.ampuh-directory \[data-ampuh-panel\]\.is-revealing\s*\{[^}]*opacity\s*:\s*1[^}]*transform\s*:\s*none/s', $ampuhCss), 'Reduced motion must disable panel reveal movement.');
+$expect((bool) preg_match('/\.ampuh-directory \[data-ampuh-toggle\]::before\s*,\s*\.ampuh-directory \[data-ampuh-toggle\]::after\s*\{[^}]*width\s*:\s*14px[^}]*height\s*:\s*2px/s', $ampuhCss), 'Disclosure icon must use two CSS lines.');
+$expect((bool) preg_match('/\.ampuh-directory \[data-ampuh-toggle\]::before\s*\{[^}]*transform\s*:\s*translateY\(-50%\) rotate\(90deg\)/s', $ampuhCss), 'Disclosure vertical line needs a closed-state rotation.');
+$expect((bool) preg_match('/\.ampuh-directory \[data-ampuh-toggle\]\[aria-expanded="true"\]::before\s*\{[^}]*opacity\s*:\s*0[^}]*transform\s*:\s*translateY\(-50%\) rotate\(0deg\)/s', $ampuhCss), 'Opening disclosure must fade and rotate its vertical line.');
+$expect((bool) preg_match('/\.ampuh-directory__gobi\.is-expanded \.ampuh-directory__gobi-number\s*\{[^}]*transform\s*:\s*translateY\(-2px\)/s', $ampuhCss), 'Expanded GOBI number needs restrained lift feedback.');
+$expect((bool) preg_match('/\.ampuh-directory \[data-ampuh-toggle\]:active[^}]*transform\s*:\s*scale\(\.985\)/s', $ampuhCss), 'Disclosure buttons need compact press feedback.');
+$expect((bool) preg_match('/\.back-to-top\s*\{[^}]*transform\s*:\s*translateY\(8px\)[^}]*transition\s*:\s*opacity\s+180ms\s+cubic-bezier\(\.16,\s*1,\s*\.3,\s*1\),\s*transform\s+180ms/s', $css), 'Back-to-top needs an 8px, 180ms exponential entrance.');
 preg_match_all('/transition\s*:\s*([^;}{]+)/', $ampuhCss, $transitionMatches);
 foreach ($transitionMatches[1] as $transition) {
     $expect(trim($transition) === 'none !important' || !preg_match('/(?:^|,)\s*(?!opacity\b|transform\b)[a-z-]+/i', $transition), "AMPUH transitions permit only opacity or transform: {$transition}.");
