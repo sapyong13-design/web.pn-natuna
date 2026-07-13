@@ -1,6 +1,6 @@
 {
   "title": "AMPUH 2026 Checklist",
-  "main_drive_url": "",
+  "main_drive_url": "https://drive.google.com/drive/folders/1x6yBB_YxHRKGsuxgkN1enrWXiV3P2NWH?usp=sharing",
   "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.",
   "gobis": [
     {
@@ -2900,20 +2900,16 @@
             {
               "number": "38.3",
               "title": "3. Sekretaris menyampaikan laporan secara tertulis realisasi anggaran setiap bulan kepada KPN",
-              "document_count": 1,
+              "document_count": 0,
               "drive_url": "",
-              "files": [
-                "sudah terisi"
-              ]
+              "files": []
             },
             {
               "number": "38.4",
               "title": "4. Terdokumentasi dengan baik",
-              "document_count": 1,
+              "document_count": 0,
               "drive_url": "",
-              "files": [
-                "sudah ditindaklanjuti"
-              ]
+              "files": []
             }
           ]
         },
@@ -4609,11 +4605,9 @@
             {
               "number": "60.5",
               "title": "5. Terdokumentasi dengan baik",
-              "document_count": 1,
+              "document_count": 0,
               "drive_url": "",
-              "files": [
-                "KOSONG"
-              ]
+              "files": []
             }
           ]
         },
@@ -5696,7 +5690,7 @@
         {
           "number": 78,
           "title": "78. Pelaporan Monev Bapenas PP39 dan Monev Smart DJA",
-          "drive_url": "",
+          "drive_url": "https://drive.google.com/drive/folders/12aqCl7P5I0Gg97p4Ch9IGZtMga93d62o?usp=sharing",
           "subchecklists": [
             {
               "number": "78.1",
@@ -5722,11 +5716,49 @@
             {
               "number": "78.3",
               "title": "3. Nilai Realisasi yang diisi pada capaian output tidak melebihi 120% target yang telah ditentukan",
-              "document_count": 2,
-              "drive_url": "",
+              "document_count": 40,
+              "drive_url": "https://drive.google.com/drive/folders/1e18t5dXE7CRq6JR6GpoFBHflokooffmq?usp=sharing",
               "files": [
                 "monev 672948 triwulan I Thn 2026.pdf",
-                "monev 672949 (DIPA 03) Triwulan I Thn 2026.pdf"
+                "monev 672949 (DIPA 03) Triwulan I Thn 2026.pdf",
+                "Monev Komponen Satker  672948 TW2.pdf",
+                "Monev Komponen Satker  672949 TW2.pdf",
+                "1. Rekap Kertas Kerja Capaian Output Januari.pdf",
+                "10. Rekap Kertas Kerja Capaian Output Oktober.pdf",
+                "11. Rekap Kertas Kerja Capaian Output Nopember.pdf",
+                "12. Rekap Kertas Kerja Capaian Output Desember.pdf",
+                "2. Rekap Kertas Kerja Capaian Output Februari.pdf",
+                "3. Rekap Kertas Kerja Capaian Output Maret.pdf",
+                "4. Rekap Kertas Kerja Capaian Output April.pdf",
+                "5. Rekap Kertas Kerja Capaian Output Mei.pdf",
+                "6. Rekap Kertas Kerja Capaian Output Juni.pdf",
+                "7. Rekap Kertas Kerja Capaian Output Juli.pdf",
+                "8. Rekap Kertas Kerja Capaian Output Agustus.pdf",
+                "9. Rekap Kertas Kerja Capaian Output September.pdf",
+                "1. Rekap Kertas Kerja Capaian Output DIPA 03 Januari.pdf",
+                "10. Rekap Kertas Kerja Capaian Output DIPA 03 Oktober.pdf",
+                "11. Rekap Kertas Kerja Capaian Output DIPA 03 November.pdf",
+                "12. Rekap Kertas Kerja Capaian Output DIPA 03 Desember.pdf",
+                "2. Rekap Kertas Kerja Capaian Output DIPA 03 Februari.pdf",
+                "3. Rekap Kertas Kerja Capaian Output DIPA 03 Maret.pdf",
+                "4. Rekap Kertas Kerja Capaian Output DIPA 03 April.pdf",
+                "5. Rekap Kertas Kerja Capaian Output DIPA 03 Mei.pdf",
+                "6. Rekap Kertas Kerja Capaian Output DIPA 03 Juni.pdf",
+                "7. Rekap Kertas Kerja Capaian Output DIPA 03 Juli.pdf",
+                "8. Rekap Kertas Kerja Capaian Output DIPA 03 Agustus.pdf",
+                "9. Rekap Kertas Kerja Capaian Output DIPA 03 September.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 01 April 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 01 Februari 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 01 Januari 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 01 Juni 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 01 Maret 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 01 Mei 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 03 April 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 03 Februari 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 03 Januari 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 03 Juni 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 03 Maret 2026.pdf",
+                "Rekap Kertas Kerja Capaian Output DIPA 03 Mei 2026.pdf"
               ]
             },
             {

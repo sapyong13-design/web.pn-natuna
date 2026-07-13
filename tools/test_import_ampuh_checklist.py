@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import tempfile
+import subprocess
+import sys
 import unittest
 import zipfile
 from pathlib import Path
@@ -35,7 +38,7 @@ def sheet_xml(rows: list[list[str | None]], merges: list[str] = []) -> str:
 def write_fixture(path: Path) -> None:
     checklist_rows = [
         ["GOBI", "No", "Checklist", "Sub", "Sub checklist", "Jumlah", "Nama File"],
-        ["GOBI Alpha", "1", "Layanan", "1", "Persyaratan", "2", "📁 ARSIP\nBukti A.pdf\n(KOSONG)\n… (+2 baris nama file lainnya) → lihat sheet 'Detail File'"],
+        ["GOBI Alpha", "1", "Layanan", "1", "Persyaratan", "3", "📁 ARSIP\nBukti A.pdf\n(KOSONG)\n… (+2 baris nama file lainnya) → lihat sheet 'Detail File'"],
         [None, None, None, "2", "Publikasi", "1", "Publikasi.pdf"],
         ["GOBI Beta", None, None, None, None, None, None],
         [None, "2", None, "1", "Pengawasan", "1", "Laporan.pdf"],
@@ -68,6 +71,8 @@ class AmpuhImporterTests(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.fixture = Path(self.tempdir.name) / "fixture.xlsx"
         write_fixture(self.fixture)
+        self.override = Path(self.tempdir.name) / "overrides.json"
+        self.override.write_text(json.dumps({"1.1": {"source": "test", "drive_url": "https://example.test/1.1", "files": [{"name": "A.pdf"}, {"name": "B.pdf"}, {"name": "C.pdf"}]}}, ensure_ascii=False), encoding="utf-8")
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()
@@ -106,6 +111,32 @@ class AmpuhImporterTests(unittest.TestCase):
             {"number": 1, "subchecklists": []}, {"number": 1, "subchecklists": []}
         ]}]})
         self.assertTrue(any("duplicate" in error.lower() for error in errors))
+
+    def test_validation_requires_exactly_checklist_numbers_one_through_82(self) -> None:
+        checklists = [{"number": value, "title": "x", "subchecklists": []} for value in range(1, 82)]
+        errors = IMPORTER.validate_dataset({"gobis": [{"checklists": checklists}]})
+        self.assertTrue(any("1..82" in error for error in errors))
+
+    def test_declared_document_count_mismatch_is_reported_and_cli_fails(self) -> None:
+        data = IMPORTER.parse_workbook(self.fixture)
+        sub = data["gobis"][0]["checklists"][0]["subchecklists"][0]
+        self.assertEqual(sub["document_count"], 3)
+        self.assertEqual(sub["files"], ["Bukti A.pdf", "Rekap B.xlsx"])
+        errors = IMPORTER.validate_dataset(data)
+        self.assertTrue(any("document count mismatch" in error.lower() for error in errors))
+        output = Path(self.tempdir.name) / "output.json"
+        result = subprocess.run([sys.executable, str(IMPORTER_PATH), str(self.fixture), "--output", str(output)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("document count mismatch", result.stderr.lower())
+        self.assertFalse(output.exists())
+
+    def test_only_explicit_keyed_override_resolves_declared_count_mismatch(self) -> None:
+        data = IMPORTER.parse_workbook(self.fixture, self.override)
+        sub = data["gobis"][0]["checklists"][0]["subchecklists"][0]
+        self.assertEqual(sub["files"], ["A.pdf", "B.pdf", "C.pdf"])
+        self.assertEqual(sub["document_count"], 3)
+        self.assertEqual(sub["drive_url"], "https://example.test/1.1")
+        self.assertFalse(any("document count mismatch" in error.lower() for error in IMPORTER.validate_dataset(data)))
 
 
 if __name__ == "__main__":

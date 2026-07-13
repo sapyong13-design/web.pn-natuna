@@ -10,9 +10,13 @@ from collections import defaultdict
 from pathlib import Path
 
 NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main", "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"}
+NON_FILE_STATUS = {"kosong", "sudah terisi", "sudah ditindaklanjuti"}
 REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 TRUNCATED = re.compile(r"^… \(\+[0-9]+ baris nama file lainnya\) → lihat sheet 'Detail File'$")
 WARNINGS: list[str] = []
+DEFAULT_OVERRIDES = Path(__file__).with_name("ampuh-2026-overrides.json")
+MAIN_DRIVE_URL = "https://drive.google.com/drive/folders/1x6yBB_YxHRKGsuxgkN1enrWXiV3P2NWH?usp=sharing"
+CHECKLIST_DRIVE_URLS = {78: "https://drive.google.com/drive/folders/12aqCl7P5I0Gg97p4Ch9IGZtMga93d62o?usp=sharing"}
 
 
 def text(value: object) -> str:
@@ -79,7 +83,7 @@ def normalized(value: str) -> str:
 
 
 def files_from(value: str) -> list[str]:
-    return [line.strip().lstrip("- ").strip() for line in value.splitlines() if line.strip() and not line.strip().startswith("📁") and line.strip() != "(KOSONG)" and not TRUNCATED.fullmatch(line.strip())]
+    return [line.strip().lstrip("- ").strip() for line in value.splitlines() if line.strip() and normalized(line.strip().lstrip("- ").strip()) not in NON_FILE_STATUS and not line.strip().startswith("📁") and line.strip() != "(KOSONG)" and not TRUNCATED.fullmatch(line.strip())]
 
 
 def detail_files(details: list[list[str]]) -> tuple[dict[tuple[int, str], list[str]], dict[int, list[tuple[str, list[str]]]]]: 
@@ -96,9 +100,15 @@ def detail_files(details: list[list[str]]) -> tuple[dict[tuple[int, str], list[s
     return result, ordered
 
 
-def build_dataset(rows: list[list[str]], details: list[list[str]]) -> dict:
+
+def load_overrides(path: Path | None) -> dict[str, dict]:
+    if path is None or not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: dict[str, dict] | None = None) -> dict:
     global WARNINGS
     WARNINGS = []
+    overrides = overrides or {}
     detail_index, detail_order = detail_files(details)
     pending_gobi = "Tidak Ditentukan"
     checklists: list[dict] = []
@@ -124,23 +134,31 @@ def build_dataset(rows: list[list[str]], details: list[list[str]]) -> dict:
         listed = files_from(raw_files)
         key = (current["number"], normalized(sub_title))
         authoritative = detail_index.get(key)
-        if authoritative is None and any(TRUNCATED.fullmatch(line.strip()) for line in raw_files.splitlines()):
-            candidates = detail_order.get(current["number"], [])
-            if sub_number <= len(candidates):
-                authoritative = candidates[sub_number - 1][1]
-        if authoritative is not None:
-            listed = authoritative
-        current["subchecklists"].append({"number": f"{current['number']}.{sub_number}", "title": text(sub_title), "document_count": len(listed), "drive_url": "", "files": listed})
+        if any(TRUNCATED.fullmatch(line.strip()) for line in raw_files.splitlines()):
+            if authoritative is None:
+                candidates = detail_order.get(current["number"], [])
+                if sub_number <= len(candidates):
+                    authoritative = candidates[sub_number - 1][1]
+            listed = authoritative or []
+        override = overrides.get(f"{current['number']}.{sub_number}")
+        if override is not None:
+            listed = [text(item.get("name")) for item in override.get("files", [])]
+            declared = len(listed)
+            drive_url = text(override.get("drive_url"))
+        else:
+            declared = number(raw_count)
+            drive_url = ""
+        current["subchecklists"].append({"number": f"{current['number']}.{sub_number}", "title": text(sub_title), "document_count": declared if declared is not None else len(listed), "drive_url": drive_url, "files": listed})
     gobis: dict[str, list[dict]] = defaultdict(list)
     for checklist in checklists:
         gobis[checklist.pop("_gobi")].append(checklist)
-    return {"title": "AMPUH 2026 Checklist", "main_drive_url": "", "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.", "gobis": [{"number": index, "name": name, "checklists": items} for index, (name, items) in enumerate(gobis.items(), start=1)]}
+    return {"title": "AMPUH 2026 Checklist", "main_drive_url": MAIN_DRIVE_URL, "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.", "gobis": [{"number": index, "name": name, "checklists": [{**checklist, "drive_url": CHECKLIST_DRIVE_URLS.get(checklist["number"], "")} for checklist in items]} for index, (name, items) in enumerate(gobis.items(), start=1)]}
 
 
-def parse_workbook(path: Path) -> dict:
+def parse_workbook(path: Path, override_path: Path | None = DEFAULT_OVERRIDES) -> dict:
     with zipfile.ZipFile(path) as archive:
         sheets = load_sheets(archive)
-        return build_dataset(read_rows(archive, sheets["AMPUH 2026 Checklist"]), read_rows(archive, sheets["Detail File"]))
+        return build_dataset(read_rows(archive, sheets["AMPUH 2026 Checklist"]), read_rows(archive, sheets["Detail File"]), load_overrides(override_path))
 
 
 def validate_dataset(data: dict) -> list[str]:
@@ -149,8 +167,8 @@ def validate_dataset(data: dict) -> list[str]:
     numbers = [item.get("number") for item in checklists]
     if len(numbers) != len(set(numbers)):
         errors.append("Duplicate checklist number")
-    if len(checklists) == 82 and numbers != list(range(1, 83)):
-        errors.append("Checklist numbers must be 1..82")
+    if numbers != list(range(1, 83)):
+        errors.append("Checklist numbers must be exactly 1..82")
     for checklist in checklists:
         if not text(checklist.get("title")):
             errors.append(f"Checklist {checklist.get('number')}: blank title")
@@ -168,8 +186,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("workbook", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     args = parser.parse_args()
-    data = parse_workbook(args.workbook)
+    data = parse_workbook(args.workbook, args.overrides)
     errors = validate_dataset(data)
     if errors:
         print("\n".join(errors), file=sys.stderr)
