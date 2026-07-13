@@ -39,6 +39,7 @@ $fixture = [
             ]],
         ]],
     ],
+    ],
 ];
 file_put_contents($fixturePath . '/ampuh-2026.json', json_encode($fixture, JSON_THROW_ON_ERROR));
 
@@ -81,7 +82,7 @@ preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^
 preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
 $toggleIds = $toggleMatches[1];
 $panelIds = $panelMatches[1];
-$expect(count($toggleIds) === 6, 'Fixture must render six closed disclosure levels across split checklist branches.');
+$expect(count($toggleIds) === 8, 'Fixture must render eight closed disclosure levels across split checklist branches.');
 $expect((bool) preg_match('/\sdata-ampuh-result(?:\s|>)/', $html), 'Searchable result nodes need behavior hooks.');
 $expect(count($toggleIds) === count(array_unique($toggleIds)), 'Disclosure IDs must be unique.');
 $expect(count($panelIds) === count(array_unique($panelIds)), 'Panel IDs must be unique.');
