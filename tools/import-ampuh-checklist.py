@@ -17,7 +17,6 @@ WARNINGS: list[str] = []
 DEFAULT_OVERRIDES = Path(__file__).with_name("ampuh-2026-overrides.json")
 DEFAULT_CHECKLIST_LINKS = Path(__file__).with_name("ampuh-2026-checklist-links.json")
 MAIN_DRIVE_URL = "https://drive.google.com/drive/folders/1x6yBB_YxHRKGsuxgkN1enrWXiV3P2NWH?usp=sharing"
-CHECKLIST_DRIVE_URLS = {78: "https://drive.google.com/drive/folders/12aqCl7P5I0Gg97p4Ch9IGZtMga93d62o?usp=sharing"}
 
 
 def text(value: object) -> str:

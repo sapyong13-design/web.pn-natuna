@@ -220,19 +220,15 @@ function setupAmpuhDirectory() {
   toggles.forEach((toggle) => toggle.addEventListener('click', () => setExpanded(toggle, toggle.getAttribute('aria-expanded') !== 'true')));
   closeAll?.addEventListener('click', closeEveryPanel);
   search?.addEventListener('input', () => {
-    if (!normalize(search.value)) {
-      selectedGobi = '';
-      filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
-    }
+    if (!normalize(search.value)) closeEveryPanel();
     apply();
   });
   filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.addEventListener('click', () => {
     const value = button.getAttribute('data-ampuh-filter-value');
     selectedGobi = selectedGobi === value ? '' : value;
-    filter.querySelectorAll('[data-ampuh-filter-value]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button && selectedGobi)));
+    filter.querySelectorAll('[data-ampuh-filter-value]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button && selectedGobi !== '')));
     apply();
   }));
-  closeEveryPanel();
   apply();
 }
 

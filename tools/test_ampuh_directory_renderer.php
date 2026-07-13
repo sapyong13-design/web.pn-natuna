@@ -24,7 +24,7 @@ $fixture = [
             'subchecklists' => [[
                 'number' => '1.1', 'title' => 'Sub <i>',
                 'document_count' => 1, 'drive_url' => 'https://example.com/not-drive',
-                'files' => ['Bukti <script>alert(1)</script>.pdf'],
+                'files' => ['Bukti <script>alert(1)</script>.pdf', 'Rekap.xlsx', 'Berita.docx', 'Foto.png', 'Catatan.txt'],
             ]],
         ]],
     ]],
@@ -57,6 +57,13 @@ $expect(substr_count($html, 'Tautan belum tersedia') === 2, 'Invalid nonempty Dr
 $expect(str_contains($html, '<dd>1</dd>'), 'Fixture aggregate counts must render.');
 $expect(str_contains($html, '>GOBI 1 · &lt;img&gt;</button>'), 'Integral GOBI filter and disclosure labels must be informative and omit decimal suffixes.');
 $expect(!str_contains($html, '>1.0 &lt;img&gt;</button>'), 'Bare dataset GOBI names must not become control labels.');
+$expect(str_contains($html, '1 checklist · 1 sub-checklist · 5 dokumen'), 'GOBI header must expose its scoped inventory count.');
+$expect(str_contains($html, '1 sub-checklist · 5 dokumen'), 'Checklist header must expose its scoped inventory count.');
+$expect((bool) preg_match('/<li[^>]*><span class="ampuh-directory__file-icon" aria-hidden="true">PDF<\/span>Bukti &lt;script&gt;alert\(1\)&lt;\/script&gt;\.pdf<\/li>/', $html), 'PDF files need a decorative type marker before escaped names.');
+$expect(str_contains($html, 'aria-hidden="true">SHEET</span>Rekap.xlsx'), 'Spreadsheet files need deterministic type markers.');
+$expect(str_contains($html, 'aria-hidden="true">WORD</span>Berita.docx'), 'Word files need deterministic type markers.');
+$expect(str_contains($html, 'aria-hidden="true">IMAGE</span>Foto.png'), 'Image files need deterministic type markers.');
+$expect(str_contains($html, 'aria-hidden="true">FILE</span>Catatan.txt'), 'Unknown extensions need generic type markers.');
 
 preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^>]*>/', $html, $toggleMatches);
 preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
@@ -82,6 +89,7 @@ $expect(!str_contains($css, '.ampuh-directory__hero'), 'Dead AMPUH hero alias mu
 $expect($cssRule('.ampuh-directory [hidden]', 'display\s*:\s*none\s*!important'), 'Hidden panels must not occupy layout space.');
 $expect((bool) preg_match('/\.ampuh-directory__drive\s*,\s*\.ampuh-directory__tools button\s*,\s*\.ampuh-directory \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*44px/s', $css), 'All AMPUH interactive controls need 44px minimum targets.');
 $expect($cssRule('.ampuh-directory__subchecklist li', 'overflow-wrap\s*:\s*anywhere'), 'File names must wrap anywhere.');
+$expect($cssRule('.ampuh-directory__file-icon', 'display\s*:\s*inline-flex'), 'File type markers need compact inline styling.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\)\s*\{.*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*minmax\(0,\s*1fr\)/s', $ampuhCss), 'Mobile inventory must use one column.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
 $hexToLuminance = static function (string $hex): float {

@@ -84,8 +84,9 @@ if (gobi1.hidden || !gobi2.hidden || !results.textContent.includes('1') || toggl
 one.fire('click');
 if (gobi1.hidden || !gobi2.hidden) throw Error('GOBI filter must intersect active search');
 search.value = ''; search.fire('input');
-if (gobi1.hidden || gobi2.hidden || tree.classList.contains('ampuh-directory__empty')) throw Error('empty search must restore all items and clear empty state');
-if (toggle1.getAttribute('aria-expanded') !== 'false' || toggle2.getAttribute('aria-expanded') !== 'false') throw Error('empty search must reset disclosures to closed');
+if (gobi1.hidden || !gobi2.hidden || tree.classList.contains('ampuh-directory__empty')) throw Error('clearing search must preserve active GOBI filter and clear empty state');
+if (one.getAttribute('aria-pressed') !== 'true') throw Error('clearing search must preserve active GOBI button state');
+if (toggle1.getAttribute('aria-expanded') !== 'false' || toggle2.getAttribute('aria-expanded') !== 'false') throw Error('clearing search must reset disclosures to closed');
 two.fire('click');
 if (!gobi1.hidden || gobi2.hidden) throw Error('GOBI filter must select requested GOBI');
 two.fire('click');
