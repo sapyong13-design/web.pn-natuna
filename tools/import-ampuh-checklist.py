@@ -105,6 +105,9 @@ def load_overrides(path: Path | None) -> dict[str, dict]:
     if path is None or not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
+
+def gobi_name(value: str, group_number: int) -> str:
+    return "" if number(value) == group_number else value
 def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: dict[str, dict] | None = None) -> dict:
     global WARNINGS
     WARNINGS = []
@@ -152,7 +155,7 @@ def build_dataset(rows: list[list[str]], details: list[list[str]], overrides: di
     gobis: dict[str, list[dict]] = defaultdict(list)
     for checklist in checklists:
         gobis[checklist.pop("_gobi")].append(checklist)
-    return {"title": "AMPUH 2026 Checklist", "main_drive_url": MAIN_DRIVE_URL, "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.", "gobis": [{"number": index, "name": name, "checklists": [{**checklist, "drive_url": CHECKLIST_DRIVE_URLS.get(checklist["number"], "")} for checklist in items]} for index, (name, items) in enumerate(gobis.items(), start=1)]}
+    return {"title": "AMPUH 2026 Checklist", "main_drive_url": MAIN_DRIVE_URL, "summary": "Daftar checklist dan bukti fisik dokumen AMPUH 2026 Pengadilan Negeri Natuna.", "gobis": [{"number": index, "name": gobi_name(name, index), "checklists": [{**checklist, "drive_url": CHECKLIST_DRIVE_URLS.get(checklist["number"], "")} for checklist in items]} for index, (name, items) in enumerate(gobis.items(), start=1)]}
 
 
 def parse_workbook(path: Path, override_path: Path | None = DEFAULT_OVERRIDES) -> dict:

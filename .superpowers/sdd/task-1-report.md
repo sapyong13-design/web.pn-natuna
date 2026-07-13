@@ -110,3 +110,16 @@ Corrected public inventory is 2043 files: original 2008 less three non-file stat
 ## Commits
 - `3470637` initial importer implementation.
 - `cc3b4f2` review remediation: strict counts and verified 78.3 Drive override.
+
+## GOBI label remediation
+RED command: `python tools/test_import_ampuh_checklist.py`
+
+RED output: `test_normalizes_numeric_gobi_name_but_preserves_meaningful_name ... FAIL` with `AssertionError: '1.0' != ''`.
+
+GREEN command: `python tools/test_import_ampuh_checklist.py`
+
+GREEN output: `Ran 10 tests in 0.081s` and `OK`.
+
+Regeneration command: `python tools/import-ampuh-checklist.py "C:/Users/faris/Downloads/ampuh-checklist-2026-merged (1).xlsx" --output templates/pn_natuna_2026/data/ampuh-2026.json`
+
+Regeneration output: `82 checklists, 405 sub-checklists, 2043 files` (plus required Checklist 24 fallback warning). Numeric-equivalent GOBI labels now normalize to empty strings; meaningful labels remain unchanged. Renderer contract attempted with `php tools/test_ampuh_directory_renderer.php`, but `php` is unavailable in this environment (`error: command not found: php`).
