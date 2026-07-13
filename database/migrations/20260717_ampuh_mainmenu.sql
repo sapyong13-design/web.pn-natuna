@@ -67,37 +67,34 @@ SET parent_id = 1, level = 1, lft = @transparansi_lft + 1, rgt = @transparansi_l
     language = 'id-ID', client_id = 0
 WHERE id = @ampuh_id
   AND @ampuh_article_id IS NOT NULL AND @content_component_id IS NOT NULL AND @transparansi_id IS NOT NULL;
+CREATE TEMPORARY TABLE ampuh_menu_bounds (id INT NOT NULL PRIMARY KEY, lft INT NOT NULL, rgt INT NOT NULL, level INT NOT NULL);
 
-CREATE TEMPORARY TABLE ampuh_mainmenu_bounds (id INT NOT NULL PRIMARY KEY, lft INT NOT NULL, rgt INT NOT NULL, level INT NOT NULL);
-
-INSERT INTO ampuh_mainmenu_bounds (id, lft, rgt, level)
+INSERT INTO ampuh_menu_bounds (id, lft, rgt, level)
 WITH RECURSIVE menu_tree AS (
     SELECT id, parent_id, CAST(CONCAT(LPAD(lft, 10, '0'), ':', LPAD(id, 10, '0')) AS CHAR(1000)) AS sort_path
     FROM #__menu
-    WHERE menutype = 'mainmenu' AND parent_id = 1
+    WHERE id = 1
     UNION ALL
     SELECT child.id, child.parent_id, CONCAT(parent.sort_path, '/', LPAD(child.lft, 10, '0'), ':', LPAD(child.id, 10, '0'))
     FROM #__menu AS child
     INNER JOIN menu_tree AS parent ON child.parent_id = parent.id
-    WHERE child.menutype = 'mainmenu'
 ), events AS (
     SELECT id, CONCAT(sort_path, '/0') AS event_path, 'open' AS event_type FROM menu_tree
     UNION ALL
     SELECT id, CONCAT(sort_path, '/z') AS event_path, 'close' AS event_type FROM menu_tree
 ), numbered_events AS (
-    SELECT id, event_type, ROW_NUMBER() OVER (ORDER BY event_path) AS boundary
-    FROM events
+    SELECT id, event_type, ROW_NUMBER() OVER (ORDER BY event_path) AS boundary FROM events
 )
 SELECT node.id,
        MAX(CASE WHEN event_type = 'open' THEN boundary END),
        MAX(CASE WHEN event_type = 'close' THEN boundary END),
-       1 + LENGTH(node.sort_path) - LENGTH(REPLACE(node.sort_path, '/', ''))
+       LENGTH(node.sort_path) - LENGTH(REPLACE(node.sort_path, '/', ''))
 FROM menu_tree AS node
 INNER JOIN numbered_events ON numbered_events.id = node.id
 GROUP BY node.id, node.sort_path;
 
 UPDATE #__menu AS menu_item
-INNER JOIN ampuh_mainmenu_bounds AS bounds ON bounds.id = menu_item.id
+INNER JOIN ampuh_menu_bounds AS bounds ON bounds.id = menu_item.id
 SET menu_item.lft = bounds.lft, menu_item.rgt = bounds.rgt, menu_item.level = bounds.level;
 
-DROP TEMPORARY TABLE ampuh_mainmenu_bounds;
+DROP TEMPORARY TABLE ampuh_menu_bounds;
