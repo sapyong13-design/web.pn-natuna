@@ -6,11 +6,14 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
-ROOT=Path(__file__).resolve().parents[1]; MYSQL=os.environ.get('MYSQL_BIN',r'C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysql.exe'); SOURCE='pn_natuna_rebuild'; DATABASE=f'pn_natuna_ampuh_menu_test_{os.getpid()}'; MIGRATION=ROOT/'database/migrations/20260717_ampuh_mainmenu.sql'; RUNNER=ROOT/'tools'/'apply-db-migrations.py'
+ROOT=Path(__file__).resolve().parents[1]; MYSQL=os.environ.get('MYSQL_BIN',r'C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysql.exe'); SOURCE='pn_natuna_rebuild'; DATABASE=f'pn_natuna_ampuh_menu_test_{os.getpid()}'; LEGACY_MIGRATION=ROOT/'database/migrations/20260717_ampuh_mainmenu.sql'; MIGRATION=ROOT/'database/migrations/20260718_reconcile_ampuh_mainmenu.sql'; RUNNER=ROOT/'tools'/'apply-db-migrations.py'
 def mysql(sql,database=None):
  c=[MYSQL,'-uroot','--batch','--skip-column-names','--default-character-set=utf8mb4']+([database] if database else []); r=subprocess.run(c+['-e',sql],text=True,encoding='utf-8',capture_output=True)
  if r.returncode: raise RuntimeError(r.stderr.strip())
  return r.stdout.strip()
+def stage_migrations(directory, include_legacy=True):
+ if include_legacy: (directory/LEGACY_MIGRATION.name).write_text(LEGACY_MIGRATION.read_text(encoding='utf-8'),encoding='utf-8')
+ (directory/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8')
 def apply(d,reapply=False):
  r=subprocess.run([sys.executable,str(RUNNER),'--database',DATABASE,'--mysql',MYSQL,'--migrations',str(d)]+(['--reapply'] if reapply else []),cwd=ROOT,text=True,encoding='utf-8',capture_output=True)
  if r.returncode: raise RuntimeError(r.stderr.strip())
@@ -50,7 +53,7 @@ def main():
   mysql('INSERT INTO pnn_modules_menu (moduleid,menuid) VALUES (900003,'+orphan+')',DATABASE)
   before=table_snapshots()
   with tempfile.TemporaryDirectory() as x:
-   d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply_expect_check_failure(d,'orphan')
+   d=Path(x); stage_migrations(d,False); apply_expect_check_failure(d,'orphan')
   if table_snapshots()!=before: raise RuntimeError('orphan CHECK failure did not roll back menu tables')
   mysql('DELETE FROM pnn_modules_menu WHERE moduleid=900003; DELETE FROM pnn_menu WHERE id='+orphan,DATABASE)
   dependency_cases=(
@@ -61,11 +64,11 @@ def main():
   for case,remove,restore in dependency_cases:
    mysql(remove,DATABASE); before=table_snapshots()
    with tempfile.TemporaryDirectory() as x:
-    d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply_expect_check_failure(d,case)
+    d=Path(x); stage_migrations(d,False); apply_expect_check_failure(d,case)
    if table_snapshots()!=before: raise RuntimeError(f'{case} dependency CHECK failure did not roll back menu tables')
    mysql(restore,DATABASE)
   with tempfile.TemporaryDirectory() as x:
-   d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply(d); s=check(cid,hidden)
+   d=Path(x); stage_migrations(d); apply(d); s=check(cid,hidden)
    for _ in range(3): apply(d,True); check(cid,hidden,s)
   print('AMPUH mainmenu migration contract: ok')
  finally: mysql(f'DROP DATABASE IF EXISTS {DATABASE};')
