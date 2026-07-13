@@ -16,6 +16,12 @@ SET @ampuh_article_id := (SELECT id FROM #__content WHERE alias = 'ampuh-2026' A
 SET @content_component_id := (SELECT extension_id FROM #__extensions WHERE element = 'com_content' AND type = 'component' ORDER BY extension_id ASC LIMIT 1);
 SET @transparansi_id := (SELECT id FROM #__menu WHERE id = 108 AND menutype = 'mainmenu' AND parent_id = 1 LIMIT 1);
 
+-- Required canonical dependencies must exist before any persistent menu mutation.
+CREATE TEMPORARY TABLE ampuh_dependency_check (dependency_count INT NOT NULL, CHECK (dependency_count = 3));
+INSERT INTO ampuh_dependency_check (dependency_count)
+SELECT (@ampuh_article_id IS NOT NULL) + (@content_component_id IS NOT NULL) + (@transparansi_id IS NOT NULL);
+DROP TEMPORARY TABLE ampuh_dependency_check;
+
 INSERT INTO #__menu (
     menutype, title, alias, note, path, link, type, published, parent_id, level,
     component_id, checked_out, checked_out_time, browserNav, access, img,

@@ -14,12 +14,13 @@ def mysql(sql,database=None):
 def apply(d,reapply=False):
  r=subprocess.run([sys.executable,str(RUNNER),'--database',DATABASE,'--mysql',MYSQL,'--migrations',str(d)]+(['--reapply'] if reapply else []),cwd=ROOT,text=True,encoding='utf-8',capture_output=True)
  if r.returncode: raise RuntimeError(r.stderr.strip())
-def apply_expect_check_failure(d):
+def apply_expect_check_failure(d,case):
  r=subprocess.run([sys.executable,str(RUNNER),'--database',DATABASE,'--mysql',MYSQL,'--migrations',str(d)],cwd=ROOT,text=True,encoding='utf-8',capture_output=True)
- if r.returncode==0 or 'CHECK' not in (r.stdout+r.stderr).upper(): raise RuntimeError('orphan migration did not fail its CHECK guard')
+ if r.returncode==0 or 'CHECK' not in (r.stdout+r.stderr).upper(): raise RuntimeError(f'{case} migration did not fail its CHECK guard')
 def table_snapshots():
  return (mysql('SELECT * FROM pnn_menu ORDER BY id',DATABASE),mysql('SELECT * FROM pnn_modules_menu ORDER BY moduleid,menuid',DATABASE))
-def snap(): return mysql("SELECT GROUP_CONCAT(CONCAT(id,':',parent_id,':',lft,':',rgt) ORDER BY lft SEPARATOR '|') FROM pnn_menu",DATABASE)
+def snap():
+ return table_snapshots()
 def check(cid,hidden,stable=None):
  p=mysql("SELECT id,title,alias,path,published,access,language,client_id,link FROM pnn_menu WHERE menutype='mainmenu' AND parent_id=1 AND alias='ampuh'",DATABASE).split('\t')
  if p[:8]!=[cid,'AMPUH','ampuh','ampuh','1','1','id-ID','0'] or not p[8].startswith('index.php?option=com_content&view=article&id='): raise RuntimeError('canonical route or ID failed')
@@ -49,9 +50,20 @@ def main():
   mysql('INSERT INTO pnn_modules_menu (moduleid,menuid) VALUES (900003,'+orphan+')',DATABASE)
   before=table_snapshots()
   with tempfile.TemporaryDirectory() as x:
-   d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply_expect_check_failure(d)
+   d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply_expect_check_failure(d,'orphan')
   if table_snapshots()!=before: raise RuntimeError('orphan CHECK failure did not roll back menu tables')
   mysql('DELETE FROM pnn_modules_menu WHERE moduleid=900003; DELETE FROM pnn_menu WHERE id='+orphan,DATABASE)
+  dependency_cases=(
+   ('article',"DELETE FROM pnn_content WHERE alias='ampuh-2026' AND catid=9",f"INSERT INTO pnn_content SELECT * FROM {SOURCE}.pnn_content WHERE alias='ampuh-2026' AND catid=9"),
+   ('component',"DELETE FROM pnn_extensions WHERE element='com_content' AND type='component'",f"INSERT INTO pnn_extensions SELECT * FROM {SOURCE}.pnn_extensions WHERE element='com_content' AND type='component'"),
+   ('transparansi',"UPDATE pnn_menu SET menutype='hidden' WHERE id=108","UPDATE pnn_menu SET menutype='mainmenu' WHERE id=108"),
+  )
+  for case,remove,restore in dependency_cases:
+   mysql(remove,DATABASE); before=table_snapshots()
+   with tempfile.TemporaryDirectory() as x:
+    d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply_expect_check_failure(d,case)
+   if table_snapshots()!=before: raise RuntimeError(f'{case} dependency CHECK failure did not roll back menu tables')
+   mysql(restore,DATABASE)
   with tempfile.TemporaryDirectory() as x:
    d=Path(x); (d/MIGRATION.name).write_text(MIGRATION.read_text(encoding='utf-8'),encoding='utf-8'); apply(d); s=check(cid,hidden)
    for _ in range(3): apply(d,True); check(cid,hidden,s)
