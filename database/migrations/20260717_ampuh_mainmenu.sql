@@ -1,17 +1,15 @@
 -- Converge public AMPUH aliases to a retained root menu item immediately after Transparansi.
 -- Rebuild only mainmenu intervals deterministically, preserving existing menu IDs and hidden rows.
 
--- Abort before mutation if the global nested set has rows unreachable from Joomla root id=1.
-CREATE TEMPORARY TABLE ampuh_root_check (id INT NOT NULL PRIMARY KEY);
-INSERT INTO ampuh_root_check (id)
+-- Abort before persistent mutation if the global nested set has rows unreachable from Joomla root id=1.
+CREATE TEMPORARY TABLE ampuh_root_check (orphan_count INT NOT NULL, CHECK (orphan_count = 0));
+INSERT INTO ampuh_root_check (orphan_count)
 WITH RECURSIVE reachable AS (
     SELECT id FROM #__menu WHERE id = 1
     UNION ALL
     SELECT child.id FROM #__menu AS child INNER JOIN reachable AS parent ON child.parent_id = parent.id
 )
-SELECT 1
-UNION ALL
-SELECT 1 WHERE (SELECT COUNT(*) FROM reachable) <> (SELECT COUNT(*) FROM #__menu);
+SELECT (SELECT COUNT(*) FROM #__menu) - (SELECT COUNT(*) FROM reachable);
 DROP TEMPORARY TABLE ampuh_root_check;
 
 SET @ampuh_article_id := (SELECT id FROM #__content WHERE alias = 'ampuh-2026' AND catid = 9 ORDER BY id ASC LIMIT 1);
