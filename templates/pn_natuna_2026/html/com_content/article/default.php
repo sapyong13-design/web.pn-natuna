@@ -18,6 +18,10 @@ $item = $this->item;
 $params = $item->params;
 $app = Factory::getApplication();
 $db = Factory::getContainer()->get('DatabaseDriver');
+// AMPUH directory must dispatch before transparency/news article rendering.
+if (require __DIR__ . '/ampuh-directory.php') {
+    return;
+}
 // Transparency family must dispatch before curated/news article rendering.
 if (require __DIR__ . '/transparency-family.php') {
     return;
