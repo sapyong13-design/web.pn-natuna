@@ -44,6 +44,10 @@ WITH RECURSIVE descendants AS (
     WHERE child.menutype = 'mainmenu'
 )
 SELECT id FROM descendants;
+DELETE module_mapping
+FROM #__modules_menu AS module_mapping
+INNER JOIN ampuh_duplicate_tree AS duplicate_item ON ABS(module_mapping.menuid) = duplicate_item.id;
+
 
 DELETE menu_item
 FROM #__menu AS menu_item
@@ -71,7 +75,7 @@ CREATE TEMPORARY TABLE ampuh_menu_bounds (id INT NOT NULL PRIMARY KEY, lft INT N
 
 INSERT INTO ampuh_menu_bounds (id, lft, rgt, level)
 WITH RECURSIVE menu_tree AS (
-    SELECT id, parent_id, CAST(CONCAT(LPAD(lft, 10, '0'), ':', LPAD(id, 10, '0')) AS CHAR(1000)) AS sort_path
+    SELECT id, parent_id, CAST(CONCAT(LPAD(lft, 10, '0'), ':', LPAD(id, 10, '0')) AS CHAR(10000)) AS sort_path
     FROM #__menu
     WHERE id = 1
     UNION ALL
