@@ -11089,7 +11089,7 @@ body.is-dark .maklumat-compact-doc h3 {
 .ampuh-directory__gobi > h2 [data-ampuh-toggle] { display: grid; grid-template-columns: 66px minmax(0,1fr); align-items: center; min-height: 76px; max-height: 88px; color: var(--color-primary-deep); font-weight: 800; }
 .ampuh-directory__gobi-number { display: grid; color: var(--color-primary); font-family: var(--font-display); font-size: 2rem; line-height: .8; }
 .ampuh-directory__gobi-number small { font-family: var(--font-body); font-size: .55rem; letter-spacing: .12em; }
-.ampuh-directory__gobi-title { font-size: 1rem; }
+.ampuh-directory__gobi-title { font-size: 1.3rem; line-height: 1.25; }
 .ampuh-directory__gobi > [data-ampuh-panel] { padding: 0 16px 16px; background: var(--color-soft); }
 .ampuh-directory__checklist { display: grid; grid-template-columns: 64px minmax(0,1fr) 190px; align-items: start; border-top: 1px solid var(--color-line); }
 .ampuh-directory__subchecklist { display: grid; grid-template-columns: 56px minmax(0,1fr) 180px; align-items: start; border-top: 1px solid var(--color-line); }
@@ -11105,7 +11105,7 @@ body.is-dark .maklumat-compact-doc h3 {
 .ampuh-directory__files-heading { margin: 0; padding: 9px 12px; color: var(--color-muted); font-size: .78rem; font-weight: 800; }
 .ampuh-directory__files { margin: 0; padding: 0; list-style: none; background: var(--color-surface); }
 .ampuh-directory__subchecklist li { display: flex; min-width: 0; padding: 9px 12px; border-top: 1px solid var(--color-line); color: var(--color-muted); font-size: .8rem; overflow-wrap: anywhere; }
-.ampuh-directory__meta { display: block; margin-top: 5px; color: var(--color-muted); font-size: .78rem; font-weight: 700; line-height: 1.45; }
+.ampuh-directory__meta { display: block; margin-top: 7px; color: var(--color-muted); font-size: .72rem; font-weight: 600; line-height: 1.45; }
 .ampuh-directory__file-icon { display: inline-flex; flex: 0 0 3.75rem; color: var(--color-primary); font-size: .65rem; font-weight: 900; }
 .ampuh-directory__empty { color: var(--color-muted); }
 .ampuh-directory a:focus-visible, .ampuh-directory button:focus-visible, .ampuh-directory input:focus-visible, .ampuh-directory select:focus-visible { z-index: 2; outline: 3px solid var(--color-accent); outline-offset: 2px; }
@@ -11135,7 +11135,7 @@ body.is-dark .ampuh-directory__hero-main > .ampuh-directory__drive:hover, body.i
   .ampuh-directory__tree { padding: 8px 12px 32px; }
   .ampuh-directory__gobi > h2 [data-ampuh-toggle] { grid-template-columns: 52px minmax(0,1fr); min-height: 72px; max-height: 82px; padding: 8px 42px 8px 10px; }
   .ampuh-directory__gobi-number { font-size: 1.65rem; }
-  .ampuh-directory__gobi-title { font-size: .9rem; }
+  .ampuh-directory__gobi-title { font-size: 1.08rem; line-height: 1.3; }
   .ampuh-directory__checklist { grid-template-columns: 52px minmax(0,1fr); }
   .ampuh-directory__subchecklist { grid-template-columns: 48px minmax(0,1fr); }
   .ampuh-directory__check-number, .ampuh-directory__sub-number { padding: 14px 8px 14px 0; }
