@@ -86,13 +86,19 @@ $expect(str_contains($html, 'ampuh-directory__gobi-number') && str_contains($htm
 $expect(str_contains($html, 'ampuh-directory__sub-number') && str_contains($html, 'ampuh-directory__sub-title'), 'Sub-checklist row needs separate contents-style number and title hooks.');
 $expect(!str_contains($html, '1.1. 1.1.'), 'Sub-checklist numbering must never duplicate visually.');
 $expect(str_contains($html, 'ampuh-directory__files'), 'Attachments need a file-list hook.');
+$expect(str_contains($html, 'data-ampuh-file-result'), 'Document files need a dedicated result hook.');
+$expect(!str_contains($html, '<section class="ampuh-directory__subchecklist" data-ampuh-result'), 'Branch nodes must not be document result nodes.');
+$expect(str_contains($html, 'class="ampuh-directory__check-number"'), 'Checklist number needs a dedicated hook.');
+$expect(str_contains($html, 'class="ampuh-directory__check-title"'), 'Checklist title needs a dedicated hook.');
+$expect(!str_contains($html, '1 Checklist &lt;svg&gt;'), 'Checklist title must not duplicate its leading number.');
+$expect(str_contains($html, 'placeholder="Cari GOBI, checklist, atau nama dokumen…"'), 'Search placeholder must end with an ellipsis.');
 
 preg_match_all('/<button[^>]*aria-expanded="false"[^>]*aria-controls="([^"]+)"[^>]*>/', $html, $toggleMatches);
 preg_match_all('/<div id="([^"]+)"[^>]* hidden>/', $html, $panelMatches);
 $toggleIds = $toggleMatches[1];
 $panelIds = $panelMatches[1];
 $expect(count($toggleIds) === 8, 'Fixture must render eight closed disclosure levels across split checklist branches.');
-$expect((bool) preg_match('/\sdata-ampuh-result(?:\s|>)/', $html), 'Searchable result nodes need behavior hooks.');
+$expect((bool) preg_match('/\sdata-ampuh-file-result(?:\s|>)/', $html), 'Searchable document nodes need behavior hooks.');
 $expect(count($toggleIds) === count(array_unique($toggleIds)), 'Disclosure IDs must be unique.');
 $expect(count($panelIds) === count(array_unique($panelIds)), 'Panel IDs must be unique.');
 $expect($toggleIds === $panelIds, 'Every toggle aria-controls must match its hidden panel.');
@@ -118,6 +124,11 @@ $expect((bool) preg_match('/\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s
 $expect((bool) preg_match('/\.ampuh-directory__gobi\s*\{[^}]*box-shadow\s*:\s*none/s', $ampuhCss), 'Dossier rows must not use per-row shadows.');
 $expect((bool) preg_match('/\.ampuh-directory__gobi-select\s*\{[^}]*display\s*:\s*none/s', $ampuhCss), 'Mobile GOBI select must remain hidden on desktop.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*230px.*?\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*72px[^}]*max-height\s*:\s*82px/s', $ampuhCss), 'Mobile toolbar and dossier rows need scoped height bounds.');
+$expect($cssRule('.ampuh-directory__checklist', 'grid-template-columns\s*:\s*64px\s+minmax\(0,\s*1fr\)\s+190px'), 'Desktop checklist rows need stable number, content, and action columns.');
+$expect($cssRule('.ampuh-directory__subchecklist', 'grid-template-columns\s*:\s*56px\s+minmax\(0,\s*1fr\)\s+180px'), 'Desktop sub-checklist rows need stable number, content, and action columns.');
+$expect($cssRule('.ampuh-directory__check-title', 'font-size\s*:\s*1\.05rem') && $cssRule('.ampuh-directory__check-title', 'line-height\s*:\s*1\.45'), 'Checklist titles need readable desktop type.');
+$expect($cssRule('.ampuh-directory__sub-title', 'font-size\s*:\s*\.94rem') && $cssRule('.ampuh-directory__sub-title', 'line-height\s*:\s*1\.5'), 'Sub-checklist titles need readable desktop type.');
+$expect(str_contains($ampuhCss, '.ampuh-directory__checklist > [data-ampuh-panel], .ampuh-directory__subchecklist > [data-ampuh-panel] { grid-column: 1/-1;'), 'Checklist disclosure panel must span all row areas.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s', $ampuhCss), 'Mobile collection index must use a compact 2x2 grid.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
 $hexToLuminance = static function (string $hex): float {
@@ -147,6 +158,8 @@ if (isset($darkTokens[1], $darkTokens[2], $primaryToken[1])) {
     }
 }
 $expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\)\s*\{.*transition\s*:\s*none\s*!important.*transform\s*:\s*none/s', $ampuhCss), 'Reduced motion must remove transitions and transforms.');
+$expect((bool) preg_match('/\.ampuh-directory \[data-ampuh-panel\]\.is-revealing\s*\{[^}]*opacity\s*:\s*0[^}]*transform\s*:\s*translateY\(6px\)[^}]*transition\s*:\s*opacity\s+220ms\s+cubic-bezier\(\.16,1,\.3,1\),\s*transform\s+220ms\s+cubic-bezier\(\.16,1,\.3,1\)/s', $ampuhCss), 'Panels need a 220ms ease-out-quart opacity and 6px reveal state.');
+$expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\).*?\.ampuh-directory \[data-ampuh-panel\]\.is-revealing\s*\{[^}]*opacity\s*:\s*1[^}]*transform\s*:\s*none/s', $ampuhCss), 'Reduced motion must disable panel reveal movement.');
 preg_match_all('/transition\s*:\s*([^;}{]+)/', $ampuhCss, $transitionMatches);
 foreach ($transitionMatches[1] as $transition) {
     $expect(trim($transition) === 'none !important' || !preg_match('/(?:^|,)\s*(?!opacity\b|transform\b)[a-z-]+/i', $transition), "AMPUH transitions permit only opacity or transform: {$transition}.");

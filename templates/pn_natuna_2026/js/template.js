@@ -162,7 +162,7 @@ function setupAmpuhDirectory() {
 
   const toggles = Array.from(root.querySelectorAll('[data-ampuh-toggle]'));
   const items = Array.from(root.querySelectorAll('[data-search-text]'));
-  const resultNodes = Array.from(root.querySelectorAll('[data-ampuh-result]'));
+  const resultNodes = Array.from(root.querySelectorAll('[data-ampuh-file-result]'));
   const search = root.querySelector('[data-ampuh-search]');
   const filter = root.querySelector('[data-ampuh-gobi-filter]');
   const gobiSelect = root.querySelector('[data-ampuh-gobi-select]');
@@ -174,7 +174,17 @@ function setupAmpuhDirectory() {
   const setExpanded = (toggle, expanded) => {
     const panel = document.getElementById(toggle.getAttribute('aria-controls'));
     toggle.setAttribute('aria-expanded', String(expanded));
-    if (panel) panel.hidden = !expanded;
+    if (!panel) return;
+    if (!expanded) {
+      panel.hidden = true;
+      panel.classList.remove('is-revealing');
+      return;
+    }
+    panel.hidden = false;
+    panel.classList.add('is-revealing');
+    const reveal = () => panel.classList.remove('is-revealing');
+    if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(reveal);
+    else reveal();
   };
   const closeEveryPanel = () => toggles.forEach((toggle) => setExpanded(toggle, false));
   const normalize = (value) => value.toLocaleLowerCase('id-ID').trim();

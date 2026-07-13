@@ -65,9 +65,9 @@ const panel1 = new Node('div', {'data-ampuh-panel': '', id: 'panel-1'}); panel1.
 const checklist = new Node('section', {'data-search-text': 'checklist layanan publik'}, 'Checklist layanan publik');
 const toggle2 = new Node('button', {'data-ampuh-toggle': '', 'aria-controls': 'panel-2', 'aria-expanded': 'false'}, 'Buka checklist');
 const panel2 = new Node('div', {'data-ampuh-panel': '', id: 'panel-2'}); panel2.hidden = true;
-const sub = new Node('section', {'data-search-text': 'sub checklist layanan', 'data-ampuh-result': ''}, 'Sub checklist layanan');
+const sub = new Node('section', {'data-search-text': 'sub checklist layanan'}, 'Sub checklist layanan');
 const files = new Node('ul');
-const file = new Node('li', {'data-search-text': 'surat keputusan ampuh.pdf', 'data-ampuh-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
+const file = new Node('li', {'data-search-text': 'surat keputusan ampuh.pdf', 'data-ampuh-file-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
 const gobi2 = new Node('section', {'data-ampuh-gobi': '2', 'data-search-text': 'gobi hukum'}, 'GOBI hukum');
 const legal = new Node('section', {'data-search-text': 'checklist perkara'}, 'Checklist perkara');
 root.append(search, select, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(files.append(file)))))), gobi2.append(legal)));
@@ -82,7 +82,7 @@ if (toggle1.getAttribute('aria-expanded') !== 'true' || panel1.hidden) throw Err
 close.fire('click');
 if (toggle1.getAttribute('aria-expanded') !== 'false' || !panel1.hidden) throw Error('close all must close every disclosure');
 search.value = 'SUB CHECKLIST'; search.fire('input');
-if (gobi1.hidden || !gobi2.hidden || !results.textContent.includes('1')) throw Error('sub-checklist title search must produce one countable result');
+if (gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('sub-checklist title search must reveal its branch but announce zero documents');
 search.value = 'KEPUTUSAN'; search.fire('input');
 if (gobi1.hidden || !gobi2.hidden || !results.textContent.includes('1') || toggle1.getAttribute('aria-expanded') !== 'true' || toggle2.getAttribute('aria-expanded') !== 'true') throw Error('file search must count result and open ancestors');
 one.fire('click');
@@ -110,6 +110,7 @@ context.setupAmpuhDirectory();
 with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as runner:
     runner.write(NODE_TEST)
     runner_path = runner.name
+assert "data-ampuh-file-result" in function_source
 try:
     completed = subprocess.run(["node", runner_path, str(SOURCE)], text=True, capture_output=True)
     assert completed.returncode == 0, completed.stderr
