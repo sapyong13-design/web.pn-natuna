@@ -77,6 +77,15 @@ Spesifikasi serta rencana desain aktif tersedia di [`docs/superpowers/specs/`](d
 
 Feed Badilum dan PT Kepri diperbarui live oleh cron. MA RI terhalang Cloudflare untuk fetch server-side dan memakai fallback yang diperbarui manual/semi-otomatis. Jangan mengklaim feed MA live.
 
+## AMPUH 2026
+
+- Route aktif: `/ampuh`; target produksi: `ampuh.pn-natuna.go.id`.
+- Dataset kanonis: `templates/pn_natuna_2026/data/ampuh-2026.json`; importer: `tools/import-ampuh-checklist.py`; override sumber/provenance: `tools/ampuh-2026-overrides.json`.
+- Regenerasi dataset: `python tools/import-ampuh-checklist.py "C:/Users/faris/Downloads/ampuh-checklist-2026-merged (1).xlsx" --output templates/pn_natuna_2026/data/ampuh-2026.json`.
+- Folder Drive utama dan seluruh 82 checklist memakai URL viewer publik; hanya sub-checklist 78.3 memiliki URL viewer sendiri. Sub-checklist lain sengaja tampil sebagai `Tautan belum tersedia`; renderer tidak boleh meminjam URL checklist sebagai fallback.
+- Saat URL baru tersedia, tambahkan hanya URL viewer publik pada dataset atau `tools/ampuh-2026-overrides.json`, regenerasi bila override berubah, lalu jalankan ulang `python tools/test_import_ampuh_checklist.py`, `python tools/test_ampuh_directory_interactions.py`, `python tools/test_ampuh_directory_e2e.py`, dan `C:/laragon/bin/php/php-8.3.30-Win32-vs16-x64/php.exe tools/test_ampuh_directory_renderer.php`.
+- Jangan masukkan kredensial, token, atau tautan edit Google Drive ke repo, dataset, override, atau handoff.
+
 ## Keamanan dan produksi
 
 Sebelum deploy/go-live, baca dan tuntaskan:
