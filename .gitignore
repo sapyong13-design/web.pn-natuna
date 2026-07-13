@@ -21,8 +21,11 @@
 *.pfx
 
 # Database exports, backups, archives, logs, and editor residue
-/database/
 *.sql
+/database/*
+!/database/migrations/
+/database/migrations/*
+!/database/migrations/*.sql
 *.sql.gz
 *.dump
 *.bak

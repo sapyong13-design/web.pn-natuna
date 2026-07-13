@@ -1,22 +1,21 @@
 -- Keep public news and announcement listings newest-first and exclude index articles.
-START TRANSACTION;
 
-UPDATE pnn_content
+UPDATE #__content
 SET catid = 2
 WHERE id = 53
   AND alias = 'berita-dan-pengumuman-landing';
 
-UPDATE pnn_content
+UPDATE #__content
 SET state = 0
 WHERE id = 6
   AND alias = 'berita-dan-pengumuman';
 
-UPDATE pnn_content
+UPDATE #__content
 SET publish_up = created
 WHERE catid IN (12, 13)
   AND (publish_up IS NULL OR publish_up <= '2000-01-02 00:00:00');
 
-UPDATE pnn_menu
+UPDATE #__menu
 SET params = JSON_SET(
   COALESCE(NULLIF(params, ''), '{}'),
   '$.orderby_pri', 'none',
@@ -28,5 +27,3 @@ SET params = JSON_SET(
   '$.num_links', '0'
 )
 WHERE id IN (141, 142, 233, 234);
-
-COMMIT;

@@ -12,7 +12,7 @@ Knowledge base status aktif untuk rebuild Joomla Pengadilan Negeri Natuna Kelas 
 - Snapshot penuh terbaru: `database/pn_natuna_rebuild_20260711_instagram_mobile.sql` (lokal, tidak dilacak Git; sebelumnya `..._ui_polish.sql`)
 - Stack lokal: PHP 8.3.30 (`C:\laragon\bin\php`), MySQL 8.4.3 (`C:\laragon\bin\mysql`)
 
-Konten artikel dan modul hidup di DB. Setiap perubahan DB harus disertai delta SQL idempotent dan snapshot penuh baru; file `database/_*.sql` adalah delta yang sudah diterapkan.
+Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti kode harus berupa migrasi SQL idempoten baru di `database/migrations/`; restore dump wajib melalui `tools/restore-local-db.py` agar seluruh migrasi diputar ulang.
 
 ## Status antarmuka saat ini
 
@@ -26,7 +26,7 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB harus disertai delta S
 - Transparansi dan keluarga Profil Pengadilan sudah memakai route canonical, shell terakses, state fokus/gelap/reduced-motion, dan konten DB terbaru.
 - Editorial 2026-07-11: section homepage memakai pola `.section-kicker → h2 → .section-desc → konten → satu aksi` (7 section), nav desktop menandai route aktif via `li.active/.current` underline gold, 3 divider statis `.home-section-divider`, board Jadwal/Instansi berlatar `--color-soft`. Blok CSS: `/* EDITORIAL 2026-07-11 */` dan `/* PERF-MOTION 2026-07-11 */` di akhir `template.css`.
 - Performa: token shadow `--shadow-subtle/card/overlay`, reveal one-shot maks 10px/380ms (opacity+transform saja), `content-visibility:auto` pada 4 section bawah fold, gambar berat dikonversi WebP (berita pelantikan 157KB, maklumat 332KB, role model 65KB; original di `images/_originals/`, gitignored).
-- Maklumat modul **808**: compact document row (intro + dua dokumen utuh berdampingan), satu heading section (chrome), lightbox tetap; desktop horizontal, mobile bertumpuk.
+- Maklumat modul **808**: judul seksi hanya dari chrome Joomla; isi modul berisi dua dokumen utuh berdampingan dan lightbox. Desktop horizontal; mobile tetap dua kolom tanpa overflow.
 
 ## Pembaruan 12 Jul 2026: Berita, Pengumuman, dan Transparansi
 
@@ -34,7 +34,7 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB harus disertai delta S
 - Kanal kategori memiliki dua entry point yang tetap aktif: `/berita` (menu 141) dan `/berita-dan-pengumuman/berita` (233); `/pengumuman` (142) dan `/berita-dan-pengumuman/pengumuman` (234). Keempat menu wajib memakai `num_leading_articles=0`, `num_intro_articles=6`, `num_columns=3`, `num_links=0`, `orderby_sec=rdate`, `order_date=published`.
 - Data lama kategori Berita **12** dan Pengumuman **13** dinormalisasi: `publish_up <= 2000-01-02` diganti `created`. Karena itu category listing, portal, dan hero menggunakan tanggal publikasi terbaru-ke-terlama tanpa sentinel Joomla.
 - Menambah article ke kategori 12/13 otomatis memperbarui kanal, portal, dan hero homepage. Gambar memilih `image_fulltext` non-empty lalu `image_intro`; Pengumuman tanpa gambar memakai `images/brand/pengumuman-resmi-pn-natuna.webp`.
-- Pagination Berita/Pengumuman berisi tepat enam card per halaman desktop, tiga kolom × dua baris; mobile menjadi compact list. Jangan menyembunyikan `link_items` lewat CSS. Delta deployment: `database/_news_channels_ordering.sql`.
+- Pagination Berita/Pengumuman berisi tepat enam card per halaman desktop, tiga kolom × dua baris; mobile menjadi compact list. Jangan menyembunyikan `link_items` lewat CSS. State DB dikelola oleh registry `database/migrations/`.
 - Keluarga Transparansi memakai renderer terpusat `html/com_content/article/transparency-family.php` untuk artikel 45 dan child 37, 38, 39, 40, 86, 41, 42, 43, 85, 87, 88, 115, 116. Renderer mempertahankan seluruh link arsip, menghapus shell DB duplikat, memberi satu hero h1, breadcrumb, dan navigasi empat kelompok.
 - Kelompok Transparansi: **Akuntabilitas Kinerja**, **Keuangan**, **Survei dan Integritas**, **Informasi Publik**. Desktop memakai grouped dropdown/disclosure; mobile accordion hanya membuka kelompok aktif. Semua route lama dipertahankan.
 - Focused contracts: `tools/test_news_portal_renderer.php`, `tools/test_news_portal_renderer.py`, `tools/test_news_category_channels.php`, dan `tools/test_transparency_family_renderer.php`.
@@ -89,10 +89,11 @@ Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pen
 ## Menjalankan di device lain
 
 1. Clone repo dan checkout branch kerja.
-2. Import `database/pn_natuna_rebuild_20260711_security.sql` ke database `pn_natuna_rebuild`.
-3. Sesuaikan `configuration.php` untuk path, DB, host, kredensial, dan `live_site` lokal; file ini tidak dilacak Git.
-4. Dari root Joomla jalankan `php -S 127.0.0.1:8080`.
-5. Verifikasi `/`, `/transparansi`, `/profil-pengadilan`, artikel Berita/Pengumuman, desktop `≥761px`, dan mobile `≤760px`.
+2. Restore dump hanya melalui `python tools/restore-local-db.py <path-dump.sql> --mysql <path-mysql>`; perintah ini mengimpor dump lalu mengulang migrasi kanonis dari `database/migrations/`.
+3. Jika database sudah terimpor, jalankan `python tools/apply-db-migrations.py --mysql <path-mysql> --reapply`. Jangan menjalankan file SQL delta satu per satu.
+4. Sesuaikan `configuration.php` untuk path, DB, host, kredensial, dan `live_site` lokal; file ini tidak dilacak Git.
+5. Dari root Joomla jalankan `php -S 127.0.0.1:8080`.
+6. Jalankan `php tools/test_homepage_modules.php`, lalu verifikasi `/`, `/transparansi`, `/profil-pengadilan`, artikel Berita/Pengumuman, desktop `≥761px`, dan mobile `≤760px`.
 
 ## Invariant dan risiko terbuka
 
@@ -114,4 +115,5 @@ Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pen
 - Joomla-native bila cukup; custom code hanya untuk kebutuhan yang tidak dipenuhi Joomla.
 - Jangan commit cache, log, runtime, kredensial, token, atau `configuration.php`.
 - Backup DB sebelum migrasi struktur/konten.
+- Setiap perubahan data Joomla yang wajib mengikuti kode harus berupa migrasi SQL idempoten baru di `database/migrations/`; file yang sudah tercatat tidak boleh diedit.
 - Status saat ini ada di dokumen ini; fakta kronologis dan keputusan yang dibatalkan ada di arsip, bukan instruksi aktif.

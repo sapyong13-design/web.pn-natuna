@@ -10909,41 +10909,19 @@ body.is-dark .home-section-divider::after {
 
 /* MAKLUMAT COMPACT ROW 2026-07-11 */
 .maklumat-compact {
-  display: grid;
-  grid-template-columns: minmax(240px, .8fr) minmax(0, 1.2fr);
-  gap: clamp(24px, 4vw, 56px);
-  align-items: center;
-}
-
-.maklumat-compact-intro {
-  max-width: 34rem;
-}
-
-.maklumat-compact-intro h2 {
-  margin: 6px 0 12px;
-  color: var(--color-primary-deep);
-  font-family: var(--font-display);
-  font-size: clamp(1.65rem, 2.6vw, 2.35rem);
-  line-height: 1.12;
-  text-wrap: balance;
-}
-
-.maklumat-compact-intro > p {
-  margin: 0 0 20px;
-  max-width: 52ch;
-  color: var(--color-muted);
+  display: block;
 }
 
 .maklumat-compact-docs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(16px, 2.2vw, 28px);
+  gap: 20px;
 }
 
 .maklumat-compact-doc {
   display: grid;
-  grid-template-columns: minmax(96px, 42%) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
   min-width: 0;
 }
@@ -10987,15 +10965,8 @@ body.is-dark .home-section-divider::after {
   text-underline-offset: 4px;
 }
 
-body.is-dark .maklumat-compact-intro h2,
 body.is-dark .maklumat-compact-doc h3 {
   color: #f3c96b;
-}
-
-@media (max-width: 900px) {
-  .maklumat-compact {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 560px) {
@@ -11019,15 +10990,6 @@ body.is-dark .maklumat-compact-doc h3 {
   }
 }
 
-@media (max-width: 360px) {
-  .maklumat-compact-docs {
-    grid-template-columns: 1fr;
-  }
-
-  .maklumat-compact-doc {
-    grid-template-columns: 112px minmax(0, 1fr);
-  }
-}
 
 
 /* HOMEPAGE SECTION RHYTHM 2026-07-11 */
