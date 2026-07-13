@@ -165,6 +165,7 @@ function setupAmpuhDirectory() {
   const resultNodes = Array.from(root.querySelectorAll('[data-ampuh-result]'));
   const search = root.querySelector('[data-ampuh-search]');
   const filter = root.querySelector('[data-ampuh-gobi-filter]');
+  const gobiSelect = root.querySelector('[data-ampuh-gobi-select]');
   const closeAll = root.querySelector('[data-ampuh-close-all]');
   const results = root.querySelector('[data-ampuh-results]');
   const tree = root.querySelector('.ampuh-directory__tree');
@@ -217,6 +218,16 @@ function setupAmpuhDirectory() {
     if (tree) tree.classList.toggle('ampuh-directory__empty', matches === 0);
   };
 
+  const setSelectedGobi = (value) => {
+    selectedGobi = value;
+    filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(value !== '' && button.getAttribute('data-ampuh-filter-value') === value));
+    });
+    if (gobiSelect) gobiSelect.value = value;
+    closeEveryPanel();
+    apply();
+  };
+
   toggles.forEach((toggle) => toggle.addEventListener('click', () => setExpanded(toggle, toggle.getAttribute('aria-expanded') !== 'true')));
   closeAll?.addEventListener('click', closeEveryPanel);
   search?.addEventListener('input', () => {
@@ -225,10 +236,9 @@ function setupAmpuhDirectory() {
   });
   filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.addEventListener('click', () => {
     const value = button.getAttribute('data-ampuh-filter-value');
-    selectedGobi = selectedGobi === value ? '' : value;
-    filter.querySelectorAll('[data-ampuh-filter-value]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button && selectedGobi !== '')));
-    apply();
+    setSelectedGobi(selectedGobi === value ? '' : value);
   }));
+  gobiSelect?.addEventListener('change', () => setSelectedGobi(gobiSelect.value));
   apply();
 }
 

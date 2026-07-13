@@ -12,6 +12,8 @@ for token in [
     "data-ampuh-gobi-filter",
     "aria-expanded",
     "ampuh-directory__empty",
+    "data-ampuh-gobi-select",
+    "setSelectedGobi",
 ]:
     assert token in source, token
 start = source.index("function setupAmpuhDirectory")
@@ -50,6 +52,7 @@ class Node {
 }
 const root = new Node('article', {'data-ampuh-directory': ''});
 const search = new Node('input', {'data-ampuh-search': ''}); search.value = '';
+const select = new Node('select', {'data-ampuh-gobi-select': ''}); select.value = '';
 const filter = new Node('div', {'data-ampuh-gobi-filter': ''});
 const one = new Node('button', {'data-ampuh-filter-value': '1', 'aria-pressed': 'false'}, 'GOBI Satu');
 const two = new Node('button', {'data-ampuh-filter-value': '2', 'aria-pressed': 'false'}, 'GOBI Dua');
@@ -67,7 +70,7 @@ const files = new Node('ul');
 const file = new Node('li', {'data-search-text': 'surat keputusan ampuh.pdf', 'data-ampuh-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
 const gobi2 = new Node('section', {'data-ampuh-gobi': '2', 'data-search-text': 'gobi hukum'}, 'GOBI hukum');
 const legal = new Node('section', {'data-search-text': 'checklist perkara'}, 'Checklist perkara');
-root.append(search, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(files.append(file)))))), gobi2.append(legal)));
+root.append(search, select, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(files.append(file)))))), gobi2.append(legal)));
 const document = { addEventListener: () => {}, querySelector: selector => selector === '[data-ampuh-directory]' ? root : null, getElementById: id => root.querySelectorAll('[data-ampuh-panel]').find(node => node.attrs.id === id) || null, createElement: tag => new Node(tag) };
 const context = { document, window: {}, console };
 vm.createContext(context); vm.runInContext(source, context);
@@ -87,6 +90,11 @@ if (gobi1.hidden || !gobi2.hidden) throw Error('GOBI filter must intersect activ
 search.value = ''; search.fire('input');
 if (gobi1.hidden || !gobi2.hidden || tree.classList.contains('ampuh-directory__empty')) throw Error('clearing search must preserve active GOBI filter and clear empty state');
 if (one.getAttribute('aria-pressed') !== 'true') throw Error('clearing search must preserve active GOBI button state');
+if (select.value !== '1') throw Error('desktop button must synchronize mobile select');
+select.value = '2'; select.fire('change');
+if (!gobi1.hidden || gobi2.hidden || two.getAttribute('aria-pressed') !== 'true' || one.getAttribute('aria-pressed') !== 'false') throw Error('mobile select must synchronize visibility and desktop buttons');
+select.value = ''; select.fire('change');
+if (gobi1.hidden || gobi2.hidden || one.getAttribute('aria-pressed') !== 'false' || two.getAttribute('aria-pressed') !== 'false') throw Error('all-GOBI option must clear unified filter');
 if (toggle1.getAttribute('aria-expanded') !== 'false' || toggle2.getAttribute('aria-expanded') !== 'false') throw Error('clearing search must reset disclosures to closed');
 two.fire('click');
 if (!gobi1.hidden || gobi2.hidden) throw Error('GOBI filter must select requested GOBI');
