@@ -67,6 +67,20 @@ $expect(count($panelIds) === count(array_unique($panelIds)), 'Panel IDs must be 
 $expect($toggleIds === $panelIds, 'Every toggle aria-controls must match its hidden panel.');
 $expect(str_contains($html, 'data-ampuh-panel'), 'Disclosure panels need behavior hooks.');
 $expect(str_contains($html, 'data-ampuh-gobi-filter'), 'GOBI filter needs behavior hook.');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+foreach ([
+    'AMPUH DIRECTORY 2026-07-13',
+    '.ampuh-directory__hero',
+    '.ampuh-directory__gobi',
+    '.ampuh-directory__checklist',
+    '.ampuh-directory__subchecklist',
+    'body.is-dark .ampuh-directory',
+    '@media (max-width: 760px)',
+    '@media (prefers-reduced-motion: reduce)',
+    ':focus-visible',
+] as $token) {
+    $expect(str_contains($css, $token), "Missing CSS contract {$token}.");
+}
 
 $expect(str_contains($migration, "alias = 'ampuh-2026' AND catid = 9"), 'Article migration must scope canonical alias to category.');
 $expect(str_contains($migration, "menu.menutype = 'hidden'"), 'Menu migration must canonicalize hidden menu location.');
