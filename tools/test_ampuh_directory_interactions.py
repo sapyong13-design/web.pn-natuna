@@ -94,9 +94,9 @@ toggle1.fire('click');
 if (panel1.hidden || panel1.classList.contains('is-revealing')) throw Error('fallback without requestAnimationFrame must safely reveal panel and remove start state');
 close.fire('click');
 search.value = 'SUB CHECKLIST'; search.fire('input');
-if (gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('sub-checklist title search must reveal its branch but announce zero documents');
+if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('branch-title-only search must announce zero documents');
 search.value = 'KEPUTUSAN'; search.fire('input');
-if (gobi1.hidden || !gobi2.hidden || !results.textContent.includes('1') || toggle1.getAttribute('aria-expanded') !== 'true' || toggle2.getAttribute('aria-expanded') !== 'true' || panel2.hidden || heading.textContent !== 'Daftar dokumen (1)' || file.hidden) throw Error('file search must count result, open ancestors, and display documents directly in sub-checklist panel');
+if (gobi1.hidden || !gobi2.hidden || results.textContent !== '1 dokumen · 1 GOBI' || toggle1.getAttribute('aria-expanded') !== 'true' || toggle2.getAttribute('aria-expanded') !== 'true' || panel2.hidden || heading.textContent !== 'Daftar dokumen (1)' || file.hidden) throw Error('file search must count result and GOBI, open ancestors, and display documents directly');
 one.fire('click');
 if (gobi1.hidden || !gobi2.hidden) throw Error('GOBI filter must intersect active search');
 search.value = ''; search.fire('input');
@@ -115,7 +115,7 @@ if (gobi1.hidden || gobi2.hidden) throw Error('second filter click must clear fi
 search.value = 'tidak-ditemukan'; search.fire('input');
 if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('no match must show empty state and live message');
 search.value = ''; search.fire('input');
-if (tree.classList.contains('ampuh-directory__empty')) throw Error('clearing no-match query must remove empty state');
+if (tree.classList.contains('ampuh-directory__empty') || results.textContent !== '' || gobi1.hidden || gobi2.hidden) throw Error('clearing no-match query must restore unfiltered GOBI state and clear status');
 context.document = { querySelector: () => null };
 context.setupAmpuhDirectory();
 '''

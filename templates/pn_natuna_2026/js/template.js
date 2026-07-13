@@ -167,13 +167,15 @@ function setupAmpuhDirectory() {
   const filter = root.querySelector('[data-ampuh-gobi-filter]');
   const gobiSelect = root.querySelector('[data-ampuh-gobi-select]');
   const closeAll = root.querySelector('[data-ampuh-close-all]');
+  const clearSearch = root.querySelector('[data-ampuh-clear-search]');
   const results = root.querySelector('[data-ampuh-results]');
   const tree = root.querySelector('.ampuh-directory__tree');
   let selectedGobi = '';
 
-  const setExpanded = (toggle, expanded) => {
+  const setExpanded = (toggle, expanded, animate = true) => {
     const panel = document.getElementById(toggle.getAttribute('aria-controls'));
     toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.closest('[data-search-text]')?.classList.toggle('is-expanded', expanded);
     if (!panel) return;
     if (!expanded) {
       panel.hidden = true;
@@ -181,69 +183,89 @@ function setupAmpuhDirectory() {
       return;
     }
     panel.hidden = false;
+    if (!animate) return;
     panel.classList.add('is-revealing');
     const reveal = () => panel.classList.remove('is-revealing');
-    if (typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => window.requestAnimationFrame(reveal));
-    } else reveal();
+    if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(() => window.requestAnimationFrame(reveal));
+    else reveal();
   };
   const closeEveryPanel = () => toggles.forEach((toggle) => setExpanded(toggle, false));
-  const normalize = (value) => value.toLocaleLowerCase('id-ID').trim();
-  const syncResults = (count) => {
-    if (!results) return;
-    results.textContent = count ? `${count} dokumen cocok.` : 'Tidak ada dokumen yang cocok.';
-    results.classList.toggle('ampuh-directory__empty', count === 0);
+  const normalize = (value) => value.toLocaleLowerCase('id-ID').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const restoreFilename = (item) => {
+    const name = item.querySelector('.ampuh-directory__file-name');
+    if (!name) return;
+    name.dataset.original ||= name.textContent;
+    name.textContent = name.dataset.original;
+  };
+  const highlightFilename = (item, rawQuery) => {
+    const name = item.querySelector('.ampuh-directory__file-name');
+    if (!name || !rawQuery || typeof name.replaceChildren !== 'function') return;
+    const original = name.dataset.original || name.textContent;
+    const query = rawQuery.toLocaleLowerCase('id-ID').trim();
+    const index = original.toLocaleLowerCase('id-ID').indexOf(query);
+    if (index < 0) return;
+    const mark = document.createElement('mark');
+    mark.className = 'ampuh-directory__match';
+    mark.textContent = original.slice(index, index + query.length);
+    name.replaceChildren(document.createTextNode(original.slice(0, index)), mark, document.createTextNode(original.slice(index + query.length)));
+  };
+  const syncResults = (count, gobiCount, query) => {
+    if (results) results.textContent = query ? (count ? `${count} dokumen · ${gobiCount} GOBI` : 'Tidak ada dokumen yang cocok.') : '';
+    if (results) results.classList.toggle('ampuh-directory__empty', Boolean(query) && count === 0);
+    if (clearSearch) clearSearch.hidden = !query;
   };
   const showAncestors = (item) => {
     let parent = item.parentElement;
     while (parent && parent !== root) {
+      parent.hidden = false;
       if (parent.matches('[data-ampuh-panel]')) {
         const toggle = toggles.find((candidate) => candidate.getAttribute('aria-controls') === parent.id);
-        if (toggle) setExpanded(toggle, true);
+        if (toggle) setExpanded(toggle, true, false);
       }
       parent = parent.parentElement;
     }
   };
-  const matchesQuery = (item, query) => !query || normalize(item.textContent).includes(query) || Array.from(item.querySelectorAll('[data-search-text]')).some((child) => normalize(child.textContent).includes(query));
   const apply = () => {
     const query = normalize(search?.value || '');
-    if (!query && !selectedGobi) {
-      items.forEach((item) => { item.hidden = false; });
-      closeEveryPanel();
-      syncResults(resultNodes.length);
-      if (tree) tree.classList.remove('ampuh-directory__empty');
-      return;
-    }
-    items.forEach((item) => {
+    resultNodes.forEach(restoreFilename);
+    closeEveryPanel();
+    items.forEach((item) => { item.hidden = true; });
+    const matchingFiles = resultNodes.filter((item) => {
       const gobi = item.closest('[data-ampuh-gobi]');
       const inSelectedGobi = !selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi;
-      item.hidden = !(inSelectedGobi && matchesQuery(item, query));
-      if (!item.hidden && query) showAncestors(item);
+      const matches = !query || normalize(item.getAttribute('data-search-text') || item.textContent).includes(query);
+      return inSelectedGobi && matches;
     });
-    const matches = resultNodes.filter((item) => {
-      const gobi = item.closest('[data-ampuh-gobi]');
-      const resultText = normalize(item.getAttribute('data-search-text') || item.textContent);
-      return !item.hidden && (!selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi) && resultText.includes(query);
-    }).length;
-    syncResults(matches);
-    if (tree) tree.classList.toggle('ampuh-directory__empty', matches === 0);
+    if (!query) {
+      items.forEach((item) => {
+        const gobi = item.closest('[data-ampuh-gobi]');
+        item.hidden = Boolean(selectedGobi && gobi?.getAttribute('data-ampuh-gobi') !== selectedGobi);
+      });
+    } else {
+      matchingFiles.forEach((item) => {
+        item.hidden = false;
+        showAncestors(item);
+        highlightFilename(item, query);
+      });
+    }
+    const gobis = new Set(matchingFiles.map((item) => item.closest('[data-ampuh-gobi]')?.getAttribute('data-ampuh-gobi')).filter(Boolean));
+    syncResults(matchingFiles.length, gobis.size, query);
+    if (tree) tree.classList.toggle('ampuh-directory__empty', Boolean(query) && matchingFiles.length === 0);
   };
-
   const setSelectedGobi = (value) => {
     selectedGobi = value;
-    filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => {
-      button.setAttribute('aria-pressed', String(value !== '' && button.getAttribute('data-ampuh-filter-value') === value));
-    });
+    filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.setAttribute('aria-pressed', String(value !== '' && button.getAttribute('data-ampuh-filter-value') === value)));
     if (gobiSelect) gobiSelect.value = value;
-    closeEveryPanel();
     apply();
   };
 
   toggles.forEach((toggle) => toggle.addEventListener('click', () => setExpanded(toggle, toggle.getAttribute('aria-expanded') !== 'true')));
   closeAll?.addEventListener('click', closeEveryPanel);
-  search?.addEventListener('input', () => {
-    if (!normalize(search.value)) closeEveryPanel();
+  search?.addEventListener('input', apply);
+  clearSearch?.addEventListener('click', () => {
+    search.value = '';
     apply();
+    search.focus();
   });
   filter?.querySelectorAll('[data-ampuh-filter-value]').forEach((button) => button.addEventListener('click', () => {
     const value = button.getAttribute('data-ampuh-filter-value');

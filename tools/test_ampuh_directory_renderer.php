@@ -35,7 +35,7 @@ $fixture = [
             'number' => 1, 'title' => 'Checklist <svg>', 'drive_url' => 'javascript:alert(1)',
             'subchecklists' => [[
                 'number' => '1.2', 'title' => 'Sub kedua',
-                'document_count' => 0, 'drive_url' => '', 'files' => [],
+                'document_count' => 0, 'drive_url' => 'https://drive.google.com/drive/folders/sub-valid', 'files' => [],
             ]],
         ]],
     ],
@@ -65,18 +65,20 @@ $expect(str_contains($html, '&lt;script&gt;alert(1)&lt;/script&gt;'), 'Escaped h
 $expect((bool) preg_match('/href="https:\/\/drive\.google\.com\/[^\"]+" target="_blank" rel="noopener noreferrer">Buka Folder Utama AMPUH 2026/', $html), 'Main Drive action must be isolated.');
 $expect(!str_contains($html, 'href="javascript:alert(1)"'), 'JavaScript Drive URL must never render as a link.');
 $expect(!str_contains($html, 'href="https://example.com/not-drive"'), 'Non-Drive URL must never render as a link.');
-$expect(substr_count($html, 'Tautan belum tersedia') === 4, 'Invalid or absent Drive URLs must yield unavailable labels.');
+$expect(substr_count($html, 'Tautan belum tersedia') === 2, 'Only unavailable checklist URLs may render fallback labels; empty sub-checklist URLs stay silent.');
+$expect(str_contains($html, 'class="ampuh-directory__sub-drive"><a class="ampuh-directory__drive" href="https://drive.google.com/drive/folders/sub-valid" target="_blank" rel="noopener noreferrer">Buka folder sub-checklist</a>'), 'Valid sub-checklist Drive URL must render its conditional action.');
+$expect(!str_contains($html, 'https://example.com/not-drive">Buka folder sub-checklist'), 'Invalid sub-checklist Drive URL must remain silent.');
 $expect(str_contains($html, '<dd>1</dd>'), 'Global summary must count split checklist number once.');
 $expect(str_contains($html, '>GOBI 1 · &lt;img&gt;</button>'), 'Integral GOBI filter and disclosure labels must be informative and omit decimal suffixes.');
 $expect(!str_contains($html, '>1.0 &lt;img&gt;</button>'), 'Bare dataset GOBI names must not become control labels.');
 $expect((bool) preg_match('/data-ampuh-filter-value="1" aria-pressed="false"/', $html), 'Rendered GOBI filters must expose an initial unpressed state.');
 $expect(str_contains($html, '1 checklist · 1 sub-checklist · 5 dokumen'), 'GOBI header must expose its scoped inventory count.');
 $expect(str_contains($html, '1 sub-checklist · 5 dokumen'), 'Checklist header must expose its scoped inventory count.');
-$expect((bool) preg_match('/<li[^>]*><span class="ampuh-directory__file-icon" aria-hidden="true">PDF<\/span>Bukti &lt;script&gt;alert\(1\)&lt;\/script&gt;\.pdf<\/li>/', $html), 'PDF files need a decorative type marker before escaped names.');
-$expect(str_contains($html, 'aria-hidden="true">SHEET</span>Rekap.xlsx'), 'Spreadsheet files need deterministic type markers.');
-$expect(str_contains($html, 'aria-hidden="true">WORD</span>Berita.docx'), 'Word files need deterministic type markers.');
-$expect(str_contains($html, 'aria-hidden="true">IMAGE</span>Foto.png'), 'Image files need deterministic type markers.');
-$expect(str_contains($html, 'aria-hidden="true">FILE</span>Catatan.txt'), 'Unknown extensions need generic type markers.');
+$expect((bool) preg_match('/<li[^>]*><span class="ampuh-directory__file-icon" aria-hidden="true">PDF<\/span><span class="ampuh-directory__file-name">Bukti &lt;script&gt;alert\(1\)&lt;\/script&gt;\.pdf<\/span><\/li>/', $html), 'PDF files need a decorative type marker and filename hook.');
+$expect(str_contains($html, 'aria-hidden="true">SHEET</span><span class="ampuh-directory__file-name">Rekap.xlsx</span>'), 'Spreadsheet files need deterministic type markers.');
+$expect(str_contains($html, 'aria-hidden="true">WORD</span><span class="ampuh-directory__file-name">Berita.docx</span>'), 'Word files need deterministic type markers.');
+$expect(str_contains($html, 'aria-hidden="true">IMAGE</span><span class="ampuh-directory__file-name">Foto.png</span>'), 'Image files need deterministic type markers.');
+$expect(str_contains($html, 'aria-hidden="true">FILE</span><span class="ampuh-directory__file-name">Catatan.txt</span>'), 'Unknown extensions need generic type markers.');
 $expect(str_contains($html, 'ampuh-directory__hero-secondary'), 'Hero needs institutional secondary field.');
 $expect(str_contains($html, 'ampuh-directory__watermark') && str_contains($html, 'aria-hidden="true">2026'), 'Hero needs decorative 2026 watermark.');
 $expect(str_contains($html, 'Indeks Koleksi'), 'Inventory needs an explicit collection-index label.');
@@ -90,6 +92,8 @@ $expect(!str_contains($html, '<h5>') && !str_contains($html, '-files"'), 'Docume
 $expect((bool) preg_match('/<div id="ampuh-gobi-1-checklist-1-sub-13-2" data-ampuh-panel hidden><h5 class="ampuh-directory__files-heading">Daftar dokumen \(5\)<\/h5><ul class="ampuh-directory__files">/', $html), 'Opening a sub-checklist must expose its document heading and list immediately.');
 $expect(str_contains($html, 'ampuh-directory__files'), 'Attachments need a file-list hook.');
 $expect(str_contains($html, 'data-ampuh-file-result'), 'Document files need a dedicated result hook.');
+$expect(str_contains($html, 'data-ampuh-clear-search hidden'), 'Search tools need a hidden clear-search control.');
+$expect(str_contains($html, 'class="ampuh-directory__file-name"'), 'Document names need a dedicated highlight-safe hook.');
 $expect(!str_contains($html, '<section class="ampuh-directory__subchecklist" data-ampuh-result'), 'Branch nodes must not be document result nodes.');
 $expect(str_contains($html, 'class="ampuh-directory__check-number"'), 'Checklist number needs a dedicated hook.');
 $expect(str_contains($html, 'class="ampuh-directory__check-title"'), 'Checklist title needs a dedicated hook.');
@@ -118,25 +122,29 @@ foreach (['.ampuh-directory__header', '.ampuh-directory__gobi', '.ampuh-director
 }
 $expect(!(bool) preg_match('/\.ampuh-directory__hero\s*[,\{]/', $css), 'Dead AMPUH hero alias must not remain.');
 $expect($cssRule('.ampuh-directory [hidden]', 'display\s*:\s*none\s*!important'), 'Hidden panels must not occupy layout space.');
-$expect((bool) preg_match('/\.ampuh-directory__drive\s*,\s*\.ampuh-directory__tools button\s*,\s*\.ampuh-directory \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*44px/s', $css), 'All AMPUH interactive controls need 44px minimum targets.');
+$expect($cssRule('.ampuh-directory__drive, .ampuh-directory__tools button, .ampuh-directory [data-ampuh-toggle]', 'min-height\s*:\s*44px'), 'All primary AMPUH interactive controls need 44px minimum targets.');
 $expect($cssRule('.ampuh-directory__subchecklist li', 'overflow-wrap\s*:\s*anywhere'), 'File names must wrap anywhere.');
-$expect($cssRule('.ampuh-directory__file-icon', 'display\s*:\s*inline-flex'), 'File type markers need compact inline styling.');
+$expect((bool) preg_match('/\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*210px/s', $ampuhCss), 'Desktop toolbar needs a 210px height ceiling.');
 $expect((bool) preg_match('/\.ampuh-directory__header\s*\{[^}]*max-height\s*:\s*360px/s', $ampuhCss), 'Desktop hero needs a 360px height ceiling.');
-$expect((bool) preg_match('/\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*190px/s', $ampuhCss), 'Desktop toolbar needs a 190px height ceiling.');
-$expect((bool) preg_match('/\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*76px[^}]*max-height\s*:\s*88px/s', $ampuhCss), 'Desktop dossier rows need 76-88px bounds.');
-$expect((bool) preg_match('/\.ampuh-directory__gobi\s*\{[^}]*box-shadow\s*:\s*none/s', $ampuhCss), 'Dossier rows must not use per-row shadows.');
+$expect((bool) preg_match('/\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*88px/s', $ampuhCss), 'Desktop dossier rows need a strong 88px minimum hierarchy.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*220px.*?\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*80px/s', $ampuhCss), 'Mobile toolbar and dossier rows need scoped compact bounds.');
+$expect($cssRule('body.nav-stuck .ampuh-directory__tools', 'top\s*:\s*var\(--nav-height,\s*56px\)'), 'Desktop sticky tools must clear the fixed navigation.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?body\.nav-stuck \.ampuh-directory__tools\s*\{[^}]*top\s*:\s*56px/s', $ampuhCss), 'Mobile sticky tools must clear the fixed 56px header.');
 $expect((bool) preg_match('/\.ampuh-directory__gobi-select\s*\{[^}]*display\s*:\s*none/s', $ampuhCss), 'Mobile GOBI select must remain hidden on desktop.');
-$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__tools\s*\{[^}]*max-height\s*:\s*230px.*?\.ampuh-directory__gobi > h2 \[data-ampuh-toggle\]\s*\{[^}]*min-height\s*:\s*72px[^}]*max-height\s*:\s*82px/s', $ampuhCss), 'Mobile toolbar and dossier rows need scoped height bounds.');
-$expect($cssRule('.ampuh-directory__gobi-title', 'font-size\s*:\s*1\.4rem'), 'Desktop GOBI title needs prominent 1.4rem hierarchy.');
+$expect($cssRule('.ampuh-directory__gobi-title', 'font-size\s*:\s*1\.5rem'), 'Desktop GOBI title needs prominent 1.5rem hierarchy.');
 $expect((bool) preg_match('/\.ampuh-directory__meta\s*\{[^}]*margin-top\s*:\s*7px[^}]*font-size\s*:\s*\.72rem[^}]*font-weight\s*:\s*600/s', $ampuhCss), 'GOBI metadata needs smaller, lighter type with clear title spacing.');
-$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__gobi-title\s*\{[^}]*font-size\s*:\s*1\.15rem/s', $ampuhCss), 'Mobile GOBI title needs prominent 1.15rem hierarchy.');
-$expect($cssRule('.ampuh-directory__checklist', 'grid-template-columns\s*:\s*64px\s+minmax\(0,\s*1fr\)\s+190px'), 'Desktop checklist rows need stable number, content, and action columns.');
-$expect($cssRule('.ampuh-directory__subchecklist', 'grid-template-columns\s*:\s*56px\s+minmax\(0,\s*1fr\)\s+180px'), 'Desktop sub-checklist rows need stable number, content, and action columns.');
-$expect($cssRule('.ampuh-directory__check-title', 'font-size\s*:\s*1\.05rem') && $cssRule('.ampuh-directory__check-title', 'line-height\s*:\s*1\.45'), 'Checklist titles need readable desktop type.');
-$expect($cssRule('.ampuh-directory__sub-title', 'font-size\s*:\s*\.94rem') && $cssRule('.ampuh-directory__sub-title', 'line-height\s*:\s*1\.5'), 'Sub-checklist titles need readable desktop type.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__gobi-title\s*\{[^}]*font-size\s*:\s*1\.22rem/s', $ampuhCss), 'Mobile GOBI title needs prominent 1.22rem hierarchy.');
+$expect($cssRule('.ampuh-directory__checklist', 'grid-template-columns\s*:\s*72px\s+minmax\(0,\s*1fr\)\s+190px'), 'Desktop checklist rows need a strong number, content, and action hierarchy.');
+$expect($cssRule('.ampuh-directory__subchecklist', 'grid-template-columns\s*:\s*62px\s+minmax\(0,\s*1fr\)'), 'Desktop sub-checklist rows must use number and content columns without empty-link space.');
+$expect($cssRule('.ampuh-directory__check-title', 'font-size\s*:\s*1\.12rem') && $cssRule('.ampuh-directory__check-title', 'line-height\s*:\s*1\.45'), 'Checklist titles need readable desktop type.');
+$expect($cssRule('.ampuh-directory__sub-title', 'font-size\s*:\s*1rem') && $cssRule('.ampuh-directory__sub-title', 'line-height\s*:\s*1\.52'), 'Sub-checklist titles need readable desktop type.');
 $expect(str_contains($ampuhCss, '.ampuh-directory__checklist > [data-ampuh-panel], .ampuh-directory__subchecklist > [data-ampuh-panel] { grid-column: 1/-1;'), 'Checklist disclosure panel must span all row areas.');
 $expect($cssRule('.ampuh-directory__files-heading', 'font-size\s*:\s*\.78rem'), 'Ordinary document-list heading needs compact styling.');
 $expect(!str_contains($ampuhCss, '.ampuh-directory__subchecklist h5 [data-ampuh-toggle]'), 'Removed document disclosure selector must not remain.');
+$expect($cssRule('.ampuh-directory__tools', 'position\s*:\s*sticky'), 'AMPUH search tools need contextual sticky positioning.');
+$expect($cssRule('.ampuh-directory__match', 'background\s*:\s*var\(--color-accent-soft\)'), 'Search matches need token-based highlighting.');
+$expect($cssRule('.ampuh-directory__subchecklist li', 'transition\s*:\s*(?:opacity|transform)'), 'Document rows need restrained state motion.');
+$expect((bool) preg_match('/@media \(prefers-reduced-motion:\s*reduce\).*?\.ampuh-directory \*[^}]*transition\s*:\s*none\s*!important/s', $ampuhCss), 'Reduced-motion mode must disable every AMPUH transition.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__summary dl\s*\{[^}]*grid-template-columns\s*:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s', $ampuhCss), 'Mobile collection index must use a compact 2x2 grid.');
 $expect((bool) preg_match('/body\.is-dark \.ampuh-directory\s*\{[^}]*color\s*:\s*var\(--color-ink\)[^}]*\}/s', $css), 'Dark AMPUH root needs token-based foreground.');
 $hexToLuminance = static function (string $hex): float {
@@ -172,7 +180,8 @@ preg_match_all('/transition\s*:\s*([^;}{]+)/', $ampuhCss, $transitionMatches);
 foreach ($transitionMatches[1] as $transition) {
     $expect(trim($transition) === 'none !important' || !preg_match('/(?:^|,)\s*(?!opacity\b|transform\b)[a-z-]+/i', $transition), "AMPUH transitions permit only opacity or transform: {$transition}.");
 }
-$expect((bool) preg_match('/\.ampuh-directory__checklist > \.ampuh-directory__drive:hover[^\{]*\.ampuh-directory__subchecklist > \.ampuh-directory__drive:focus-visible\s*\{[^}]+\}/s', $css), 'Nested Drive links need hover and focus-visible states.');
+$expect((bool) preg_match('/\.ampuh-directory__checklist > \.ampuh-directory__drive:hover[^\{]*\.ampuh-directory__checklist > \.ampuh-directory__drive:focus-visible\s*\{[^}]+\}/s', $css), 'Checklist Drive links need hover and focus-visible states.');
+$expect((bool) preg_match('/\.ampuh-directory__sub-drive \.ampuh-directory__drive:hover[^\{]*\.ampuh-directory__sub-drive \.ampuh-directory__drive:focus-visible\s*\{[^}]+\}/s', $css), 'Conditional sub-checklist Drive links need hover and focus-visible states.');
 
 $expect(str_contains($migration, "alias = 'ampuh-2026' AND catid = 9"), 'Article migration must scope canonical alias to category.');
 $expect(str_contains($migration, "menu.menutype = 'hidden'"), 'Menu migration must canonicalize hidden menu location.');
