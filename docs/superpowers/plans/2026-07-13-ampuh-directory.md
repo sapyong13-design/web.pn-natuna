@@ -428,23 +428,23 @@ Buka `http://127.0.0.1:8080/ampuh` pada 1440×1000. Pastikan:
 - pencarian nama file membuka seluruh ancestor;
 - clear search menutup seluruh disclosure;
 - filter GOBI beririsan dengan pencarian;
-- URL kosong berlabel nonaktif;
+- URL sub-checklist kosong tidak merender placeholder/action;
 - tidak ada error console.
 
 - [ ] **Step 4: Verifikasi browser mobile dan accessibility**
 
 Gunakan viewport CDP 390×844, bukan flag window-size. Uji tema terang/gelap, Tab/Enter/Space, fokus, nama file panjang, no horizontal scroll, target 44px, dan reduced motion.
 
-- [ ] **Step 5: Tambahkan handoff operasional**
+- [x] **Step 5: Tambahkan handoff operasional**
 
-Tambahkan bagian `AMPUH 2026` di `HANDOFF.md` yang mencatat:
+Bagian `AMPUH 2026` di `HANDOFF.md` mencatat:
 
-- route `/ampuh` dan target subdomain `ampuh.pn-natuna.go.id`;
+- route `/ampuh`, staging `new.pn-natuna.go.id`, dan cutover domain utama;
 - lokasi dataset dan importer;
 - command regenerate persis;
-- URL Drive masih kosong sampai diberikan;
-- pemasangan URL dilakukan pada dataset/config lalu focused tests dijalankan ulang;
-- jangan memasukkan kredensial atau link edit Drive.
+- kebijakan URL Drive valid dan sub-checklist kosong;
+- update source cPanel melalui private checkout GitHub dan `git pull --ff-only` dijelaskan di `CPANEL-STAGING-CUTOVER-RUNBOOK.md`;
+- kredensial dan link edit Drive dilarang masuk repo.
 
 - [ ] **Step 6: Jalankan smoke test akhir**
 

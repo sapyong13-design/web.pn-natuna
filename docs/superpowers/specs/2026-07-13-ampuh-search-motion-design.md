@@ -29,5 +29,13 @@ Improve AMPUH document discovery and hierarchy without making institutional UI n
 - Highlight contrast and focus indicators work in light and dark themes.
 - Mobile back-to-top control must not cover quick actions or document content.
 
+## Final command-header refinement
+
+- Hero, indeks koleksi, dan search menjadi satu institutional command header.
+- Desktop memakai rail GOBI dengan fade mask, panah 44×44, smooth scroll, dan fill state aktif; mobile memakai select GOBI.
+- Kicker, heading, deskripsi, dan CTA memakai entrance choreography pendek; disclosure memakai ikon dua garis CSS dan motion 180–220 ms.
+- Watermark `2026` memakai `clamp(4.8rem, 8.8vw, 7.5rem)` dengan clearance separator yang terverifikasi.
+- Deployment target pertama adalah staging `new.pn-natuna.go.id`; manual operasional ada di `CPANEL-STAGING-CUTOVER-RUNBOOK.md`.
+
 ## Verification
 Focused renderer and interaction contracts, dataset E2E, then browser QA at desktop/mobile, light/dark, reduced motion, matching query, no-match query, and clear/reset.

@@ -1,8 +1,10 @@
 # Direktori AMPUH 2026 — Spesifikasi Desain
 
+> **Status:** desain awal. Keputusan operasional final: instalasi pertama berlangsung privat di `new.pn-natuna.go.id`, source update melalui private checkout GitHub dan `git pull --ff-only`, lalu cutover ke `pn-natuna.go.id`. Lihat `CPANEL-STAGING-CUTOVER-RUNBOOK.md` dan `HANDOFF.md`.
+
 ## Tujuan
 
-Membangun halaman publik `ampuh.pn-natuna.go.id` sebagai direktori bukti dokumen AMPUH 2026 Pengadilan Negeri Natuna. Halaman harus memakai identitas visual dan pola interaksi situs utama PN Natuna, mudah dipresentasikan, serta memudahkan pengunjung menemukan lokasi dokumen berdasarkan GOBI, checklist besar, dan sub-checklist.
+Membangun route `/ampuh` sebagai direktori bukti dokumen AMPUH 2026 Pengadilan Negeri Natuna. Route diuji pertama pada staging `new.pn-natuna.go.id`, lalu ikut menggantikan website utama saat cutover. Halaman memakai identitas visual dan pola interaksi situs utama PN Natuna, mudah dipresentasikan, serta memudahkan pengunjung menemukan lokasi dokumen berdasarkan GOBI, checklist besar, dan sub-checklist.
 
 Halaman bukan dashboard progres. Seluruh dokumen dianggap lengkap. Tidak ada persentase, status upload, status print, catatan internal, atau status tindak lanjut.
 
@@ -15,7 +17,7 @@ Halaman bukan dashboard progres. Seluruh dokumen dianggap lengkap. Tidak ada per
 
 ## Integrasi Joomla
 
-Direktori menjadi bagian dari instalasi Joomla PN Natuna, bukan aplikasi terpisah. Subdomain `ampuh.pn-natuna.go.id` diarahkan ke halaman khusus AMPUH pada instalasi tersebut.
+Direktori menjadi bagian dari instalasi Joomla PN Natuna, bukan aplikasi terpisah. Staging `new.pn-natuna.go.id` memakai document root dan database terpisah sampai cutover ke domain utama.
 
 Halaman menggunakan:
 
@@ -225,13 +227,14 @@ Filter GOBI dan pencarian dapat digunakan bersama. Hasil harus memenuhi keduanya
 
 ## Keadaan data tidak lengkap
 
-Sebelum URL Google Drive diberikan:
+Kebijakan final URL Google Drive:
 
 - tombol yang belum memiliki URL tidak menjadi tautan palsu;
-- tampil label netral `Tautan belum tersedia`;
-- tidak menggunakan `#`, URL contoh, atau fallback ke folder yang salah.
-
-Sub-checklist tanpa file menampilkan `Belum ada nama file tercatat`, tanpa mengubah jumlah data secara diam-diam.
+- checklist besar tanpa URL dapat memakai label netral bila diperlukan konteks;
+- sub-checklist tanpa URL tidak menampilkan placeholder atau ruang action kosong;
+- hanya URL HTTPS `drive.google.com` valid yang menjadi tautan;
+- tidak menggunakan `#`, URL contoh, atau fallback ke folder yang salah;
+- sub-checklist 78.3 adalah satu-satunya sub-checklist dengan URL viewer sendiri pada dataset saat ini.
 
 Baris workbook yang tidak memiliki judul checklist besar harus tetap terikat pada checklist besar terakhir yang valid sesuai struktur merged-cell Excel. Nomor GOBI juga diwariskan dari baris terakhir yang valid sampai nilai GOBI berikutnya muncul.
 
@@ -304,4 +307,4 @@ Tahap pertama mencakup:
 - placeholder nonaktif untuk URL yang belum diberikan;
 - pengujian data, renderer, dan QA responsif.
 
-Tahap berikutnya mencakup verifikasi ulang nama file dan pemasangan URL folder utama, 82 folder checklist besar, serta seluruh folder sub-checklist berdasarkan Google Drive view-only yang akan diberikan pemilik situs. Tahap berikutnya tidak mengubah arsitektur atau tata letak halaman.
+Pemeliharaan berikutnya hanya menambah URL viewer publik yang benar-benar tersedia pada dataset/override, tanpa meminjam URL parent dan tanpa mengubah arsitektur halaman. Setiap perubahan data wajib diikuti focused tests.

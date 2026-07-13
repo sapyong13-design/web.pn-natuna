@@ -30,10 +30,10 @@
 - Consumes: `[data-ampuh-search]`, `[data-ampuh-file-result]`, `[data-ampuh-gobi]`.
 - Produces: `[data-ampuh-clear-search]`, `.ampuh-directory__match`, status text with document/GOBI counts.
 
-- [ ] Add failing fixture assertions for clear control, reset after no-match, GOBI count, highlight creation/restoration, and valid conditional Drive action.
-- [ ] Run focused interaction and renderer tests; confirm expected failures.
-- [ ] Implement clear/reset, count aggregation, and safe text-node highlighting without changing source dataset text.
-- [ ] Run focused tests; expect both contracts `ok`.
+- [x] Add failing fixture assertions for clear control, reset after no-match, GOBI count, highlight creation/restoration, and valid conditional Drive action.
+- [x] Run focused interaction and renderer tests; confirm expected failures.
+- [x] Implement clear/reset, count aggregation, and safe text-node highlighting without changing source dataset text.
+- [x] Run focused tests; both contracts return `ok`.
 
 ### Task 2: Visual hierarchy, sticky tools, document rows, and motion
 
@@ -45,16 +45,24 @@
 - Consumes: current AMPUH BEM classes and global `.back-to-top`.
 - Produces: sticky tool surface, active disclosure states, refined file rows, match mark, reduced-motion override.
 
-- [ ] Add failing CSS assertions for sticky tools, mark styles, file focus, active hierarchy, transform/opacity transitions, and reduced-motion safeguards.
-- [ ] Run renderer contract; confirm expected failures.
-- [ ] Implement token-based responsive styles and 180–220 ms motion.
-- [ ] Run renderer contract; expect `ok`.
+- [x] Add failing CSS assertions for sticky tools, mark styles, file focus, active hierarchy, transform/opacity transitions, and reduced-motion safeguards.
+- [x] Run renderer contract; confirm expected failures.
+- [x] Implement token-based responsive styles and 180–220 ms motion.
+- [x] Run renderer contract; output returns `ok`.
 
 ### Task 3: End-to-end verification
 
 **Files:**
 - Test: `tools/test_ampuh_directory_e2e.py`
 
-- [ ] Run interaction, renderer, and dataset E2E contracts.
-- [ ] Browser-test desktop/mobile, dark mode, reduced motion, matching/no-match/reset, sticky toolbar, and global back-to-top placement.
-- [ ] Remove runtime screenshots and update active handoff facts only if behavior contracts changed.
+- [x] Run interaction, renderer, and dataset E2E contracts.
+- [x] Browser-test desktop/mobile, dark mode, reduced motion, matching/no-match/reset, sticky toolbar, and global back-to-top placement.
+- [x] Remove runtime screenshots and update active handoff facts.
+
+## Delivered addenda
+
+- Institutional command header and refined collection index.
+- Desktop GOBI rail navigation and mobile select.
+- CSS disclosure icon, selected state, and reduced-motion-safe entrance choreography.
+- Final watermark separator clearance.
+- Canonical GitHub/cPanel staging deployment documented in `CPANEL-STAGING-CUTOVER-RUNBOOK.md`.

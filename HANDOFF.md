@@ -79,11 +79,11 @@ Feed Badilum dan PT Kepri diperbarui live oleh cron. MA RI terhalang Cloudflare 
 
 ## AMPUH 2026
 
-- Route aktif: `/ampuh`; target produksi: `ampuh.pn-natuna.go.id`.
+- Route aktif: `/ampuh`. Deployment rebuild pertama dilakukan sebagai staging terisolasi di `new.pn-natuna.go.id`; setelah QA, staging dapat menggantikan `pn-natuna.go.id` melalui cutover dengan rollback. Manual kanonis: [`CPANEL-STAGING-CUTOVER-RUNBOOK.md`](CPANEL-STAGING-CUTOVER-RUNBOOK.md).
 - Dataset deploy kanonis yang dilacak Git: `templates/pn_natuna_2026/data/ampuh-2026.json`; importer: `tools/import-ampuh-checklist.py`; map URL checklist terverifikasi: `tools/ampuh-2026-checklist-links.json`; override sumber/provenance: `tools/ampuh-2026-overrides.json`.
 - Workbook otoritatif adalah input operasional privat yang diperoleh dari pemilik data PN Natuna. Jangan commit atau deploy workbook karena berisi catatan internal/tindak lanjut yang tidak termasuk dataset publik. Regenerasi dari salinan privat: `python tools/import-ampuh-checklist.py "<PATH_TO_PRIVATE_WORKBOOK.xlsx>" --output templates/pn_natuna_2026/data/ampuh-2026.json`.
-- Folder Drive utama dan seluruh 82 checklist memakai URL viewer publik; hanya sub-checklist 78.3 memiliki URL viewer sendiri. Sub-checklist lain sengaja tampil sebagai `Tautan belum tersedia`; renderer tidak boleh meminjam URL checklist sebagai fallback.
-- Saat URL baru tersedia, tambahkan hanya URL viewer publik pada dataset atau `tools/ampuh-2026-overrides.json`, regenerasi bila override berubah, lalu jalankan ulang `python tools/test_import_ampuh_checklist.py`, `python tools/test_ampuh_directory_interactions.py`, `python tools/test_ampuh_directory_e2e.py`, dan `C:/laragon/bin/php/php-8.3.30-Win32-vs16-x64/php.exe tools/test_ampuh_directory_renderer.php`.
+- Folder Drive utama dan seluruh 82 checklist memakai URL viewer publik; hanya sub-checklist 78.3 memiliki URL viewer sendiri. Sub-checklist tanpa URL sengaja tidak menampilkan placeholder/link; renderer tidak boleh meminjam URL checklist sebagai fallback.
+- UI final memakai institutional command header, indeks koleksi, search sticky, highlight hasil, rail GOBI desktop dengan panah 44×44, select GOBI mobile, disclosure CSS/motion 180–220 ms, dan reduced-motion guard. Saat URL/data berubah, jalankan `python tools/test_import_ampuh_checklist.py`, `python tools/test_ampuh_directory_interactions.py`, `python tools/test_ampuh_directory_e2e.py`, dan `C:/laragon/bin/php/php-8.3.30-Win32-vs16-x64/php.exe tools/test_ampuh_directory_renderer.php`.
 - Jangan masukkan kredensial, token, atau tautan edit Google Drive ke repo, dataset, override, atau handoff.
 
 ## Keamanan dan produksi
@@ -92,6 +92,7 @@ Sebelum deploy/go-live, baca dan tuntaskan:
 
 1. [`SECURITY-DEPLOYMENT-HANDOFF.md`](SECURITY-DEPLOYMENT-HANDOFF.md) — preflight, Cloudflare/cPanel, MFA, WAF, origin lock, sesi/token, break-glass, rollback, dan verifikasi.
 2. [`SECURITY-BACKUP-MONITORING-RUNBOOK.md`](SECURITY-BACKUP-MONITORING-RUNBOOK.md) — cron privat, backup DB, retensi, alert, respons judol, dan restore clean-room.
+3. [`CPANEL-STAGING-CUTOVER-RUNBOOK.md`](CPANEL-STAGING-CUTOVER-RUNBOOK.md) — instalasi pertama `new.pn-natuna.go.id`, update via private checkout GitHub dan `git pull --ff-only`, clone DB/config staging, QA, cutover domain utama, dan rollback.
 
 Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pengujian. Jangan hapus runbook atau tool keamanan dari repo/deployment source; deployment allowlist yang mencegahnya masuk `public_html`.
 
