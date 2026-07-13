@@ -1,6 +1,19 @@
 -- Converge public AMPUH aliases to a retained root menu item immediately after Transparansi.
 -- Rebuild only mainmenu intervals deterministically, preserving existing menu IDs and hidden rows.
 
+-- Abort before mutation if the global nested set has rows unreachable from Joomla root id=1.
+CREATE TEMPORARY TABLE ampuh_root_check (id INT NOT NULL PRIMARY KEY);
+INSERT INTO ampuh_root_check (id)
+WITH RECURSIVE reachable AS (
+    SELECT id FROM #__menu WHERE id = 1
+    UNION ALL
+    SELECT child.id FROM #__menu AS child INNER JOIN reachable AS parent ON child.parent_id = parent.id
+)
+SELECT 1
+UNION ALL
+SELECT 1 WHERE (SELECT COUNT(*) FROM reachable) <> (SELECT COUNT(*) FROM #__menu);
+DROP TEMPORARY TABLE ampuh_root_check;
+
 SET @ampuh_article_id := (SELECT id FROM #__content WHERE alias = 'ampuh-2026' AND catid = 9 ORDER BY id ASC LIMIT 1);
 SET @content_component_id := (SELECT extension_id FROM #__extensions WHERE element = 'com_content' AND type = 'component' ORDER BY extension_id ASC LIMIT 1);
 SET @transparansi_id := (SELECT id FROM #__menu WHERE id = 108 AND menutype = 'mainmenu' AND parent_id = 1 LIMIT 1);
@@ -41,7 +54,6 @@ WITH RECURSIVE descendants AS (
     SELECT child.id
     FROM #__menu AS child
     INNER JOIN descendants AS parent ON child.parent_id = parent.id
-    WHERE child.menutype = 'mainmenu'
 )
 SELECT id FROM descendants;
 DELETE module_mapping
@@ -75,7 +87,7 @@ CREATE TEMPORARY TABLE ampuh_menu_bounds (id INT NOT NULL PRIMARY KEY, lft INT N
 
 INSERT INTO ampuh_menu_bounds (id, lft, rgt, level)
 WITH RECURSIVE menu_tree AS (
-    SELECT id, parent_id, CAST(CONCAT(LPAD(lft, 10, '0'), ':', LPAD(id, 10, '0')) AS CHAR(10000)) AS sort_path
+    SELECT id, parent_id, CAST(CONCAT(LPAD(lft, 10, '0'), ':', LPAD(id, 10, '0')) AS CHAR(30000)) AS sort_path
     FROM #__menu
     WHERE id = 1
     UNION ALL
