@@ -59,4 +59,4 @@ Both generated artifacts had this exact hash. Dataset contract smoke test confir
 - Real workbook checklist 24 has no L1 title. Importer emitted stable `Checklist 24` fallback and warning as required.
 
 ## Commit
-Pending commit hash.
+3470637
