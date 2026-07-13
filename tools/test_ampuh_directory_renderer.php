@@ -57,6 +57,7 @@ $expect(substr_count($html, 'Tautan belum tersedia') === 2, 'Invalid nonempty Dr
 $expect(str_contains($html, '<dd>1</dd>'), 'Fixture aggregate counts must render.');
 $expect(str_contains($html, '>GOBI 1 · &lt;img&gt;</button>'), 'Integral GOBI filter and disclosure labels must be informative and omit decimal suffixes.');
 $expect(!str_contains($html, '>1.0 &lt;img&gt;</button>'), 'Bare dataset GOBI names must not become control labels.');
+$expect((bool) preg_match('/data-ampuh-filter-value="1" aria-pressed="false"/', $html), 'Rendered GOBI filters must expose an initial unpressed state.');
 $expect(str_contains($html, '1 checklist · 1 sub-checklist · 5 dokumen'), 'GOBI header must expose its scoped inventory count.');
 $expect(str_contains($html, '1 sub-checklist · 5 dokumen'), 'Checklist header must expose its scoped inventory count.');
 $expect((bool) preg_match('/<li[^>]*><span class="ampuh-directory__file-icon" aria-hidden="true">PDF<\/span>Bukti &lt;script&gt;alert\(1\)&lt;\/script&gt;\.pdf<\/li>/', $html), 'PDF files need a decorative type marker before escaped names.');

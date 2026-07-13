@@ -51,8 +51,8 @@ class Node {
 const root = new Node('article', {'data-ampuh-directory': ''});
 const search = new Node('input', {'data-ampuh-search': ''}); search.value = '';
 const filter = new Node('div', {'data-ampuh-gobi-filter': ''});
-const one = new Node('button', {'data-ampuh-filter-value': '1'}, 'GOBI Satu');
-const two = new Node('button', {'data-ampuh-filter-value': '2'}, 'GOBI Dua');
+const one = new Node('button', {'data-ampuh-filter-value': '1', 'aria-pressed': 'false'}, 'GOBI Satu');
+const two = new Node('button', {'data-ampuh-filter-value': '2', 'aria-pressed': 'false'}, 'GOBI Dua');
 const close = new Node('button', {'data-ampuh-close-all': ''});
 const results = new Node('p', {'data-ampuh-results': ''});
 const tree = new Node('div', {class: 'ampuh-directory__tree'});
@@ -73,6 +73,7 @@ const context = { document, window: {}, console };
 vm.createContext(context); vm.runInContext(source, context);
 context.setupAmpuhDirectory();
 if (toggle1.getAttribute('aria-expanded') !== 'false' || !panel1.hidden) throw Error('initial disclosures must remain closed');
+if (one.getAttribute('aria-pressed') !== 'false' || two.getAttribute('aria-pressed') !== 'false') throw Error('initial GOBI filters must expose unpressed state before clicks');
 toggle1.fire('click');
 if (toggle1.getAttribute('aria-expanded') !== 'true' || panel1.hidden) throw Error('toggle must synchronize aria-expanded and panel hidden');
 close.fire('click');

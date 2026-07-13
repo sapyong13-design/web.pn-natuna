@@ -25,6 +25,10 @@
 - `tools/test_ampuh_directory_renderer.php`
 - `tools/test_ampuh_directory_interactions.py`
 
+## Follow-up: GOBI filter pressed state
+- RED: renderer contract failed `Rendered GOBI filters must expose an initial unpressed state.`
+- GREEN: renderer contract, interaction contract, and E2E dataset contract passed after every rendered filter button gained `aria-pressed="false"`; interaction fixture asserts both initial buttons are false before clicks.
+
 ## Browser/curl concern
 `curl -I http://127.0.0.1/ampuh` could not connect because no local HTTP server was listening. Browser live-page scenario cannot run without a server.
 
