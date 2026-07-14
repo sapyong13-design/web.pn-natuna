@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Build deterministic Joomla deployment ZIP from explicit allowlist."""
-from __future__ import annotations
 
 import argparse
 import os
@@ -27,7 +26,7 @@ DENY_SUFFIXES = {
 }
 
 
-def allowed(rel: PurePosixPath) -> bool:
+def allowed(rel):
     parts = rel.parts
     if not parts or parts[0] not in ALLOW_DIRS and rel.as_posix() not in ALLOW_ROOT_FILES:
         return False
@@ -40,7 +39,7 @@ def allowed(rel: PurePosixPath) -> bool:
     return not any(name.endswith(suffix) for suffix in DENY_SUFFIXES)
 
 
-def candidates() -> list[tuple[Path, PurePosixPath]]:
+def candidates():
     result = []
     for path in ROOT.rglob("*"):
         if path.is_symlink() or not path.is_file():
@@ -51,7 +50,7 @@ def candidates() -> list[tuple[Path, PurePosixPath]]:
     return sorted(result, key=lambda item: item[1].as_posix())
 
 
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("output", nargs="?", default=str(ROOT.parent / "pn-natuna-deploy.zip"))
     parser.add_argument("--list", action="store_true", help="print package paths without writing ZIP")
@@ -64,7 +63,7 @@ def main() -> int:
     if ROOT == output or ROOT in output.parents:
         parser.error("output must be outside Joomla source tree")
     output.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for source, rel in files:
             info = zipfile.ZipInfo(rel.as_posix(), date_time=(2020, 1, 1, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED

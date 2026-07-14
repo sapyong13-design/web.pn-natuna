@@ -308,6 +308,22 @@ Setelah instalasi pertama, setiap update mengikuti urutan ini:
 
 Jangan memakai `--reapply` pada update normal kecuali migrasi tertentu secara eksplisit memerlukannya dan backup tersedia.
 
+Sebelum deployment pertama pada shared cPanel, pull versi terbaru lalu jalankan self-test non-destruktif:
+
+```bash
+cd /home/CPANEL_USER/repos/web.pn-natuna
+git pull --ff-only origin continue-joomla-rebuild-polish
+python3 tools/deploy-cpanel.py --self-test
+```
+
+Output wajib:
+
+```text
+cPanel deploy self-test: ok (Python 3.6.8)
+```
+
+Self-test tidak melakukan pull kedua, copy file, backup, atau akses database. Ia hanya memverifikasi runtime Python, command `git`/`mysql`/`mysqldump`, dan deployment allowlist. Jangan jalankan `--reset-database` jika self-test gagal.
+
 ### 12.1 One-command full staging reset, hanya sebelum go-live
 
 Selama `new.pn-natuna.go.id` belum menjadi produksi dan belum menyimpan konten server yang perlu dipertahankan, updater repo dapat men-deploy seluruh file dan me-reset DB staging dari dump privat:
