@@ -308,6 +308,53 @@ Setelah instalasi pertama, setiap update mengikuti urutan ini:
 
 Jangan memakai `--reapply` pada update normal kecuali migrasi tertentu secara eksplisit memerlukannya dan backup tersedia.
 
+### 12.1 One-command full staging reset, hanya sebelum go-live
+
+Selama `new.pn-natuna.go.id` belum menjadi produksi dan belum menyimpan konten server yang perlu dipertahankan, updater repo dapat men-deploy seluruh file dan me-reset DB staging dari dump privat:
+
+```bash
+cd /home/CPANEL_USER/repos/web.pn-natuna
+python3 tools/deploy-cpanel.py \
+  --target /home/CPANEL_USER/new.pn-natuna.go.id \
+  --reset-database \
+  --database CPANEL_USER_pnnatuna_staging \
+  --mysql-config /home/CPANEL_USER/private/pn-natuna-db/staging.cnf \
+  --database-dump /home/CPANEL_USER/private/pn-natuna-db/current.sql.gz
+```
+
+Persiapan marker wajib sekali saja:
+
+```bash
+printf '%s\n' 'new.pn-natuna.go.id' > /home/CPANEL_USER/new.pn-natuna.go.id/.pn-natuna-staging
+chmod 600 /home/CPANEL_USER/new.pn-natuna.go.id/.pn-natuna-staging
+```
+
+Credential file privat:
+
+```ini
+[client]
+host=localhost
+user=CPANEL_USER_pnnatuna_stage
+password="PASSWORD_DB_STAGING"
+default-character-set=utf8mb4
+```
+
+Jangan menaruh `database=` pada `[client]`; `mysqldump` tidak menerima option singular tersebut. Updater memberikan nama DB eksplisit kepada `mysql` dan `mysqldump`. Kunci file:
+
+```bash
+chmod 600 /home/CPANEL_USER/private/pn-natuna-db/staging.cnf
+```
+
+Updater menjalankan `git pull --ff-only`, guard marker/hostname, menolak nama DB tanpa kata `staging`, membuat backup DB, me-reset DB dari `.sql.gz`, menyinkronkan file, membersihkan cache, dan health-check `/` serta `/ampuh`.
+
+Kebijakan sync:
+
+- `templates`, `plugins`, `modules`, `components`, core Joomla, dan direktori code allowlist dimirror; file code yang telah dihapus/rename di Git ikut dihapus dari webroot.
+- `images`, `files`, dan `media` di-copy tanpa delete agar upload Joomla yang tidak ada di Git tetap aman.
+- `configuration.php`, `administrator/logs`, `cache`, `tmp`, SQL, docs, tools, backup, dan secret tidak pernah disalin dari repo.
+- Daftar file memakai allowlist yang sama dengan `tools/build-deploy-package.py`.
+
+Hentikan mode `--reset-database` setelah staging menjadi website utama atau mulai menerima konten penting. Setelah go-live, update DB hanya melalui migration baru yang kompatibel dengan MariaDB dan sudah diuji.
 ## 13. PHP dan cache
 
 `cPanel → MultiPHP Manager`: gunakan PHP yang didukung Joomla, target saat ini PHP 8.3.

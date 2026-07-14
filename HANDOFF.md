@@ -94,6 +94,8 @@ Sebelum deploy/go-live, baca dan tuntaskan:
 2. [`SECURITY-BACKUP-MONITORING-RUNBOOK.md`](SECURITY-BACKUP-MONITORING-RUNBOOK.md) — cron privat, backup DB, retensi, alert, respons judol, dan restore clean-room.
 3. [`CPANEL-STAGING-CUTOVER-RUNBOOK.md`](CPANEL-STAGING-CUTOVER-RUNBOOK.md) — instalasi pertama `new.pn-natuna.go.id`, update via private checkout GitHub dan `git pull --ff-only`, clone DB/config staging, QA, cutover domain utama, dan rollback.
 
+Selama `new.pn-natuna.go.id` masih disposable staging tanpa konten server penting, full file+DB refresh dapat dijalankan dengan `tools/deploy-cpanel.py --reset-database`; target wajib memiliki marker `.pn-natuna-staging`, nama DB wajib mengandung `staging`, dan dump/credential tetap privat. Hentikan full DB reset setelah go-live.
+
 Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pengujian. Jangan hapus runbook atau tool keamanan dari repo/deployment source; deployment allowlist yang mencegahnya masuk `public_html`.
 
 ## Menjalankan di device lain
