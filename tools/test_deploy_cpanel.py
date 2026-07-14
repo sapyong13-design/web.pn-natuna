@@ -16,11 +16,26 @@ SPEC = spec_from_file_location("deploy_cpanel", ROOT / "tools" / "deploy-cpanel.
 assert SPEC and SPEC.loader
 MODULE = module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
+import subprocess
+help_result = subprocess.run(["python", str(ROOT / "tools" / "deploy-cpanel.py"), "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+assert help_result.returncode == 0, help_result.stderr
+assert "--full-staging" in help_result.stdout
 
 assert MODULE.CODE_OWNED_DIRS == MODULE.PACKAGE_ALLOW_DIRS - MODULE.CONTENT_OWNED_DIRS
 assert MODULE.CONTENT_OWNED_DIRS == {"images", "files", "media"}
 assert "configuration.php" not in MODULE.PACKAGE_ALLOW_ROOT_FILES
 assert {"cache", "logs", "tmp", "database", "docs", "tools"}.isdisjoint(MODULE.PACKAGE_ALLOW_DIRS)
+for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
+    htaccess_source = htaccess.read_text(encoding="utf-8")
+    assert "<IfModule mod_setenvif.c>" in htaccess_source
+    assert "SetEnvIf Host ^new\\.pn-natuna\\.go\\.id$ STAGING" in htaccess_source
+    assert 'X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING' in htaccess_source
+config_values = MODULE.read_joomla_database_config("""<?php
+public $user = 'stage_user';
+public $password = 'ignored-here';
+public $db = 'site_staging';
+""")
+assert config_values == {"user": "stage_user", "db": "site_staging"}
 
 with tempfile.TemporaryDirectory() as folder:
     base = Path(folder)
@@ -40,6 +55,8 @@ with tempfile.TemporaryDirectory() as folder:
     (source / "images" / "tracked.webp").write_text("tracked", encoding="utf-8")
     (target / "images").mkdir()
     (target / "images" / "uploaded.webp").write_text("upload", encoding="utf-8")
+    (target / ".htaccess").write_text('AuthType Basic\nAuthName "Private"\nAuthUserFile "/home/test/passwd"\nRequire valid-user\n', encoding="utf-8")
+    (source / ".htaccess").write_text("Options -Indexes\n", encoding="utf-8")
 
     MODULE.sync_tree(source, target)
     assert (target / "templates" / "site" / "new.css").read_text() == "new"
@@ -47,6 +64,11 @@ with tempfile.TemporaryDirectory() as folder:
     assert (target / "images" / "tracked.webp").exists()
     assert (target / "images" / "uploaded.webp").exists()
     assert (target / "configuration.php").read_text() == "private"
+    deployed_htaccess = (target / ".htaccess").read_text(encoding="utf-8")
+    assert deployed_htaccess.startswith("Options -Indexes")
+    assert 'AuthType Basic' in deployed_htaccess
+    assert 'AuthUserFile "/home/test/passwd"' in deployed_htaccess
+    assert 'Require valid-user' in deployed_htaccess
 class FakeDumpProcess:
     def __init__(self):
         self.stdout = BytesIO(b"-- MariaDB-safe backup\nCREATE TABLE test (id int);\n")

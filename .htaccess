@@ -5,8 +5,12 @@ Options -Indexes
 <IfModule mod_autoindex.c>
 	IndexIgnore *
 </IfModule>
+<IfModule mod_setenvif.c>
+	SetEnvIf Host ^new\.pn-natuna\.go\.id$ STAGING
+</IfModule>
 <IfModule mod_headers.c>
 	Header always set X-Content-Type-Options "nosniff"
+	Header always set X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING
 </IfModule>
 <FilesMatch "\.svg$">
 	<IfModule mod_headers.c>

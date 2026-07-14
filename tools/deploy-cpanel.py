@@ -6,6 +6,7 @@ import importlib.util
 import os
 from pathlib import Path
 import shutil
+import re
 import subprocess
 import sys
 import time
@@ -25,6 +26,28 @@ CONTENT_OWNED_DIRS = {"images", "files", "media"}
 CODE_OWNED_DIRS = PACKAGE_ALLOW_DIRS - CONTENT_OWNED_DIRS
 STAGING_MARKER = ".pn-natuna-staging"
 EXPECTED_HOST = "new.pn-natuna.go.id"
+DEFAULT_STAGING_TARGET = Path.home() / "new.pn-natuna.go.id"
+DEFAULT_MYSQL_CONFIG = Path.home() / "private" / "pn-natuna-db" / "staging.cnf"
+DEFAULT_DATABASE_DUMP = Path.home() / "private" / "pn-natuna-db" / "current.sql.gz"
+AUTH_DIRECTIVES = ("authtype ", "authname ", "authuserfile ", "require valid-user")
+
+
+def read_joomla_database_config(source):
+    values = {}
+    for name in ("user", "db"):
+        match = re.search(r"public\s+\${}\s*=\s*(['\"])(.*?)\1\s*;".format(name), source)
+        if not match:
+            raise RuntimeError("configuration.php missing ${}".format(name))
+        values[name] = match.group(2)
+    return values
+
+
+def preserve_basic_auth(existing, deployed):
+    directives = [line for line in existing.splitlines() if line.strip().lower().startswith(AUTH_DIRECTIVES)]
+    if not directives:
+        return deployed
+    deployed_lines = [line for line in deployed.splitlines() if not line.strip().lower().startswith(AUTH_DIRECTIVES)]
+    return "\n".join(deployed_lines).rstrip() + "\n\n# Preserved cPanel Directory Privacy\n" + "\n".join(directives) + "\n"
 
 
 def run(command, cwd=None, stdin=None, stdout=None):
@@ -76,7 +99,6 @@ def mirror_code_dir(source, target, top):
             if not current.is_file() or current.is_symlink():
                 continue
             rel = current.relative_to(target)
-            # Delete only paths owned by the package allowlist. Runtime/log/private files survive.
             if _builder.allowed(_builder.PurePosixPath(rel.as_posix())) and rel not in desired:
                 current.unlink()
     copy_files(desired, target)
@@ -92,7 +114,11 @@ def sync_tree(source, target):
         source_file = source / name
         destination = target / name
         if source_file.is_file() and _builder.allowed(_builder.PurePosixPath(name)):
-            shutil.copy2(source_file, destination)
+            if name == ".htaccess" and destination.is_file():
+                merged = preserve_basic_auth(destination.read_text(encoding="utf-8"), source_file.read_text(encoding="utf-8"))
+                destination.write_text(merged, encoding="utf-8")
+            else:
+                shutil.copy2(source_file, destination)
         elif destination.is_file():
             destination.unlink()
 
@@ -222,11 +248,21 @@ def main():
     parser.add_argument("--database-dump", type=Path)
     parser.add_argument("--backup-dir", type=Path, default=Path.home() / "private" / "backups")
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--full-staging", action="store_true")
     args = parser.parse_args()
     if args.self_test:
         return self_test()
-    if not args.target:
-        parser.error("--target is required unless --self-test is used")
+    if not args.target and not args.full_staging:
+        parser.error("--target is required unless --self-test or --full-staging is used")
+    if args.full_staging:
+        args.target = DEFAULT_STAGING_TARGET
+        args.reset_database = True
+        args.mysql_config = DEFAULT_MYSQL_CONFIG
+        args.database_dump = DEFAULT_DATABASE_DUMP
+        config_path = args.target / "configuration.php"
+        if not config_path.is_file():
+            parser.error("full staging preset requires {}".format(config_path))
+        args.database = read_joomla_database_config(config_path.read_text(encoding="utf-8"))["db"]
 
     target = args.target.expanduser().resolve()
     require_staging_target(target)

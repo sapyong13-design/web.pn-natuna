@@ -38,8 +38,12 @@ Options -Indexes
 </IfModule>
 
 ## Suppress mime type detection in browsers for unknown types
+<IfModule mod_setenvif.c>
+	SetEnvIf Host ^new\.pn-natuna\.go\.id$ STAGING
+</IfModule>
 <IfModule mod_headers.c>
 	Header always set X-Content-Type-Options "nosniff"
+	Header always set X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING
 </IfModule>
 
 ## Protect against certain cross-origin requests. More information can be found here:

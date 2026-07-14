@@ -324,6 +324,17 @@ cPanel deploy self-test: ok (Python 3.6.8)
 
 Self-test tidak melakukan pull kedua, copy file, backup, atau akses database. Ia hanya memverifikasi runtime Python, command `git`/`mysql`/`mysqldump`, dan deployment allowlist. Jangan jalankan `--reset-database` jika self-test gagal.
 
+### Perintah harian paling sederhana
+
+Setelah preset tersedia dan file privat/marker sudah dibuat, setiap update staging cukup:
+
+```bash
+cd ~/repos/web.pn-natuna
+python3 tools/deploy-cpanel.py --full-staging
+```
+
+Preset membaca nama database dari `~/new.pn-natuna.go.id/configuration.php`, lalu memakai credential `~/private/pn-natuna-db/staging.cnf` dan dump `~/private/pn-natuna-db/current.sql.gz`. Password tidak dibaca dari `configuration.php` dan tidak ditampilkan.
+
 ### 12.1 One-command full staging reset, hanya sebelum go-live
 
 Selama `new.pn-natuna.go.id` belum menjadi produksi dan belum menyimpan konten server yang perlu dipertahankan, updater repo dapat men-deploy seluruh file dan me-reset DB staging dari dump privat:
