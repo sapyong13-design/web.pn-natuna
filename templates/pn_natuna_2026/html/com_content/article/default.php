@@ -101,6 +101,29 @@ if ($categoryId > 0) {
 }
 
 $channel = in_array('pengumuman', $aliases, true) ? 'announcement' : (in_array('berita', $aliases, true) ? 'news' : null);
+$profilePath = rtrim(Uri::getInstance()->getPath(), '/');
+$profilePages = [
+    '/profil-pengadilan/sejarah-pengadilan' => 'Sejarah',
+    '/profil-pengadilan/visi-misi' => 'Visi & Misi',
+    '/profil-pengadilan/tugas-pokok-fungsi' => 'Tugas & Fungsi',
+    '/profil-pengadilan/struktur-organisasi' => 'Struktur',
+    '/profil-pengadilan/wilayah-yurisdiksi' => 'Wilayah Hukum',
+    '/profil-pengadilan/profil-hakim' => 'Hakim',
+    '/profil-pengadilan/profil-kepaniteraan' => 'Kepaniteraan',
+    '/profil-pengadilan/profil-kesekretariatan' => 'Kesekretariatan',
+    '/profil-pengadilan/profil-pppk' => 'PPPK',
+];
+$profileUnitPaths = [
+    '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-pidana' => 'Pidana',
+    '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-perdata' => 'Perdata',
+    '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-hukum' => 'Hukum',
+    '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-khusus-perikanan' => 'Perikanan',
+];
+$profileRoutes = $profilePages + $profileUnitPaths;
+$showProfileUnits = $profilePath === '/profil-pengadilan/profil-kepaniteraan' || isset($profileUnitPaths[$profilePath]);
+if ($channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath])) {
+    ?><nav class="svc-subnav" aria-label="Navigasi Tentang Pengadilan"><a href="/profil-pengadilan">Ringkasan</a><?php foreach ($profilePages as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?><?php if ($showProfileUnits) : ?><?php foreach ($profileUnitPaths as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?><?php endif; ?></nav><?php
+}
 if ($channel === null) {
     require JPATH_BASE . '/components/com_content/tmpl/article/default.php';
     return;

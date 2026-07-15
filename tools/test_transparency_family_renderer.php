@@ -30,15 +30,21 @@ $expect(str_contains($dispatcher, "require __DIR__ . '/transparency-family.php'"
 $expect(str_contains($source, 'transparency-family'), 'Missing centralized transparency family renderer.');
 $expect(str_contains($source, 'DOMDocument'), 'Content sanitizer must parse legacy markup.');
 $expect(str_contains($source, 'aria-current="page"'), 'Current detail link must expose aria-current.');
-$expect(!str_contains($source, '<details'), 'Transparency navigation must not use a separate disclosure pattern.');
-$expect(str_contains($source, 'class="transparency-family__nav"'), 'Renderer must emit one unified grouped navigation.');
-$expect(substr_count($source, '$renderNavigation();') === 2, 'Landing and detail must each render the same unified navigation once.');
-$expect(!str_contains($source, "'mobile' : 'desktop'"), 'Renderer must not duplicate mobile and desktop navigation trees.');
-$expect(!str_contains($source, 'transparency-family__gateway'), 'Landing must not duplicate the same 13 navigation links in a gateway.');
+$expect(!str_contains($source, '<details'), 'Transparency navigation must not use disclosure markup.');
+$expect(str_contains($source, 'class="svc-subnav"'), 'Transparency detail pages must reuse service subnavigation.');
+$expect(str_contains($source, 'class="svc-hero"'), 'Transparency landing must reuse service hero.');
+$expect(str_contains($source, 'class="svc-grid"'), 'Transparency landing must reuse service grid.');
+$expect(str_contains($source, 'class="svc-card"'), 'Transparency landing must reuse service cards.');
+$expect(str_contains($source, 'class="svc-icon"'), 'Transparency cards need tailored icons.');
+$expect(str_contains($source, 'class="svc-more"'), 'Transparency cards need contextual actions.');
+$expect(str_contains($source, '$transparencyCards'), 'Transparency landing needs tailored card metadata.');
+$expect(str_contains($source, "'Laporan Kinerja'"), 'Transparency submenu needs concise labels.');
+$expect(str_contains($source, 'Portal Informasi Publik'), 'Transparency landing kicker must differ from the h1.');
+$expect(str_contains($source, '$transparencyIllustration'), 'Transparency hero needs a dedicated multicolor service illustration.');
+$expect(str_contains($source, 'class="svc-illus"'), 'Transparency hero illustration must use service illustration sizing.');
 $expect(str_contains($source, '<h1>Transparansi dan Akuntabilitas</h1>'), 'Landing hero must own the page h1.');
 $expect(str_contains($source, '<h1><?php echo $escape($item->title); ?></h1>'), 'Detail hero must own the page h1.');
-$expect(str_contains($css, '.transparency-family__nav'), 'Missing unified transparency navigation CSS.');
-$expect(str_contains($css, 'grid-template-columns: repeat(4, minmax(0, 1fr))'), 'Desktop transparency navigation needs four group columns.');
+$expect(!str_contains($source, 'transparency-family__gateway'), 'Landing must not duplicate navigation links.');
 $expect(str_contains($css, 'body.is-dark .transparency-family'), 'Missing dark-mode styling.');
 $expect(!str_contains($source, 'Details</'), 'Renderer must not emit Joomla Details metadata.');
 

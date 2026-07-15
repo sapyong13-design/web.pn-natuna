@@ -163,6 +163,8 @@ function setupAmpuhDirectory() {
   const toggles = Array.from(root.querySelectorAll('[data-ampuh-toggle]'));
   const items = Array.from(root.querySelectorAll('[data-search-text]'));
   const resultNodes = Array.from(root.querySelectorAll('[data-ampuh-file-result]'));
+  const checklistNodes = Array.from(root.querySelectorAll('[data-ampuh-checklist]'));
+  const subchecklistNodes = Array.from(root.querySelectorAll('[data-ampuh-subchecklist]'));
   const search = root.querySelector('[data-ampuh-search]');
   const filter = root.querySelector('[data-ampuh-gobi-filter]');
   const gobiSelect = root.querySelector('[data-ampuh-gobi-select]');
@@ -211,9 +213,17 @@ function setupAmpuhDirectory() {
     mark.textContent = original.slice(index, index + query.length);
     name.replaceChildren(document.createTextNode(original.slice(0, index)), mark, document.createTextNode(original.slice(index + query.length)));
   };
-  const syncResults = (count, gobiCount, query) => {
-    if (results) results.textContent = query ? (count ? `${count} dokumen · ${gobiCount} GOBI` : 'Tidak ada dokumen yang cocok.') : '';
-    if (results) results.classList.toggle('ampuh-directory__empty', Boolean(query) && count === 0);
+  const syncResults = (count, gobiCount, query, matchingChecklists = [], exactChecklist = null, matchingSubchecklists = []) => {
+    if (results) {
+      if (!query) results.textContent = '';
+      else if (matchingChecklists.length && matchingSubchecklists.length) results.textContent = `${matchingChecklists.length} checklist + ${matchingSubchecklists.length} sub-checklist · ${gobiCount} GOBI`;
+      else if (matchingSubchecklists.length) results.textContent = `${matchingSubchecklists.length} sub-checklist · ${gobiCount} GOBI`;
+      else if (exactChecklist) results.textContent = `Checklist ${exactChecklist.getAttribute('data-ampuh-checklist')} · GOBI ${exactChecklist.closest('[data-ampuh-gobi]')?.getAttribute('data-ampuh-gobi')}`;
+      else if (matchingChecklists.length) results.textContent = `${matchingChecklists.length} checklist · ${gobiCount} GOBI`;
+      else results.textContent = count ? `${count} dokumen · ${gobiCount} GOBI` : 'Tidak ada hasil yang cocok.';
+    }
+    const empty = Boolean(query) && count === 0 && matchingChecklists.length === 0 && matchingSubchecklists.length === 0;
+    if (results) results.classList.toggle('ampuh-directory__empty', empty);
     if (clearSearch) clearSearch.hidden = !query;
   };
   const showAncestors = (item) => {
@@ -235,13 +245,38 @@ function setupAmpuhDirectory() {
     const matchingFiles = resultNodes.filter((item) => {
       const gobi = item.closest('[data-ampuh-gobi]');
       const inSelectedGobi = !selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi;
-      const matches = !query || normalize(item.getAttribute('data-search-text') || item.textContent).includes(query);
-      return inSelectedGobi && matches;
+      return inSelectedGobi && (!query || normalize(item.getAttribute('data-search-text') || item.textContent).includes(query));
+    });
+    const hierarchyTokens = query.split(/\s+/).filter(Boolean);
+    const numericHierarchyQuery = hierarchyTokens.length > 0 && hierarchyTokens.every((token) => /^\d+(?:\.\d+)*$/.test(token));
+    const checklistQuery = query.replace(/^checklist\s+/, '').trim();
+    const matchingChecklists = checklistNodes.filter((item) => {
+      const gobi = item.closest('[data-ampuh-gobi]');
+      const inSelectedGobi = !selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi;
+      if (!query || !inSelectedGobi) return false;
+      if (numericHierarchyQuery) return hierarchyTokens.includes(item.getAttribute('data-ampuh-checklist'));
+      return normalize(item.getAttribute('data-search-text') || item.textContent).includes(query);
+    });
+    const exactChecklist = matchingChecklists.length === 1 && !numericHierarchyQuery && matchingChecklists[0].getAttribute('data-ampuh-checklist') === checklistQuery ? matchingChecklists[0] : (matchingChecklists.length === 1 && numericHierarchyQuery && hierarchyTokens.length === 1 ? matchingChecklists[0] : null);
+    const matchingSubchecklists = subchecklistNodes.filter((item) => {
+      const gobi = item.closest('[data-ampuh-gobi]');
+      const inSelectedGobi = !selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi;
+      if (!query || !inSelectedGobi) return false;
+      if (numericHierarchyQuery) return hierarchyTokens.includes(item.getAttribute('data-ampuh-subchecklist'));
+      return normalize(item.getAttribute('data-search-text') || item.textContent).includes(query);
     });
     if (!query) {
       items.forEach((item) => {
         const gobi = item.closest('[data-ampuh-gobi]');
         item.hidden = Boolean(selectedGobi && gobi?.getAttribute('data-ampuh-gobi') !== selectedGobi);
+      });
+    } else if (matchingSubchecklists.length || matchingChecklists.length) {
+      [...matchingChecklists, ...matchingSubchecklists].forEach((item) => {
+        item.hidden = false;
+        showAncestors(item);
+        const toggle = item.querySelector('[data-ampuh-toggle]');
+        if (toggle) setExpanded(toggle, true, false);
+        item.querySelectorAll('[data-search-text]').forEach((descendant) => { descendant.hidden = false; });
       });
     } else {
       matchingFiles.forEach((item) => {
@@ -250,9 +285,10 @@ function setupAmpuhDirectory() {
         highlightFilename(item, query);
       });
     }
-    const gobis = new Set(matchingFiles.map((item) => item.closest('[data-ampuh-gobi]')?.getAttribute('data-ampuh-gobi')).filter(Boolean));
-    syncResults(matchingFiles.length, gobis.size, query);
-    if (tree) tree.classList.toggle('ampuh-directory__empty', Boolean(query) && matchingFiles.length === 0);
+    const resultItems = matchingChecklists.length || matchingSubchecklists.length ? [...matchingChecklists, ...matchingSubchecklists] : matchingFiles;
+    const gobis = new Set(resultItems.map((item) => item.closest('[data-ampuh-gobi]')?.getAttribute('data-ampuh-gobi')).filter(Boolean));
+    syncResults(matchingFiles.length, gobis.size, query, matchingChecklists, exactChecklist, matchingSubchecklists);
+    if (tree) tree.classList.toggle('ampuh-directory__empty', Boolean(query) && matchingFiles.length === 0 && matchingChecklists.length === 0 && matchingSubchecklists.length === 0);
   };
   const setSelectedGobi = (value) => {
     selectedGobi = value;

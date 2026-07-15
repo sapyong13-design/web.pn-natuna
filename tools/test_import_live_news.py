@@ -42,4 +42,8 @@ assert "catid" in sql and "12" in sql
 assert "legacy_source_url" in sql
 assert "ON DUPLICATE KEY" not in sql
 assert "<script" not in sql
+quoted = MODULE.sql_quote("Tema “Pelayanan”")
+assert quoted.startswith("CONVERT(0x") and quoted.endswith(" USING utf8mb4)")
+assert "“" not in quoted
+assert MODULE.sql_quote("") == "''"
 print("live news importer contract: ok")

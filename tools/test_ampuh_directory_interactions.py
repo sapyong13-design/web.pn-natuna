@@ -62,16 +62,21 @@ const tree = new Node('div', {class: 'ampuh-directory__tree'});
 const gobi1 = new Node('section', {'data-ampuh-gobi': '1', 'data-search-text': 'gobi pelayanan'}, 'GOBI pelayanan');
 const toggle1 = new Node('button', {'data-ampuh-toggle': '', 'aria-controls': 'panel-1', 'aria-expanded': 'false'}, 'Buka GOBI');
 const panel1 = new Node('div', {'data-ampuh-panel': '', id: 'panel-1'}); panel1.hidden = true;
-const checklist = new Node('section', {'data-search-text': 'checklist layanan publik'}, 'Checklist layanan publik');
+const checklist = new Node('section', {'data-search-text': 'checklist 52 layanan publik gobi 1', 'data-ampuh-checklist': '52'}, 'Checklist 52 layanan publik');
 const toggle2 = new Node('button', {'data-ampuh-toggle': '', 'aria-controls': 'panel-2', 'aria-expanded': 'false'}, 'Buka sub checklist');
 const panel2 = new Node('div', {'data-ampuh-panel': '', id: 'panel-2'}); panel2.hidden = true;
-const sub = new Node('section', {'data-search-text': 'sub checklist layanan'}, 'Sub checklist layanan');
+const sub = new Node('section', {'data-search-text': 'sub-checklist 5.2 diskusi reguler', 'data-ampuh-subchecklist': '5.2'}, 'Sub checklist 5.2 diskusi reguler');
 const heading = new Node('h5', {}, 'Daftar dokumen (1)');
 const files = new Node('ul');
 const file = new Node('li', {'data-search-text': 'surat keputusan ampuh.pdf', 'data-ampuh-file-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
 const gobi2 = new Node('section', {'data-ampuh-gobi': '2', 'data-search-text': 'gobi hukum'}, 'GOBI hukum');
 const legal = new Node('section', {'data-search-text': 'checklist perkara'}, 'Checklist perkara');
 root.append(search, select, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(heading, files.append(file)))))), gobi2.append(legal)));
+const sub2 = new Node('section', {'data-search-text': 'sub-checklist 1.1 sosialisasi berkala', 'data-ampuh-subchecklist': '1.1'}, 'Sub checklist 1.1 sosialisasi berkala');
+const checklist2 = new Node('section', {'data-search-text': 'checklist 1 pengawasan gobi 2', 'data-ampuh-checklist': '1'}, 'Checklist 1 pengawasan');
+const toggle3 = new Node('button', {'data-ampuh-toggle': '', 'aria-controls': 'panel-3', 'aria-expanded': 'false'}, 'Buka checklist kedua');
+const panel3 = new Node('div', {'data-ampuh-panel': '', id: 'panel-3'}); panel3.hidden = true;
+gobi2.append(checklist2.append(toggle3, panel3.append(sub2)));
 const document = { addEventListener: () => {}, querySelector: selector => selector === '[data-ampuh-directory]' ? root : null, getElementById: id => root.querySelectorAll('[data-ampuh-panel]').find(node => node.attrs.id === id) || null, createElement: tag => new Node(tag) };
 const animationFrames = [];
 const context = { document, window: { requestAnimationFrame: callback => animationFrames.push(callback) }, console };
@@ -94,7 +99,15 @@ toggle1.fire('click');
 if (panel1.hidden || panel1.classList.contains('is-revealing')) throw Error('fallback without requestAnimationFrame must safely reveal panel and remove start state');
 close.fire('click');
 search.value = 'SUB CHECKLIST'; search.fire('input');
-if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('branch-title-only search must announce zero documents');
+if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada hasil yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('branch-title-only search without matching branch must announce zero results');
+search.value = 'checklist 52'; search.fire('input');
+if (gobi1.hidden || !gobi2.hidden || checklist.hidden || results.textContent !== 'Checklist 52 · GOBI 1' || toggle1.getAttribute('aria-expanded') !== 'true' || toggle2.getAttribute('aria-expanded') !== 'true') throw Error('checklist-number search must identify its GOBI and open the checklist branch');
+search.value = '5.2 1.1'; search.fire('input');
+if (sub.hidden || sub2.hidden || results.textContent !== '2 sub-checklist · 2 GOBI' || toggle1.getAttribute('aria-expanded') !== 'true' || toggle3.getAttribute('aria-expanded') !== 'true') throw Error('numeric multi-search must OR exact sub-checklist numbers across GOBI branches');
+search.value = '52 1.1'; search.fire('input');
+if (checklist.hidden || sub2.hidden || results.textContent !== '1 checklist + 1 sub-checklist · 2 GOBI') throw Error('mixed checklist and sub-checklist numbers must OR across exact hierarchy hooks');
+search.value = 'standar pelayanan'; search.fire('input');
+if (results.textContent !== 'Tidak ada hasil yang cocok.') throw Error('text multi-word search must remain one phrase, not token OR');
 search.value = 'KEPUTUSAN'; search.fire('input');
 if (gobi1.hidden || !gobi2.hidden || results.textContent !== '1 dokumen · 1 GOBI' || toggle1.getAttribute('aria-expanded') !== 'true' || toggle2.getAttribute('aria-expanded') !== 'true' || panel2.hidden || heading.textContent !== 'Daftar dokumen (1)' || file.hidden) throw Error('file search must count result and GOBI, open ancestors, and display documents directly');
 one.fire('click');
@@ -113,7 +126,7 @@ if (!gobi1.hidden || gobi2.hidden) throw Error('GOBI filter must select requeste
 two.fire('click');
 if (gobi1.hidden || gobi2.hidden) throw Error('second filter click must clear filter');
 search.value = 'tidak-ditemukan'; search.fire('input');
-if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada dokumen yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('no match must show empty state and live message');
+if (!gobi1.hidden || !gobi2.hidden || results.textContent !== 'Tidak ada hasil yang cocok.' || !tree.classList.contains('ampuh-directory__empty')) throw Error('no match must show empty state and live message');
 search.value = ''; search.fire('input');
 if (tree.classList.contains('ampuh-directory__empty') || results.textContent !== '' || gobi1.hidden || gobi2.hidden) throw Error('clearing no-match query must restore unfiltered GOBI state and clear status');
 context.document = { querySelector: () => null };
@@ -123,6 +136,9 @@ with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=Fal
     runner.write(NODE_TEST)
     runner_path = runner.name
 assert "data-ampuh-file-result" in function_source
+assert "data-ampuh-checklist" in function_source
+assert "data-ampuh-subchecklist" in function_source
+assert "numericHierarchyQuery" in function_source
 try:
     completed = subprocess.run(["node", runner_path, str(SOURCE)], text=True, capture_output=True)
     assert completed.returncode == 0, completed.stderr

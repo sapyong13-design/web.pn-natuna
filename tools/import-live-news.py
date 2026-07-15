@@ -263,7 +263,8 @@ def write_manifest(path, records):
 
 
 def sql_quote(value):
-    return "'" + str(value).replace("\\", "\\\\").replace("'", "''") + "'"
+    text = str(value)
+    return "''" if text == "" else "CONVERT(0x{} USING utf8mb4)".format(text.encode("utf-8").hex())
 
 
 def render_sql(records):

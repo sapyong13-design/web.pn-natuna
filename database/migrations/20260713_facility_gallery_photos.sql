@@ -1,0 +1,7 @@
+-- Galeri Fasilitas Publik: foto dokumenter sinematik 2026.
+-- Idempoten dan dibatasi ke modul kustom Galeri Fasilitas Publik (id 480).
+UPDATE pnn_modules
+SET content = '<h2>Galeri Fasilitas Publik</h2><div class="facility-grid"><a class="facility-card" href="/jenis-layanan-ptsp"><span class="facility-thumb"><img src="/images/berita/2026-briefing-ptsp-1.jpeg" alt="Ruang pelayanan PTSP Pengadilan Negeri Natuna" loading="lazy"></span><strong>Ruang PTSP</strong><span>Area layanan terpadu satu pintu.</span></a><a class="facility-card" href="/layanan-disabilitas"><span class="facility-thumb"><img src="/images/layanan/gallery/akses-disabilitas-2026.webp" alt="Tiga kursi roda untuk layanan prioritas penyandang disabilitas" loading="lazy"></span><strong>Akses Disabilitas</strong><span>Kursi roda dan layanan prioritas penyandang disabilitas.</span></a><a class="facility-card" href="/posbakum"><span class="facility-thumb"><img src="/images/layanan/gallery/posbakum-2026.webp" alt="Meja layanan Pos Bantuan Hukum dan fasilitas kursi roda Pengadilan Negeri Natuna" loading="lazy"></span><strong>Posbakum</strong><span>Ruang bantuan hukum bagi masyarakat.</span></a><a class="facility-card" href="/kontak"><span class="facility-thumb"><img src="/images/layanan/gallery/lokasi-kantor-2026.webp" alt="Fasad gedung Pengadilan Negeri Natuna Kelas II" loading="lazy"></span><strong>Lokasi Kantor</strong><span>Alamat, peta, dan kanal kontak.</span></a></div>'
+WHERE id = 480
+  AND module = 'mod_custom'
+  AND title = 'Galeri Fasilitas Publik';
