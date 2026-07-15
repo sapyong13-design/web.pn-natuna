@@ -49,13 +49,13 @@ $extractArchive = static function (string $html): string {
     }
     return $output;
 };
-$renderNavigation = static function (bool $mobile) use ($transparencyPages, $item, $escape): void { ?>
-  <nav class="transparency-family__<?php echo $mobile ? 'mobile' : 'desktop'; ?>-nav" aria-label="Kelompok informasi transparansi">
+$renderNavigation = static function () use ($transparencyPages, $item, $escape): void { ?>
+  <nav class="transparency-family__nav" aria-label="Navigasi informasi transparansi">
     <?php foreach ($transparencyPages as $group => $pages) : ?>
-      <details<?php echo isset($pages[(int) $item->id]) ? ' open' : ''; ?> class="transparency-family__group">
-        <summary><?php echo $escape($group); ?></summary>
-        <ul><?php foreach ($pages as $id => [$route, $title]) : ?><li><a href="<?php echo $escape($route); ?>"<?php echo (int) $item->id === $id ? ' aria-current="page"' : ''; ?>><?php echo $escape($title); ?></a></li><?php endforeach; ?></ul>
-      </details>
+      <section class="transparency-family__nav-group">
+        <h2><?php echo $escape($group); ?></h2>
+        <div><?php foreach ($pages as $id => [$route, $title]) : ?><a href="<?php echo $escape($route); ?>"<?php echo (int) $item->id === $id ? ' aria-current="page"' : ''; ?>><?php echo $escape($title); ?></a><?php endforeach; ?></div>
+      </section>
     <?php endforeach; ?>
   </nav>
 <?php };
@@ -64,16 +64,11 @@ $isLanding = (int) $item->id === 45;
 <article class="transparency-family<?php echo $isLanding ? ' transparency-family--landing' : ''; ?>">
   <?php if ($isLanding) : ?>
     <header class="transparency-family__hero"><p>Portal informasi publik</p><h1>Transparansi dan Akuntabilitas</h1><span>Dokumen kinerja, keuangan, survei, integritas, serta informasi publik Pengadilan Negeri Natuna.</span></header>
-    <?php $renderNavigation(false); ?>
-    <?php $renderNavigation(true); ?>
-    <div class="transparency-family__gateway">
-      <?php foreach ($transparencyPages as $group => $pages) : ?><section><h2><?php echo $escape($group); ?></h2><ul><?php foreach ($pages as [$route, $title]) : ?><li><a href="<?php echo $escape($route); ?>"><?php echo $escape($title); ?></a></li><?php endforeach; ?></ul></section><?php endforeach; ?>
-    </div>
+    <?php $renderNavigation(); ?>
   <?php else : ?>
     <nav class="transparency-family__breadcrumb" aria-label="Breadcrumb"><a href="/transparansi">Transparansi</a><span aria-hidden="true">/</span><span><?php echo $escape($item->title); ?></span></nav>
     <header class="transparency-family__hero"><p>Informasi publik</p><h1><?php echo $escape($item->title); ?></h1></header>
-    <?php $renderNavigation(false); ?>
-    <?php $renderNavigation(true); ?>
+    <?php $renderNavigation(); ?>
     <div class="transparency-family__archive"><?php echo $extractArchive((string) $item->text); ?></div>
   <?php endif; ?>
 </article>

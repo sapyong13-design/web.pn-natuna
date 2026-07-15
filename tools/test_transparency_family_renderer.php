@@ -30,12 +30,15 @@ $expect(str_contains($dispatcher, "require __DIR__ . '/transparency-family.php'"
 $expect(str_contains($source, 'transparency-family'), 'Missing centralized transparency family renderer.');
 $expect(str_contains($source, 'DOMDocument'), 'Content sanitizer must parse legacy markup.');
 $expect(str_contains($source, 'aria-current="page"'), 'Current detail link must expose aria-current.');
-$expect(str_contains($source, '<details'), 'Grouped navigation must use disclosure semantics.');
-$expect(str_contains($source, "'mobile' : 'desktop'"), 'Navigation renderer must emit mobile and desktop variants.');
+$expect(!str_contains($source, '<details'), 'Transparency navigation must not use a separate disclosure pattern.');
+$expect(str_contains($source, 'class="transparency-family__nav"'), 'Renderer must emit one unified grouped navigation.');
+$expect(substr_count($source, '$renderNavigation();') === 2, 'Landing and detail must each render the same unified navigation once.');
+$expect(!str_contains($source, "'mobile' : 'desktop'"), 'Renderer must not duplicate mobile and desktop navigation trees.');
+$expect(!str_contains($source, 'transparency-family__gateway'), 'Landing must not duplicate the same 13 navigation links in a gateway.');
 $expect(str_contains($source, '<h1>Transparansi dan Akuntabilitas</h1>'), 'Landing hero must own the page h1.');
 $expect(str_contains($source, '<h1><?php echo $escape($item->title); ?></h1>'), 'Detail hero must own the page h1.');
-$expect(str_contains($css, '.transparency-family__desktop-nav'), 'Missing grouped desktop navigation CSS.');
-$expect(str_contains($css, '@media (max-width: 760px)'), 'Missing mobile disclosure breakpoint.');
+$expect(str_contains($css, '.transparency-family__nav'), 'Missing unified transparency navigation CSS.');
+$expect(str_contains($css, 'grid-template-columns: repeat(4, minmax(0, 1fr))'), 'Desktop transparency navigation needs four group columns.');
 $expect(str_contains($css, 'body.is-dark .transparency-family'), 'Missing dark-mode styling.');
 $expect(!str_contains($source, 'Details</'), 'Renderer must not emit Joomla Details metadata.');
 
