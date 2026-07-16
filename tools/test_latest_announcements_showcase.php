@@ -59,6 +59,13 @@ if (function_exists('pn_natuna_render_latest_announcements')) {
 }
 
 $source = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/hero-slider.php');
+$css = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/css/template.css');
+$expect(str_contains($css, 'grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr)'), 'Desktop showcase grid must use a 60:40 composition.');
+$expect(str_contains($css, '@media (max-width: 900px)'), 'Responsive showcase breakpoint is missing.');
+$expect(str_contains($css, '.announcement-feature:focus-visible'), 'Feature focus style is missing.');
+$expect(str_contains($css, '.announcement-compact:focus-visible'), 'Compact focus style is missing.');
+$expect(str_contains($css, 'body.is-dark .announcement-feature'), 'Dark mode feature style is missing.');
+
 $expect(str_contains($source, 'pn_natuna_hero_latest_articles(13, 3)'), 'Renderer default must request three category 13 articles.');
 
 if ($failures) {
