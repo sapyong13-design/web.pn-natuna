@@ -22,6 +22,24 @@ if (is_file($asset)) {
 foreach (['akses-disabilitas-2026.webp', 'posbakum-2026.webp'] as $name) {
     $expect(is_file($root . '/images/layanan/gallery/' . $name), "Required facility asset {$name} is missing.");
 }
+$migrationPath = $root . '/database/migrations/20260716_public_facility_documentary_photos.sql';
+$expect(is_file($migrationPath), 'Facility content migration is missing.');
+if (is_file($migrationPath)) {
+    $sql = (string) file_get_contents($migrationPath);
+    $containsPayload = static function (string $needle) use ($sql): bool {
+        return str_contains($sql, $needle) || str_contains($sql, strtoupper(bin2hex($needle)));
+    };
+    foreach (['ruang-ptsp-2026.webp', 'akses-disabilitas-2026.webp', 'posbakum-2026.webp'] as $name) {
+        $expect($containsPayload($name), "Migration must reference {$name}.");
+    }
+    foreach (['Petugas Pelayanan Terpadu Satu Pintu Pengadilan Negeri Natuna', 'Kursi roda dan alat bantu mobilitas di Pengadilan Negeri Natuna', 'Meja layanan Pos Bantuan Hukum Pengadilan Negeri Natuna'] as $alt) {
+        $expect($containsPayload($alt), "Migration is missing approved alt: {$alt}.");
+    }
+    $expect(str_contains($sql, 'id = 480') && str_contains($sql, "title = 'Galeri Fasilitas Publik'"), 'Gallery update must be narrowly guarded.');
+    $expect($containsPayload('data-maklumat-zoom'), 'Documentary photos must use existing lightbox trigger.');
+    $expect($containsPayload('loading="lazy" decoding="async"'), 'Documentary photos must load lazily and decode asynchronously.');
+}
+
 
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
