@@ -40,6 +40,11 @@ if (is_file($migrationPath)) {
     $expect($containsPayload('loading="lazy" decoding="async"'), 'Documentary photos must load lazily and decode asynchronously.');
 }
 
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible', 'body.is-dark .facility-documentary', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'] as $selector) {
+    $expect(str_contains($css, $selector), "Facility documentary CSS is missing {$selector}.");
+}
+
 
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);

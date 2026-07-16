@@ -9274,6 +9274,84 @@ body.is-dark .svc-doc-ic {
   transform: translateY(-2px);
 }
 
+/* PUBLIC FACILITY DOCUMENTARY 2026-07-16 */
+.facility-documentary {
+  overflow: hidden;
+  margin: clamp(24px, 4vw, 42px) 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.content-primary .facility-documentary__media {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  aspect-ratio: 16 / 8;
+  background: #e9e1d9;
+  cursor: zoom-in;
+}
+
+.facility-documentary__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.facility-documentary__media:hover img,
+.facility-documentary__media:focus-visible img {
+  transform: scale(1.025);
+}
+
+.facility-documentary__media:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -5px;
+}
+
+.facility-documentary__caption {
+  display: block;
+  margin: 0;
+  padding: 13px clamp(16px, 2.5vw, 24px) 15px;
+  color: var(--color-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+body.is-dark .facility-documentary {
+  border-color: var(--dark-content-line);
+  background: var(--dark-content-raised);
+  box-shadow: none;
+}
+
+body.is-dark .facility-documentary__caption {
+  color: #d5dde4;
+}
+
+@media (max-width: 760px) {
+  .content-primary .facility-documentary__media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .facility-documentary__caption {
+    padding: 11px 14px 13px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .facility-documentary__media img {
+    transition: none;
+  }
+}
+/* END PUBLIC FACILITY DOCUMENTARY */
+
 @media (max-width: 700px) {
   .svc-hero {
     grid-template-columns: 1fr;
