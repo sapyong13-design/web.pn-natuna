@@ -43,6 +43,27 @@ if (is_file($migrationPath)) {
         foreach (explode('|', $payload) as $value) $expect($contains($value), "Paired BMN payload is missing {$value}.");
     }
 }
+$reconcilePath = $root . '/database/migrations/20260721_reconcile_bmn_announcements.sql';
+$expect(is_file($reconcilePath), 'BMN reconciliation migration is missing.');
+if (is_file($reconcilePath)) {
+    $reconcile = (string) file_get_contents($reconcilePath);
+    $expect(str_contains($reconcile, 'id <> @bmn_id') && str_contains($reconcile, 'state = -2'), 'Reconciliation must trash additional identity matches.');
+    $expect(substr_count($reconcile, 'created = ') === 2 && substr_count($reconcile, 'publish_up = ') === 2, 'Canonical rows must use official chronology.');
+}
+
+$blocks = preg_split('/-- payload [12]:/', $sql ?? '');
+if (count($blocks) === 3) {
+    foreach ([
+        [$blocks[1], 'Pengumuman Penetapan Pemenang Lelang BMN', '11 Juni 2026', '1KDGdzwbuK0Wbqu_3MlbjHTrpDgpl3Td6', 'bmn-penetapan-pemenang-lelang-2026.webp'],
+        [$blocks[2], 'Pengumuman Lelang BMN Pada Pengadilan Negeri Natuna', '4 Juni 2026', '1E4v21cQPCrXDP6F3rXNZWCWeobzmRB-s', 'bmn-pengumuman-lelang-2026.webp'],
+    ] as [$block, $title, $date, $driveId, $image]) {
+        foreach ([$title, $date, $driveId, $image] as $value) {
+            $expect(str_contains($block, $value) || str_contains($block, strtoupper(bin2hex($value))), "Bounded BMN payload is missing {$value}.");
+        }
+    }
+} else {
+    $expect(false, 'Migration must contain exactly two bounded payload blocks.');
+}
 
 if (count($hashes) === 2) $expect($hashes[0] !== $hashes[1], 'BMN thumbnails must be visually distinct files.');
 if ($failures) {
