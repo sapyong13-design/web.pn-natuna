@@ -42,6 +42,13 @@ function pn_natuna_instansi_fetch_url(string $url): string
     return is_string($html) ? $html : '';
 }
 
+function pn_natuna_instansi_google_title(string $title): string
+{
+    $title = pn_natuna_instansi_text($title);
+    $title = preg_replace('/\s*[-–]\s*(?:Mahkamah Agung|mahkamahagung\.go\.id)$/i', '', $title);
+    return mb_strtolower($title) === 'mahkamah agung republik indonesia' || mb_strlen($title) < 24 ? '' : $title;
+}
+
 function pn_natuna_instansi_fetch_google_news(string $query): array
 {
     $url = 'https://news.google.com/rss/search?q=' . rawurlencode($query) . '&hl=id&gl=ID&ceid=ID:id';
@@ -56,8 +63,10 @@ function pn_natuna_instansi_fetch_google_news(string $query): array
     }
     $items = [];
     foreach ($simple->channel->item as $entry) {
-        $title = pn_natuna_instansi_text((string) $entry->title);
-        $title = preg_replace('/\s*[-–]\s*Mahkamah Agung$/i', '', $title);
+        $title = pn_natuna_instansi_google_title((string) $entry->title);
+        if ($title === '') {
+            continue;
+        }
         $link = trim((string) $entry->link);
         $pub = (string) $entry->pubDate;
         $items[] = [
@@ -268,13 +277,31 @@ function pn_natuna_instansi_load(): array
     }
 
     $data = pn_natuna_instansi_fallback();
+    $data['_status'] = [
+        'ma_news' => 'fallback',
+        'ma_announcements' => 'fallback',
+        'badilum_news' => 'fallback',
+        'badilum_announcements' => 'fallback',
+        'pt_news' => 'fallback',
+        'pt_announcements' => 'fallback',
+    ];
+    $maNews = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita');
+    if (count($maNews) >= 2) {
+        $data['ma']['news'] = array_slice($maNews, 0, 5);
+        $data['_status']['ma_news'] = 'live-google-news';
+    }
+    $maAnnouncements = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman');
+    if (count($maAnnouncements) >= 2) {
+        $data['ma']['announcements'] = array_slice($maAnnouncements, 0, 5);
+        $data['_status']['ma_announcements'] = 'live-google-news';
+    }
     $sources = [
         'badilum' => [
             'news' => ['https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html', ['berita'], ['pengumuman']],
             'announcements' => ['https://badilum.mahkamahagung.go.id/berita/pengumuman-surat-dinas.html', ['pengumuman', 'undangan', 'pemanggilan', 'hasil', 'peserta', 'imbauan', 'pemberitahuan', 'informasi', 'penyampaian', 'pemantauan'], ['berita-kegiatan', 'mutasi hakim', 'mutasi panitera', 'peraturan perundangan', 'hasil survei', 'biaya mutasi', 'keuangan perkara']],
         ],
         'pt' => [
-            'news' => ['https://pt-kepri.go.id/', ['/kepri/'], ['pengumuman', 'pengantar', 'visi', 'struktur', 'wilayah', 'yurisdiksi', 'ketua', 'wakil', 'sejarah', 'tugas', 'fungsi', 'kepaniteraan', 'pegawai', 'role-model']],
+            'news' => ['https://pt-kepri.go.id/', ['/kepri/'], ['pengumuman', 'pengantar', 'visi', 'struktur', 'wilayah', 'yurisdiksi', 'sejarah', 'tugas', 'fungsi', 'kepaniteraan', 'pegawai', 'role-model']],
             'announcements' => ['https://pt-kepri.go.id/pengumuman', ['pengumuman'], ['berita']],
         ],
     ];
@@ -294,6 +321,7 @@ function pn_natuna_instansi_load(): array
                     }
                 }
                 $data[$key][$group] = array_slice($items, 0, 5);
+                $data['_status'][$key . '_' . $group] = 'live';
             }
         }
     }
@@ -337,6 +365,7 @@ function pn_natuna_render_instansi_feed(): void
         'badilum' => ['short' => 'Ditjen Badilum', 'logo' => '/images/brand/logo-badilum.png', 'site' => 'https://badilum.mahkamahagung.go.id/'],
         'pt' => ['short' => 'PT Kepri', 'logo' => '/images/brand/logo-pt-kepri.png', 'site' => 'https://pt-kepri.go.id/'],
     ];
+    $renderData = array_intersect_key($data, $meta);
     $updated = pn_natuna_instansi_updated_label();
     ?>
     <div class="module-card instansi-news-board instansi-tab-board">
@@ -351,7 +380,7 @@ function pn_natuna_render_instansi_feed(): void
         <?php endif; ?>
       </div>
       <div class="instansi-tabbar" role="tablist" aria-label="Pilih instansi peradilan">
-        <?php $i = 0; foreach ($data as $key => $instansi) : $short = $meta[$key]['short'] ?? $instansi['title']; ?>
+        <?php $i = 0; foreach ($renderData as $key => $instansi) : $short = $meta[$key]['short'] ?? $instansi['title']; ?>
           <button type="button" role="tab"
                   id="instansi-tab-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
                   aria-controls="instansi-panel-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
@@ -363,7 +392,7 @@ function pn_natuna_render_instansi_feed(): void
           </button>
         <?php $i++; endforeach; ?>
       </div>
-      <?php $i = 0; foreach ($data as $key => $instansi) : ?>
+      <?php $i = 0; foreach ($renderData as $key => $instansi) : ?>
         <div class="instansi-panel<?php echo $i === 0 ? ' is-active' : ''; ?>"
              id="instansi-panel-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
              role="tabpanel"

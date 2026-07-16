@@ -9336,6 +9336,11 @@ body.is-dark .svc-doc-ic {
   height: 350px;
 }
 
+.facility-documentary--disability .facility-documentary__media img {
+  object-fit: contain;
+  background: #17232c;
+}
+
 .content-primary .facility-documentary--posbakum .facility-documentary__media {
   height: 360px;
 }

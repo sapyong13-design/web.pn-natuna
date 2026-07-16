@@ -58,6 +58,9 @@ try {
         $berita = count($data[$key]['news'] ?? []);
         $peng   = count($data[$key]['announcements'] ?? []);
         $log   .= "  - {$label}: {$berita} berita, {$peng} pengumuman\n";
+        $statusBerita = $data['_status'][$key . '_news'] ?? 'unknown';
+        $statusPeng = $data['_status'][$key . '_announcements'] ?? 'unknown';
+        $log .= "    sumber: berita={$statusBerita}, pengumuman={$statusPeng}\n";
     }
 
     $log .= "[$ts] SELESAI. Cache ditulis: {$cacheFile}\n";

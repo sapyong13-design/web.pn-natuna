@@ -67,6 +67,7 @@ foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible
     $expect(str_contains($css, $selector), "Facility documentary CSS is missing {$selector}.");
 }
 $expect(str_contains($css, '.facility-documentary--ptsp .facility-documentary__media img') && str_contains($css, 'object-fit: contain;'), 'PTSP mobile crop must preserve all staff.');
+$expect(str_contains($css, '.facility-documentary--disability .facility-documentary__media img') && substr_count($css, 'object-fit: contain;') >= 3, 'Disability photo must use contain framing.');
 $expect(str_contains($css, 'height: clamp(260px, 28vw, 320px);'), 'Desktop documentary height must be capped at 320px.');
 $expect(str_contains($css, 'height: 200px;'), 'Mobile documentary height must be capped at 200px.');
 foreach (['height: 380px;', 'height: 350px;', 'height: 360px;', 'height: 230px;', 'height: 220px;'] as $height) {
