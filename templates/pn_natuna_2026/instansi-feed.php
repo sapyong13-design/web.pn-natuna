@@ -46,7 +46,23 @@ function pn_natuna_instansi_google_title(string $title): string
 {
     $title = pn_natuna_instansi_text($title);
     $title = preg_replace('/\s*[-–]\s*(?:Mahkamah Agung|mahkamahagung\.go\.id)$/i', '', $title);
-    return mb_strtolower($title) === 'mahkamah agung republik indonesia' || mb_strlen($title) < 24 ? '' : $title;
+    if (mb_strtolower($title) === 'mahkamah agung republik indonesia' || mb_strlen($title) < 24) {
+        return '';
+    }
+    if ($title === mb_strtoupper($title)) {
+        $title = mb_convert_case(mb_strtolower($title), MB_CASE_TITLE, 'UTF-8');
+        $title = preg_replace_callback('/\b(Ma|Ri|Dpr|Pns|Spip|Rdpu|Lpdp|Kuhp|Xi|Xii|Iv|Vi)\b/i', static fn ($m) => mb_strtoupper($m[0]), $title);
+        $title = preg_replace_callback('/(?<=\s)\b(Dan|Dengan|Di|Ke|Pada|Yang)\b/u', static fn ($m) => mb_strtolower($m[0]), $title);
+    }
+    return $title;
+}
+
+function pn_natuna_instansi_recent_items(array $items, int $days, ?int $now = null): array
+{
+    usort($items, static fn ($a, $b) => ($b['pub'] ?? 0) <=> ($a['pub'] ?? 0));
+    $now ??= time();
+    $cutoff = $now - ($days * 86400);
+    return array_values(array_filter($items, static fn ($item) => (int) ($item['pub'] ?? 0) >= $cutoff));
 }
 
 function pn_natuna_instansi_fetch_google_news(string $query): array
@@ -76,7 +92,7 @@ function pn_natuna_instansi_fetch_google_news(string $query): array
             'pub' => strtotime($pub) ?: 0,
         ];
     }
-    return $items;
+    return pn_natuna_instansi_recent_items($items, 60);
 }
 
 function pn_natuna_instansi_item_date(string $text): string
