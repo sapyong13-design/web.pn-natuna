@@ -21,6 +21,29 @@ foreach ($assets as $name) {
         $hashes[] = hash_file('sha256', $path);
     }
 }
+$migrationPath = $root . '/database/migrations/20260716_import_bmn_announcements.sql';
+$expect(is_file($migrationPath), 'BMN announcement migration is missing.');
+if (is_file($migrationPath)) {
+    $sql = (string) file_get_contents($migrationPath);
+    $contains = static fn(string $value): bool => str_contains($sql, $value) || str_contains($sql, strtoupper(bin2hex($value)));
+    foreach (['Pengumuman Penetapan Pemenang Lelang BMN', 'Pengumuman Lelang BMN Pada Pengadilan Negeri Natuna', 'pengumuman-penetapan-pemenang-lelang-bmn', 'pengumuman-lelang-bmn-pengadilan-negeri-natuna', '1KDGdzwbuK0Wbqu_3MlbjHTrpDgpl3Td6', '1E4v21cQPCrXDP6F3rXNZWCWeobzmRB-s'] as $value) {
+        $expect($contains($value), "Migration is missing {$value}.");
+    }
+    $expect(substr_count($sql, 'catid,created') === 2, 'Migration must insert exactly two category-bound articles.');
+    $expect(substr_count($sql, ',1,13,') === 2, 'Both BMN articles must be published in category 13.');
+    $expect(str_contains($sql, 'LOWER(TRIM(title))'), 'Migration must deduplicate normalized titles.');
+    $expect(str_contains($sql, 'JSON_UNQUOTE(JSON_EXTRACT(metadata'), 'Migration must deduplicate document URLs.');
+    $expect(str_contains($sql, 'alias COLLATE utf8mb4_unicode_ci IN'), 'Migration must deduplicate aliases.');
+    $expect(str_contains($sql, 'COLLATE utf8mb4_unicode_ci'), 'BMN identity predicates must use Joomla column collation.');
+    $expect($contains('target="_blank" rel="noopener noreferrer"'), 'Document links must open safely.');
+    $expect($contains('4 Juni 2026') && $contains('11 Juni 2026') && $contains('16 Juli 2026'), 'Articles must preserve official document dates and retrieval provenance.');
+    $winnerPayload = implode('|', ['Pengumuman Penetapan Pemenang Lelang BMN', '11 Juni 2026', '1KDGdzwbuK0Wbqu_3MlbjHTrpDgpl3Td6', 'bmn-penetapan-pemenang-lelang-2026.webp']);
+    $auctionPayload = implode('|', ['Pengumuman Lelang BMN Pada Pengadilan Negeri Natuna', '4 Juni 2026', '1E4v21cQPCrXDP6F3rXNZWCWeobzmRB-s', 'bmn-pengumuman-lelang-2026.webp']);
+    foreach ([$winnerPayload, $auctionPayload] as $payload) {
+        foreach (explode('|', $payload) as $value) $expect($contains($value), "Paired BMN payload is missing {$value}.");
+    }
+}
+
 if (count($hashes) === 2) $expect($hashes[0] !== $hashes[1], 'BMN thumbnails must be visually distinct files.');
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);

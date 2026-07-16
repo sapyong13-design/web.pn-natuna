@@ -24,7 +24,7 @@ Dua pengumuman Posbakum tidak diimpor ulang karena sudah ada secara lokal.
 
 ## Tanggal publikasi
 
-Homepage dan metadata Google Drive publik tidak menampilkan tanggal dokumen. Tanggal tidak boleh ditebak. Kedua artikel memakai tanggal pengambilan terverifikasi, 16 Juli 2026, dengan teks sumber yang menjelaskan bahwa dokumen ditampilkan sebagai pengumuman terbaru pada homepage lama saat pengambilan. Urutan mengikuti urutan homepage sumber: penetapan pemenang lebih dulu, lalu pengumuman lelang.
+Kedua dokumen memiliki tanggal resmi yang dapat diverifikasi dari halaman PDF: **Pengumuman Lelang** bertanggal **4 Juni 2026** pada halaman kedua, sedangkan **Penetapan Pemenang Lelang** bertanggal **11 Juni 2026** pada halaman pertama. Artikel lokal memakai tanggal resmi tersebut; tanggal pengambilan **16 Juli 2026** hanya dicatat sebagai provenance dalam metadata/isi, bukan tanggal publikasi.
 
 ## Bentuk artikel lokal
 
