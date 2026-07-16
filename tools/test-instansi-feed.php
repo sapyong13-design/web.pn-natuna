@@ -27,6 +27,8 @@ $fresh = pn_natuna_instansi_recent_items([
 ], 60, strtotime('2026-07-16'));
 assertSameValue(['Terbaru pertama', 'Terbaru kedua'], array_column($fresh, 'title'), 'MA feed must sort newest first and drop stale results.');
 assertSameValue([], pn_natuna_instansi_recent_items([['title' => 'RSS basi', 'pub' => strtotime('2026-04-27')]], 60, strtotime('2026-07-16')), 'Entirely stale RSS must fall back to curated data.');
+$filled = pn_natuna_instansi_fill_items([['title' => 'Live A']], [['title' => 'Live A'], ['title' => 'Fallback B'], ['title' => 'Fallback C']], 3);
+assertSameValue(['Live A', 'Fallback B', 'Fallback C'], array_column($filled, 'title'), 'MA live feed must be padded without duplicate titles.');
 
 $ptHtml = '<main><article><a href="/kepri/ketua-pengadilan-tinggi-kepulauan-riau-hadiri-penutupan-mtq-xii-tingkat-provinsi-kepulauan-riau-tahun-2026">Ketua Pengadilan Tinggi Kepulauan Riau Hadiri Penutupan MTQ XII Tingkat Provinsi Kepulauan Riau Tahun 2026</a><time>Jul 09, 2026</time></article></main>';
 $ptLatest = pn_natuna_instansi_parse_items($ptHtml, 'https://pt-kepri.go.id/', ['/kepri/'], ['pengumuman', 'pengantar', 'visi', 'struktur', 'wilayah', 'yurisdiksi', 'sejarah', 'tugas', 'fungsi', 'kepaniteraan', 'pegawai', 'role-model']);

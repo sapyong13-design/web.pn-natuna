@@ -65,6 +65,22 @@ function pn_natuna_instansi_recent_items(array $items, int $days, ?int $now = nu
     return array_values(array_filter($items, static fn ($item) => (int) ($item['pub'] ?? 0) >= $cutoff));
 }
 
+function pn_natuna_instansi_fill_items(array $live, array $fallback, int $limit = 5): array
+{
+    $seen = array_fill_keys(array_map(static fn ($item) => mb_strtolower($item['title']), $live), true);
+    foreach ($fallback as $item) {
+        if (count($live) >= $limit) {
+            break;
+        }
+        $key = mb_strtolower($item['title']);
+        if (!isset($seen[$key])) {
+            $live[] = $item;
+            $seen[$key] = true;
+        }
+    }
+    return array_slice($live, 0, $limit);
+}
+
 function pn_natuna_instansi_fetch_google_news(string $query): array
 {
     $url = 'https://news.google.com/rss/search?q=' . rawurlencode($query) . '&hl=id&gl=ID&ceid=ID:id';
@@ -303,8 +319,8 @@ function pn_natuna_instansi_load(): array
     ];
     $maNews = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita');
     if (count($maNews) >= 2) {
-        $data['ma']['news'] = array_slice($maNews, 0, 5);
-        $data['_status']['ma_news'] = 'live-google-news';
+        $data['ma']['news'] = pn_natuna_instansi_fill_items($maNews, $data['ma']['news']);
+        $data['_status']['ma_news'] = count($maNews) < 5 ? 'live-google-news+fallback' : 'live-google-news';
     }
     $maAnnouncements = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman');
     if (count($maAnnouncements) >= 2) {
