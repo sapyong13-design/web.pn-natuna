@@ -9292,7 +9292,7 @@ body.is-dark .svc-doc-ic {
   border: 0;
   border-radius: 0;
   padding: 0;
-  aspect-ratio: 16 / 8;
+  height: clamp(260px, 28vw, 320px);
   background: #e9e1d9;
   cursor: zoom-in;
 }
@@ -9336,11 +9336,11 @@ body.is-dark .facility-documentary__caption {
 
 @media (max-width: 760px) {
   .content-primary .facility-documentary__media {
-    aspect-ratio: 4 / 3;
+    height: 200px;
   }
 
   .content-primary .facility-documentary--ptsp .facility-documentary__media {
-    aspect-ratio: 16 / 9;
+    height: 200px;
   }
 
   .facility-documentary--ptsp .facility-documentary__media img {
