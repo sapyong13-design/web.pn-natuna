@@ -9339,6 +9339,15 @@ body.is-dark .facility-documentary__caption {
     aspect-ratio: 4 / 3;
   }
 
+  .content-primary .facility-documentary--ptsp .facility-documentary__media {
+    aspect-ratio: 16 / 9;
+  }
+
+  .facility-documentary--ptsp .facility-documentary__media img {
+    object-fit: contain;
+    background: #17232c;
+  }
+
   .facility-documentary__caption {
     padding: 11px 14px 13px;
     font-size: 0.8rem;

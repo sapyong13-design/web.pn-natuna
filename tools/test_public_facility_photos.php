@@ -38,12 +38,27 @@ if (is_file($migrationPath)) {
     $expect(str_contains($sql, 'id = 480') && str_contains($sql, "title = 'Galeri Fasilitas Publik'"), 'Gallery update must be narrowly guarded.');
     $expect($containsPayload('data-maklumat-zoom'), 'Documentary photos must use existing lightbox trigger.');
     $expect($containsPayload('loading="lazy" decoding="async"'), 'Documentary photos must load lazily and decode asynchronously.');
+    foreach (['jenis-layanan-pada-ptsp-pengadilan-negeri-natuna', 'layanan-disabilitas', 'pos-bantuan-hukum'] as $alias) {
+        $expect(str_contains($sql, "alias = '{$alias}'"), "Migration must guard exact alias {$alias}.");
+    }
+    $expect(substr_count($sql, 'SHA2(introtext, 256) = ') === 3, 'Each full article snapshot must guard its prior content hash.');
+    foreach (['Petugas Pelayanan Terpadu Satu Pintu Pengadilan Negeri Natuna siap melayani masyarakat.', 'Kursi roda dan alat bantu mobilitas yang tersedia untuk pengguna layanan prioritas.', 'Meja layanan Pos Bantuan Hukum di area PTSP Pengadilan Negeri Natuna.'] as $caption) {
+        $expect($containsPayload($caption), "Migration is missing approved caption: {$caption}.");
+    }
+    foreach (['biaya-jenis-layanan.png', 'waktu-layanan.png', 'Layanan per Kepaniteraan', 'Prinsip Layanan', 'Apa yang Bisa Anda Peroleh?'] as $preserved) {
+        $expect($containsPayload($preserved), "Migration must preserve {$preserved}.");
+    }
+    foreach (['akses-disabilitas.jpg', 'posbakum.jpg', '2026-briefing-ptsp-1.jpeg'] as $legacy) {
+        $expect(!$containsPayload($legacy), "Migration must remove legacy reference {$legacy}.");
+    }
+    $expect($containsPayload('facility-documentary facility-documentary--ptsp'), 'PTSP documentary needs a mobile-safe variant class.');
 }
 
 $css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
 foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible', 'body.is-dark .facility-documentary', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'] as $selector) {
     $expect(str_contains($css, $selector), "Facility documentary CSS is missing {$selector}.");
 }
+$expect(str_contains($css, '.facility-documentary--ptsp .facility-documentary__media img') && str_contains($css, 'object-fit: contain;'), 'PTSP mobile crop must preserve all staff.');
 
 
 if ($failures) {
