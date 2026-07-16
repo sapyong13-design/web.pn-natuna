@@ -196,8 +196,8 @@ if (trim((string) $this->getDescription()) === '') {
         <?php endif; ?>
         <jdoc:include type="modules" name="home-facilities" style="card" />
         <div class="home-section-divider" aria-hidden="true"></div>
-        <?php if (function_exists('pn_natuna_render_latest_news')) : ?>
-          <?php pn_natuna_render_latest_news(); ?>
+        <?php if (function_exists('pn_natuna_render_latest_announcements')) : ?>
+          <?php pn_natuna_render_latest_announcements(); ?>
         <?php endif; ?>
         <?php if (function_exists('pn_natuna_render_instansi_feed')) : ?>
           <?php pn_natuna_render_instansi_feed(); ?>

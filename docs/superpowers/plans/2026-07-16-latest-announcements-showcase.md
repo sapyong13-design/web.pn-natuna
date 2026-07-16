@@ -59,18 +59,23 @@ C:/laragon/bin/php/php-8.3.30-Win32-vs16-x64/php.exe tools/test_latest_announcem
 
 Expected: FAIL with `Announcement renderer is missing.`
 
-- [ ] **Step 3: Correct image precedence helper**
+- [ ] **Step 3: Add showcase-specific image precedence helper**
 
-In `pn_natuna_hero_article_image()`, select non-empty `image_fulltext` first, then non-empty `image_intro`. Preserve category 13 fallback and root-relative normalization:
+Leave `pn_natuna_hero_article_image()` unchanged because the hero slider depends on its intro-first behavior. Add `pn_natuna_announcement_image(object $article): string` for showcase rendering only. Select non-empty `image_fulltext` first, then non-empty `image_intro`, then the announcement fallback:
 
 ```php
+$decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
 $img = trim((string) ($decoded['image_fulltext'] ?? ''));
 if ($img === '') {
     $img = trim((string) ($decoded['image_intro'] ?? ''));
 }
+if ($img === '') {
+    return '/images/brand/pengumuman-resmi-pn-natuna.webp';
+}
+return '/' . ltrim(explode('#', $img)[0], '/');
 ```
 
-Add fixture assertions proving fulltext wins, intro is used when fulltext is empty, and category 13 fallback is returned when both are empty.
+Add fixture assertions proving the showcase helper prefers fulltext, falls back to intro, and then uses the official announcement asset. Also assert `pn_natuna_hero_article_image()` still prefers intro when both fields exist, protecting hero behavior.
 
 - [ ] **Step 4: Implement minimal announcement renderer**
 

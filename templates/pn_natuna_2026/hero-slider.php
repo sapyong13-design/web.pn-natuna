@@ -96,6 +96,76 @@ function pn_natuna_hero_article_image(object $article): string
     return '/' . ltrim($img, '/');
 }
 
+function pn_natuna_announcement_image(object $article): string
+{
+    $decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
+    $img = trim((string) ($decoded['image_fulltext'] ?? ''));
+    if ($img === '') {
+        $img = trim((string) ($decoded['image_intro'] ?? ''));
+    }
+    if ($img === '') {
+        return '/images/brand/pengumuman-resmi-pn-natuna.webp';
+    }
+    return '/' . ltrim(explode('#', $img)[0], '/');
+}
+
+function pn_natuna_announcement_date(string $created): string
+{
+    $months = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    $ts = strtotime($created);
+    return $ts ? date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) : '';
+}
+function pn_natuna_render_latest_announcements(?array $articles = null): void
+{
+    $articles ??= pn_natuna_hero_latest_articles(13, 3);
+    if (!$articles) {
+        return;
+    }
+    $articles = array_slice(array_values($articles), 0, 3);
+    $feature = array_shift($articles);
+    $featureExcerpt = pn_natuna_hero_excerpt($feature->introtext ?? '', 140);
+    ?>
+    <section class="module-card announcement-showcase" aria-labelledby="announcement-showcase-title">
+      <div class="news-cards-head">
+        <div class="section-head">
+          <p class="section-kicker">Informasi Resmi</p>
+          <h2 id="announcement-showcase-title">Pengumuman Baru</h2>
+          <p class="section-desc">Informasi, pemberitahuan, dan agenda resmi terbaru Pengadilan Negeri Natuna.</p>
+        </div>
+        <a class="section-action" href="/pengumuman">Semua Pengumuman &rarr;</a>
+      </div>
+      <div class="announcement-showcase__grid<?php echo $articles ? '' : ' is-single'; ?>">
+        <a class="announcement-feature" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($feature, 13), ENT_QUOTES, 'UTF-8'); ?>">
+          <span class="announcement-feature__media">
+            <img src="<?php echo htmlspecialchars(pn_natuna_announcement_image($feature), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="760" height="460" loading="lazy" decoding="async">
+            <span class="announcement-feature__badge">Terbaru</span>
+          </span>
+          <span class="announcement-feature__copy">
+            <time><?php echo htmlspecialchars(pn_natuna_announcement_date($feature->created), ENT_QUOTES, 'UTF-8'); ?></time>
+            <strong><?php echo htmlspecialchars($feature->title, ENT_QUOTES, 'UTF-8'); ?></strong>
+            <?php if ($featureExcerpt !== '') : ?><span class="announcement-feature__excerpt"><?php echo $featureExcerpt; ?></span><?php endif; ?>
+            <span class="announcement-feature__cta">Baca Pengumuman <span aria-hidden="true">&rarr;</span></span>
+          </span>
+        </a>
+        <?php if ($articles) : ?>
+          <div class="announcement-compact-list">
+            <?php foreach ($articles as $article) : ?>
+              <a class="announcement-compact" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($article, 13), ENT_QUOTES, 'UTF-8'); ?>">
+                <span class="announcement-compact__media"><img src="<?php echo htmlspecialchars(pn_natuna_announcement_image($article), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="240" height="180" loading="lazy" decoding="async"></span>
+                <span class="announcement-compact__copy">
+                  <time><?php echo htmlspecialchars(pn_natuna_announcement_date($article->created), ENT_QUOTES, 'UTF-8'); ?></time>
+                  <strong><?php echo htmlspecialchars($article->title, ENT_QUOTES, 'UTF-8'); ?></strong>
+                </span>
+                <span class="announcement-compact__arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+    </section>
+    <?php
+}
+
 function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel, bool $active): void
 {
     ?>
@@ -120,44 +190,6 @@ function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel,
         <li class="hero-tab-empty"><a href="/berita-dan-pengumuman">Belum ada data terbaru &mdash; lihat arsip</a></li>
       <?php endif; ?>
     </ul>
-    <?php
-}
-
-function pn_natuna_render_latest_news(): void
-{
-    $articles = pn_natuna_hero_latest_articles(12, 3);
-    if (!$articles) {
-        return;
-    }
-    $months = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    ?>
-    <div class="module-card news-cards-board">
-      <div class="news-cards-head">
-        <div class="section-head">
-          <p class="section-kicker">Berita</p>
-          <h2>Berita Terbaru</h2>
-          <p class="section-desc">Kabar kegiatan, layanan, dan capaian terbaru Pengadilan Negeri Natuna.</p>
-        </div>
-        <a class="section-action" href="/berita-dan-pengumuman">Semua Berita &rarr;</a>
-      </div>
-      <div class="news-cards-grid">
-        <?php foreach ($articles as $article) :
-            $ts = strtotime($article->created);
-            $dateLabel = $ts ? date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) : '';
-        ?>
-          <a class="news-card" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($article, 12), ENT_QUOTES, 'UTF-8'); ?>">
-            <span class="news-card-media">
-              <img src="<?php echo htmlspecialchars(pn_natuna_hero_article_image($article), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="480" height="300" loading="lazy" decoding="async">
-              <?php if (pn_natuna_hero_is_new($article->created)) : ?><span class="news-card-new">Baru</span><?php endif; ?>
-            </span>
-            <time><?php echo htmlspecialchars($dateLabel, ENT_QUOTES, 'UTF-8'); ?></time>
-            <strong><?php echo htmlspecialchars($article->title, ENT_QUOTES, 'UTF-8'); ?></strong>
-            <?php $excerpt = pn_natuna_hero_excerpt($article->introtext ?? '', 110); ?>
-            <?php if ($excerpt !== '') : ?><span class="news-card-excerpt"><?php echo $excerpt; ?></span><?php endif; ?>
-          </a>
-        <?php endforeach; ?>
-      </div>
-    </div>
     <?php
 }
 
