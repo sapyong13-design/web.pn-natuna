@@ -54,6 +54,14 @@ if (is_file($migrationPath)) {
     $expect($containsPayload('facility-documentary facility-documentary--ptsp'), 'PTSP documentary needs a mobile-safe variant class.');
 }
 
+$variantMigrationPath = $root . '/database/migrations/20260720_facility_panel_size_variants.sql';
+$expect(is_file($variantMigrationPath), 'Facility panel variant migration is missing.');
+if (is_file($variantMigrationPath)) {
+    $variantSql = (string) file_get_contents($variantMigrationPath);
+    $expect(str_contains($variantSql, "alias = 'layanan-disabilitas'") && str_contains($variantSql, "alias = 'pos-bantuan-hukum'"), 'Panel variants must target exact aliases.');
+    $expect(str_contains($variantSql, 'facility-documentary--disability') && str_contains($variantSql, 'facility-documentary--posbakum'), 'Panel variant classes are missing.');
+    $expect(!str_contains($variantSql, 'facility-thumb') && !str_contains($variantSql, 'id = 480'), 'Homepage facility gallery must remain untouched.');
+}
 $css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
 foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible', 'body.is-dark .facility-documentary', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'] as $selector) {
     $expect(str_contains($css, $selector), "Facility documentary CSS is missing {$selector}.");
@@ -61,6 +69,9 @@ foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible
 $expect(str_contains($css, '.facility-documentary--ptsp .facility-documentary__media img') && str_contains($css, 'object-fit: contain;'), 'PTSP mobile crop must preserve all staff.');
 $expect(str_contains($css, 'height: clamp(260px, 28vw, 320px);'), 'Desktop documentary height must be capped at 320px.');
 $expect(str_contains($css, 'height: 200px;'), 'Mobile documentary height must be capped at 200px.');
+foreach (['height: 380px;', 'height: 350px;', 'height: 360px;', 'height: 230px;', 'height: 220px;'] as $height) {
+    $expect(str_contains($css, $height), "Facility variant CSS is missing {$height}.");
+}
 
 
 if ($failures) {

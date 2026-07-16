@@ -9324,6 +9324,27 @@ body.is-dark .svc-doc-ic {
   line-height: 1.5;
 }
 
+.content-primary .facility-documentary--ptsp .facility-documentary__media {
+  height: 380px;
+}
+
+.facility-documentary--ptsp .facility-documentary__media img {
+  object-fit: contain;
+  background: #17232c;
+}
+.content-primary .facility-documentary--disability .facility-documentary__media {
+  height: 350px;
+}
+
+.content-primary .facility-documentary--posbakum .facility-documentary__media {
+  height: 360px;
+}
+
+.facility-documentary--posbakum .facility-documentary__media img {
+  object-fit: contain;
+  background: #17232c;
+}
+
 body.is-dark .facility-documentary {
   border-color: var(--dark-content-line);
   background: var(--dark-content-raised);
@@ -9339,14 +9360,16 @@ body.is-dark .facility-documentary__caption {
     height: 200px;
   }
 
+
   .content-primary .facility-documentary--ptsp .facility-documentary__media {
-    height: 200px;
+    height: 230px;
   }
 
-  .facility-documentary--ptsp .facility-documentary__media img {
-    object-fit: contain;
-    background: #17232c;
+  .content-primary .facility-documentary--disability .facility-documentary__media,
+  .content-primary .facility-documentary--posbakum .facility-documentary__media {
+    height: 220px;
   }
+
 
   .facility-documentary__caption {
     padding: 11px 14px 13px;
