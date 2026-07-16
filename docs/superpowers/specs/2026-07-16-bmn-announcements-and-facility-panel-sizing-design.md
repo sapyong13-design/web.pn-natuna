@@ -44,6 +44,15 @@ Alias:
 
 Deduplikasi dilakukan berdasarkan alias dan URL dokumen. Migrasi SQL baru wajib idempoten dan tidak mengubah artikel lama. Showcase **Pengumuman Baru** otomatis mengambil keduanya berdasarkan tanggal terbaru.
 
+## Thumbnail dokumen
+
+Kedua artikel tidak memakai fallback kategori yang sama. PDF resmi diunduh dari Google Drive, diverifikasi sebagai PDF, lalu halaman pertama masing-masing dirender menjadi WebP:
+
+- `images/pengumuman/bmn-penetapan-pemenang-lelang-2026.webp`
+- `images/pengumuman/bmn-pengumuman-lelang-2026.webp`
+
+Thumbnail memakai rasio konsisten, latar dokumen utuh, dan pemrosesan hanya rasterisasi serta optimasi WebP. Tidak mengubah, menambah, menutup, atau menyusun ulang isi dokumen. Artikel menyimpan thumbnail sebagai `image_intro` dan `image_fulltext` bila sesuai pola Joomla lokal, sehingga feature dan compact showcase memiliki visual berbeda. PDF asli tidak wajib disimpan dalam repository karena artikel tetap menautkan dokumen Drive kanonis; cache unduhan bersifat sementara dan tidak dilacak Git.
+
 ## Panel dokumenter halaman detail
 
 Galeri Fasilitas homepage tidak berubah.
@@ -81,6 +90,8 @@ Caption, lightbox, alt, mode gelap, focus keyboard, dan reduced-motion tetap. Is
 Kontrak otomatis membuktikan:
 
 - dua alias pengumuman dan dua URL Drive tepat;
+- dua thumbnail WebP berasal dari halaman pertama PDF yang berbeda dan lolos pemeriksaan MIME/dimensi;
+- `image_intro` kedua artikel mengarah ke thumbnail masing-masing, bukan fallback kategori;
 - kategori 13, published, public, dan deduplikasi idempoten;
 - tanggal tidak diklaim sebagai tanggal dokumen resmi;
 - link eksternal aman;
