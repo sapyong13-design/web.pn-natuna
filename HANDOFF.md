@@ -18,8 +18,8 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 
 - Hero beranda: sinematik full-bleed memakai `images/hero/gedung-pn-natuna-2026.webp`, dua layer cover/contain dan mask feather; slide pertama `fetchpriority=high`, tidak lazy.
 - Role Model, modul **482**: dua poster dari `images/role-model/` (Joko Ciptanto kini `joko-ciptanto-role-model-2026.webp`).
-- Instagram: feed otomatis dari RSS.app melalui `tools/cron-refresh-instagram.php` (cron per jam, URL feed di private env), cache JSON + thumbnail WebP lokal di `cache/`+`media/instagram/` (ter-ignore); homepage merender carousel satu kartu 5 detik dari cache; modul **483** iframe manual hanya fallback saat cache tidak valid.
-- Kabar Instansi: judul PT Kepri dipulihkan dari slug bila source terpotong; Badilum selalu `logo-badilum.png`; regression test `tools/test-instansi-feed.php`.
+- Instagram: homepage merender carousel satu kartu 5 detik dari cache JSON + thumbnail WebP lokal (`cache/pn_natuna_instagram/`, `media/instagram/`; ter-ignore), dengan modul **483** sebagai fallback saat cache invalid. Refresh memakai `tools/cron-refresh-instagram.php` dan RSS.app privat per jam. **Status 2026-07-16:** cache terakhir 11 Juli; RSS.app berhenti memberi post valid dan URL feed hanya tersedia di private env server. Periksa/regenerasi feed RSS.app serta `INSTAGRAM_RSS_URL`, jangan commit URL privat.
+- Kabar Instansi: MA memakai Google News RSS yang difilter 60 hari, diurutkan `pubDate`, dibersihkan dari homepage/noise, dinormalisasi dari ALL CAPS, lalu dipadukan fallback terkurasi sampai lima item; pengumuman MA memakai fallback bila RSS basi. Badilum dan PT Kepri live; filter PT Kepri tidak lagi membuang judul yang memuat Ketua/Wakil. Cache menyimpan `_status` sumber dan cron mencatat live/fallback; renderer tetap hanya tiga tab. Regression test `tools/test-instansi-feed.php`.
 - Mode gelap: default terang, aktif hanya melalui tombol dan `localStorage` key `pnNatunaDark`; tidak mengikuti preferensi sistem.
 - Mobile `≤760px`: header kompak/sticky, drawer bertingkat, bottom bar lima aksi hanya di homepage, sidebar menjadi snap rail.
 - Detail artikel kategori Berita/Pengumuman memakai override `templates/pn_natuna_2026/html/com_content/article/default.php`; kategori lain memakai template core secara langsung.
@@ -38,6 +38,14 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 - Keluarga Transparansi memakai renderer terpusat `html/com_content/article/transparency-family.php` untuk artikel 45 dan child 37, 38, 39, 40, 86, 41, 42, 43, 85, 87, 88, 115, 116. Renderer mempertahankan seluruh link arsip, menghapus shell DB duplikat, memberi satu hero h1, breadcrumb, dan navigasi empat kelompok.
 - Kelompok Transparansi: **Akuntabilitas Kinerja**, **Keuangan**, **Survei dan Integritas**, **Informasi Publik**. Desktop memakai grouped dropdown/disclosure; mobile accordion hanya membuka kelompok aktif. Semua route lama dipertahankan.
 - Focused contracts: `tools/test_news_portal_renderer.php`, `tools/test_news_portal_renderer.py`, `tools/test_news_category_channels.php`, dan `tools/test_transparency_family_renderer.php`.
+
+## Pembaruan 16 Jul 2026: Pengumuman, fasilitas, dan feed
+
+- Blok homepage **Berita Terbaru** diganti **Pengumuman Baru**: satu feature + dua compact, otomatis kategori Pengumuman **13**, gambar `image_fulltext → image_intro → fallback`, route arsip `/pengumuman`, desktop 60:40 dan mobile satu kolom. Hero slider tetap intro-first dan tidak berubah.
+- Dua pengumuman BMN resmi diimpor tanpa duplikasi: **Pengumuman Lelang BMN** (4 Juni 2026, artikel 209) dan **Penetapan Pemenang Lelang BMN** (11 Juni 2026, artikel 208). Halaman pertama PDF menjadi dua WebP berbeda di `images/pengumuman/`. Identitas direkonsiliasi berdasarkan URL Drive, alias, dan judul ternormalisasi; duplikat tambahan dipindah ke trash oleh migrasi `20260721_reconcile_bmn_announcements.sql`.
+- Galeri Fasilitas modul **480** memakai foto PTSP baru `images/layanan/gallery/ruang-ptsp-2026.webp` (1600×900, WebP sinematik). Tiga halaman detail memakai panel dokumenter lightbox: PTSP 380/230px `contain`, Disabilitas 350/220px `contain`, Posbakum 360/220px `contain` (desktop/mobile). Galeri homepage tetap empat kartu dan ukuran thumbnail lama.
+- Migrasi fasilitas berurutan: `20260716_public_facility_documentary_photos.sql` menambah konten/foto; `20260720_facility_panel_size_variants.sql` menambah class varian setelahnya. Jangan mengubah urutan atau mengedit migrasi yang sudah tercatat.
+- Focused contracts baru: `tools/test_latest_announcements_showcase.php`, `tools/test_public_facility_photos.php`, dan `tools/test_bmn_announcements.php`.
 
 Spesifikasi serta rencana desain aktif tersedia di [`docs/superpowers/specs/`](docs/superpowers/specs/) dan [`docs/superpowers/plans/`](docs/superpowers/plans/).
 
@@ -69,13 +77,13 @@ Spesifikasi serta rencana desain aktif tersedia di [`docs/superpowers/specs/`](d
 - `templates/pn_natuna_2026/index.php` — shell, metadata, menu dan bottom bar homepage.
 - `templates/pn_natuna_2026/css/template.css` — styling; aturan mobile utama berada pada blok akhir `@media (max-width:760px)`.
 - `templates/pn_natuna_2026/template.js` — interaksi menu, carousel, lightbox, share, sticky navigation.
-- `templates/pn_natuna_2026/hero-slider.php` — hero dan berita terbaru.
-- `templates/pn_natuna_2026/instansi-feed.php` — feed MA/Badilum/PT Kepri dan cache.
+- `templates/pn_natuna_2026/hero-slider.php` — hero serta renderer showcase Pengumuman Baru.
+- `templates/pn_natuna_2026/instansi-feed.php` — feed MA/Badilum/PT Kepri, normalisasi judul, live/fallback status, dan cache.
 - `templates/pn_natuna_2026/sipp-schedule.php`, `stats-counter.php`, `html/layouts/chromes/card.php`.
 - `tools/refresh-survey.py`, `tools/refresh-dipa.py`, `cron-refresh-instansi.php`.
 - [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md) — cron feed, survei, dan DIPA.
 
-Feed Badilum dan PT Kepri diperbarui live oleh cron. MA RI terhalang Cloudflare untuk fetch server-side dan memakai fallback yang diperbarui manual/semi-otomatis. Jangan mengklaim feed MA live.
+Feed Badilum dan PT Kepri diperbarui live oleh cron. MA RI tidak di-fetch langsung karena Cloudflare; berita memakai Google News RSS terfilter + fallback terkurasi, sedangkan pengumuman kembali ke fallback bila RSS tidak memiliki minimal dua item dalam 60 hari. Gunakan `_status` cache/log cron sebagai bukti sumber; jangan mengklaim semua item MA live.
 
 ## AMPUH 2026
 
