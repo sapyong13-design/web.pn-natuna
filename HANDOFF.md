@@ -9,7 +9,7 @@ Knowledge base status aktif untuk rebuild Joomla Pengadilan Negeri Natuna Kelas 
 - Root lokal: `C:\tmp\web.pn-natuna`
 - URL lokal: `http://localhost:8080`; port harus sama dengan `live_site` di `configuration.php` agar SEF tidak redirect-loop.
 - Database lokal: `pn_natuna_rebuild`
-- Snapshot penuh terbaru: `database/pn_natuna_rebuild_20260711_instagram_mobile.sql` (lokal, tidak dilacak Git; sebelumnya `..._ui_polish.sql`)
+- Snapshot penuh terbaru: `database/pn_natuna_rebuild_20260715_deploy_exact.sql` (salinan `.sql.gz` tersedia; lokal, tidak dilacak Git). Setelah restore, selalu jalankan seluruh migrasi kanonis agar perubahan 16–21 Juli diterapkan.
 - Stack lokal: PHP 8.3.30 (`C:\laragon\bin\php`), MySQL 8.4.3 (`C:\laragon\bin\mysql`)
 
 Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti kode harus berupa migrasi SQL idempoten baru di `database/migrations/`; restore dump wajib melalui `tools/restore-local-db.py` agar seluruh migrasi diputar ulang.
