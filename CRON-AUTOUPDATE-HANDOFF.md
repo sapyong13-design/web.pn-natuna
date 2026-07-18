@@ -384,3 +384,38 @@ MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
 Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
+
+---
+
+## 9. Refresh YouTube per Jam
+
+Cache YouTube dibuat oleh script CLI-only `tools/cron-refresh-youtube.php`. Script mengambil Atom channel `UCuPb35OggK2PKdW7Ed0qszA` melalui HTTPS, mempertahankan cache lama jika fetch, parse, atau promosi gagal, dan menulis log default ke `public_html/logs/youtube-refresh.log`.
+
+### 9a. Upload dan izin file
+
+Upload/copy `tools/cron-refresh-youtube.php` dari repository ke Joomla root: `/home/USER/public_html/tools/cron-refresh-youtube.php`. Jangan pindahkan script ke `/home/USER/private/cron/`: script memakai `__DIR__` untuk memuat `../templates/pn_natuna_2026/youtube-feed.php` dan menulis cache relatif ke Joomla root.
+
+```bash
+mkdir -p /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
+chmod 755 /home/USER/public_html/tools /home/USER/public_html/cache /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
+chmod 640 /home/USER/public_html/tools/cron-refresh-youtube.php
+```
+
+Script dijalankan dengan `php -f`, jadi izin execute tidak diperlukan; file harus dapat dibaca oleh user cron. Cache dibuat di `/home/USER/public_html/cache/pn_natuna_youtube/feed.json`; log default dibuat di `/home/USER/public_html/logs/youtube-refresh.log`.
+
+### 9b. Validasi manual dan cron
+
+Jalankan sekali dari Joomla `tools/` agar seluruh path relatif konsisten:
+
+```bash
+cd /home/USER/public_html/tools && PATH_PHP -f cron-refresh-youtube.php
+ls -l /home/USER/public_html/cache/pn_natuna_youtube/feed.json /home/USER/public_html/logs/youtube-refresh.log
+```
+
+Perintah harus mencetak `YouTube cache refreshed`; `feed.json` dan `youtube-refresh.log` harus ada/berubah. Setelah itu, buat cron tiap jam:
+
+```bash
+0 * * * * cd /home/USER/public_html/tools && PATH_PHP -f cron-refresh-youtube.php
+```
+
+Ganti `PATH_PHP` dan `USER` sesuai cPanel. Pastikan PHP CLI memiliki ekstensi cURL dan user cron dapat menulis `cache/pn_natuna_youtube/` serta `logs/`.

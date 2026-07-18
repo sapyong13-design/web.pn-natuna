@@ -11,6 +11,7 @@ $sippScheduleHelper = __DIR__ . '/sipp-schedule.php';
 $statsCounterHelper = __DIR__ . '/stats-counter.php';
 $instansiFeedHelper = __DIR__ . '/instansi-feed.php';
 $heroSliderHelper = __DIR__ . '/hero-slider.php';
+$youtubeFeedHelper = __DIR__ . '/youtube-feed.php';
 $instagramFeedHelper = __DIR__ . '/instagram-feed.php';
 
 if (is_file($sippScheduleHelper)) {
@@ -22,6 +23,9 @@ if (is_file($statsCounterHelper)) {
 }
 if (is_file($instansiFeedHelper)) {
     require_once $instansiFeedHelper;
+}
+if (is_file($youtubeFeedHelper)) {
+    require_once $youtubeFeedHelper;
 }
 if (is_file($heroSliderHelper)) {
     require_once $heroSliderHelper;
@@ -112,7 +116,7 @@ if (trim((string) $this->getDescription()) === '') {
       <jdoc:include type="modules" name="header-badges" style="none" />
     </div>
     <nav class="main-menu" aria-label="Navigasi utama">
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu-list">Menu</button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu-list"><svg class="menu-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Menu</span></button>
       <div class="menu-backdrop" hidden></div>
       <div id="main-menu-list" class="main-menu-list mobile-menu-panel" aria-label="Menu Navigasi">
         <div class="mobile-menu-heading">
@@ -126,16 +130,22 @@ if (trim((string) $this->getDescription()) === '') {
           <div class="mobile-menu-actions" aria-label="Layanan utama">
             <a href="/informasi-perkara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2H5a2 2 0 0 0-2 2v14h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm12 8v8H5v-8z" fill="currentColor"/></svg><small>Jadwal</small></a>
             <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zm3 4v2h8V7zm0 4v2h8v-2zm0 4v2h5v-2z" fill="currentColor"/></svg><small>SIPP</small></a>
-            <a href="/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><small>Pengaduan</small></a>
+            <a href="/layanan-publik/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><small>Pengaduan</small></a>
           </div>
           <button class="mobile-menu-search search-overlay-toggle" type="button" aria-expanded="false" aria-controls="site-search-overlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 19.6-4.5-4.5a7.5 7.5 0 1 0-1.4 1.4l4.5 4.5zM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0" fill="currentColor"/></svg><span>Cari informasi</span></button>
+          <div class="mobile-menu-filter-wrap">
+            <label for="mobile-menu-filter">Filter menu</label>
+            <div class="mobile-menu-filter-control"><input id="mobile-menu-filter" type="search" placeholder="Cari menu…" autocomplete="off" data-mobile-menu-filter><button type="button" aria-label="Hapus filter menu" data-mobile-menu-clear hidden>&times;</button></div>
+            <p class="mobile-menu-filter-status visually-hidden" aria-live="polite" data-mobile-menu-filter-status></p>
+            <p class="mobile-menu-empty" data-mobile-menu-empty hidden>Tidak ada menu yang cocok.</p>
+          </div>
           <jdoc:include type="modules" name="main-menu" style="none" />
         </div>
         <div class="mobile-menu-footer">
           <button class="dark-toggle" type="button" aria-pressed="false" aria-label="Mode gelap" title="Aktifkan/matikan mode gelap">
             <svg class="dark-toggle-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             <svg class="dark-toggle-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            <span class="dark-toggle-copy"><strong>Mode gelap</strong><small><span class="dark-status-off">Nonaktif</span><span class="dark-status-on">Aktif</span></small></span>
+            <span class="dark-toggle-copy"><strong>Mode gelap</strong><small><span class="dark-status-off">Mati</span><span class="dark-status-on">Aktif</span></small></span>
           </button>
           <span class="mobile-menu-contact"><a href="tel:+627733211203" aria-label="Telepon PN Natuna"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.2c1.2.4 2.4.6 3.6.6a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.2.2 2.4.6 3.6a1 1 0 0 1-.3 1z" fill="currentColor"/></svg></a><a href="https://wa.me/6281261256661" target="_blank" rel="noopener" aria-label="WhatsApp PN Natuna"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l5.3-1.3A9.5 9.5 0 1 0 12 2Zm0 17a7.4 7.4 0 0 1-3.8-1.1l-.4-.2-3.1.8.8-3-.2-.5A7.5 7.5 0 1 1 12 19Zm4.1-5.6c-.2-.1-1.3-.7-1.5-.7-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6 6 0 0 1-3-2.6c-.2-.3 0-.4.1-.5l.5-.6c.1-.2.2-.4.1-.6l-.7-1.7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.8.8-1.1 1.8-.7 2.9.7 2.1 2.3 3.8 4.3 4.8 1.6.8 3.4 1.1 4.4.3.5-.4.8-1 .9-1.6 0-.2-.1-.3-.3-.4z" fill="currentColor"/></svg></a></span>
         </div>
@@ -162,8 +172,8 @@ if (trim((string) $this->getDescription()) === '') {
       <div class="mobile-start-grid">
         <a href="/informasi-perkara"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2H5a2 2 0 0 0-2 2v14h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm12 8v8H5v-8z" fill="currentColor"/></svg><span><strong>Jadwal Sidang</strong><small>Lihat agenda hari ini</small></span></a>
         <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 4.5-9 4.5-9-4.5zm-7 8.2 7 3.5 7-3.5V17l-7 4-7-4z" fill="currentColor"/></svg><span><strong>Telusuri Perkara</strong><small>Buka layanan SIPP</small></span></a>
-        <a href="/permohonan-informasi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18H4zm3 4v2h10V7zm0 4v2h10v-2zm0 4v2h7v-2z" fill="currentColor"/></svg><span><strong>Ajukan Informasi</strong><small>Layanan informasi publik</small></span></a>
-        <a href="/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><span><strong>Buat Pengaduan</strong><small>Sampaikan secara aman</small></span></a>
+        <a href="/layanan-publik/permohonan-informasi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18H4zm3 4v2h10V7zm0 4v2h10v-2zm0 4v2h7v-2z" fill="currentColor"/></svg><span><strong>Ajukan Informasi</strong><small>Layanan informasi publik</small></span></a>
+        <a href="/layanan-publik/regulasi-pengaduan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 5h2v7h-2zm0 9h2v2h-2z" fill="currentColor"/></svg><span><strong>Buat Pengaduan</strong><small>Sampaikan secara aman</small></span></a>
       </div>
     </section>
   <?php endif; ?>
@@ -209,6 +219,7 @@ if (trim((string) $this->getDescription()) === '') {
         <jdoc:include type="modules" name="home-contact" style="card" />
       </div>
       <aside class="home-juknis-sidebar" aria-label="Informasi pendukung">
+        <div class="mobile-rail-status" data-sidebar-rail-status><span class="mobile-rail-hint">Geser untuk melihat lainnya</span><output>1 dari 1</output></div>
         <jdoc:include type="modules" name="home-search" style="card" />
         <jdoc:include type="modules" name="home-service-info" style="card" />
         <jdoc:include type="modules" name="home-role-model" style="card" />

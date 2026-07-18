@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const close = document.querySelector('.menu-close');
   const backdrop = document.querySelector('.menu-backdrop');
   setupAmpuhDirectory();
+  setupYouTubeShowcase();
+  setupMobileMenuFilter();
+  setupMobileRailStatus();
+  prefetchIntegrityPoster();
+  setupMobileHeroHeight();
   const mobileQuery = window.matchMedia('(max-width: 760px)');
 
   if (!toggle || !menu) {
@@ -19,6 +24,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const child = Array.from(item.children).find((element) => element.tagName === 'UL');
     return Boolean(child);
   });
+  const normalizeLabel = (value) => value.replace(/\s+/g, ' ').trim();
+  parents.forEach((item) => {
+    const child = Array.from(item.children).find((element) => element.tagName === 'UL');
+    const link = Array.from(item.children).find((element) => element.matches('a[href]'));
+    if (!child || !link || child.querySelector(':scope > .mobile-menu-summary-item')) return;
+    const summaryItem = document.createElement('li');
+    summaryItem.className = 'mobile-menu-summary-item';
+    const summaryLink = document.createElement('a');
+    summaryLink.className = 'mobile-menu-summary-link';
+    summaryLink.href = link.href;
+    summaryLink.textContent = `Ringkasan ${normalizeLabel(link.textContent)}`;
+    summaryItem.appendChild(summaryLink);
+    child.prepend(summaryItem);
+  });
+  const addMobileGroupLabels = (parentHref, groups) => {
+    const parentLink = Array.from(menu.querySelectorAll(':scope a[href]')).find((link) => new URL(link.href).pathname === parentHref);
+    const list = parentLink?.parentElement.querySelector(':scope > ul');
+    if (!list) return;
+    groups.forEach(({ label, before }) => {
+      const target = Array.from(list.children).find((item) => {
+        const link = item.querySelector(':scope > a[href]');
+        return link && new URL(link.href).pathname.endsWith(`/${before}`);
+      });
+      if (!target || list.querySelector(`[data-mobile-menu-group="${before}"]`)) return;
+      const heading = document.createElement('li');
+      heading.className = 'mobile-menu-group-label';
+      heading.dataset.mobileMenuGroup = before;
+      heading.textContent = label;
+      target.insertAdjacentElement('beforebegin', heading);
+    });
+  };
+  addMobileGroupLabels('/transparansi', [
+    { label: 'Akuntabilitas Kinerja', before: 'ringkasan-lkjip' },
+    { label: 'Keuangan', before: 'laporan-realisasi-anggaran' },
+    { label: 'Survei & Integritas', before: 'laporan-skm' },
+    { label: 'Informasi Publik', before: 'e-brosur' },
+  ]);
+  addMobileGroupLabels('/informasi-perkara', [
+    { label: 'Biaya & Prosedur', before: 'biaya-perkara' },
+    { label: 'Data & Administrasi', before: 'data-eksekusi' },
+  ]);
+
+
+  const activeLink = menu.querySelector('a[aria-current="page"], li.current > a, li.active > a');
+  if (activeLink && !activeLink.hasAttribute('aria-current')) activeLink.setAttribute('aria-current', 'page');
+  const scrollActiveMenuItem = () => {
+    if (!activeLink) return;
+    const scroller = menu.querySelector('.mobile-menu-scroll');
+    if (!scroller) return;
+    const linkRect = activeLink.getBoundingClientRect();
+    const scrollRect = scroller.getBoundingClientRect();
+    if (linkRect.top < scrollRect.top || linkRect.bottom > scrollRect.bottom) {
+      activeLink.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
+  };
+
 
   parents.forEach((item, index) => {
     const child = Array.from(item.children).find((element) => element.tagName === 'UL');
@@ -79,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
       menu.setAttribute('aria-modal', 'true');
       menu.setAttribute('aria-labelledby', 'mobile-menu-title');
       close?.focus();
+      window.requestAnimationFrame(scrollActiveMenuItem);
     } else {
       menu.removeAttribute('role');
       menu.removeAttribute('aria-modal');
@@ -357,26 +419,38 @@ function setupHeroBackdropPause() {
 function setupStickyNav() {
   const nav = document.querySelector('.main-menu');
   if (!nav) return;
+  const hero = document.querySelector('.hero.home-slider');
   const syncHeight = () => document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
   let threshold = 0;
+  let scrollFrame = 0;
+  let scrollIdleTimer = 0;
   const syncThreshold = () => {
     if (!document.body.classList.contains('nav-stuck')) {
       threshold = nav.getBoundingClientRect().top + window.scrollY;
     }
   };
-  const onScroll = () => {
+  const updateScrollState = () => {
+    scrollFrame = 0;
     const stuck = window.scrollY > threshold + 8;
     if (stuck !== document.body.classList.contains('nav-stuck')) {
       syncHeight();
       document.body.classList.toggle('nav-stuck', stuck);
     }
+    if (hero) {
+      hero.classList.add('is-scroll-active');
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => hero.classList.remove('is-scroll-active'), 120);
+    }
+  };
+  const onScroll = () => {
+    if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollState);
   };
   syncHeight();
   syncThreshold();
   window.addEventListener('resize', () => { document.body.classList.remove('nav-stuck'); syncThreshold(); syncHeight(); onScroll(); }, { passive: true });
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('load', onScroll);
-  onScroll();
+  updateScrollState();
 }
 
 function setupInstansiTabs() {
@@ -594,6 +668,15 @@ function setupAccessibilityTools() {
   const setPressed = (selector, active) => {
     document.querySelectorAll(selector).forEach((button) => button.setAttribute('aria-pressed', String(active)));
   };
+  const syncDarkStatus = (active) => {
+    document.querySelectorAll('.dark-toggle').forEach((button) => {
+      const offStatus = button.querySelector('.dark-status-off');
+      const onStatus = button.querySelector('.dark-status-on');
+      if (offStatus) offStatus.hidden = active;
+      if (onStatus) onStatus.hidden = !active;
+    });
+  };
+
 
   const applyScale = (scale) => {
     const next = clamp(scale, -2, 3);
@@ -630,6 +713,7 @@ function setupAccessibilityTools() {
     root.classList.remove('access-invert', 'access-grey', 'access-big-cursor');
     setReadingGuide(false);
     setPressed('.access-panel-dark, .dark-toggle', false);
+    syncDarkStatus(false);
     setPressed('[data-access-action="invertColors"]', false);
     setPressed('[data-access-action="grayHues"]', false);
     setPressed('[data-access-action="underlineLinks"]', false);
@@ -653,6 +737,7 @@ function setupAccessibilityTools() {
   body.classList.toggle('access-links-highlight', savedUnderline);
   root.classList.toggle('access-big-cursor', savedCursor);
   setPressed('.access-panel-dark, .dark-toggle', savedDark);
+  syncDarkStatus(savedDark);
   setPressed('[data-access-action="invertColors"]', savedInvert);
   setPressed('[data-access-action="grayHues"]', savedGrey);
   setPressed('[data-access-action="underlineLinks"]', savedUnderline);
@@ -726,6 +811,7 @@ function setupAccessibilityTools() {
       const active = !body.classList.contains('is-dark');
       body.classList.toggle('is-dark', active);
       setPressed('.access-panel-dark, .dark-toggle', active);
+      syncDarkStatus(active);
       storageSet('pnNatunaDark', active ? '1' : '0');
     });
   });
@@ -963,7 +1049,10 @@ function initCarousel(root, opts) {
       return;
     }
     stop();
-    timer = window.setInterval(() => setActive(activeIndex + 1), interval);
+    timer = window.setInterval(() => {
+      if (root.closest('.is-scroll-active')) return;
+      setActive(activeIndex + 1);
+    }, interval);
   };
 
   dots.forEach((dot, dotIndex) => {
@@ -1207,7 +1296,7 @@ function setupBackToTop() {
   const btn = document.getElementById('back-to-top');
   if (!btn) return;
   btn.hidden = false;
-  const onScroll = () => btn.classList.toggle('is-visible', window.scrollY > 480);
+  const onScroll = () => btn.classList.toggle('is-visible', window.scrollY > 900);
   window.addEventListener('scroll', onScroll, { passive: true });
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   onScroll();
@@ -1232,6 +1321,7 @@ function setupHeroNewsTabs() {
     const src = link.dataset.image || '';
     const cap = link.dataset.caption || '';
     if (!src || preview.getAttribute('src') === src) {
+
       if (caption && cap) {
         caption.textContent = cap;
       }
@@ -1247,6 +1337,7 @@ function setupHeroNewsTabs() {
       window.setTimeout(() => preview.classList.remove('is-swapping'), 700);
     }, 180);
   };
+
 
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -1269,6 +1360,105 @@ function setupHeroNewsTabs() {
   if (first) {
     first.classList.add('is-preview');
   }
+}
+function setupMobileHeroHeight() {
+  const root = document.querySelector('.hero-cinema');
+  if (!root) return;
+  const slides = Array.from(root.querySelectorAll('.hero-slide'));
+  const mobile = window.matchMedia('(max-width: 560px)');
+  const measure = () => {
+    root.style.removeProperty('--hero-mobile-slide-height');
+    if (!mobile.matches) return;
+    const states = slides.map((slide) => ({
+      position: slide.style.position,
+      visibility: slide.style.visibility,
+      opacity: slide.style.opacity,
+      pointerEvents: slide.style.pointerEvents,
+    }));
+    slides.forEach((slide) => {
+      slide.style.position = 'relative';
+      slide.style.visibility = 'hidden';
+      slide.style.opacity = '0';
+      slide.style.pointerEvents = 'none';
+    });
+    const height = Math.ceil(Math.max(...slides.map((slide) => slide.scrollHeight)));
+    slides.forEach((slide, index) => Object.assign(slide.style, states[index]));
+    root.style.setProperty('--hero-mobile-slide-height', `${height}px`);
+  };
+  let frame = 0;
+  const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
+  schedule();
+  document.fonts?.ready.then(schedule);
+  mobile.addEventListener('change', schedule);
+  window.addEventListener('resize', schedule, { passive: true });
+  new ResizeObserver(schedule).observe(document.documentElement);
+}
+
+function setupMobileMenuFilter() {
+  const input = document.querySelector('[data-mobile-menu-filter]');
+  const clear = document.querySelector('[data-mobile-menu-clear]');
+  const empty = document.querySelector('[data-mobile-menu-empty]');
+  const status = document.querySelector('[data-mobile-menu-filter-status]');
+  const root = document.querySelector('.mobile-menu-scroll > ul');
+  if (!input || !root) return;
+  const topItems = Array.from(root.children);
+  const normalize = (value) => value.toLocaleLowerCase('id-ID').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const apply = () => {
+    const query = normalize(input.value.trim());
+    let matches = 0;
+    topItems.forEach((item) => {
+      const ownMatch = normalize(item.textContent).includes(query);
+      item.hidden = Boolean(query && !ownMatch);
+      if (!item.hidden) matches += 1;
+      if (query && ownMatch) {
+        item.querySelectorAll(':scope .submenu-toggle').forEach((button) => button.setAttribute('aria-expanded', 'true'));
+        item.querySelectorAll(':scope ul').forEach((list) => { list.hidden = false; });
+      }
+    });
+    if (clear) clear.hidden = query === '';
+    if (empty) empty.hidden = matches > 0;
+    if (status) status.textContent = query ? `${matches} kelompok menu cocok` : 'Semua menu ditampilkan';
+  };
+  input.addEventListener('input', apply);
+  clear?.addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+}
+
+function setupMobileRailStatus() {
+  document.querySelectorAll('[data-youtube-showcase]').forEach((root) => {
+    const items = Array.from(root.querySelectorAll('[data-youtube-item]'));
+    const syncVisibleItems = () => {
+      const mobile = window.matchMedia('(max-width: 760px)').matches;
+      items.forEach((item, index) => { item.closest('li').hidden = mobile && index >= 3; });
+    };
+    syncVisibleItems();
+    window.matchMedia('(max-width: 760px)').addEventListener('change', syncVisibleItems);
+  });
+  const bind = (rail, status, itemSelector) => {
+    if (!rail || !status) return;
+    const items = Array.from(rail.querySelectorAll(itemSelector));
+    const output = status.querySelector('output');
+    if (!items.length || !output) return;
+    const update = () => {
+      const center = rail.scrollLeft + rail.clientWidth / 2;
+      let active = 0;
+      items.forEach((item, index) => { if (Math.abs(item.offsetLeft + item.offsetWidth / 2 - center) < Math.abs(items[active].offsetLeft + items[active].offsetWidth / 2 - center)) active = index; });
+      output.textContent = `${active + 1} dari ${items.length}`;
+    };
+    rail.addEventListener('scroll', update, { passive: true });
+    update();
+  };
+  document.querySelectorAll('[data-youtube-showcase]').forEach((root) => bind(root.querySelector('.youtube-showcase-rail'), root.querySelector('[data-youtube-count]'), ':scope > li:not([hidden])'));
+  const sidebar = document.querySelector('.home-juknis-sidebar');
+  bind(sidebar, sidebar?.querySelector('[data-sidebar-rail-status]'), ':scope > .module-card, :scope > .instagram-cache');
+}
+
+function prefetchIntegrityPoster() {
+  const poster = document.querySelector('[data-integrity-poster]');
+  if (!poster) return;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (connection?.saveData || ['slow-2g', '2g'].includes(connection?.effectiveType)) return;
+  const run = () => { const preload = new Image(); preload.src = poster.currentSrc || poster.src; };
+  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 3500 }); else window.setTimeout(run, 1800);
 }
 
 function pnNatunaJakartaNow() {
@@ -1396,6 +1586,75 @@ function setupHeroPrefetch() {
   }
 }
 
+
+function setupYouTubeShowcase() {
+  const idPattern = /^[A-Za-z0-9_-]{11}$/;
+  document.querySelectorAll('[data-youtube-showcase]').forEach((root) => {
+    const player = root.querySelector('[data-youtube-player]');
+    const preview = root.querySelector('[data-youtube-preview]');
+    const play = root.querySelector('[data-youtube-play]');
+    const title = root.querySelector('[data-youtube-title]');
+    const fallback = root.querySelector('[data-youtube-fallback]');
+    const source = root.querySelector('[data-youtube-source]');
+    const status = root.querySelector('[data-youtube-status]');
+    const items = Array.from(root.querySelectorAll('[data-youtube-item]'));
+    if (!player || !preview || !play || !title || !fallback || !items.length) return;
+
+    let active = items.find((item) => item.getAttribute('aria-current') === 'true') || items[0];
+    let iframe = null;
+    const video = (item) => {
+      const id = item.dataset.videoId || '';
+      if (!idPattern.test(id)) return null;
+      return { id, title: item.dataset.videoTitle || '', thumbnail: item.dataset.videoThumbnail || '', source: item.dataset.videoSource || '' };
+    };
+    const setActive = (item) => {
+      const selected = video(item);
+      if (!selected) return;
+      active = item;
+      items.forEach((button) => {
+        const current = button === item;
+        button.classList.toggle('is-active', current);
+        button.setAttribute('aria-current', String(current));
+        const state = button.querySelector('.youtube-showcase-item__state');
+        if (state) state.textContent = current ? 'Sedang dipilih' : (button.dataset.videoSource === 'wajib' ? 'Pilihan' : 'Terbaru');
+      });
+      title.textContent = selected.title;
+      if (source) source.textContent = selected.source === 'wajib' ? 'Video pilihan' : 'Video terbaru';
+      play.setAttribute('aria-label', `Putar video: ${selected.title}`);
+      fallback.href = `https://www.youtube.com/watch?v=${selected.id}`;
+      if (selected.thumbnail) preview.src = selected.thumbnail;
+      if (iframe) {
+        iframe.title = `Video YouTube: ${selected.title}`;
+        iframe.src = `https://www.youtube-nocookie.com/embed/${selected.id}?autoplay=1&rel=0`;
+      }
+      if (status) status.textContent = `Video dipilih: ${selected.title}`;
+    };
+    const playVideo = () => {
+      const selected = video(active);
+      if (!selected) return;
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.setAttribute('title', `Video YouTube: ${selected.title}`);
+        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        iframe.loading = 'lazy';
+        iframe.className = 'youtube-showcase-iframe';
+        player.appendChild(iframe);
+      }
+      iframe.src = `https://www.youtube-nocookie.com/embed/${selected.id}?autoplay=1&rel=0`;
+      player.classList.add('is-playing');
+      fallback.classList.add('youtube-showcase-fallback-link');
+      player.insertAdjacentElement('afterend', fallback);
+      preview.hidden = true;
+      play.hidden = true;
+      if (status) status.textContent = `Memutar video: ${selected.title}`;
+    };
+    items.forEach((item) => item.addEventListener('click', () => setActive(item)));
+    play.addEventListener('click', playVideo);
+    setActive(active);
+  });
+}
 
 function setupEditorialArticleShare() {
   document.querySelectorAll('[data-editorial-share]').forEach((share) => {

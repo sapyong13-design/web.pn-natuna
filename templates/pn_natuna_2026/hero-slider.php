@@ -115,27 +115,36 @@ function pn_natuna_announcement_date(string $created): string
     $ts = strtotime($created);
     return $ts ? date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) : '';
 }
-function pn_natuna_render_latest_announcements(?array $articles = null): void
+function pn_natuna_render_latest_announcements(?array $articles = null, ?array $videos = null): void
 {
-    $articles ??= pn_natuna_hero_latest_articles(13, 3);
+    $articles ??= pn_natuna_hero_latest_articles(13, 1);
     if (!$articles) {
         return;
     }
-    $articles = array_slice(array_values($articles), 0, 3);
-    $feature = array_shift($articles);
+    $videos ??= function_exists('pn_natuna_youtube_load_cache') ? pn_natuna_youtube_load_cache() : [];
+    $videos = array_slice(array_values($videos), 0, 5);
+    if (!$videos && function_exists('pn_natuna_youtube_pinned')) {
+        $videos = pn_natuna_youtube_pinned();
+    }
+    $feature = array_values($articles)[0];
     $featureExcerpt = pn_natuna_hero_excerpt($feature->introtext ?? '', 140);
+    $activeVideo = $videos[0] ?? null;
     ?>
     <section class="module-card announcement-showcase" aria-labelledby="announcement-showcase-title">
-      <div class="news-cards-head">
+      <div class="news-cards-head announcement-showcase__head">
         <div class="section-head">
-          <p class="section-kicker">Informasi Resmi</p>
-          <h2 id="announcement-showcase-title">Pengumuman Baru</h2>
-          <p class="section-desc">Informasi, pemberitahuan, dan agenda resmi terbaru Pengadilan Negeri Natuna.</p>
+          <p class="section-kicker">Informasi Resmi &amp; Dokumentasi</p>
+          <h2 id="announcement-showcase-title">Pengumuman &amp; Video Terbaru</h2>
+          <p class="section-desc">Pengumuman resmi dan dokumentasi terbaru Pengadilan Negeri Natuna.</p>
         </div>
-        <a class="section-action" href="/pengumuman">Semua Pengumuman &rarr;</a>
+        <div class="announcement-showcase__actions">
+          <a class="section-action" href="/pengumuman">Semua Pengumuman <span aria-hidden="true">&rarr;</span></a>
+          <a class="announcement-showcase__channel-link" href="https://www.youtube.com/channel/UCuPb35OggK2PKdW7Ed0qszA" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▶</span> Kunjungi channel</a>
+        </div>
       </div>
-      <div class="announcement-showcase__grid<?php echo $articles ? '' : ' is-single'; ?>">
+      <div class="announcement-showcase__grid">
         <a class="announcement-feature" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($feature, 13), ENT_QUOTES, 'UTF-8'); ?>">
+          <span class="announcement-feature__eyebrow">Pengumuman terbaru</span>
           <span class="announcement-feature__media">
             <img src="<?php echo htmlspecialchars(pn_natuna_announcement_image($feature), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="760" height="460" loading="lazy" decoding="async">
             <span class="announcement-feature__badge">Terbaru</span>
@@ -147,18 +156,33 @@ function pn_natuna_render_latest_announcements(?array $articles = null): void
             <span class="announcement-feature__cta">Baca Pengumuman <span aria-hidden="true">&rarr;</span></span>
           </span>
         </a>
-        <?php if ($articles) : ?>
-          <div class="announcement-compact-list">
-            <?php foreach ($articles as $article) : ?>
-              <a class="announcement-compact" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($article, 13), ENT_QUOTES, 'UTF-8'); ?>">
-                <span class="announcement-compact__media"><img src="<?php echo htmlspecialchars(pn_natuna_announcement_image($article), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="240" height="180" loading="lazy" decoding="async"></span>
-                <span class="announcement-compact__copy">
-                  <time><?php echo htmlspecialchars(pn_natuna_announcement_date($article->created), ENT_QUOTES, 'UTF-8'); ?></time>
-                  <strong><?php echo htmlspecialchars($article->title, ENT_QUOTES, 'UTF-8'); ?></strong>
-                </span>
-                <span class="announcement-compact__arrow" aria-hidden="true">&rarr;</span>
-              </a>
-            <?php endforeach; ?>
+        <?php if ($activeVideo) : ?>
+          <div class="youtube-showcase" data-youtube-showcase>
+            <span class="youtube-showcase__eyebrow">Video pilihan</span>
+            <div class="youtube-showcase-player" data-youtube-player>
+              <img src="<?php echo htmlspecialchars($activeVideo['thumbnail'], ENT_QUOTES, 'UTF-8'); ?>" alt="" width="1280" height="720" loading="lazy" decoding="async" data-youtube-preview>
+              <span class="youtube-showcase-player__shade" aria-hidden="true"></span>
+              <button class="youtube-showcase-play" type="button" data-youtube-play aria-label="Putar video: <?php echo htmlspecialchars($activeVideo['title'], ENT_QUOTES, 'UTF-8'); ?>"><span class="youtube-showcase-play__icon" aria-hidden="true">&#9654;</span><span class="youtube-showcase-play__label">Putar video</span></button>
+              <div class="youtube-showcase-player__copy">
+                <span class="youtube-showcase-player__meta">Channel Resmi PN Natuna <span aria-hidden="true">&middot;</span> <span data-youtube-source><?php echo ($activeVideo['source'] ?? '') === 'wajib' ? 'Video pilihan' : 'Video terbaru'; ?></span></span>
+                <strong data-youtube-title><?php echo htmlspecialchars($activeVideo['title'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                <a href="<?php echo htmlspecialchars($activeVideo['url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener noreferrer" data-youtube-fallback>Tonton di YouTube</a>
+              </div>
+            </div>
+            <div class="youtube-showcase-rail__viewport">
+              <ul class="youtube-showcase-rail" aria-label="Pilih video">
+                <?php foreach ($videos as $index => $video) : ?>
+                  <li>
+                    <button class="youtube-showcase-item<?php echo $index === 0 ? ' is-active' : ''; ?>" type="button" data-youtube-item data-video-id="<?php echo htmlspecialchars($video['id'], ENT_QUOTES, 'UTF-8'); ?>" data-video-title="<?php echo htmlspecialchars($video['title'], ENT_QUOTES, 'UTF-8'); ?>" data-video-thumbnail="<?php echo htmlspecialchars($video['thumbnail'], ENT_QUOTES, 'UTF-8'); ?>" data-video-source="<?php echo htmlspecialchars((string) ($video['source'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" aria-current="<?php echo $index === 0 ? 'true' : 'false'; ?>" aria-label="Pilih video: <?php echo htmlspecialchars($video['title'], ENT_QUOTES, 'UTF-8'); ?>">
+                      <span class="youtube-showcase-item__media"><img src="<?php echo htmlspecialchars($video['thumbnail'], ENT_QUOTES, 'UTF-8'); ?>" alt="" width="240" height="135" loading="lazy" decoding="async"><span class="youtube-showcase-item__play" aria-hidden="true">&#9654;</span></span>
+                      <span class="youtube-showcase-item__copy"><strong><?php echo htmlspecialchars($video['title'], ENT_QUOTES, 'UTF-8'); ?></strong><span class="youtube-showcase-item__state"><?php echo $index === 0 ? 'Sedang dipilih' : (($video['source'] ?? '') === 'wajib' ? 'Pilihan' : 'Terbaru'); ?></span></span>
+                    </button>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            </div>
+            <div class="mobile-rail-status youtube-showcase-count" data-youtube-count><span class="mobile-rail-hint">Geser untuk memilih video</span><output>1 dari <?php echo count($videos); ?></output></div>
+            <p class="youtube-showcase-status visually-hidden" aria-live="polite" aria-atomic="true" data-youtube-status></p>
           </div>
         <?php endif; ?>
       </div>
@@ -207,7 +231,7 @@ function pn_natuna_render_hero_slider(): void
     ?>
     <div class="hero-slider hero-cinema" data-interval="7000">
       <div class="hero-backdrop" aria-hidden="true">
-        <img src="/images/hero/gedung-pn-natuna-2026.webp" alt="" width="1536" height="1024" fetchpriority="high" decoding="async">
+        <span class="hero-backdrop-image"><img src="/images/hero/gedung-pn-natuna-2026-graded.webp" alt="" width="1536" height="1024" fetchpriority="high" decoding="async"></span>
       </div>
       <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna &middot; Ranai, Kepulauan Riau</span>
 
@@ -235,6 +259,13 @@ function pn_natuna_render_hero_slider(): void
               <a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">SIPP</a>
             </nav>
           </div>
+        </div>
+
+        <div class="hero-slide hero-slide-integrity" role="group" aria-label="Tolak Gratifikasi dan Pungutan Liar">
+          <a class="hero-slide-integrity__link" href="/zona-integritas" aria-label="Buka informasi Zona Integritas: Tolak Gratifikasi dan Pungutan Liar">
+            <img class="hero-slide-integrity__image" src="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp" alt="Pengadilan Negeri Natuna Kelas II secara tegas menolak segala bentuk gratifikasi dan pungutan liar" width="1672" height="941" loading="lazy" decoding="async" data-integrity-poster>
+            <span class="hero-slide-integrity__cta">Lihat poster penuh <span aria-hidden="true">↗</span></span>
+          </a>
         </div>
 
         <div class="hero-slide hero-slide-news" role="group" aria-label="Berita dan pengumuman terbaru">
@@ -266,7 +297,8 @@ function pn_natuna_render_hero_slider(): void
 
       <div class="hero-slider-dots">
         <button type="button" data-hero-slide="0" class="is-active" aria-label="Slide selamat datang" aria-pressed="true"></button>
-        <button type="button" data-hero-slide="1" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
+        <button type="button" data-hero-slide="1" aria-label="Slide Tolak Gratifikasi dan Pungutan Liar" aria-pressed="false"></button>
+        <button type="button" data-hero-slide="2" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
       </div>
     </div>
     <?php

@@ -1,6 +1,8 @@
 ﻿# Runtime state and writable data (never deploy from source control)
 /cache/
 /administrator/cache/
+/cache/pn_natuna_youtube/
+/logs/youtube-refresh.log
 /.runtime-logs/
 /logs/
 /administrator/logs/
