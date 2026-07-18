@@ -52,6 +52,7 @@ __pycache__/
 
 # Local isolated development worktrees
 /.worktrees/
+/.superpowers/
 
 
 # Security tools, design docs, and handoff runbooks remain tracked; the deployment

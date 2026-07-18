@@ -37,7 +37,7 @@
 
 **Files:**
 - Generate: `database/migrations/20260715_cleanup_duplicate_news.sql`
-- Generate: `tools/news-cleanup-report.json`
+- Generate locally, inspect, then discard: `tools/news-cleanup-report.json` (runtime audit artifact; not tracked)
 
 - [ ] Export active category 12 rows from local MariaDB as JSON input.
 - [ ] Run cleanup tool against repository root.

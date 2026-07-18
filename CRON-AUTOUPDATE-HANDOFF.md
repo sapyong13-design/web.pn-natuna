@@ -162,49 +162,6 @@ Badilum & PT. **MA RI butuh refresh manual berkala** (mis. 1-2 minggu sekali).
 
 5. **Commit & deploy** perubahan `instansi-feed.php`.
 
-### Semi-otomatis MA RI (opsional, butuh Node.js + Puppeteer):
-
-Kalau server lokal/dev punya Node.js, bisa pakai script scraper headless browser.
-Install:
-```bash
-npm install puppeteer
-```
-
-Script `tools/scrape-ma-feed.js`:
-```javascript
-const puppeteer = require('puppeteer');
-(async () => {
-  const browser = await puppeteer.launch({ headless: 'new' });
-  const page = await browser.newPage();
-  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-
-  async function grab(url) {
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    await new Promise(r => setTimeout(r, 3000)); // tunggu Cloudflare challenge selesai
-    return await page.evaluate(() => {
-      const mon = {Januari:'Jan',Februari:'Feb',Maret:'Mar',April:'Apr',Mei:'Mei',Juni:'Jun',Juli:'Jul',Agustus:'Agu',September:'Sep',Oktober:'Okt',November:'Nov',Desember:'Des'};
-      return Array.from(document.querySelectorAll('div.list')).map(l => {
-        const title = (l.querySelector('h1,h2,h3')||l.querySelector('a'))?.textContent?.trim() || '';
-        const content = l.querySelector('.content')?.textContent || '';
-        const dm = content.match(/(\d{1,2})\s+(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\s+(20\d{2})/);
-        const url = l.querySelector('a[href]')?.href || '';
-        return { date: dm ? dm[1]+' '+mon[dm[2]] : '', title, url };
-      }).filter(x => x.title.length >= 15).slice(0, 5);
-    });
-  }
-
-  const news = await grab('https://mahkamahagung.go.id/id/berita');
-  const announcements = await grab('https://mahkamahagung.go.id/id/pengumuman');
-  console.log(JSON.stringify({ news, announcements }, null, 2));
-  await browser.close();
-})();
-```
-
-Jalankan:
-```bash
-node tools/scrape-ma-feed.js
-```
-Output JSON → copy ke array `'ma'` di `instansi-feed.php`, commit, deploy.
 
 ---
 
@@ -391,21 +348,24 @@ angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu dises
 
 Cache YouTube dibuat oleh script CLI-only `tools/cron-refresh-youtube.php`. Script mengambil Atom channel `UCuPb35OggK2PKdW7Ed0qszA` melalui HTTPS, mempertahankan cache lama jika fetch, parse, atau promosi gagal, dan menulis log default ke `public_html/logs/youtube-refresh.log`.
 
-### 9a. Upload dan izin file
+### 9a. Salin dari private checkout dan atur izin
 
-Upload/copy `tools/cron-refresh-youtube.php` dari repository ke Joomla root: `/home/USER/public_html/tools/cron-refresh-youtube.php`. Jangan pindahkan script ke `/home/USER/private/cron/`: script memakai `__DIR__` untuk memuat `../templates/pn_natuna_2026/youtube-feed.php` dan menulis cache relatif ke Joomla root.
+Direktori `tools/` sengaja tidak masuk ZIP deployment. Setelah ekstraksi paket, salin hanya `tools/cron-refresh-youtube.php` dari private checkout repository ke `/home/USER/public_html/tools/cron-refresh-youtube.php`. Jangan mengunggah seluruh direktori `tools/` dan jangan mengambil script dari sumber publik. Script memakai `__DIR__` untuk memuat `../templates/pn_natuna_2026/youtube-feed.php` dan menulis cache relatif ke Joomla root.
 
 ```bash
-mkdir -p /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
+mkdir -p /home/USER/public_html/tools /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
+cp /home/USER/private/PATH_TO_CHECKOUT/tools/cron-refresh-youtube.php /home/USER/public_html/tools/cron-refresh-youtube.php
 chmod 755 /home/USER/public_html/tools /home/USER/public_html/cache /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
 chmod 640 /home/USER/public_html/tools/cron-refresh-youtube.php
 ```
+
+Ganti `PATH_TO_CHECKOUT` dengan lokasi private checkout yang sebenarnya.
 
 Script dijalankan dengan `php -f`, jadi izin execute tidak diperlukan; file harus dapat dibaca oleh user cron. Cache dibuat di `/home/USER/public_html/cache/pn_natuna_youtube/feed.json`; log default dibuat di `/home/USER/public_html/logs/youtube-refresh.log`.
 
 ### 9b. Validasi manual dan cron
 
-Jalankan sekali dari Joomla `tools/` agar seluruh path relatif konsisten:
+Jalankan sekali dari Joomla `tools/` setelah script disalin dari private checkout agar seluruh path relatif konsisten:
 
 ```bash
 cd /home/USER/public_html/tools && PATH_PHP -f cron-refresh-youtube.php

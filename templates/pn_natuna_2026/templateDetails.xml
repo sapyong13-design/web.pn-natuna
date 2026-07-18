@@ -8,10 +8,18 @@
   <files>
     <filename>index.php</filename>
     <filename>templateDetails.xml</filename>
+    <filename>hero-slider.php</filename>
+    <filename>instagram-feed.php</filename>
+    <filename>instansi-feed.php</filename>
+    <filename>sipp-schedule.php</filename>
+    <filename>stats-counter.php</filename>
+    <filename>youtube-feed.php</filename>
     <folder>css</folder>
     <folder>js</folder>
     <folder>images</folder>
     <folder>html</folder>
+    <folder>data</folder>
+    <folder>fonts</folder>
   </files>
   <positions>
     <position>topbar</position>
