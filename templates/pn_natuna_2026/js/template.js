@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupYouTubeShowcase();
   setupMobileMenuFilter();
   setupMobileRailStatus();
-  prefetchIntegrityPoster();
-  setupMobileHeroHeight();
   const mobileQuery = window.matchMedia('(max-width: 760px)');
 
   if (!toggle || !menu) {
@@ -207,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroNewsTabs();
   setupHeroGreeting();
   setupHeroServiceStatus();
-  setupHeroPrefetch();
   setupMaklumatLightbox();
   setupStickyNav();
   setupInstansiTabs();
@@ -458,27 +455,35 @@ function setupInstansiTabs() {
     const tabs = Array.from(board.querySelectorAll('[data-instansi-tab]'));
     const panels = Array.from(board.querySelectorAll('.instansi-panel'));
     if (!tabs.length) return;
-    const activate = (tab) => {
+    const activate = (tab, moveFocus = false) => {
       tabs.forEach((t) => {
         const active = t === tab;
         t.classList.toggle('is-active', active);
         t.setAttribute('aria-selected', String(active));
+        t.tabIndex = active ? 0 : -1;
       });
       panels.forEach((p) => {
         const active = p.id === 'instansi-panel-' + tab.dataset.instansiTab;
         p.classList.toggle('is-active', active);
         p.hidden = !active;
       });
+      if (moveFocus) tab.focus();
     };
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => activate(tab));
       tab.addEventListener('keydown', (event) => {
-        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-        const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        next.focus();
-        activate(next);
+        let next = null;
+        if (event.key === 'ArrowLeft') next = tabs[(index + tabs.length - 1) % tabs.length];
+        if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+        if (event.key === 'Home') next = tabs[0];
+        if (event.key === 'End') next = tabs[tabs.length - 1];
+        if (!next) return;
+        event.preventDefault();
+        event.stopPropagation();
+        activate(next, true);
       });
     });
+    activate(tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') || tabs[0]);
   });
 }
 
@@ -641,6 +646,12 @@ function storageRemove(key) {
     // Storage can be blocked by privacy settings; reset should still update DOM state.
   }
 }
+function syncBrowserTheme(dark) {
+  document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+  const theme = document.getElementById('theme-color-meta');
+  if (theme) theme.content = dark ? '#151015' : '#8f1f0b';
+}
+
 
 function clearAccessibilityStorage() {
   accessStorageKeys.forEach(storageRemove);
@@ -709,6 +720,7 @@ function setupAccessibilityTools() {
     clearAccessibilityStorage();
     applyScale(0);
     applySpacing(0);
+    syncBrowserTheme(false);
     body.classList.remove('is-dark', 'access-underline-links', 'access-links-highlight');
     root.classList.remove('access-invert', 'access-grey', 'access-big-cursor');
     setReadingGuide(false);
@@ -733,6 +745,7 @@ function setupAccessibilityTools() {
   body.classList.toggle('is-dark', savedDark);
   root.classList.toggle('access-invert', savedInvert);
   root.classList.toggle('access-grey', savedGrey);
+  syncBrowserTheme(savedDark);
   body.classList.toggle('access-underline-links', savedUnderline);
   body.classList.toggle('access-links-highlight', savedUnderline);
   root.classList.toggle('access-big-cursor', savedCursor);
@@ -812,6 +825,7 @@ function setupAccessibilityTools() {
       body.classList.toggle('is-dark', active);
       setPressed('.access-panel-dark, .dark-toggle', active);
       syncDarkStatus(active);
+      syncBrowserTheme(active);
       storageSet('pnNatunaDark', active ? '1' : '0');
     });
   });
@@ -977,77 +991,77 @@ function setupSearchOverlay() {
   const toggles = Array.from(document.querySelectorAll('.search-overlay-toggle'));
   const close = document.querySelector('.search-overlay-close');
   const input = document.querySelector('#site-search-query');
+  const searchBackground = Array.from(document.body.children).filter((element) => element !== overlay && element.tagName !== 'SCRIPT');
+  let searchReturnFocus = null;
 
-  if (!overlay || !toggles.length) {
-    return;
-  }
+  if (!overlay || !toggles.length) return;
 
-  const setOpen = (open) => {
+  const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const trapFocus = (event, container) => {
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(container.querySelectorAll(focusableSelector)).filter((element) => !element.hidden && element.getClientRects().length);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  const setOpen = (open, trigger = null) => {
+    if (open) searchReturnFocus = trigger || document.activeElement;
     overlay.hidden = !open;
     document.body.classList.toggle('search-overlay-open', open);
     toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', String(open)));
-    if (open) {
-      window.setTimeout(() => input?.focus(), 40);
-    }
+    searchBackground.forEach((element) => element.toggleAttribute('inert', open));
+    if (open) window.setTimeout(() => input?.focus(), 40);
+    else if (searchReturnFocus instanceof HTMLElement) { searchReturnFocus.focus(); searchReturnFocus = null; }
   };
 
   toggles.forEach((toggle) => toggle.addEventListener('click', () => {
-    if (toggle.closest('.mobile-menu-panel')) document.querySelector('.menu-close')?.click();
-    setOpen(overlay.hidden);
+    const insideMobileMenu = Boolean(toggle.closest('.mobile-menu-panel'));
+    if (insideMobileMenu) document.querySelector('.menu-close')?.click();
+    setOpen(overlay.hidden, insideMobileMenu ? document.querySelector('.menu-toggle') : toggle);
   }));
   close?.addEventListener('click', () => setOpen(false));
-  overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) {
-      setOpen(false);
-    }
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !overlay.hidden) {
-      setOpen(false);
-    }
-  });
+  overlay.addEventListener('click', (event) => { if (event.target === overlay) setOpen(false); });
+  overlay.addEventListener('keydown', (event) => trapFocus(event, overlay));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !overlay.hidden) setOpen(false); });
 }
 
 function initCarousel(root, opts) {
   const slides = Array.from(root.querySelectorAll(opts.slide));
   const dots = Array.from(root.querySelectorAll(opts.dot));
   const caption = opts.caption ? root.querySelector(opts.caption) : null;
-  if (slides.length < 2) {
-    return;
-  }
+  if (slides.length < 2) return;
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const interval = parseInt(root.dataset.interval || opts.interval || '5000', 10);
   root.style.setProperty('--ci', interval + 'ms');
   let activeIndex = 0;
   let timer = null;
+  let userInteracted = false;
 
   const setActive = (index) => {
     activeIndex = (index + slides.length) % slides.length;
     slides.forEach((slide, i) => {
-      slide.classList.toggle('is-active', i === activeIndex);
-      slide.setAttribute('aria-hidden', String(i !== activeIndex));
+      const active = i === activeIndex;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', String(!active));
+      slide.toggleAttribute('inert', !active);
     });
     dots.forEach((dot, i) => {
       dot.classList.toggle('is-active', i === activeIndex);
       dot.setAttribute('aria-pressed', String(i === activeIndex));
     });
-    if (caption && slides[activeIndex]) {
-      caption.textContent = slides[activeIndex].dataset.label || '';
-    }
+    if (caption && slides[activeIndex]) caption.textContent = slides[activeIndex].dataset.label || '';
   };
 
   const stop = () => {
-    if (timer) {
-      window.clearInterval(timer);
-      timer = null;
-    }
+    if (!timer) return;
+    window.clearInterval(timer);
+    timer = null;
   };
-
   const start = () => {
-    if (reducedMotion) {
-      return;
-    }
+    if (reducedMotion) return;
     stop();
     timer = window.setInterval(() => {
       if (root.closest('.is-scroll-active')) return;
@@ -1055,30 +1069,26 @@ function initCarousel(root, opts) {
     }, interval);
   };
 
+  const stopAfterInteraction = () => { userInteracted = true; stop(); };
   dots.forEach((dot, dotIndex) => {
     dot.addEventListener('click', () => {
       setActive(dotIndex);
-      start();
+      stopAfterInteraction();
     });
   });
-
   if (opts.nav) {
-    root.querySelectorAll(opts.nav).forEach((btn) => {
-      btn.addEventListener('click', () => {
-        setActive(activeIndex + (parseInt(btn.dataset.heroNav, 10) || 1));
-        start();
+    root.querySelectorAll(opts.nav).forEach((button) => {
+      button.addEventListener('click', () => {
+        setActive(activeIndex + (parseInt(button.dataset.heroNav, 10) || 1));
+        stopAfterInteraction();
       });
     });
   }
-
   root.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') {
-      setActive(activeIndex - 1);
-      start();
-    } else if (event.key === 'ArrowRight') {
-      setActive(activeIndex + 1);
-      start();
-    }
+    if (event.target instanceof Element && event.target.closest('a, button, input, select, textarea, [role="tablist"]')) return;
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    setActive(activeIndex + (event.key === 'ArrowRight' ? 1 : -1));
+    stopAfterInteraction();
   });
 
   let touchX = null;
@@ -1086,20 +1096,18 @@ function initCarousel(root, opts) {
     touchX = event.touches[0].clientX;
   }, { passive: true });
   root.addEventListener('touchend', (event) => {
-    if (touchX === null) {
-      return;
-    }
+    if (touchX === null) return;
     const delta = event.changedTouches[0].clientX - touchX;
     if (Math.abs(delta) > 40) {
       setActive(activeIndex + (delta < 0 ? 1 : -1));
-      start();
+      stopAfterInteraction();
     }
     touchX = null;
   }, { passive: true });
 
   root.addEventListener('mouseenter', stop);
-  root.addEventListener('mouseleave', start);
-
+  root.addEventListener('mouseleave', () => { if (!userInteracted && !root.matches(':focus-within')) start(); });
+  root.addEventListener('focusin', stop);
   setActive(0);
   start();
 }
@@ -1163,7 +1171,7 @@ function setupInstagramCarousels() {
         dot.setAttribute('aria-current', String(active));
       });
       if (count) {
-        const value = `${activeIndex + 1}/${slides.length}`;
+        const value = `${activeIndex + 1} dari ${slides.length}`;
         count.value = value;
         count.textContent = value;
       }
@@ -1339,15 +1347,34 @@ function setupHeroNewsTabs() {
   };
 
 
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      tabs.forEach((t) => {
-        t.classList.toggle('is-active', t === tab);
-        t.setAttribute('aria-selected', String(t === tab));
-      });
-      panels.forEach((p) => p.classList.toggle('is-active', p.dataset.heroPanel === tab.dataset.heroTab));
-      const activePanel = panels.find((p) => p.dataset.heroPanel === tab.dataset.heroTab);
-      setPreview(activePanel ? activePanel.querySelector('a[data-image]') : null);
+  const activateTab = (tab, moveFocus = false) => {
+    tabs.forEach((t) => {
+      const active = t === tab;
+      t.classList.toggle('is-active', active);
+      t.setAttribute('aria-selected', String(active));
+      t.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach((panel) => {
+      const active = panel.dataset.heroPanel === tab.dataset.heroTab;
+      panel.classList.toggle('is-active', active);
+      panel.hidden = !active;
+    });
+    const activePanel = panels.find((panel) => panel.dataset.heroPanel === tab.dataset.heroTab);
+    setPreview(activePanel ? activePanel.querySelector('a[data-image]') : null);
+    if (moveFocus) tab.focus();
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => activateTab(tab));
+    tab.addEventListener('keydown', (event) => {
+      let next = null;
+      if (event.key === 'ArrowLeft') next = tabs[(index + tabs.length - 1) % tabs.length];
+      if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+      if (event.key === 'Home') next = tabs[0];
+      if (event.key === 'End') next = tabs[tabs.length - 1];
+      if (!next) return;
+      event.preventDefault();
+      event.stopPropagation();
+      activateTab(next, true);
     });
   });
 
@@ -1356,42 +1383,7 @@ function setupHeroNewsTabs() {
     link.addEventListener('focus', () => setPreview(link));
   });
 
-  const first = slide.querySelector('.hero-tab-list.is-active a[data-image]');
-  if (first) {
-    first.classList.add('is-preview');
-  }
-}
-function setupMobileHeroHeight() {
-  const root = document.querySelector('.hero-cinema');
-  if (!root) return;
-  const slides = Array.from(root.querySelectorAll('.hero-slide'));
-  const mobile = window.matchMedia('(max-width: 560px)');
-  const measure = () => {
-    root.style.removeProperty('--hero-mobile-slide-height');
-    if (!mobile.matches) return;
-    const states = slides.map((slide) => ({
-      position: slide.style.position,
-      visibility: slide.style.visibility,
-      opacity: slide.style.opacity,
-      pointerEvents: slide.style.pointerEvents,
-    }));
-    slides.forEach((slide) => {
-      slide.style.position = 'relative';
-      slide.style.visibility = 'hidden';
-      slide.style.opacity = '0';
-      slide.style.pointerEvents = 'none';
-    });
-    const height = Math.ceil(Math.max(...slides.map((slide) => slide.scrollHeight)));
-    slides.forEach((slide, index) => Object.assign(slide.style, states[index]));
-    root.style.setProperty('--hero-mobile-slide-height', `${height}px`);
-  };
-  let frame = 0;
-  const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
-  schedule();
-  document.fonts?.ready.then(schedule);
-  mobile.addEventListener('change', schedule);
-  window.addEventListener('resize', schedule, { passive: true });
-  new ResizeObserver(schedule).observe(document.documentElement);
+  activateTab(tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') || tabs[0]);
 }
 
 function setupMobileMenuFilter() {
@@ -1452,14 +1444,6 @@ function setupMobileRailStatus() {
   bind(sidebar, sidebar?.querySelector('[data-sidebar-rail-status]'), ':scope > .module-card, :scope > .instagram-cache');
 }
 
-function prefetchIntegrityPoster() {
-  const poster = document.querySelector('[data-integrity-poster]');
-  if (!poster) return;
-  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  if (connection?.saveData || ['slow-2g', '2g'].includes(connection?.effectiveType)) return;
-  const run = () => { const preload = new Image(); preload.src = poster.currentSrc || poster.src; };
-  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 3500 }); else window.setTimeout(run, 1800);
-}
 
 function pnNatunaJakartaNow() {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
@@ -1567,24 +1551,6 @@ function setupMaklumatLightbox() {
   });
 }
 
-function setupHeroPrefetch() {
-  const run = () => {
-    const urls = new Set();
-    document.querySelectorAll('.hero-tab-list a[data-image]').forEach((a) => urls.add(a.dataset.image));
-    document.querySelectorAll('.hero-slide img').forEach((img) => urls.add(img.getAttribute('src')));
-    urls.forEach((src) => {
-      if (src) {
-        const im = new Image();
-        im.src = src;
-      }
-    });
-  };
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(run, { timeout: 4000 });
-  } else {
-    window.setTimeout(run, 2500);
-  }
-}
 
 
 function setupYouTubeShowcase() {

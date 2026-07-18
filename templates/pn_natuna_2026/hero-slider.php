@@ -193,7 +193,7 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
 function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel, bool $active): void
 {
     ?>
-    <ul class="hero-tab-list<?php echo $active ? ' is-active' : ''; ?>" data-hero-panel="<?php echo $panel; ?>">
+    <ul id="hero-panel-<?php echo $panel; ?>" class="hero-tab-list<?php echo $active ? ' is-active' : ''; ?>" data-hero-panel="<?php echo $panel; ?>" role="tabpanel" aria-labelledby="hero-tab-<?php echo $panel; ?>" <?php echo $active ? '' : 'hidden'; ?>>
       <?php if ($items) : foreach ($items as $item) : ?>
         <li>
           <a href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($item, $catId), ENT_QUOTES, 'UTF-8'); ?>"
@@ -231,7 +231,7 @@ function pn_natuna_render_hero_slider(): void
     ?>
     <div class="hero-slider hero-cinema" data-interval="7000">
       <div class="hero-backdrop" aria-hidden="true">
-        <span class="hero-backdrop-image"><img src="/images/hero/gedung-pn-natuna-2026-graded.webp" alt="" width="1536" height="1024" fetchpriority="high" decoding="async"></span>
+        <span class="hero-backdrop-image"><img src="/images/hero/gedung-pn-natuna-2026-graded.webp" srcset="/images/hero/gedung-pn-natuna-2026-graded-480.webp 480w, /images/hero/gedung-pn-natuna-2026-graded-768.webp 768w, /images/hero/gedung-pn-natuna-2026-graded-1200.webp 1200w, /images/hero/gedung-pn-natuna-2026-graded.webp 1536w" sizes="100vw" alt="" width="1536" height="1024" fetchpriority="high" decoding="async"></span>
       </div>
       <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna &middot; Ranai, Kepulauan Riau</span>
 
@@ -263,7 +263,7 @@ function pn_natuna_render_hero_slider(): void
 
         <div class="hero-slide hero-slide-integrity" role="group" aria-label="Tolak Gratifikasi dan Pungutan Liar">
           <a class="hero-slide-integrity__link" href="/zona-integritas" aria-label="Buka informasi Zona Integritas: Tolak Gratifikasi dan Pungutan Liar">
-            <img class="hero-slide-integrity__image" src="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp" alt="Pengadilan Negeri Natuna Kelas II secara tegas menolak segala bentuk gratifikasi dan pungutan liar" width="1672" height="941" loading="lazy" decoding="async" data-integrity-poster>
+            <img class="hero-slide-integrity__image" src="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp" srcset="/images/hero/integritas-tolak-gratifikasi-pungli-2026-480.webp 480w, /images/hero/integritas-tolak-gratifikasi-pungli-2026-768.webp 768w, /images/hero/integritas-tolak-gratifikasi-pungli-2026-1200.webp 1200w, /images/hero/integritas-tolak-gratifikasi-pungli-2026.webp 1672w" sizes="(max-width: 760px) calc(100vw - 32px), 960px" alt="Pengadilan Negeri Natuna Kelas II secara tegas menolak segala bentuk gratifikasi dan pungutan liar" width="1672" height="941" loading="lazy" decoding="async" data-integrity-poster>
             <span class="hero-slide-integrity__cta">Lihat poster penuh <span aria-hidden="true">↗</span></span>
           </a>
         </div>
@@ -273,8 +273,8 @@ function pn_natuna_render_hero_slider(): void
             <p class="hero-kicker">Informasi Terkini</p>
             <h2>Berita &amp; Pengumuman</h2>
             <div class="hero-tabs" role="tablist" aria-label="Pilih jenis informasi">
-              <button type="button" class="is-active" data-hero-tab="berita" role="tab" aria-selected="true">Berita</button>
-              <button type="button" data-hero-tab="pengumuman" role="tab" aria-selected="false">Pengumuman</button>
+              <button id="hero-tab-berita" type="button" class="is-active" data-hero-tab="berita" role="tab" aria-controls="hero-panel-berita" aria-selected="true" tabindex="0">Berita</button>
+              <button id="hero-tab-pengumuman" type="button" data-hero-tab="pengumuman" role="tab" aria-controls="hero-panel-pengumuman" aria-selected="false" tabindex="-1">Pengumuman</button>
             </div>
             <div class="hero-tab-panels">
             <?php pn_natuna_hero_render_tab_list($berita, 12, 'berita', true); ?>

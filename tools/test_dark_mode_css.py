@@ -16,12 +16,30 @@ required = {
     "structure chart canvas": "body.is-dark .struktur-chart-link",
     "quick service text": "body.is-dark .app-links .app-info strong",
     "quick service cards": "body.is-dark .app-links a",
+    "quick service outer surface": "body.is-dark .quick-links.app-strip",
+    "unified dark topbar": "body.is-dark .topbar {\n  background: #151c22;",
+    "dark brand header": "body.is-dark .header-brand",
+    "dark brand title": "body.is-dark .brand-lockup h1",
+    "dark brand address": "body.is-dark .brand-lockup p",
+
     "news tabs": "body.is-dark .hero-news-panel .hero-tabs button",
     "news list items": "body.is-dark .hero-news-panel .hero-tab-list a",
     "profile fact gradients": "body.is-dark .sejarah-fact-grid > div",
     "mission card gradients": "body.is-dark .visimisi-mission-grid article",
     "AMPUH dark accents": "body.is-dark .ampuh-directory",
+    "mobile dark surface tokens": "body.is-dark {\n    --mobile-surface: #0f151a;",
+    "mobile dark header title": "body.is-dark .brand-lockup h1::before",
+    "mobile dark menu control": "body.is-dark .menu-toggle",
+    "mobile start heading": "body.is-dark.is-home .mobile-section-heading",
+    "dark active video item": "body.is-dark .youtube-showcase-item.is-active",
+    "dark map kicker": "body.is-dark .home-map-heading p",
+
 }
 missing = [name for name, needle in required.items() if needle not in css]
 assert not missing, "Missing dark-mode contracts: " + ", ".join(missing)
+assert "body.is-dark .quick-links.app-strip {\n  background: #0f151a;" in css, "Quick service wrapper must merge with the dark page surface"
+assert "body.is-dark .header-brand {\n  background:" in css and "#151c22" in css, "Brand header must join the dark header surface"
+assert "--mobile-surface-raised: #151c22;" in css and "--mobile-line: #46515a;" in css, "Mobile dark token family must be complete"
+assert 'body.is-dark .youtube-showcase-item.is-active,\nbody.is-dark .youtube-showcase-item[aria-current="true"] {\n  border-color: var(--dark-content-accent);\n  background-color: var(--showcase-active-bg);' in css, "Active video item must apply the dark surface token above the dark base rule"
+
 print("Dark-mode CSS contract: ok")

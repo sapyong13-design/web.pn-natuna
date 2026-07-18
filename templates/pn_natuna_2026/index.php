@@ -45,7 +45,7 @@ if (trim((string) $this->getDescription()) === '') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <jdoc:include type="metas" />
   <jdoc:include type="styles" />
-  <meta name="theme-color" content="#8f1f0b">
+  <meta id="theme-color-meta" name="theme-color" content="#8f1f0b">
   <meta property="og:site_name" content="Pengadilan Negeri Natuna Kelas II">
   <meta property="og:type" content="website">
   <meta property="og:title" content="<?php echo htmlspecialchars($this->getTitle() ?: 'Pengadilan Negeri Natuna Kelas II', ENT_QUOTES, 'UTF-8'); ?>">
@@ -95,9 +95,11 @@ if (trim((string) $this->getDescription()) === '') {
   <script>
     (function () {
       try {
-        if (localStorage.getItem('pnNatunaDark') === '1') {
-          document.body.classList.add('is-dark');
-        }
+        var dark = localStorage.getItem('pnNatunaDark') === '1';
+        document.body.classList.toggle('is-dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        var theme = document.getElementById('theme-color-meta');
+        if (theme) theme.content = dark ? '#151015' : '#8f1f0b';
       } catch (e) { /* private mode */ }
     })();
   </script>
@@ -339,7 +341,7 @@ if (trim((string) $this->getDescription()) === '') {
       </div>
       <form action="/component/search/" method="get">
         <label for="site-search-query">Kata kunci pencarian</label>
-        <input id="site-search-query" name="searchword" type="search" placeholder="Contoh: biaya perkara, jadwal sidang, posbakum">
+        <input id="site-search-query" name="searchword" type="search" autocomplete="off" enterkeyhint="search" placeholder="Contoh: biaya perkara, jadwal sidang, posbakum…">
         <button type="submit">Cari</button>
       </form>
     </div>

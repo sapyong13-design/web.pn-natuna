@@ -7,7 +7,7 @@ $profileMigration = (string) file_get_contents(__DIR__ . '/../database/migration
 $jurisdictionMarkup = (string) file_get_contents(__DIR__ . '/jurisdiction-service-style.html');
 $jurisdictionMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260715_jurisdiction_service_style.sql');
 $headerBadgeMarkup = (string) file_get_contents(__DIR__ . '/header-brand-badges.html');
-$headerBadgeMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260715_header_ampuh_badge.sql');
+$headerBadgeMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260725_dark_header_brand_badges.sql');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void { if (!$condition) $failures[] = $message; };
 $expect(str_contains($css, 'body.access-underline-links .main-menu a'), 'Main navigation needs a dedicated underline-mode override.');
@@ -44,6 +44,9 @@ $expect(!str_contains($jurisdictionMarkup, 'mencakup Kabupaten Natuna'), 'Jurisd
 $expect(str_contains($jurisdictionMarkup, 'Kabupaten Natuna dan Kabupaten Kepulauan Anambas') && str_contains($jurisdictionMarkup, 'sedang diverifikasi'), 'Jurisdiction copy must clearly mark both regencies as under verification.');
 $expect(strpos($headerBadgeMarkup, 'logo-ampuh-certified.png') < strpos($headerBadgeMarkup, 'logo-asn-berakhlak.png'), 'AMPUH badge must sit left of BerAKHLAK.');
 $expect(str_contains($headerBadgeMarkup, 'class="ampuh-certified-mark"'), 'AMPUH badge needs its own size class.');
+$expect(str_contains($headerBadgeMarkup, 'logo-asn-berakhlak-dark.png'), 'BerAKHLAK badge needs a dedicated dark-mode raster.');
+$expect(str_contains($headerBadgeMarkup, 'asn-berakhlak-mark--light') && str_contains($headerBadgeMarkup, 'asn-berakhlak-mark--dark'), 'Header markup must render switchable BerAKHLAK variants.');
+$expect(is_file(dirname(__DIR__) . '/images/brand/logo-asn-berakhlak-dark.png'), 'Dark BerAKHLAK raster must exist.');
 $expect((bool) preg_match('/content=CONVERT\\(0x([0-9a-f]+) USING utf8mb4\\)/', $headerBadgeMigration, $headerBadgeHex), 'Header badge migration must contain UTF-8 hex markup.');
 if (!empty($headerBadgeHex[1])) {
     $expect(hex2bin($headerBadgeHex[1]) === rtrim($headerBadgeMarkup, "\r\n"), 'Header badge migration payload must match readable source.');
@@ -53,6 +56,9 @@ $expect((bool) preg_match('/introtext=CONVERT\\(0x([0-9a-f]+) USING utf8mb4\\)/'
 $expect(str_contains($headerBadgeMarkup, 'header-brand-lockup'), 'AMPUH and BerAKHLAK must share one lockup container.');
 $expect((bool) preg_match('/\\.header-brand-lockup \\{[^}]*display: flex;/s', $css), 'Blended header lockup must use one flex surface.');
 $expect(str_contains($css, '.header-brand-lockup::after'), 'Blended header lockup needs a visual divider.');
+$expect((bool) preg_match('/body\.is-dark \.court-brand-badges\.header-brand-lockup\s*\{[^}]*background:\s*#222d35/s', $css), 'Dark header badge plate must use a dark surface.');
+$expect((bool) preg_match('/body\.is-dark \.asn-berakhlak-mark--light\s*\{[^}]*display:\s*none/s', $css), 'Dark mode must hide the light BerAKHLAK raster.');
+$expect((bool) preg_match('/body\.is-dark \.asn-berakhlak-mark--dark\s*\{[^}]*display:\s*block/s', $css), 'Dark mode must reveal the dark BerAKHLAK raster.');
 if (!empty($profileHex[1])) {
     $expect(hex2bin($profileHex[1]) === rtrim($profileMarkup, "\r\n"), 'Profile migration payload must exactly match readable profile markup source.');
 }

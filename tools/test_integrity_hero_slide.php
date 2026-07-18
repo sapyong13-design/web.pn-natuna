@@ -24,9 +24,9 @@ $expect((bool) preg_match('/\.hero-slide-integrity__link\s*\{[^}]*display:\s*blo
 $expect((bool) preg_match('/@media \(min-width:\s*761px\)\s*\{.*?\.home-slider \.hero-slide-integrity\s*\{[^}]*width:\s*min\(960px, 100%\);[^}]*margin-inline:\s*auto;[^}]*\}/s', $css), 'Desktop integrity slide must cap artwork width at 960px and stay centered.');
 $expect(str_contains($php, 'hero-slider hero-cinema'), 'Hero root contract missing.');
 $js = (string) file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
-$expect(str_contains($js, 'setupMobileHeroHeight'), 'Mobile hero equal-height measurement is missing.');
-$expect(str_contains($js, '--hero-mobile-slide-height'), 'Mobile hero height CSS variable is missing.');
-$expect((bool) preg_match('/\.hero-cinema \.hero-slide\s*\{[^}]*height:\s*var\(--hero-mobile-slide-height/s', $css), 'Mobile slides must consume the shared measured height.');
+$expect(!str_contains($js, 'setupMobileHeroHeight'), 'Mobile hero must not measure every slide at runtime.');
+$expect(!str_contains($css, '--hero-mobile-slide-height'), 'Mobile hero must not depend on a runtime height variable.');
+$expect((bool) preg_match('/\.hero-cinema \.hero-slides\s*\{[^}]*min-height:\s*540px/s', $css), 'Mobile hero track must reserve a stable intrinsic height.');
 $expect(is_file($asset), 'Optimized integrity WebP asset is missing.');
 if (is_file($asset)) {
     $size = @getimagesize($asset);

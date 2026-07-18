@@ -40,8 +40,8 @@ if content.count('class="maklumat-compact-doc"') != 2:
     fail("module 808 must contain two Maklumat documents")
 if "maklumat-compact-intro" in content or "<h2" in content:
     fail("module 808 must not duplicate its Joomla title")
-if showtitle != "1":
-    fail("module 808 Joomla title must be enabled")
+if showtitle != "0":
+    fail("module 808 Joomla title must be disabled")
 
 
-print("OK: Maklumat homepage has one Joomla title and two current document cards")
+print("OK: Maklumat homepage has a service kicker and two current document cards")

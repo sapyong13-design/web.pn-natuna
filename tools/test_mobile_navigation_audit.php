@@ -21,6 +21,10 @@ $expect(str_contains($js, 'onStatus.hidden = !active'), 'Dark toggle must hide o
 $expect((bool) preg_match('/\.main-menu li ul li ul a\s*\{[^}]*font-size:\s*\.78rem;/s', $css), 'Third-level links must use at least .78rem.');
 $expect((bool) preg_match('/\.mobile-menu-footer\s*\{[^}]*min-height:\s*68px;/s', $css), 'Drawer footer must use compact 68px minimum height.');
 $expect(str_contains($css, '.mobile-menu-summary-link'), 'Summary link styling is missing.');
+$expect((bool) preg_match('/@media \(min-width:\s*761px\).*?\.main-menu > \.main-menu-list \.mobile-menu-scroll > ul > li > ul > li > a\s*\{[^}]*justify-content:\s*flex-start;[^}]*text-align:\s*left/s', $css), 'All desktop submenu links must align left.');
+$expect((bool) preg_match('/@media \(min-width:\s*761px\).*?\.main-menu > \.main-menu-list \.mobile-menu-scroll > ul > li > ul > \.mobile-menu-group-label\s*\{[^}]*color:\s*#[0-9a-fA-F]{6};[^}]*text-align:\s*left;[^}]*text-transform:\s*uppercase/s', $css), 'Desktop submenu group labels need readable light hierarchy.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.main-menu li ul a\s*\{[^}]*justify-content:\s*flex-start;[^}]*text-align:\s*left/s', $css), 'Mobile submenu links must align left.');
+$expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.mobile-menu-group-label\s*\{[^}]*color:\s*var\(--nav-drawer-accent\);[^}]*text-align:\s*left/s', $css), 'Mobile menu group labels need explicit readable color and left alignment.');
 
 if ($failures) { fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL); exit(1); }
 echo "mobile navigation audit contract: ok\n";

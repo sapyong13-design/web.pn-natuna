@@ -417,6 +417,7 @@ function pn_natuna_render_instansi_feed(): void
                   id="instansi-tab-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
                   aria-controls="instansi-panel-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
                   aria-selected="<?php echo $i === 0 ? 'true' : 'false'; ?>"
+                  tabindex="<?php echo $i === 0 ? '0' : '-1'; ?>"
                   class="<?php echo $i === 0 ? 'is-active' : ''; ?>"
                   data-instansi-tab="<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>">
             <img src="<?php echo htmlspecialchars($meta[$key]['logo'] ?? ($instansi['logo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="26" height="26" loading="lazy" decoding="async">

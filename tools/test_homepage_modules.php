@@ -52,7 +52,7 @@ foreach ($expectedPositions as $id => $position) {
 $expect(($modules[808]['published'] ?? '0') === '1', 'Maklumat module must be published.');
 $expect(str_contains($modules[808]['content'] ?? '', 'maklumat-compact-docs'), 'Maklumat module must render compact document cards.');
 $expect(substr_count($modules[808]['content'] ?? '', 'class="maklumat-compact-doc"') === 2, 'Maklumat module must contain two documents.');
-$expect(($modules[808]['showtitle'] ?? '0') === '1', 'Maklumat module must use its Joomla title.');
+$expect(($modules[808]['showtitle'] ?? '1') === '0', 'Maklumat module must hide its redundant Joomla title.');
 $expect(!str_contains($modules[808]['content'] ?? '', '<h2'), 'Maklumat content must not duplicate the Joomla module title.');
 $expect(!str_contains($modules[808]['content'] ?? '', 'maklumat-compact-intro'), 'Maklumat content must not duplicate the section introduction.');
 $expect(($modules[816]['published'] ?? '0') === '1', 'Kinerja module must be published.');

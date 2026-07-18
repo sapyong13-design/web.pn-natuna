@@ -7,8 +7,8 @@ $e(str_contains($hero,'hero-slide-integrity__cta'),'Integrity full-poster CTA mi
 $e(str_contains($hero,'data-youtube-count'),'YouTube count status missing.');
 $e(str_contains($js,'setupMobileMenuFilter'),'Mobile menu filtering behavior missing.');
 $e(str_contains($js,"window.scrollY > 900"),'Back-to-top threshold must be 900px.');
-$e(str_contains($js,'navigator.connection'),'Adaptive poster prefetch connection guard missing.');
-$e(str_contains($js,'saveData'),'Poster prefetch Save-Data guard missing.');
+$e(!str_contains($js,'prefetchIntegrityPoster'),'Secondary integrity poster must not be idle-prefetched.');
+$e(!str_contains($js,'setupHeroPrefetch'),'Hero secondary media must not compete with the active LCP image.');
 $e(str_contains($js,'setupMobileRailStatus'),'Rail status behavior missing.');
 $e((bool)preg_match('/@media \(max-width:\s*760px\).*?\.quick-links\s*\{[^}]*display:\s*none/s',$css),'Duplicate mobile quick-links must be hidden.');
 $e((bool)preg_match('/body\.is-home \.floating-whatsapp\s*\{[^}]*display:\s*none/s',$css),'Homepage mobile WhatsApp float must be hidden.');
