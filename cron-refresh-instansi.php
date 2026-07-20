@@ -37,8 +37,7 @@ if (!is_dir(dirname($logFile)) && !mkdir(dirname($logFile), 0750, true) && !is_d
 
 @mkdir(dirname($cacheFile), 0755, true);
 
-// Hapus cache lama supaya pn_natuna_instansi_load() wajib re-fetch.
-@unlink($cacheFile);
+// Refresh eksplisit dilakukan hanya oleh cron; request web selalu membaca cache lokal.
 
 require JPATH_ROOT . '/templates/pn_natuna_2026/instansi-feed.php';
 
@@ -46,7 +45,7 @@ $ts  = date('Y-m-d H:i:s');
 $log = "[$ts] Mulai refresh instansi feed...\n";
 
 try {
-    $data = pn_natuna_instansi_load();
+    $data = pn_natuna_instansi_refresh_cache();
 
     $labels = [
         'ma'      => 'Mahkamah Agung RI',

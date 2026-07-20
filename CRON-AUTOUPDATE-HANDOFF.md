@@ -131,38 +131,23 @@ update tiap hari (tanggal & judul berubah).
 
 ---
 
-## 4. Refresh MA RI (Cloudflare — TIDAK bisa auto via cron)
+## 4. Refresh MA RI melalui endpoint resmi
 
-MA RI (`mahkamahagung.go.id`) diblokir Cloudflare untuk fetch server-side
-(PHP/curl dapat halaman challenge, bukan konten). Cron hanya bisa refresh
-Badilum & PT. **MA RI butuh refresh manual berkala** (mis. 1-2 minggu sekali).
+Cron mencoba endpoint JSON yang dipakai halaman resmi MA:
 
-### Cara manual refresh MA RI (paling reliable):
+- `POST https://www.mahkamahagung.go.id/id/berita` dengan `cat_id=1&page=1&lang=id`
+- `POST https://www.mahkamahagung.go.id/id/pengumuman` dengan `cat_id=2&page=1&lang=id`
 
-1. **Buka halaman MA di browser** (browser REAL bisa lewati Cloudflare):
-   - Berita: `https://mahkamahagung.go.id/id/berita`
-   - Pengumuman: `https://mahkamahagung.go.id/id/pengumuman`
+Browser nyata terverifikasi menerima data resmi terbaru. PHP/cURL lokal menerima Cloudflare challenge; IP keluar cPanel dapat menghasilkan keputusan berbeda. Jalankan cron manual setelah deploy. Status sukses:
 
-2. **Catat 5 judul + tanggal terbaru** dari tiap halaman.
+```text
+berita=live-official-json
+pengumuman=live-official-json
+```
 
-3. **Update fallback di `templates/pn_natuna_2026/instansi-feed.php`**,
-   array `'ma' => ['news' => [...], 'announcements' => [...]]`.
-   Format per item:
-   ```php
-   ['date' => '1 Jul', 'title' => 'JUDUL ASLI', 'url' => 'https://mahkamahagung.go.id/id/berita/7330/slug'],
-   ```
-   URL harus link langsung ke artikel (dari `<a href>` di halaman MA),
-   bukan halaman listing.
+Jika status `official-cloudflare-challenge`, cron mencoba Google News lalu fallback terkurasi. Jangan replay cookie, memakai CAPTCHA solver, atau menyamarkan bot. Cache hanya diperbarui oleh cron dan homepage selalu membaca cache lokal.
 
-4. **Hapus cache**:
-   ```bash
-   rm public_html/cache/pn_natuna_instansi_feed.json
-   ```
-   Atau tunggu cron harian berikutnya (yang akan re-fetch + pakai fallback baru).
-
-5. **Commit & deploy** perubahan `instansi-feed.php`.
-
-
+Jadwal produksi cukup sekali sehari, misalnya `15 2 * * *` waktu server. Jika sumber tetap ditolak di cPanel, minta endpoint/whitelist resmi atau gunakan proses browser terjadwal di luar cPanel yang hanya mempromosikan JSON tervalidasi.
 ---
 
 ## 5. Update Sumber Tiap Instansi (kalau URL berubah)

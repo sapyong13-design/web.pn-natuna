@@ -1,5 +1,7 @@
 <?php
 /** Copy to configuration.php outside Git, replace every CHANGE_ME value, chmod 0640. */
+// Server prerequisite: enable Zend OPcache in cPanel PHP Selector
+// (opcache.enable=1, opcache.validate_timestamps=1, opcache.revalidate_freq=2).
 class JConfig {
 	public $offline = false;
 	public $offline_message = 'Situs sedang dalam pemeliharaan.';

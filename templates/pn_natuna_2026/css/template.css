@@ -1992,6 +1992,75 @@ body.is-dark .instagram-carousel-control {
   background: #fff;
 }
 
+.instagram-profile-embed {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.instagram-profile-embed__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.instagram-profile-embed__head div {
+  display: grid;
+  gap: 3px;
+}
+
+.instagram-profile-embed__head span {
+  color: var(--color-primary);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.instagram-profile-embed__head strong {
+  color: var(--color-ink);
+  font-size: 1rem;
+}
+
+.instagram-profile-embed__head a {
+  color: var(--color-primary);
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.instagram-profile-embed__frame {
+  height: 350px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-soft);
+}
+
+.instagram-profile-embed iframe {
+  display: block;
+  width: 100%;
+  height: 350px;
+  border: 0;
+  color-scheme: light;
+}
+
+body.is-dark .instagram-profile-embed__frame {
+  border-color: var(--dark-content-line);
+  background: #19232b;
+}
+
+@media (max-width: 760px) {
+  .instagram-profile-embed {
+    flex: 0 0 min(94vw, 370px);
+    width: min(94vw, 370px);
+  }
+  .instagram-profile-embed__head { align-items: flex-start; }
+  .instagram-profile-embed__frame,
+  .instagram-profile-embed iframe { height: 350px; }
+}
+
 .instagram-embed-shell iframe {
   display: block;
   width: 100%;
@@ -2685,13 +2754,14 @@ a.instagram-post-slide {
 }
 
 .roster-lead {
-  max-width: 70ch;
+  max-width: 76ch;
+  margin: 0 0 36px;
   font-size: 1.02rem;
-  line-height: 1.6;
+  line-height: 1.75;
 }
 
 .roster-section {
-  margin: 28px 0;
+  margin: 36px 0 44px;
 }
 
 .roster-section-head {
@@ -2699,8 +2769,8 @@ a.instagram-post-slide {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin: 0 0 16px;
-  padding-bottom: 10px;
+  margin: 0 0 22px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--color-line);
 }
 
@@ -2803,13 +2873,13 @@ a.instagram-post-slide {
 .roster-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 20px;
 }
 
 .roster-card {
   display: flex;
-  gap: 14px;
-  padding: 12px;
+  gap: 18px;
+  padding: 18px;
   background: #fff;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
@@ -2855,8 +2925,8 @@ a.instagram-post-slide {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 7px;
-  padding: 2px 4px 2px 0;
+  gap: 12px;
+  padding: 4px 6px 4px 0;
   min-width: 0;
 }
 
@@ -2870,20 +2940,22 @@ a.instagram-post-slide {
 
 .roster-role {
   align-self: flex-start;
-  padding: 4px 10px;
+  max-width: 100%;
+  padding: 7px 12px;
   background: var(--color-accent-soft);
   color: #54401b;
-  border-radius: 999px;
+  border-radius: 8px;
   font-size: .72rem;
   font-weight: 700;
-  letter-spacing: .05em;
+  line-height: 1.45;
+  letter-spacing: .035em;
   text-transform: uppercase;
 }
 
 .roster-role-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .roster-role-row .roster-role {
@@ -2893,8 +2965,8 @@ a.instagram-post-slide {
 .roster-meta {
   display: grid;
   gap: 5px;
-  margin: auto 0 0;
-  padding-top: 8px;
+  margin: 8px 0 0;
+  padding-top: 12px;
   border-top: 1px dashed var(--color-line);
   font-size: .82rem;
 }
@@ -2961,7 +3033,7 @@ a.instagram-post-slide {
 .unit-scope {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 18px;
   margin: 0;
   padding: 0;
 }
@@ -2973,21 +3045,24 @@ a.instagram-post-slide {
 .unit-scope li {
   list-style: none;
   position: relative;
-  padding: 14px 16px 14px 46px;
+  min-height: 112px;
+  padding: 18px 18px 18px 52px;
   background: #fffdf6;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
   font-size: .92rem;
-  line-height: 1.55;
+  line-height: 1.65;
+  text-align: left !important;
+  hyphens: none !important;
 }
 
 .unit-scope li::before {
   content: "\2713";
   position: absolute;
-  left: 14px;
-  top: 14px;
-  width: 22px;
-  height: 22px;
+  left: 16px;
+  top: 18px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
   background: var(--color-accent-soft);
@@ -12605,6 +12680,14 @@ body.is-home .announcement-feature__media img {
   object-fit: contain;
   object-position: center top;
   transform: none;
+}
+
+body.is-dark.is-home .announcement-feature__media {
+  background: #cfd3d6;
+}
+
+body.is-dark.is-home .announcement-feature__media img {
+  filter: brightness(.82) contrast(.96);
 }
 
 body.is-home .announcement-feature__copy {

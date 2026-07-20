@@ -113,6 +113,17 @@ Selama `new.pn-natuna.go.id` masih disposable staging tanpa konten server pentin
 
 Instruksi dashboard bukan bukti kontrol sudah aktif. Catat bukti dan tanggal pengujian. Jangan hapus runbook atau tool keamanan dari repo/deployment source; deployment allowlist yang mencegahnya masuk `public_html`.
 
+## Pembaruan 20 Jul 2026: profil, performa, feed, dan kesiapan produksi
+
+- Profil Kesekretariatan kini memiliki submenu alfabetis **Kepegawaian, Organisasi, dan Tata Laksana**, **Perencanaan, Teknologi Informasi, dan Pelaporan (PTIP)**, serta **Umum dan Keuangan**. Ketiganya memakai format unit Kepaniteraan: ringkasan, kartu penanggung jawab/staf, dan tiga butir ruang lingkup layanan. Detail kategori dan navigasi artikel Joomla disembunyikan pada seluruh keluarga Profil Pengadilan.
+- Homepage tidak melakukan fetch eksternal server-side. Jadwal SIPP membaca `cache/pn_natuna_sipp_schedule.json` dan diperbarui lewat `tools/cron-refresh-sipp.php`; feed instansi membaca cache lokal dan diperbarui lewat cron privat. Prefetch Beranda aktif saat idle pada koneksi layak; peta dimuat lazy; conservative cache, gzip, dan panduan OPcache produksi sudah disiapkan.
+- Feed Mahkamah Agung mencoba endpoint JSON resmi `POST /id/berita` (`cat_id=1`) dan `POST /id/pengumuman` (`cat_id=2`) sebelum Google News/fallback. Browser berhasil menerima data resmi, tetapi PHP lokal menerima Cloudflare challenge. Uji cPanel wajib; status sukses adalah `live-official-json`, sedangkan `official-cloudflare-challenge` berarti perlu jalur resmi/alternatif tanpa mengakali challenge.
+- Tab **PT Kepri** di homepage kini berlabel lengkap **Pengadilan Tinggi Kepulauan Riau**.
+- Instagram homepage memakai embed profil resmi `https://www.instagram.com/pn.natuna/embed/`, tanpa RSS.app dan tanpa token. Instagram menentukan enam post yang ditampilkan; jumlah itu tidak dapat dipaksa menjadi sembilan. Embed memakai tinggi 350px agar grid utuh pada desktop/mobile.
+- Pembaca suara aksesibilitas default aktif kecuali pengguna pernah mematikannya. Locale utterance selalu `id-ID`; suara Indonesia online diprioritaskan, termasuk identitas Microsoft Gadis/Andika yang kadang hanya tersedia di `voiceURI` Edge. Entri bernama `undefined` tanpa identitas Gadis/Andika ditolak.
+- Kredensial administrator lokal pernah disebut dalam chat dan hanya untuk pengujian lokal. Jangan deploy akun lokal. Produksi wajib memakai akun bernama per operator, password acak baru, privilege minimum, dan MFA.
+- Pekerjaan produksi yang belum dapat dibuktikan dari workstation: QA staging penuh, WAF/rate limit, proteksi `/administrator`, PHP `display_errors=Off`, header keamanan/CSP Report-Only, backup teruji, cutover, dan rollback. Ikuti `SECURITY-DEPLOYMENT-HANDOFF.md` serta `CPANEL-STAGING-CUTOVER-RUNBOOK.md`; jangan langsung overwrite produksi lama.
+
 ## Menjalankan di device lain
 
 1. Clone repo dan checkout branch kerja.

@@ -213,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroBackdropPause();
   setupLazyIframes();
   setupEditorialArticleShare();
+  setupHomePrefetch();
 });
 
 function setupAmpuhDirectory() {
@@ -380,7 +381,7 @@ function setupAmpuhDirectory() {
 }
 
 function setupLazyIframes() {
-  const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src]');
+  const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src], .instagram-profile-embed iframe[data-src], .home-map-card iframe[data-src]');
   if (!frames.length) return;
   const load = (frame) => {
     if (!frame.src && frame.dataset.src) {
@@ -400,6 +401,30 @@ function setupLazyIframes() {
     });
   }, { rootMargin: '400px 0px' });
   frames.forEach((frame) => observer.observe(frame));
+}
+
+function setupHomePrefetch() {
+  if (document.body.classList.contains('is-home')) return;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || '')) return;
+  const homeLinks = Array.from(document.querySelectorAll('a[href="/"], a[href$="/index.php"]'));
+  if (!homeLinks.length) return;
+  let prefetched = false;
+  const prefetch = () => {
+    if (prefetched) return;
+    prefetched = true;
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.as = 'document';
+    link.href = '/';
+    document.head.appendChild(link);
+  };
+  homeLinks.forEach((link) => {
+    link.addEventListener('pointerenter', prefetch, { once: true, passive: true });
+    link.addEventListener('touchstart', prefetch, { once: true, passive: true });
+  });
+  const schedule = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 1200));
+  schedule(prefetch, { timeout: 2500 });
 }
 
 function setupHeroBackdropPause() {
@@ -851,7 +876,7 @@ function setupVoiceReader() {
 
   let voices = [];
   let selectedVoice = null;
-  let enabled = storageGet('pnNatunaVoiceReader') === '1';
+  let enabled = storageGet('pnNatunaVoiceReader') !== '0';
   let lastText = '';
   let hoverTimer = null;
 
@@ -878,40 +903,66 @@ function setupVoiceReader() {
     return text.length > 180 ? `${text.slice(0, 177)}…` : text;
   };
 
-  const chooseVoice = (savedName) => {
+  const voiceIdentity = (voice) => `${voice?.name || ''} ${voice?.voiceURI || ''}`.trim();
+  const isIndonesianVoice = (voice) => {
+    const lang = (voice?.lang || '').replace('_', '-');
+    const identity = voiceIdentity(voice);
+    const hasNamedMicrosoftVoice = /microsoft\s+(?:gadis|andika)\b/i.test(identity) || /indonesian\s*\(indonesia\)/i.test(identity);
+    if (/\bundefined\b/i.test(voice?.name || '') && !hasNamedMicrosoftVoice) return false;
+    return hasNamedMicrosoftVoice || /^id(?:-|$)/i.test(lang) || /(?:bahasa\s+indonesia|\bindonesia\b)/i.test(identity);
+  };
+
+  const chooseVoice = () => {
     if (!voices.length) return null;
-    const saved = savedName ? voices.find((voice) => voice.name === savedName) : null;
-    if (saved) return saved;
-    const indonesian = voices.filter((voice) => /^id(-|$)/i.test(voice.lang || ''));
-    return indonesian.find((voice) => voice.localService) ||
+    const indonesian = voices.filter(isIndonesianVoice);
+    return indonesian.find((voice) => /microsoft\s+(?:gadis|andika)\b/i.test(voiceIdentity(voice)) && !voice.localService) ||
+      indonesian.find((voice) => /microsoft/i.test(voiceIdentity(voice)) && /indonesian\s*\(indonesia\)/i.test(voiceIdentity(voice)) && !voice.localService) ||
+      indonesian.find((voice) => /^id-ID$/i.test((voice.lang || '').replace('_', '-')) && !voice.localService) ||
+      indonesian.find((voice) => !voice.localService) ||
+      indonesian.find((voice) => /microsoft\s+(?:gadis|andika)\b/i.test(voiceIdentity(voice))) ||
+      indonesian.find((voice) => voice.localService) ||
       indonesian[0] ||
-      voices.find((voice) => voice.default) ||
-      voices[0] ||
       null;
+  };
+
+  const voiceKey = (voice) => voice?.voiceURI || `${voice?.name || ''}|${voice?.lang || ''}|${voice?.localService ? 'local' : 'remote'}`;
+  const voiceLabel = (voice) => {
+    const locale = (voice?.lang || 'id-ID').replace('_', '-');
+    const candidates = [voice?.name, voice?.voiceURI].map((value) => (value || '').trim());
+    const validName = candidates.find((value) => /microsoft\s+(?:gadis|andika)\b/i.test(value)) ||
+      candidates.find((value) => value && !/\bundefined\b/i.test(value)) ||
+      'Suara Bahasa Indonesia';
+    return `${validName} · ${voice?.localService ? 'Perangkat' : 'Online'} (${locale})`;
   };
 
   const renderVoiceOptions = () => {
     if (!select || !selectWrap) return;
     select.innerHTML = '';
-    if (voices.length < 2) {
-      selectWrap.hidden = true;
-    } else {
-      voices.forEach((voice) => {
-        const option = document.createElement('option');
-        option.value = voice.name;
-        option.textContent = `${voice.name} (${voice.lang || 'default'})`;
-        option.selected = selectedVoice && voice.name === selectedVoice.name;
-        select.appendChild(option);
-      });
-      selectWrap.hidden = false;
+    const seenVoices = new Set();
+    voices.filter(isIndonesianVoice).forEach((voice) => {
+      const label = voiceLabel(voice);
+      const duplicateKey = voiceKey(voice).toLocaleLowerCase('id-ID');
+      if (seenVoices.has(duplicateKey)) return;
+      seenVoices.add(duplicateKey);
+      const option = document.createElement('option');
+      option.value = voiceKey(voice);
+      option.textContent = label;
+      option.selected = selectedVoice && voiceKey(voice) === voiceKey(selectedVoice);
+      select.appendChild(option);
+    });
+    selectWrap.hidden = select.options.length === 0;
+    const hasIndonesian = voices.some(isIndonesianVoice);
+    if (note) {
+      note.hidden = hasIndonesian || !voices.length;
+      note.textContent = hasIndonesian
+        ? ''
+        : 'Suara Bahasa Indonesia belum tersedia. Di Microsoft Edge/Windows, buka Settings > Time & language > Speech > Manage voices, lalu tambahkan Indonesian (Indonesia).';
     }
-    const hasIndonesian = voices.some((voice) => /^id(-|$)/i.test(voice.lang || ''));
-    if (note) note.hidden = hasIndonesian || !voices.length;
   };
 
   const loadVoices = () => {
     voices = synth.getVoices ? synth.getVoices() : [];
-    selectedVoice = chooseVoice(storageGet('pnNatunaVoiceName'));
+    selectedVoice = chooseVoice();
     renderVoiceOptions();
   };
 
@@ -923,7 +974,7 @@ function setupVoiceReader() {
     synth.cancel();
     const utterance = new SpeechSynthesisUtterance(clean);
     if (selectedVoice) utterance.voice = selectedVoice;
-    utterance.lang = selectedVoice?.lang || 'id-ID';
+    utterance.lang = 'id-ID';
     utterance.rate = 0.94;
     utterance.pitch = 1;
     utterance.volume = 1;
@@ -934,6 +985,7 @@ function setupVoiceReader() {
     enabled = false;
     button.classList.remove('is-active');
     button.setAttribute('aria-pressed', 'false');
+    button.textContent = 'Suara Mati';
     synth.cancel();
     lastText = '';
   };
@@ -947,6 +999,7 @@ function setupVoiceReader() {
     enabled = true;
     button.classList.add('is-active');
     button.setAttribute('aria-pressed', 'true');
+    button.textContent = 'Suara Aktif';
     storageSet('pnNatunaVoiceReader', '1');
     if (announce) speakText('Selamat datang di Pengadilan Negeri Natuna Kelas II.');
   };
@@ -956,10 +1009,9 @@ function setupVoiceReader() {
   button.addEventListener('click', () => setEnabled(!enabled, true));
 
   select?.addEventListener('change', (event) => {
-    storageSet('pnNatunaVoiceName', event.currentTarget.value);
-    loadVoices();
+    selectedVoice = voices.find((voice) => voiceKey(voice) === event.currentTarget.value && isIndonesianVoice(voice)) || chooseVoice();
     lastText = '';
-    if (enabled) speakText('Pilihan suara diperbarui.');
+    if (enabled) speakText('Pilihan suara bahasa Indonesia diperbarui.');
   });
 
   document.addEventListener('pointerover', (event) => {
@@ -982,7 +1034,7 @@ function setupVoiceReader() {
   setEnabled(enabled, false);
 
   if (enabled) {
-    window.setTimeout(() => speakText('Selamat datang di Pengadilan Negeri Natuna Kelas II.'), 600);
+    window.setTimeout(loadVoices, 600);
   }
 }
 

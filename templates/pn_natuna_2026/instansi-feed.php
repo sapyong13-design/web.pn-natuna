@@ -111,6 +111,37 @@ function pn_natuna_instansi_fetch_google_news(string $query): array
     return pn_natuna_instansi_recent_items($items, 60);
 }
 
+function pn_natuna_instansi_fetch_ma(string $section, int $categoryId, ?string &$status = null): array
+{
+    $url = 'https://www.mahkamahagung.go.id/id/' . $section;
+    $body = http_build_query(['cat_id' => $categoryId, 'page' => 1, 'lang' => 'id']);
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST', 'timeout' => 12, 'ignore_errors' => true,
+            'header' => "User-Agent: PN-Natuna-Website/1.0\r\nAccept: application/json, text/javascript, */*; q=0.01\r\nContent-Type: application/x-www-form-urlencoded\r\nX-Requested-With: XMLHttpRequest\r\nContent-Length: " . strlen($body) . "\r\n",
+            'content' => $body,
+        ],
+        'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+    ]);
+    $response = @file_get_contents($url, false, $context);
+    if (!is_string($response) || $response === '') { $status = 'official-unreachable'; return []; }
+    if (stripos($response, 'Just a moment') !== false || stripos($response, 'challenges.cloudflare.com') !== false) { $status = 'official-cloudflare-challenge'; return []; }
+    $payload = json_decode($response, true);
+    $rows = is_array($payload) ? ($payload['data']['rows'] ?? null) : null;
+    if (($payload['stat'] ?? '') !== 'OK' || !is_array($rows)) { $status = 'official-invalid-response'; return []; }
+    $items = [];
+    foreach ($rows as $row) {
+        $title = pn_natuna_instansi_google_title((string) ($row['title'] ?? ''));
+        $itemUrl = trim((string) ($row['url'] ?? ''));
+        $published = trim((string) ($row['pt'] ?? ''));
+        if ($title === '' || !str_starts_with($itemUrl, $url . '/')) continue;
+        $items[] = ['title' => $title, 'url' => $itemUrl, 'date' => pn_natuna_instansi_item_date($published), 'pub' => strtotime(preg_replace('/^[^,]+,\s*/u', '', $published)) ?: 0];
+        if (count($items) === 5) break;
+    }
+    $status = count($items) >= 2 ? 'live-official-json' : 'official-insufficient-data';
+    return $items;
+}
+
 function pn_natuna_instansi_item_date(string $text): string
 {
     $months = 'Jan|Feb|Mar|Apr|Mei|Jun|Jul|Agu|Sep|Okt|Nov|Des|Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember';
@@ -299,15 +330,25 @@ function pn_natuna_instansi_fallback(): array
 function pn_natuna_instansi_load(): array
 {
     $cacheFile = JPATH_ROOT . '/cache/pn_natuna_instansi_feed.json';
-    $ttl = 3600;
-
-    if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
+    if (is_file($cacheFile)) {
         $cached = json_decode((string) @file_get_contents($cacheFile), true);
         if (is_array($cached)) {
             return $cached;
         }
     }
+    return pn_natuna_instansi_fallback() + ['_status' => [
+        'ma_news' => 'fallback',
+        'ma_announcements' => 'fallback',
+        'badilum_news' => 'fallback',
+        'badilum_announcements' => 'fallback',
+        'pt_news' => 'fallback',
+        'pt_announcements' => 'fallback',
+    ]];
+}
 
+function pn_natuna_instansi_refresh_cache(): array
+{
+    $cacheFile = JPATH_ROOT . '/cache/pn_natuna_instansi_feed.json';
     $data = pn_natuna_instansi_fallback();
     $data['_status'] = [
         'ma_news' => 'fallback',
@@ -317,16 +358,22 @@ function pn_natuna_instansi_load(): array
         'pt_news' => 'fallback',
         'pt_announcements' => 'fallback',
     ];
-    $maNews = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita');
-    if (count($maNews) >= 2) {
-        $data['ma']['news'] = pn_natuna_instansi_fill_items($maNews, $data['ma']['news']);
-        $data['_status']['ma_news'] = count($maNews) < 5 ? 'live-google-news+fallback' : 'live-google-news';
+    $maNewsStatus = null;
+    $maNews = pn_natuna_instansi_fetch_ma('berita', 1, $maNewsStatus);
+    if (count($maNews) < 2) {
+        $maNews = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita');
+        $maNewsStatus = count($maNews) >= 2 ? 'live-google-news-after-' . $maNewsStatus : $maNewsStatus;
     }
-    $maAnnouncements = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman');
-    if (count($maAnnouncements) >= 2) {
-        $data['ma']['announcements'] = array_slice($maAnnouncements, 0, 5);
-        $data['_status']['ma_announcements'] = 'live-google-news';
+    if (count($maNews) >= 2) $data['ma']['news'] = pn_natuna_instansi_fill_items($maNews, $data['ma']['news']);
+    $data['_status']['ma_news'] = $maNewsStatus ?: 'fallback';
+    $maAnnouncementStatus = null;
+    $maAnnouncements = pn_natuna_instansi_fetch_ma('pengumuman', 2, $maAnnouncementStatus);
+    if (count($maAnnouncements) < 2) {
+        $maAnnouncements = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman');
+        $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-google-news-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
     }
+    if (count($maAnnouncements) >= 2) $data['ma']['announcements'] = pn_natuna_instansi_fill_items($maAnnouncements, $data['ma']['announcements']);
+    $data['_status']['ma_announcements'] = $maAnnouncementStatus ?: 'fallback';
     $sources = [
         'badilum' => [
             'news' => ['https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html', ['berita'], ['pengumuman']],
@@ -337,27 +384,14 @@ function pn_natuna_instansi_load(): array
             'announcements' => ['https://pt-kepri.go.id/pengumuman', ['pengumuman'], ['berita']],
         ],
     ];
-
     foreach ($sources as $key => $groups) {
         foreach ($groups as $group => [$url, $include, $exclude]) {
             $items = pn_natuna_instansi_parse_items(pn_natuna_instansi_fetch_url($url), $url, $include, $exclude);
-            if (count($items) >= 2) {
-                $fallback = $data[$key][$group] ?? [];
-                $seen = array_fill_keys(array_map(static fn ($item) => mb_strtolower($item["title"]), $items), true);
-                foreach ($fallback as $item) {
-                    if (count($items) >= 5) {
-                        break;
-                    }
-                    if (!isset($seen[mb_strtolower($item["title"])])) {
-                        $items[] = $item;
-                    }
-                }
-                $data[$key][$group] = array_slice($items, 0, 5);
-                $data['_status'][$key . '_' . $group] = 'live';
-            }
+            if (count($items) < 2) continue;
+            $data[$key][$group] = pn_natuna_instansi_fill_items($items, $data[$key][$group] ?? []);
+            $data['_status'][$key . '_' . $group] = 'live';
         }
     }
-
     @mkdir(dirname($cacheFile), 0775, true);
     @file_put_contents($cacheFile, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
     return $data;
@@ -395,7 +429,7 @@ function pn_natuna_render_instansi_feed(): void
     $meta = [
         'ma' => ['short' => 'Mahkamah Agung RI', 'logo' => '/images/brand/logo-ma.png', 'site' => 'https://www.mahkamahagung.go.id/'],
         'badilum' => ['short' => 'Ditjen Badilum', 'logo' => '/images/brand/logo-badilum.png', 'site' => 'https://badilum.mahkamahagung.go.id/'],
-        'pt' => ['short' => 'PT Kepri', 'logo' => '/images/brand/logo-pt-kepri.png', 'site' => 'https://pt-kepri.go.id/'],
+        'pt' => ['short' => 'Pengadilan Tinggi Kepulauan Riau', 'logo' => '/images/brand/logo-pt-kepri.png', 'site' => 'https://pt-kepri.go.id/'],
     ];
     $renderData = array_intersect_key($data, $meta);
     $updated = pn_natuna_instansi_updated_label();

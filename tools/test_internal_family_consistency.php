@@ -31,7 +31,10 @@ foreach (['Jejak lembaga', 'Arah lembaga', 'Pelajari mandat', 'Lihat bagan', 'Li
     $expect(str_contains($profileMarkup, $action), 'Profile cards need contextual action: ' . $action . '.');
 }
 $expect(substr_count($profileMarkup, '<svg viewBox=') >= 14, 'Profile cards need content-specific icons, not one repeated icon.');
-$expect(str_contains($article, '$profileUnitPaths') && str_contains($article, '$showProfileUnits'), 'Profile unit submenu must appear only in the kepaniteraan branch.');
+$expect(str_contains($article, '$profileRegistryPaths') && str_contains($article, '$profileSecretariatPaths') && str_contains($article, '$showProfileUnits'), 'Profile unit submenu must follow kepaniteraan and kesekretariatan branches.');
+foreach (['subbagian-ptip', 'subbagian-kepegawaian-ortala', 'subbagian-umum-keuangan'] as $secretariatRoute) {
+    $expect(str_contains($article, $secretariatRoute), 'Secretariat submenu route missing: ' . $secretariatRoute . '.');
+}
 foreach (['svc-hero', 'svc-kicker', 'svc-lead', 'svc-grid', 'svc-card', 'svc-cta', 'svc-btn'] as $class) {
     $expect(str_contains($jurisdictionMarkup, 'class="' . $class), 'Jurisdiction page missing service component ' . $class . '.');
 }

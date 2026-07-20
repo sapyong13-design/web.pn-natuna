@@ -17,7 +17,7 @@ function pn_natuna_hero_latest_articles(int $catId, int $limit = 4): array
         $db = Factory::getDbo();
         $now = Factory::getDate()->toSql();
         $query = $db->getQuery(true)
-            ->select($db->quoteName(['id', 'title', 'alias', 'catid', 'created', 'publish_up', 'images', 'introtext']))
+            ->select($db->quoteName(['id', 'title', 'alias', 'catid', 'created', 'publish_up', 'images', 'introtext', 'fulltext', 'metadesc']))
             ->from($db->quoteName('#__content'))
             ->where($db->quoteName('state') . ' = 1')
             ->where($db->quoteName('catid') . ' = ' . (int) $catId)
@@ -127,7 +127,12 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
         $videos = pn_natuna_youtube_pinned();
     }
     $feature = array_values($articles)[0];
-    $featureExcerpt = pn_natuna_hero_excerpt($feature->introtext ?? '', 140);
+    $featureExcerpt = pn_natuna_hero_excerpt($feature->introtext ?: ($feature->metadesc ?: $feature->fulltext), 150);
+    if ((int) ($feature->id ?? 0) === 208) {
+        $featureExcerpt = 'Penetapan resmi pemenang lelang Barang Milik Negara Pengadilan Negeri Natuna tanggal 11 Juni 2026.';
+    } elseif ((int) ($feature->id ?? 0) === 209) {
+        $featureExcerpt = 'Informasi resmi lelang Barang Milik Negara Pengadilan Negeri Natuna tanggal 4 Juni 2026.';
+    }
     $activeVideo = $videos[0] ?? null;
     ?>
     <section class="module-card announcement-showcase" aria-labelledby="announcement-showcase-title">

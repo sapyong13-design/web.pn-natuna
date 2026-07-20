@@ -23,6 +23,40 @@ function pn_natuna_sipp_fetch(string $url): string
     return is_string($html) ? $html : '';
 }
 
+function pn_natuna_sipp_cache_file(): string
+{
+    return (defined('JPATH_ROOT') ? JPATH_ROOT : dirname(__DIR__, 2)) . '/cache/pn_natuna_sipp_schedule.json';
+}
+
+function pn_natuna_sipp_load_cache(): array
+{
+    $file = pn_natuna_sipp_cache_file();
+    if (!is_file($file)) {
+        return ['date_label' => '', 'updated' => 'tanggal gagal dimuat', 'total' => '0', 'rows' => []];
+    }
+    $data = json_decode((string) @file_get_contents($file), true);
+    return is_array($data) && is_array($data['rows'] ?? null)
+        ? $data
+        : ['date_label' => '', 'updated' => 'tanggal gagal dimuat', 'total' => '0', 'rows' => []];
+}
+
+function pn_natuna_sipp_refresh_cache(): array
+{
+    $schedule = pn_natuna_sipp_parse_schedule(pn_natuna_sipp_fetch('https://sipp.pn-natuna.go.id/list_jadwal_sidang'));
+    if ($schedule['date_label'] === '' && !$schedule['rows']) {
+        return pn_natuna_sipp_load_cache();
+    }
+    $schedule['_cached_at'] = gmdate(DATE_ATOM);
+    $file = pn_natuna_sipp_cache_file();
+    @mkdir(dirname($file), 0775, true);
+    $temporary = $file . '.' . bin2hex(random_bytes(6)) . '.tmp';
+    if (@file_put_contents($temporary, json_encode($schedule, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX) !== false) {
+        @rename($temporary, $file);
+    }
+    @unlink($temporary);
+    return $schedule;
+}
+
 function pn_natuna_sipp_parse_schedule(string $html): array
 {
     $data = [
@@ -66,8 +100,7 @@ function pn_natuna_sipp_parse_schedule(string $html): array
 function pn_natuna_sipp_render_schedule(): void
 {
     $url = 'https://sipp.pn-natuna.go.id/list_jadwal_sidang';
-    $html = pn_natuna_sipp_fetch($url);
-    $schedule = pn_natuna_sipp_parse_schedule($html);
+    $schedule = pn_natuna_sipp_load_cache();
     $hasRows = count($schedule['rows']) > 0;
     $dateLabel = $schedule['date_label'] !== '' ? $schedule['date_label'] : 'Hari ini';
     ?>

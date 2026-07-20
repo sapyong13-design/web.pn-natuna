@@ -227,9 +227,8 @@ if (trim((string) $this->getDescription()) === '') {
         <jdoc:include type="modules" name="home-role-model" style="card" />
         <jdoc:include type="modules" name="home-survey" style="card" />
         <jdoc:include type="modules" name="home-dipa" style="card" />
-        <?php $instagramCache = function_exists('pn_natuna_instagram_load_cache') ? pn_natuna_instagram_load_cache() : null; ?>
-        <?php if ($instagramCache && function_exists('pn_natuna_instagram_render')) : ?>
-          <?php echo pn_natuna_instagram_render($instagramCache); ?>
+        <?php if (function_exists('pn_natuna_instagram_render_profile_embed')) : ?>
+          <?php echo pn_natuna_instagram_render_profile_embed(); ?>
         <?php else : ?>
           <jdoc:include type="modules" name="home-instagram" style="card" />
         <?php endif; ?>
@@ -304,13 +303,13 @@ if (trim((string) $this->getDescription()) === '') {
         <button class="access-panel-action" type="button" data-access-action="readingGuide" aria-pressed="false"><span aria-hidden="true">━</span><span>Reading Guide</span></button>
         <button class="access-panel-action" type="button" data-access-action="reset"><span aria-hidden="true">↺</span><span>Reset</span></button>
         <button class="access-panel-dark" type="button" aria-pressed="false">Mode Gelap</button>
-        <button class="access-panel-voice" type="button" aria-pressed="false">Suara</button>
+        <button class="access-panel-voice is-active" type="button" aria-pressed="true">Suara Aktif</button>
       </div>
       <label class="access-panel-voice-select-wrap" hidden>
         <span>Pilihan Suara</span>
         <select class="access-panel-voice-select"></select>
       </label>
-      <p class="access-panel-voice-note" hidden>Suara mengikuti browser/perangkat.</p>
+      <p class="access-panel-voice-note" hidden>Suara Bahasa Indonesia mengikuti ketersediaan browser/perangkat.</p>
     </div>
   </section>
 

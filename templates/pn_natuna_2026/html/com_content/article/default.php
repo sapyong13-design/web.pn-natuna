@@ -113,19 +113,42 @@ $profilePages = [
     '/profil-pengadilan/profil-kesekretariatan' => 'Kesekretariatan',
     '/profil-pengadilan/profil-pppk' => 'PPPK',
 ];
-$profileUnitPaths = [
+$profileRegistryPaths = [
     '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-pidana' => 'Pidana',
     '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-perdata' => 'Perdata',
     '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-hukum' => 'Hukum',
     '/profil-pengadilan/profil-kepaniteraan/kepaniteraan-khusus-perikanan' => 'Perikanan',
 ];
-$profileRoutes = $profilePages + $profileUnitPaths;
-$showProfileUnits = $profilePath === '/profil-pengadilan/profil-kepaniteraan' || isset($profileUnitPaths[$profilePath]);
+$profileSecretariatPaths = [
+    '/profil-pengadilan/profil-kesekretariatan/subbagian-kepegawaian-ortala' => 'Kepegawaian, Organisasi, dan Tata Laksana',
+    '/profil-pengadilan/profil-kesekretariatan/subbagian-ptip' => 'Perencanaan, Teknologi Informasi, dan Pelaporan (PTIP)',
+    '/profil-pengadilan/profil-kesekretariatan/subbagian-umum-keuangan' => 'Umum dan Keuangan',
+];
+$profileRoutes = $profilePages + $profileRegistryPaths + $profileSecretariatPaths;
+$profileUnitPaths = str_starts_with($profilePath, '/profil-pengadilan/profil-kepaniteraan')
+    ? $profileRegistryPaths
+    : (str_starts_with($profilePath, '/profil-pengadilan/profil-kesekretariatan') ? $profileSecretariatPaths : []);
+$showProfileUnits = $profileUnitPaths !== [];
 if ($channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath])) {
     ?><nav class="svc-subnav" aria-label="Navigasi Tentang Pengadilan"><a href="/profil-pengadilan">Ringkasan</a><?php foreach ($profilePages as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?><?php if ($showProfileUnits) : ?><?php foreach ($profileUnitPaths as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?><?php endif; ?></nav><?php
 }
+$isProfileRoute = $channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath]);
+if ($isProfileRoute) {
+    foreach (['show_author', 'show_category', 'show_parent_category', 'show_create_date', 'show_modify_date', 'show_publish_date', 'show_hits', 'show_tags', 'show_associations', 'show_item_navigation'] as $profileHiddenOption) {
+        $item->params->set($profileHiddenOption, 0);
+        $this->params->set($profileHiddenOption, 0);
+    }
+    $item->event->afterDisplayContent = '';
+}
 if ($channel === null) {
-    require JPATH_BASE . '/components/com_content/tmpl/article/default.php';
+    if ($isProfileRoute) {
+        ob_start();
+        require JPATH_BASE . '/components/com_content/tmpl/article/default.php';
+        $profileArticleHtml = (string) ob_get_clean();
+        echo preg_replace('/<nav[^>]*class=["\'][^"\']*\bpagenavigation\b[^"\']*["\'][^>]*>[\s\S]*?<\/nav>/i', '', $profileArticleHtml);
+    } else {
+        require JPATH_BASE . '/components/com_content/tmpl/article/default.php';
+    }
     return;
 }
 

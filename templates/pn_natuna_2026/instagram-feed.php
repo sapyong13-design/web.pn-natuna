@@ -49,6 +49,13 @@ function pn_natuna_instagram_parse_rss(string $xml): array {
 }
 function pn_natuna_instagram_load_cache(?string $dir = null): ?array { $file = ($dir ?: pn_natuna_instagram_cache_dir()) . '/feed.json'; if (!is_file($file)) return null; $data = json_decode((string) @file_get_contents($file), true); if (!is_array($data) || !is_array($data['items'] ?? null) || !$data['items']) return null; foreach ($data['items'] as $item) if (!is_array($item) || pn_natuna_instagram_permalink((string) ($item['permalink'] ?? '')) === '' || !preg_match('#^/media/instagram/[a-f0-9]{64}\.webp$#', (string) ($item['image'] ?? ''))) return null; return $data; }
 function pn_natuna_instagram_promote_cache(string $dir, array $data, ?string $stage = null): bool { if (!is_array($data['items'] ?? null) || !$data['items']) return false; if (!is_dir($dir) && !mkdir($dir, 0700, true)) return false; $tmp = $dir . '/feed.json.' . bin2hex(random_bytes(6)) . '.tmp'; if (file_put_contents($tmp, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), LOCK_EX) === false) return false; if (!rename($tmp, $dir . '/feed.json')) { @unlink($tmp); return false; } return true; }
+function pn_natuna_instagram_render_profile_embed(): string
+{
+    $profile = 'https://www.instagram.com/pn.natuna/';
+    $embed = $profile . 'embed/';
+    return '<section class="instagram-profile-embed module-card" aria-label="Instagram Pengadilan Negeri Natuna"><div class="instagram-profile-embed__head"><div><span>Media Sosial Resmi</span><strong>Instagram PN Natuna</strong></div><a href="' . $profile . '" target="_blank" rel="noopener noreferrer">Buka Instagram</a></div><div class="instagram-profile-embed__frame"><iframe title="Profil dan posting terbaru Instagram Pengadilan Negeri Natuna" src="' . $embed . '" loading="lazy" scrolling="no" referrerpolicy="strict-origin-when-cross-origin" allowtransparency="true"></iframe></div><noscript><a href="' . $profile . '" target="_blank" rel="noopener noreferrer">Lihat Instagram Pengadilan Negeri Natuna</a></noscript></section>';
+}
+
 function pn_natuna_instagram_render(array $cache): string
 {
     $items = [];
