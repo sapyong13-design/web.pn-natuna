@@ -12,6 +12,12 @@ check($items[0]['thumbnail'] === 'https://cdn.rss.app/images/dam.jpg', 'media:co
 check(pn_natuna_instagram_parse_rss('<html><body>no</body></html>') === [], 'HTML rejected');
 check(pn_natuna_instagram_parse_rss('<rss><channel><item>') === [], 'Invalid XML rejected');
 check(pn_natuna_instagram_clean_caption("<b>Hello</b> &amp;  dunia\nbaru") === 'Hello & dunia baru', 'Caption cleaned');
+$fullImage = 'https://instagram.example.fbcdn.net/media.jpg?stp=dst-jpg_e35_tt6&token=abc';
+$embed = '<html><body><img alt="pn.natuna" src="https://scontent.cdninstagram.com/avatar.jpg"><img alt="Instagram post shared by &#064;pn.natuna" src="' . htmlspecialchars($fullImage, ENT_QUOTES, 'UTF-8') . '"></body></html>';
+check(pn_natuna_instagram_embed_url($items[0]['permalink']) === 'https://www.instagram.com/p/Dam_Dx1hlc4/embed/captioned/', 'Canonical embed URL derived from permalink');
+check(pn_natuna_instagram_parse_embed_image($embed) === $fullImage, 'Embed parser selects the uncropped post image');
+check(pn_natuna_instagram_parse_embed_image('<img alt="Instagram post shared by @pn.natuna" src="https://evil.example/media.jpg">') === '', 'Embed parser rejects non-Meta media hosts');
+
 
 $cache = sys_get_temp_dir() . '/pn-instagram-test-' . bin2hex(random_bytes(4));
 mkdir($cache, 0700, true);

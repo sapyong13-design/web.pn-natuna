@@ -12,8 +12,8 @@ $e(!str_contains($js,'setupHeroPrefetch'),'Hero secondary media must not compete
 $e(str_contains($js,'setupMobileRailStatus'),'Rail status behavior missing.');
 $e((bool)preg_match('/@media \(max-width:\s*760px\).*?\.quick-links\s*\{[^}]*display:\s*none/s',$css),'Duplicate mobile quick-links must be hidden.');
 $e((bool)preg_match('/body\.is-home \.floating-whatsapp\s*\{[^}]*display:\s*none/s',$css),'Homepage mobile WhatsApp float must be hidden.');
-$e((bool)preg_match('/\.youtube-showcase-rail > li:nth-child\(n\+4\)\s*\{[^}]*display:\s*none/s',$css),'Mobile YouTube rail must show only three items.');
-$e(str_contains($js, "item.closest('li').hidden = mobile && index >= 3"),'Mobile rail must hide extra list items in DOM state before counting.');
+$e(!str_contains($css, '.youtube-showcase-rail > li:nth-child(n+4)'),'Mobile YouTube rail must keep all five items available.');
+$e(!str_contains($js, "item.closest('li').hidden = mobile && index >= 3"),'Mobile rail must not hide the fourth and fifth items.');
 $e((bool)preg_match('/\.youtube-showcase-rail > li\s*\{[^}]*flex:\s*0 0 calc\(100% - 34px\);[^}]*width:\s*auto;/s',$css),'Mobile rail items must own a non-overlapping flex basis.');
 $e(str_contains($css,'.mobile-rail-hint'),'Mobile rail hint styles missing.');
 $e((bool)preg_match('/\.home-juknis-sidebar\s*\{[^}]*position:\s*relative;[^}]*align-items:\s*flex-start;/s',$css),'Sidebar rail must keep cards at natural height.');

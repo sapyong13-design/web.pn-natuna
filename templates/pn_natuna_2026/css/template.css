@@ -12280,7 +12280,6 @@ body.is-dark .hero-news-panel :is(.hero-item-title, .hero-item-body) {
   .mobile-menu-empty { margin: 4px 0 8px; padding: 14px; border-radius: 10px; color: var(--nav-drawer-muted); background: var(--nav-drawer-soft); font-size: .78rem; text-align: center; }
   .mobile-menu-scroll > ul > li[hidden] { display: none !important; }
 
-  .youtube-showcase-rail > li:nth-child(n+4) { display: none; }
   .youtube-showcase-rail,
   .home-juknis-sidebar { scrollbar-width: none; }
   .youtube-showcase-rail::-webkit-scrollbar,

@@ -1416,15 +1416,6 @@ function setupMobileMenuFilter() {
 }
 
 function setupMobileRailStatus() {
-  document.querySelectorAll('[data-youtube-showcase]').forEach((root) => {
-    const items = Array.from(root.querySelectorAll('[data-youtube-item]'));
-    const syncVisibleItems = () => {
-      const mobile = window.matchMedia('(max-width: 760px)').matches;
-      items.forEach((item, index) => { item.closest('li').hidden = mobile && index >= 3; });
-    };
-    syncVisibleItems();
-    window.matchMedia('(max-width: 760px)').addEventListener('change', syncVisibleItems);
-  });
   const bind = (rail, status, itemSelector) => {
     if (!rail || !status) return;
     const items = Array.from(rail.querySelectorAll(itemSelector));

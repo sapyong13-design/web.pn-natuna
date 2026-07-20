@@ -4,6 +4,32 @@ if (!function_exists('pn_natuna_instagram_cache_dir')) {
 function pn_natuna_instagram_cache_dir(): string { return defined('JPATH_ROOT') ? JPATH_ROOT . '/cache/pn_natuna_instagram' : dirname(__DIR__, 2) . '/cache/pn_natuna_instagram'; }
 function pn_natuna_instagram_clean_caption(string $text): string { return trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8'))); }
 function pn_natuna_instagram_permalink(string $url): string { $parts = parse_url(trim($url)); if (($parts['scheme'] ?? '') !== 'https' || strtolower($parts['host'] ?? '') !== 'www.instagram.com' || !preg_match('#^/(?:p|reel|tv)/[A-Za-z0-9_-]+/?$#', $parts['path'] ?? '')) return ''; return 'https://www.instagram.com' . $parts['path']; }
+function pn_natuna_instagram_embed_url(string $permalink): string
+{
+    $safe = pn_natuna_instagram_permalink($permalink);
+    return $safe === '' ? '' : rtrim($safe, '/') . '/embed/captioned/';
+}
+function pn_natuna_instagram_media_url(string $url): string
+{
+    $url = trim($url);
+    $parts = parse_url($url);
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    if (strtolower((string) ($parts['scheme'] ?? '')) !== 'https' || !preg_match('/(?:^|\.)(?:cdninstagram\.com|fbcdn\.net)$/D', $host)) return '';
+    return $url;
+}
+function pn_natuna_instagram_parse_embed_image(string $html): string
+{
+    if ($html === '' || strlen($html) > 4194304) return '';
+    $document = new DOMDocument();
+    if (!@$document->loadHTML($html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) return '';
+    foreach ($document->getElementsByTagName('img') as $image) {
+        if (!$image instanceof DOMElement || stripos($image->getAttribute('alt'), 'Instagram post shared by') === false) continue;
+        $url = pn_natuna_instagram_media_url(html_entity_decode($image->getAttribute('src'), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        if ($url !== '') return $url;
+    }
+    return '';
+}
+
 function pn_natuna_instagram_parse_rss(string $xml): array {
     if ($xml === '' || strlen($xml) > 2097152 || preg_match('/<\s*html\b/i', $xml)) return [];
     libxml_use_internal_errors(true);
