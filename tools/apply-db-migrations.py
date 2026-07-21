@@ -20,6 +20,16 @@ def validate_identifier(value: str) -> str:
         raise ValueError("database and prefix must contain only letters, digits, and underscore")
     return value
 
+def validate_collation(value: str) -> str:
+    if not re.fullmatch(r"utf8mb4_[A-Za-z0-9_]+", value):
+        raise ValueError("database collation must be a valid utf8mb4 collation")
+    return value
+
+
+def session_sql(sql: str, collation: str) -> str:
+    validate_collation(collation)
+    return f"SET NAMES utf8mb4 COLLATE {collation};\n{sql}"
+
 
 def discover_migrations(directory: Path) -> list[Path]:
     return sorted(path for path in directory.glob("*.sql") if path.is_file())
@@ -62,6 +72,18 @@ def run_mysql(command: list[str], sql: str, env: dict[str, str]) -> str:
         raise RuntimeError(result.stderr.strip() or f"mysql failed with exit code {result.returncode}")
     return result.stdout.strip()
 
+def database_collation(command: list[str], database: str, env: dict[str, str]) -> str:
+    escaped = database.replace("'", "''")
+    value = run_mysql(
+        command,
+        "SELECT DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA "
+        f"WHERE SCHEMA_NAME='{escaped}';",
+        env,
+    )
+    if not value:
+        raise RuntimeError(f"database not found or collation unavailable: {database}")
+    return validate_collation(value.splitlines()[0].strip())
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -84,14 +106,15 @@ def main() -> int:
 
     env = os.environ.copy()
     command = mysql_command(args)
+    collation = database_collation(command, args.database, env)
     table = f"{args.prefix}project_migrations"
-    run_mysql(command, f"CREATE TABLE IF NOT EXISTS `{table}` (name varchar(191) NOT NULL PRIMARY KEY, checksum char(64) NOT NULL, applied_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;", env)
+    run_mysql(command, session_sql(f"CREATE TABLE IF NOT EXISTS `{table}` (name varchar(191) NOT NULL PRIMARY KEY, checksum char(64) NOT NULL, applied_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE={collation};", collation), env)
     applied = 0
     for path in migrations:
         source = path.read_text(encoding="utf-8")
         checksum = migration_checksum(source)
         escaped_name = path.name.replace("'", "''")
-        current = run_mysql(command, f"SELECT checksum FROM `{table}` WHERE name='{escaped_name}';", env)
+        current = run_mysql(command, session_sql(f"SELECT checksum FROM `{table}` WHERE name='{escaped_name}';", collation), env)
         if current:
             if current != checksum:
                 raise RuntimeError(f"applied migration changed: {path.name}")
@@ -100,7 +123,7 @@ def main() -> int:
                 continue
         sql = render_migration(source, args.prefix)
         record = "" if current else f"INSERT INTO `{table}` (name, checksum) VALUES ('{escaped_name}', '{checksum}');"
-        run_mysql(command, f"START TRANSACTION;\n{sql}\n{record}\nCOMMIT;", env)
+        run_mysql(command, session_sql(f"START TRANSACTION;\n{sql}\n{record}\nCOMMIT;", collation), env)
         print(f"{'reapply' if current else 'apply'} {path.name}")
         applied += 1
 
