@@ -327,6 +327,59 @@ Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
 
+## Status cPanel Aktual — `new.pn-natuna.go.id`
+
+Setup ini sudah dibuktikan berhasil pada akun cPanel `pnnatuna`:
+
+- Private checkout: `/home/pnnatuna/repos/web.pn-natuna`
+- Konfigurasi runtime: `/home/pnnatuna/private/cron/pn-natuna.env`
+- Kredensial MySQL privat: `/home/pnnatuna/private/cron/mysql.cnf` (mode `0600`; jangan commit atau salin ke chat)
+- Log gabungan: `/home/pnnatuna/private/logs/cron-refresh-all.log`
+- Python virtual environment: `/home/pnnatuna/virtualenv/private/python/pn-natuna-cron/3.12/bin/python`
+- Python 3.12 dengan `PyMuPDF` dan `Pillow` sudah terverifikasi melalui `Cron Python: OK`.
+- Runner berhasil dijalankan melalui `/bin/sh`; bentuk ini dipakai karena eksekusi langsung pernah menghasilkan `Permission denied` pada jailshell.
+- Nilai document root staging dan nama database tetap berasal dari `pn-natuna.env`; jangan menduplikasi kredensial di repository.
+
+### Refresh manual semua sumber
+
+Jalankan command ini dari cPanel Terminal:
+
+```bash
+set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"
+```
+
+Command memuat konfigurasi privat lalu memperbarui instansi, YouTube, SIPP, survei SKM/IPAK, dan DIPA secara berurutan. Target akhir: `instansi berhasil`, `youtube berhasil`, `sipp berhasil`, `survei berhasil`, dan `dipa berhasil`.
+
+### Refresh manual per sumber
+
+Muat environment sekali per sesi Terminal:
+
+```bash
+set -a
+. /home/pnnatuna/private/cron/pn-natuna.env
+set +a
+```
+
+Kemudian pilih:
+
+```bash
+"$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/cron-refresh-instansi.php"
+"$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-youtube.php"
+"$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-sipp.php"
+"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-survey.py"
+"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-dipa.py"
+```
+
+### Pemeriksaan cepat
+
+```bash
+tail -n 100 /home/pnnatuna/private/logs/cron-refresh-all.log
+```
+
+PDF Google Drive tidak memicu website secara instan. Dokumen terbaca saat cron atau refresh manual berikutnya. Nama survei wajib mengikuti `SKM TW{1-4} {TAHUN}.pdf` dan `IPAK TW{1-4} {TAHUN}.pdf`; nama DIPA yang aman: `Laporan Realisasi Anggaran DIPA 01 dan 03 {Bulan} {Tahun}.pdf`. Folder Drive wajib publik untuk siapa pun yang memiliki link.
+
+---
+
 ## Setup Ringkas Semua Updater
 
 Semua updater kini dapat dijalankan dari **private checkout** repository dengan satu runner. Direktori `tools/` sengaja **tidak masuk ZIP deployment** dan tidak perlu ditaruh di `public_html`.

@@ -14,6 +14,12 @@ Knowledge base status aktif untuk rebuild Joomla Pengadilan Negeri Natuna Kelas 
 
 Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti kode harus berupa migrasi SQL idempoten baru di `database/migrations/`; restore dump wajib melalui `tools/restore-local-db.py` agar seluruh migrasi diputar ulang.
 
+## Operasi cron cPanel aktif
+
+- Setup updater staging `new.pn-natuna.go.id`, path aktual akun `pnnatuna`, command refresh manual, command per sumber, format Google Drive, dan troubleshooting Python dicatat di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Status cPanel Aktual**.
+- Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"`.
+- Jangan commit `/home/pnnatuna/private/cron/pn-natuna.env`, `mysql.cnf`, password, atau isi log. Private checkout hanya menyimpan kode; konfigurasi/kredensial tetap di luar webroot.
+
 ## Status antarmuka saat ini
 
 - Hero beranda: sinematik full-bleed memakai pre-graded `images/hero/gedung-pn-natuna-2026-graded.webp` (326KB); koreksi warna dibakar lewat Canvas browser, sehingga filter runtime dihapus. Feather mask tetap 11% tetapi berada pada wrapper statis, sementara gambar di dalamnya tetap memakai animasi zoom. Slide pertama `fetchpriority=high`, tidak lazy. Animasi backdrop dipause selama scroll dan dilanjutkan 120ms setelah idle; handler sticky dibatasi satu `requestAnimationFrame`. Autoplay melewatkan cross-fade saat scroll, lalu kembali pada interval berikutnya; navigasi manual tetap aktif.
