@@ -37,14 +37,15 @@ class MigrationRunnerTests(unittest.TestCase):
         self.assertEqual(first, MIGRATIONS.migration_checksum("SELECT 1;\n"))
         self.assertNotEqual(first, MIGRATIONS.migration_checksum("SELECT 2;\n"))
 
-    def test_validates_and_applies_database_collation(self):
+    def test_validates_and_applies_database_text_encoding(self):
         self.assertEqual(
             "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;\nSELECT 1;",
-            MIGRATIONS.session_sql("SELECT 1;", "utf8mb4_unicode_ci"),
+            MIGRATIONS.session_sql("SELECT 1;", "utf8mb4", "utf8mb4_unicode_ci"),
         )
         with self.assertRaises(ValueError):
             MIGRATIONS.validate_collation("utf8mb4_unicode_ci; DROP TABLE x")
-
+        with self.assertRaises(ValueError):
+            MIGRATIONS.session_sql("SELECT 1;", "utf8mb3", "utf8mb4_unicode_ci")
     def test_builds_private_defaults_file_before_connection_options(self):
         with tempfile.TemporaryDirectory() as directory:
             defaults = Path(directory) / "mysql.cnf"
