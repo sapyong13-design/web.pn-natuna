@@ -1513,8 +1513,8 @@ function setupHeroGreeting() {
 }
 
 function setupHeroServiceStatus() {
-  const el = document.getElementById('hero-service-status');
-  if (!el) {
+  const elements = document.querySelectorAll('#hero-service-status, [data-service-status]');
+  if (!elements.length) {
     return;
   }
   const now = pnNatunaJakartaNow();
@@ -1525,17 +1525,21 @@ function setupHeroServiceStatus() {
 
   if (day >= 1 && day <= 4) {
     open = minutes >= 480 && minutes < 990;
-    label = open ? 'PTSP Buka \u2014 tutup 16.30 WIB' : 'PTSP Tutup \u2014 buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'besok 08.00 WIB');
+    label = open ? 'Buka sekarang · tutup 16.30 WIB' : 'Tutup · buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'besok 08.00 WIB');
   } else if (day === 5) {
     open = minutes >= 480 && minutes < 1020;
-    label = open ? 'PTSP Buka \u2014 tutup 17.00 WIB' : 'PTSP Tutup \u2014 buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'Senin 08.00 WIB');
+    label = open ? 'Buka sekarang · tutup 17.00 WIB' : 'Tutup · buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'Senin 08.00 WIB');
   } else {
-    label = 'PTSP Tutup \u2014 buka Senin 08.00 WIB';
+    label = 'Tutup · buka Senin 08.00 WIB';
   }
 
-  el.textContent = label;
-  el.classList.add(open ? 'is-open' : 'is-closed');
-  el.hidden = false;
+  elements.forEach((element) => {
+    const output = element.matches('[data-service-status]') ? element.querySelector('strong') : element;
+    if (output) output.textContent = element.matches('[data-service-status]') ? label : 'PTSP ' + label;
+    element.classList.remove('is-open', 'is-closed');
+    element.classList.add(open ? 'is-open' : 'is-closed');
+    element.hidden = false;
+  });
 }
 
 function setupMaklumatLightbox() {

@@ -103,6 +103,7 @@ if ($categoryId > 0) {
 $channel = in_array('pengumuman', $aliases, true) ? 'announcement' : (in_array('berita', $aliases, true) ? 'news' : null);
 $profilePath = rtrim(Uri::getInstance()->getPath(), '/');
 $profilePages = [
+    '/profil-pengadilan/kata-sambutan' => 'Sambutan Wakil Ketua',
     '/profil-pengadilan/sejarah-pengadilan' => 'Sejarah',
     '/profil-pengadilan/visi-misi' => 'Visi & Misi',
     '/profil-pengadilan/tugas-pokok-fungsi' => 'Tugas & Fungsi',
