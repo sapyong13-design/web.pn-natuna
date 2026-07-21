@@ -145,34 +145,21 @@ function pn_natuna_instansi_fetch_google_news(string $query): array
 
 function pn_natuna_instansi_parse_rss(string $xml, string $requiredHost): array
 {
-    if ($xml === '' || !str_contains($xml, '<item>')) {
-        return [];
-    }
+    if ($xml === '' || !str_contains($xml, '<item>')) return [];
     $previous = libxml_use_internal_errors(true);
     $feed = @simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOCDATA);
     libxml_clear_errors();
     libxml_use_internal_errors($previous);
-    if ($feed === false || !isset($feed->channel->item)) {
-        return [];
-    }
+    if ($feed === false || !isset($feed->channel->item)) return [];
     $items = [];
     foreach ($feed->channel->item as $entry) {
         $title = pn_natuna_instansi_text((string) $entry->title);
         $url = trim((string) $entry->link);
         $pub = trim((string) $entry->pubDate);
         $host = strtolower((string) parse_url($url, PHP_URL_HOST));
-        if (mb_strlen($title) < 18 || $host !== strtolower($requiredHost) || strtotime($pub) === false) {
-            continue;
-        }
-        $items[] = [
-            'title' => $title,
-            'url' => $url,
-            'date' => pn_natuna_instansi_item_date($pub),
-            'pub' => strtotime($pub),
-        ];
-        if (count($items) === 5) {
-            break;
-        }
+        if (mb_strlen($title) < 18 || $host !== strtolower($requiredHost) || strtotime($pub) === false) continue;
+        $items[] = ['title' => $title, 'url' => $url, 'date' => pn_natuna_instansi_item_date($pub), 'pub' => strtotime($pub)];
+        if (count($items) === 5) break;
     }
     return $items;
 }
@@ -180,6 +167,42 @@ function pn_natuna_instansi_parse_rss(string $xml, string $requiredHost): array
 function pn_natuna_instansi_fetch_rss(string $url, string $requiredHost): array
 {
     return pn_natuna_instansi_parse_rss(pn_natuna_instansi_fetch_url($url), $requiredHost);
+}
+
+function pn_natuna_instansi_parse_ma_mirror(string $html, string $section): array
+{
+    if ($html === '' || !in_array($section, ['berita', 'pengumuman'], true)) return [];
+    $previous = libxml_use_internal_errors(true);
+    $dom = new DOMDocument();
+    $loaded = $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_NOWARNING | LIBXML_NOERROR | LIBXML_NONET);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+    if (!$loaded) return [];
+    $xpath = new DOMXPath($dom);
+    $items = [];
+    foreach ($xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " item ")]') as $node) {
+        $anchor = $xpath->query('.//h2/a[@href]', $node)->item(0);
+        $small = $xpath->query('.//small', $node)->item(0);
+        if (!$anchor instanceof DOMElement || !$small) continue;
+        $url = trim($anchor->getAttribute('href'));
+        $title = pn_natuna_instansi_text($anchor->textContent);
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        if ($host !== 'www.mahkamahagung.go.id' || !preg_match('#^/id/' . preg_quote($section, '#') . '/\d+/#', $path) || mb_strlen($title) < 24) continue;
+        $dateText = pn_natuna_instansi_text($small->textContent);
+        $published = preg_replace('/^Posted on\s+/i', '', preg_replace('/\s*\|.*$/', '', $dateText));
+        $pub = strtotime($published) ?: 0;
+        if ($pub === 0) continue;
+        $items[] = ['title' => $title, 'url' => $url, 'date' => pn_natuna_instansi_item_date($published), 'pub' => $pub];
+        if (count($items) === 5) break;
+    }
+    return $items;
+}
+
+function pn_natuna_instansi_fetch_ma_mirror(string $section): array
+{
+    $query = $section === 'berita' ? 'mari' : 'maripengumuman';
+    return pn_natuna_instansi_parse_ma_mirror(pn_natuna_instansi_fetch_url('https://rss.pt-yogyakarta.go.id/?' . $query . '&rss'), $section);
 }
 
 function pn_natuna_instansi_fetch_ma(string $section, int $categoryId, ?string &$status = null): array
@@ -435,6 +458,10 @@ function pn_natuna_instansi_refresh_cache(): array
         $maNews = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita');
         $maNewsStatus = count($maNews) >= 2 ? 'live-google-news-after-' . $maNewsStatus : $maNewsStatus;
     }
+    if (count($maNews) < 2) {
+        $maNews = pn_natuna_instansi_fetch_ma_mirror('berita');
+        $maNewsStatus = count($maNews) >= 2 ? 'live-pt-yogyakarta-mirror-after-' . $maNewsStatus : $maNewsStatus;
+    }
     if (count($maNews) >= 2) $data['ma']['news'] = pn_natuna_instansi_fill_items($maNews, $data['ma']['news']);
     $data['_status']['ma_news'] = $maNewsStatus ?: 'fallback';
     $maAnnouncementStatus = null;
@@ -442,6 +469,10 @@ function pn_natuna_instansi_refresh_cache(): array
     if (count($maAnnouncements) < 2) {
         $maAnnouncements = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman');
         $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-google-news-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
+    }
+    if (count($maAnnouncements) < 2) {
+        $maAnnouncements = pn_natuna_instansi_fetch_ma_mirror('pengumuman');
+        $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-pt-yogyakarta-mirror-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
     }
     if (count($maAnnouncements) >= 2) $data['ma']['announcements'] = pn_natuna_instansi_fill_items($maAnnouncements, $data['ma']['announcements']);
     $data['_status']['ma_announcements'] = $maAnnouncementStatus ?: 'fallback';

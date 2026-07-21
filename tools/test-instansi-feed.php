@@ -39,6 +39,10 @@ $rssItems = pn_natuna_instansi_parse_rss($rss, 'badilum.mahkamahagung.go.id');
 assertSameValue(['Berita Badilum terbaru yang valid'], array_column($rssItems, 'title'), 'Badilum RSS must accept only valid official-host items.');
 assertSameValue('21 Jul', $rssItems[0]['date'] ?? null, 'Badilum RSS must preserve publication date.');
 
+$mirror = '<div class="item"><h2><a href="https://www.mahkamahagung.go.id/id/berita/7351/judul-resmi-ma-yang-cukup-panjang">Judul resmi Mahkamah Agung yang cukup panjang</a></h2><p><small>Posted on 20 July 2026 | 8:30 am</small></p></div><div class="item"><h2><a href="https://example.com/id/berita/9/palsu">Artikel asing yang harus ditolak oleh parser mirror</a></h2><small>Posted on 21 July 2026 | 8:30 am</small></div>';
+$mirrorItems = pn_natuna_instansi_parse_ma_mirror($mirror, 'berita');
+assertSameValue(['Judul resmi Mahkamah Agung yang cukup panjang'], array_column($mirrorItems, 'title'), 'MA mirror must accept only official MA article URLs.');
+assertSameValue('20 Jul', $mirrorItems[0]['date'] ?? null, 'MA mirror must preserve publication date.');
 $source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/instansi-feed.php');
 if (!str_contains($source, "pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita')")) {
     fwrite(STDERR, "FAIL: MA Google News RSS must be used by the loader.\n");
