@@ -533,8 +533,9 @@ function pn_natuna_instansi_updated_label(): string
     if (!$ts) {
         return '';
     }
+    $jakarta = (new DateTimeImmutable('@' . $ts))->setTimezone(new DateTimeZone('Asia/Jakarta'));
     $months = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    return date('j', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) . ', ' . date('H.i', $ts) . ' WIB';
+    return $jakarta->format('j') . ' ' . $months[(int) $jakarta->format('n')] . ' ' . $jakarta->format('Y') . ', ' . $jakarta->format('H.i') . ' WIB';
 }
 
 function pn_natuna_render_instansi_feed(): void

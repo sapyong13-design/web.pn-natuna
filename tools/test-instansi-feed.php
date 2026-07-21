@@ -43,6 +43,11 @@ $mirror = '<div class="item"><h2><a href="https://www.mahkamahagung.go.id/id/ber
 $mirrorItems = pn_natuna_instansi_parse_ma_mirror($mirror, 'berita');
 assertSameValue(['Judul resmi Mahkamah Agung yang cukup panjang'], array_column($mirrorItems, 'title'), 'MA mirror must accept only official MA article URLs.');
 assertSameValue('20 Jul', $mirrorItems[0]['date'] ?? null, 'MA mirror must preserve publication date.');
+$sourceTimezone = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/instansi-feed.php');
+if (!str_contains($sourceTimezone, "new DateTimeZone('Asia/Jakarta')")) {
+    fwrite(STDERR, "FAIL: institution cache timestamp must be converted explicitly to WIB.\n");
+    exit(1);
+}
 $source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/instansi-feed.php');
 if (!str_contains($source, "pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita')")) {
     fwrite(STDERR, "FAIL: MA Google News RSS must be used by the loader.\n");
