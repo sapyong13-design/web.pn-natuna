@@ -327,40 +327,65 @@ Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
 
+## Setup Ringkas Semua Updater
+
+Semua updater kini dapat dijalankan dari **private checkout** repository dengan satu runner. Direktori `tools/` sengaja **tidak masuk ZIP deployment** dan tidak perlu ditaruh di `public_html`.
+
+### 1. Siapkan file privat
+
+```bash
+mkdir -p /home/USER/private/cron /home/USER/private/logs
+cp /home/USER/repos/web.pn-natuna/tools/cron-cpanel.env.example /home/USER/private/cron/pn-natuna.env
+cp /home/USER/repos/web.pn-natuna/tools/mysql.cnf.example /home/USER/private/cron/mysql.cnf
+chmod 700 /home/USER/private/cron
+chmod 600 /home/USER/private/cron/pn-natuna.env /home/USER/private/cron/mysql.cnf
+chmod 700 /home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh
+```
+
+Edit `pn-natuna.env`: ganti `USER`, path PHP/Python/MySQL, dan `DB_NAME`. Edit `mysql.cnf`: isi user dan password database cPanel. Password hanya berada di file mode `0600`, bukan command Cron Jobs.
+
+Pasang dependensi Python sekali:
+
+```bash
+/usr/bin/python3 -m pip install --user PyMuPDF Pillow
+```
+
+### 2. Tes manual
+
+```bash
+set -a
+. /home/USER/private/cron/pn-natuna.env
+set +a
+/home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh
+```
+
+Runner melanjutkan updater lain bila satu sumber gagal, lalu mengembalikan exit nonzero agar email cron memberi peringatan. Root web selalu berasal dari `PN_NATUNA_JPATH_ROOT`; cache masuk `public_html/cache`, gambar survei masuk `public_html/images/surveys`, dan log masuk folder privat.
+
+### 3. Satu command cPanel Cron Jobs
+
+Jadwal yang sederhana: setiap hari pukul 06.00.
+
+```bash
+0 6 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
+```
+
+Untuk YouTube lebih cepat, runner yang sama boleh dijalankan per jam, tetapi juga akan memeriksa sumber lain. Jangan menjalankan `refresh-survey.py` dan `refresh-dipa.py` bersamaan; keduanya menyunting modul Joomla `816` secara berurutan di runner ini.
+
+### 4. Verifikasi
+
+```bash
+tail -n 100 /home/USER/private/logs/cron-refresh-all.log
+test -s /home/USER/public_html/cache/pn_natuna_instansi_feed.json
+test -s /home/USER/public_html/cache/pn_natuna_youtube/feed.json
+test -s /home/USER/public_html/cache/pn_natuna_sipp_schedule.json
+```
+
+Homepage harus menampilkan feed instansi terbaru, lima video YouTube, jadwal SIPP, periode survei terbaru yang tersedia, dan periode DIPA terbaru yang tersedia.
+
+---
+
 ---
 
 ## 9. Refresh YouTube per Jam
 
-Cache YouTube dibuat oleh script CLI-only `tools/cron-refresh-youtube.php`. Script mengambil Atom channel `UCuPb35OggK2PKdW7Ed0qszA` melalui HTTPS, mempertahankan cache lama jika fetch, parse, atau promosi gagal, dan menulis log default ke `public_html/logs/youtube-refresh.log`.
-
-### 9a. Salin dari private checkout dan atur izin
-
-Direktori `tools/` sengaja tidak masuk ZIP deployment. Setelah ekstraksi paket, salin hanya `tools/cron-refresh-youtube.php` dari private checkout repository ke `/home/USER/public_html/tools/cron-refresh-youtube.php`. Jangan mengunggah seluruh direktori `tools/` dan jangan mengambil script dari sumber publik. Script memakai `__DIR__` untuk memuat `../templates/pn_natuna_2026/youtube-feed.php` dan menulis cache relatif ke Joomla root.
-
-```bash
-mkdir -p /home/USER/public_html/tools /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
-cp /home/USER/private/PATH_TO_CHECKOUT/tools/cron-refresh-youtube.php /home/USER/public_html/tools/cron-refresh-youtube.php
-chmod 755 /home/USER/public_html/tools /home/USER/public_html/cache /home/USER/public_html/cache/pn_natuna_youtube /home/USER/public_html/logs
-chmod 640 /home/USER/public_html/tools/cron-refresh-youtube.php
-```
-
-Ganti `PATH_TO_CHECKOUT` dengan lokasi private checkout yang sebenarnya.
-
-Script dijalankan dengan `php -f`, jadi izin execute tidak diperlukan; file harus dapat dibaca oleh user cron. Cache dibuat di `/home/USER/public_html/cache/pn_natuna_youtube/feed.json`; log default dibuat di `/home/USER/public_html/logs/youtube-refresh.log`.
-
-### 9b. Validasi manual dan cron
-
-Jalankan sekali dari Joomla `tools/` setelah script disalin dari private checkout agar seluruh path relatif konsisten:
-
-```bash
-cd /home/USER/public_html/tools && PATH_PHP -f cron-refresh-youtube.php
-ls -l /home/USER/public_html/cache/pn_natuna_youtube/feed.json /home/USER/public_html/logs/youtube-refresh.log
-```
-
-Perintah harus mencetak `YouTube cache refreshed`; `feed.json` dan `youtube-refresh.log` harus ada/berubah. Setelah itu, buat cron tiap jam:
-
-```bash
-0 * * * * cd /home/USER/public_html/tools && PATH_PHP -f cron-refresh-youtube.php
-```
-
-Ganti `PATH_PHP` dan `USER` sesuai cPanel. Pastikan PHP CLI memiliki ekstensi cURL dan user cron dapat menulis `cache/pn_natuna_youtube/` serta `logs/`.
+Cache YouTube dibuat oleh script CLI-only `tools/cron-refresh-youtube.php`. Script mengambil Atom channel `UCuPb35OggK2PKdW7Ed0qszA` melalui HTTPS, mempertahankan cache lama jika fetch, parse, atau promosi gagal, dan memakai `PN_NATUNA_JPATH_ROOT` untuk menulis cache ke Joomla root. Gunakan runner tunggal pada bagian **Setup Ringkas Semua Updater**; script tidak perlu disalin ke `public_html`.

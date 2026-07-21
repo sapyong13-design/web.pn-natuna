@@ -29,6 +29,7 @@ import pymupdf
 FOLDER_ID = '1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV'
 MODULE_ID = 816  # Modul "Kinerja & Akuntabilitas" — blok .dipa-widget di dalamnya yang di-update
 MYSQL_BIN = os.environ.get('MYSQL_BIN', 'mysql')
+MYSQL_DEFAULTS_FILE = os.environ.get('MYSQL_DEFAULTS_FILE', '')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
@@ -220,9 +221,13 @@ def build_html(data, period_label, file_id=''):
 
 
 def run_mysql(sql):
-    cmd = [MYSQL_BIN, '-u', DB_USER]
-    if DB_PASS:
-        cmd += [f'-p{DB_PASS}']
+    cmd = [MYSQL_BIN]
+    if MYSQL_DEFAULTS_FILE:
+        cmd.append(f'--defaults-extra-file={MYSQL_DEFAULTS_FILE}')
+    else:
+        cmd += ['-u', DB_USER]
+        if DB_PASS:
+            cmd += [f'-p{DB_PASS}']
     cmd += ['--default-character-set=utf8mb4', '-N', '-B', DB_NAME]
     return subprocess.run(cmd, input=sql, capture_output=True, text=True, encoding='utf-8')
 

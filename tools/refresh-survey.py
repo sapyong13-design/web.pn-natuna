@@ -36,12 +36,16 @@ SURVEY_LABELS = {
     'SKM': 'Indeks Kepuasan Masyarakat (IKM)',
     'IPAK': 'Indeks Persepsi Anti Korupsi (IPAK)',
 }
-OUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'images', 'surveys')
+JPATH_ROOT = os.path.abspath(os.environ.get(
+    'PN_NATUNA_JPATH_ROOT', os.path.join(os.path.dirname(__file__), '..')
+))
+OUT_DIR = os.path.join(JPATH_ROOT, 'images', 'surveys')
 IMG_WIDTH = 800  # web display width (retina)
 MODULE_ID = 816  # Joomla module id untuk survey card
 
-# MySQL CLI path (sesuaikan environment)
+# Gunakan MYSQL_DEFAULTS_FILE di produksi agar password tidak masuk command/process list.
 MYSQL_BIN = os.environ.get('MYSQL_BIN', 'mysql')
+MYSQL_DEFAULTS_FILE = os.environ.get('MYSQL_DEFAULTS_FILE', '')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
@@ -199,24 +203,34 @@ def build_module_content(latest):
     )
 
 
-def update_module_db(content):
-    """Update Joomla module content via MySQL CLI."""
-    sql_file = os.path.join(os.path.dirname(__file__), '_survey_update.sql')
-    # Escape single quotes untuk SQL
-    escaped = content.replace("\\", "\\\\").replace("'", "\\'")
-    with open(sql_file, 'w', encoding='utf-8') as f:
-        f.write(f"UPDATE pnn_modules SET content = '{escaped}' WHERE id = {MODULE_ID};\n")
-    cmd = [MYSQL_BIN, '-u', DB_USER]
-    if DB_PASS:
-        cmd += [f'-p{DB_PASS}']
-    cmd += ['--default-character-set=utf8mb4', DB_NAME]
-    with open(sql_file, 'r', encoding='utf-8') as f:
-        result = subprocess.run(cmd, stdin=f, capture_output=True, text=True)
-    os.remove(sql_file)
+def run_mysql(sql):
+    cmd = [MYSQL_BIN]
+    if MYSQL_DEFAULTS_FILE:
+        cmd.append(f'--defaults-extra-file={MYSQL_DEFAULTS_FILE}')
+    else:
+        cmd += ['-u', DB_USER]
+        if DB_PASS:
+            cmd += [f'-p{DB_PASS}']
+    cmd += ['--default-character-set=utf8mb4', '-N', '-B', DB_NAME]
+    return subprocess.run(cmd, input=sql, capture_output=True, text=True, encoding='utf-8')
+
+
+def update_module_db(latest):
+    """Perbarui dokumen/periode survei tanpa menimpa skor atau widget DIPA."""
+    result = run_mysql(f'SELECT content FROM pnn_modules WHERE id = {MODULE_ID};')
     if result.returncode != 0:
-        print('[ERROR] Pembaruan database gagal.', file=sys.stderr)
         return False
-    return True
+    content = result.stdout.rstrip('\n').replace('\\n', '\n')
+    for stype, info in latest.items():
+        path = f'/images/surveys/{stype}_TW{info["tw"]}_{info["year"]}.png'
+        content = re.sub(rf'/images/surveys/{stype}_TW\d_20\d{{2}}\.png', path, content)
+    periods = {(info['tw'], info['year']) for info in latest.values()}
+    if len(periods) == 1:
+        tw, year = next(iter(periods))
+        content = re.sub(r'TW\d\s+20\d{2}', f'TW{tw} {year}', content)
+    escaped = content.replace('\\', '\\\\').replace("'", "\\'")
+    result = run_mysql(f"UPDATE pnn_modules SET content = '{escaped}' WHERE id = {MODULE_ID};")
+    return result.returncode == 0
 
 
 def main():
@@ -256,8 +270,7 @@ def main():
         print(f'        PNG: {os.path.getsize(png_path) // 1024}KB -> {os.path.basename(png_path)}')
 
     print('\n[4/4] Update module Joomla (DB)...')
-    content = build_module_content(latest)
-    if update_module_db(content):
+    if update_module_db(latest):
         print('      Module updated.')
     else:
         print('      [WARN] DB update gagal — image sudah ter-convert, update module manual.')

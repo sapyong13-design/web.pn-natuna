@@ -5,14 +5,18 @@ if (PHP_SAPI !== 'cli') {
     exit;
 }
 
-require_once __DIR__ . '/../templates/pn_natuna_2026/youtube-feed.php';
+$root = rtrim(getenv('PN_NATUNA_JPATH_ROOT') ?: dirname(__DIR__), '/\\');
+if (!is_file($root . '/templates/pn_natuna_2026/youtube-feed.php')) {
+    fwrite(STDERR, "Joomla root tidak valid.\n");
+    exit(2);
+}
+require_once $root . '/templates/pn_natuna_2026/youtube-feed.php';
 
 const PN_NATUNA_YOUTUBE_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCuPb35OggK2PKdW7Ed0qszA';
 const PN_NATUNA_YOUTUBE_MAX_BYTES = 2097152;
 
-$root = dirname(__DIR__);
 $cachePath = $root . '/cache/pn_natuna_youtube/feed.json';
-$logPath = getenv('PN_NATUNA_YOUTUBE_LOG_FILE') ?: $root . '/logs/youtube-refresh.log';
+$logPath = getenv('PN_NATUNA_YOUTUBE_LOG_FILE') ?: dirname($root) . '/private/logs/youtube-refresh.log';
 
 function pn_natuna_youtube_refresh_log(string $path, string $message): void
 {

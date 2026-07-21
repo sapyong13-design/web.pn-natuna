@@ -1,0 +1,6 @@
+# Salin ke /home/USER/private/cron/mysql.cnf lalu chmod 600.
+[client]
+user=USER_database
+password=GANTI_PASSWORD_DATABASE
+host=localhost
+default-character-set=utf8mb4
