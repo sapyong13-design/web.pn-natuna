@@ -35,16 +35,25 @@ def migration_checksum(sql: str) -> str:
 
 
 def mysql_command(args: argparse.Namespace) -> list[str]:
-    return [
-        args.mysql,
+    command = [args.mysql]
+    if args.mysql_defaults_file is not None:
+        defaults_file = args.mysql_defaults_file.expanduser().resolve()
+        if not defaults_file.is_file():
+            raise ValueError(f"MySQL defaults file not found: {defaults_file}")
+        command.append(f"--defaults-extra-file={defaults_file}")
+    command.extend([
         "--host", args.host,
         "--port", str(args.port),
-        "--user", args.user,
+    ])
+    if args.user:
+        command.extend(["--user", args.user])
+    command.extend([
         "--default-character-set=utf8mb4",
         "--batch",
         "--skip-column-names",
         args.database,
-    ]
+    ])
+    return command
 
 
 def run_mysql(command: list[str], sql: str, env: dict[str, str]) -> str:
@@ -59,10 +68,11 @@ def main() -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--reapply", action="store_true", help="replay idempotent migrations after importing a dump")
     parser.add_argument("--port", type=int, default=3306)
-    parser.add_argument("--user", default="root")
+    parser.add_argument("--user", default=None if os.environ.get("MYSQL_DEFAULTS_FILE") else "root")
     parser.add_argument("--database", default="pn_natuna_rebuild")
     parser.add_argument("--prefix", default="pnn_")
     parser.add_argument("--mysql", default=os.environ.get("MYSQL_BIN", "mysql"))
+    parser.add_argument("--mysql-defaults-file", type=Path, default=Path(os.environ["MYSQL_DEFAULTS_FILE"]) if os.environ.get("MYSQL_DEFAULTS_FILE") else None, help="private MySQL option file; credentials stay out of the process list")
     parser.add_argument("--migrations", type=Path, default=DEFAULT_MIGRATIONS)
     args = parser.parse_args()
 

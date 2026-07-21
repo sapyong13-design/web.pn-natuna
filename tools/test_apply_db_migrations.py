@@ -37,6 +37,29 @@ class MigrationRunnerTests(unittest.TestCase):
         self.assertEqual(first, MIGRATIONS.migration_checksum("SELECT 1;\n"))
         self.assertNotEqual(first, MIGRATIONS.migration_checksum("SELECT 2;\n"))
 
+    def test_builds_private_defaults_file_before_connection_options(self):
+        with tempfile.TemporaryDirectory() as directory:
+            defaults = Path(directory) / "mysql.cnf"
+            defaults.write_text("[client]\nuser=site\npassword=secret\n", encoding="utf-8")
+            args = type("Args", (), {
+                "mysql": "mysql", "mysql_defaults_file": defaults,
+                "host": "localhost", "port": 3306, "user": None,
+                "database": "site_db",
+            })()
+            command = MIGRATIONS.mysql_command(args)
+            self.assertTrue(command[1].startswith("--defaults-extra-file="))
+            self.assertNotIn("--user", command)
+            self.assertNotIn("secret", " ".join(command))
+
+    def test_rejects_missing_defaults_file(self):
+        args = type("Args", (), {
+            "mysql": "mysql", "mysql_defaults_file": Path("missing.cnf"),
+            "host": "localhost", "port": 3306, "user": None,
+            "database": "site_db",
+        })()
+        with self.assertRaises(ValueError):
+            MIGRATIONS.mysql_command(args)
+
 
 if __name__ == "__main__":
     unittest.main()
