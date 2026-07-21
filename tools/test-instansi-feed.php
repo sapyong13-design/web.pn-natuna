@@ -34,6 +34,11 @@ $ptHtml = '<main><article><a href="/kepri/ketua-pengadilan-tinggi-kepulauan-riau
 $ptLatest = pn_natuna_instansi_parse_items($ptHtml, 'https://pt-kepri.go.id/', ['/kepri/'], ['pengumuman', 'pengantar', 'visi', 'struktur', 'wilayah', 'yurisdiksi', 'sejarah', 'tugas', 'fungsi', 'kepaniteraan', 'pegawai', 'role-model']);
 assertSameValue('Ketua Pengadilan Tinggi Kepulauan Riau Hadiri Penutupan MTQ XII Tingkat Provinsi Kepulauan Riau Tahun 2026', $ptLatest[0]['title'] ?? null, 'PT Kepri news titles containing Ketua must not be excluded.');
 
+$rss = '<?xml version="1.0"?><rss><channel><item><title>Berita Badilum terbaru yang valid</title><link>https://badilum.mahkamahagung.go.id/berita/berita-kegiatan/5347-contoh.html</link><pubDate>Tue, 21 Jul 2026 06:34:36 +0700</pubDate></item><item><title>Tautan host asing harus ditolak parser</title><link>https://example.com/berita-palsu</link><pubDate>Tue, 21 Jul 2026 06:34:36 +0700</pubDate></item></channel></rss>';
+$rssItems = pn_natuna_instansi_parse_rss($rss, 'badilum.mahkamahagung.go.id');
+assertSameValue(['Berita Badilum terbaru yang valid'], array_column($rssItems, 'title'), 'Badilum RSS must accept only valid official-host items.');
+assertSameValue('21 Jul', $rssItems[0]['date'] ?? null, 'Badilum RSS must preserve publication date.');
+
 $source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/instansi-feed.php');
 if (!str_contains($source, "pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita')")) {
     fwrite(STDERR, "FAIL: MA Google News RSS must be used by the loader.\n");

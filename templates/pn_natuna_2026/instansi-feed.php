@@ -27,19 +27,51 @@ function pn_natuna_instansi_url(string $href, string $base): string
 
 function pn_natuna_instansi_fetch_url(string $url): string
 {
+    $parts = parse_url($url);
+    if (($parts['scheme'] ?? '') !== 'https' || ($parts['host'] ?? '') === '') {
+        return '';
+    }
+    if (function_exists('curl_init')) {
+        $body = '';
+        $curl = curl_init($url);
+        if ($curl !== false) {
+            curl_setopt_array($curl, [
+                CURLOPT_RETURNTRANSFER => false,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 3,
+                CURLOPT_CONNECTTIMEOUT => 8,
+                CURLOPT_TIMEOUT => 15,
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
+                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; PN-Natuna-Feed/1.0)',
+                CURLOPT_HTTPHEADER => ['Accept: application/rss+xml, application/xml, text/html;q=0.9'],
+                CURLOPT_WRITEFUNCTION => static function ($handle, string $chunk) use (&$body): int {
+                    if (strlen($body) + strlen($chunk) > 5242880) return 0;
+                    $body .= $chunk;
+                    return strlen($chunk);
+                },
+            ]);
+            $ok = curl_exec($curl);
+            $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+            curl_close($curl);
+            if ($ok === true && $status === 200 && $body !== '') {
+                return $body;
+            }
+        }
+    }
     $context = stream_context_create([
         'http' => [
-            'timeout' => 8,
-            'header' => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36\r\nAccept: text/html,application/rss+xml,application/xml;q=0.9,*/*;q=0.8\r\n",
+            'timeout' => 15,
+            'follow_location' => 1,
+            'max_redirects' => 3,
+            'header' => "User-Agent: Mozilla/5.0 (compatible; PN-Natuna-Feed/1.0)\r\nAccept: application/rss+xml, application/xml, text/html;q=0.9\r\n",
         ],
-        'ssl' => [
-            'verify_peer' => true,
-            'verify_peer_name' => true,
-        ],
+        'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
     ]);
-
     $html = @file_get_contents($url, false, $context);
-    return is_string($html) ? $html : '';
+    return is_string($html) && strlen($html) <= 5242880 ? $html : '';
 }
 
 function pn_natuna_instansi_google_title(string $title): string
@@ -109,6 +141,45 @@ function pn_natuna_instansi_fetch_google_news(string $query): array
         ];
     }
     return pn_natuna_instansi_recent_items($items, 60);
+}
+
+function pn_natuna_instansi_parse_rss(string $xml, string $requiredHost): array
+{
+    if ($xml === '' || !str_contains($xml, '<item>')) {
+        return [];
+    }
+    $previous = libxml_use_internal_errors(true);
+    $feed = @simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOCDATA);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+    if ($feed === false || !isset($feed->channel->item)) {
+        return [];
+    }
+    $items = [];
+    foreach ($feed->channel->item as $entry) {
+        $title = pn_natuna_instansi_text((string) $entry->title);
+        $url = trim((string) $entry->link);
+        $pub = trim((string) $entry->pubDate);
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        if (mb_strlen($title) < 18 || $host !== strtolower($requiredHost) || strtotime($pub) === false) {
+            continue;
+        }
+        $items[] = [
+            'title' => $title,
+            'url' => $url,
+            'date' => pn_natuna_instansi_item_date($pub),
+            'pub' => strtotime($pub),
+        ];
+        if (count($items) === 5) {
+            break;
+        }
+    }
+    return $items;
+}
+
+function pn_natuna_instansi_fetch_rss(string $url, string $requiredHost): array
+{
+    return pn_natuna_instansi_parse_rss(pn_natuna_instansi_fetch_url($url), $requiredHost);
 }
 
 function pn_natuna_instansi_fetch_ma(string $section, int $categoryId, ?string &$status = null): array
@@ -374,11 +445,18 @@ function pn_natuna_instansi_refresh_cache(): array
     }
     if (count($maAnnouncements) >= 2) $data['ma']['announcements'] = pn_natuna_instansi_fill_items($maAnnouncements, $data['ma']['announcements']);
     $data['_status']['ma_announcements'] = $maAnnouncementStatus ?: 'fallback';
+    $badilumFeeds = [
+        'news' => 'https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.feed?type=rss',
+        'announcements' => 'https://badilum.mahkamahagung.go.id/berita/pengumuman-surat-dinas.feed?type=rss',
+    ];
+    foreach ($badilumFeeds as $group => $url) {
+        $items = pn_natuna_instansi_fetch_rss($url, 'badilum.mahkamahagung.go.id');
+        if (count($items) >= 2) {
+            $data['badilum'][$group] = $items;
+            $data['_status']['badilum_' . $group] = 'live-rss';
+        }
+    }
     $sources = [
-        'badilum' => [
-            'news' => ['https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html', ['berita'], ['pengumuman']],
-            'announcements' => ['https://badilum.mahkamahagung.go.id/berita/pengumuman-surat-dinas.html', ['pengumuman', 'undangan', 'pemanggilan', 'hasil', 'peserta', 'imbauan', 'pemberitahuan', 'informasi', 'penyampaian', 'pemantauan'], ['berita-kegiatan', 'mutasi hakim', 'mutasi panitera', 'peraturan perundangan', 'hasil survei', 'biaya mutasi', 'keuangan perkara']],
-        ],
         'pt' => [
             'news' => ['https://pt-kepri.go.id/', ['/kepri/'], ['pengumuman', 'pengantar', 'visi', 'struktur', 'wilayah', 'yurisdiksi', 'sejarah', 'tugas', 'fungsi', 'kepaniteraan', 'pegawai', 'role-model']],
             'announcements' => ['https://pt-kepri.go.id/pengumuman', ['pengumuman'], ['berita']],
@@ -389,11 +467,16 @@ function pn_natuna_instansi_refresh_cache(): array
             $items = pn_natuna_instansi_parse_items(pn_natuna_instansi_fetch_url($url), $url, $include, $exclude);
             if (count($items) < 2) continue;
             $data[$key][$group] = pn_natuna_instansi_fill_items($items, $data[$key][$group] ?? []);
-            $data['_status'][$key . '_' . $group] = 'live';
+            $data['_status'][$key . '_' . $group] = 'live-html';
         }
     }
     @mkdir(dirname($cacheFile), 0775, true);
-    @file_put_contents($cacheFile, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    $encoded = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $temporary = $cacheFile . '.' . bin2hex(random_bytes(6)) . '.tmp';
+    if (!is_string($encoded) || @file_put_contents($temporary, $encoded, LOCK_EX) === false || !@rename($temporary, $cacheFile)) {
+        @unlink($temporary);
+        throw new RuntimeException('Cache instansi tidak dapat ditulis');
+    }
     return $data;
 }
 
