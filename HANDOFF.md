@@ -20,6 +20,21 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 - Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"`.
 - Jangan commit `/home/pnnatuna/private/cron/pn-natuna.env`, `mysql.cnf`, password, atau isi log. Private checkout hanya menyimpan kode; konfigurasi/kredensial tetap di luar webroot.
 
+## Handoff deployment staging 21 Juli 2026
+
+- Paket fitur aktif di GitHub: commit `32b7274` (**transparency archives, kartu Jam Layanan, Sambutan Wakil Ketua**) ditambah fix runner migrasi `eab76e4` dan `45423b0`; branch `continue-joomla-rebuild-polish` sinkron sampai `45423b0`.
+- Staging: `https://new.pn-natuna.go.id`; private checkout `/home/pnnatuna/repos/web.pn-natuna`; webroot berasal dari `PN_NATUNA_JPATH_ROOT` di `/home/pnnatuna/private/cron/pn-natuna.env`.
+- Deployment belum selesai. Registry staging terakhir hanya memuat `20260803_align_transparency_document_cards.sql` untuk batch baru. `20260804` belum tercatat dan belum diterapkan karena retry berhenti pada konflik collation.
+- Fix `45423b0` mengubah `tools/apply-db-migrations.py` agar mengambil charset/collation langsung dari `pnn_content.introtext`, bukan default schema. Langkah pertama besok: `git pull --ff-only origin continue-joomla-rebuild-polish`, pastikan HEAD `45423b0`, lalu retry tanpa `--reapply`.
+- Sebelum retry, WAJIB pastikan backup SQL privat tabel `pnn_menu`, `pnn_content`, `pnn_modules`, dan `pnn_project_migrations` tersedia dan tidak kosong. Migrasi `20260810` membangun ulang nested-set menu sehingga backup menu wajib dapat dipulihkan.
+- Command retry:
+  `"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/apply-db-migrations.py" --mysql "$MYSQL_BIN" --mysql-defaults-file "$MYSQL_DEFAULTS_FILE" --database "$DB_NAME"`
+- Target retry: skip `20260803`; apply `20260804` sampai `20260810`. Jangan memakai `--reapply` di staging.
+- Sesudah sukses: validasi nested-set (`lft < rgt`, tidak ada duplikat boundary), jalankan `cd "$PN_NATUNA_JPATH_ROOT" && "$PHP_BIN" cli/joomla.php cache:clean`, kemudian `/bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"`.
+- Batch memuat file template selain migrasi: `templates/pn_natuna_2026/css/template.css`, `js/template.js`, dan `html/com_content/article/default.php`. `git pull` private checkout tidak memperbarui webroot; ketiga file wajib disalin dan diverifikasi dengan `cmp` terhadap webroot.
+- Halaman/fitur target: `/profil-pengadilan/kata-sambutan` (Joko Ciptanto, S.H., M.H., jabatan terverifikasi **Wakil Ketua**), Jam Layanan dinamis, Laporan Tahunan 2023, DIPA April 2026, IKM/IPAK TW I–II 2026, dan Survei Harian Januari–Juni 2026.
+- Sumber resmi 2026 mengonfirmasi Joko Ciptanto sebagai Wakil Ketua; jangan mengganti menjadi Ketua tanpa sumber resmi baru.
+
 ## Status antarmuka saat ini
 
 - Hero beranda: sinematik full-bleed memakai pre-graded `images/hero/gedung-pn-natuna-2026-graded.webp` (326KB); koreksi warna dibakar lewat Canvas browser, sehingga filter runtime dihapus. Feather mask tetap 11% tetapi berada pada wrapper statis, sementara gambar di dalamnya tetap memakai animasi zoom. Slide pertama `fetchpriority=high`, tidak lazy. Animasi backdrop dipause selama scroll dan dilanjutkan 120ms setelah idle; handler sticky dibatasi satu `requestAnimationFrame`. Autoplay melewatkan cross-fade saat scroll, lalu kembali pada interval berikutnya; navigasi manual tetap aktif.

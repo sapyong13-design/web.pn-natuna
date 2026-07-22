@@ -327,6 +327,72 @@ Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
 
+## Resume Deployment Batch `32b7274` / `45423b0`
+
+Status staging terakhir pada 21 Juli 2026:
+
+- File template batch harus berada di webroot: `css/template.css`, `js/template.js`, dan `html/com_content/article/default.php`.
+- Migrasi `20260803_align_transparency_document_cards.sql` sudah diterapkan dan tercatat.
+- Migrasi `20260804` sampai `20260810` belum diterapkan.
+- Percobaan pertama `20260804` gagal karena collation session berbeda dari `pnn_content.introtext`.
+- Commit `45423b0` memperbaiki runner agar membaca `CHARACTER_SET_NAME` dan `COLLATION_NAME` langsung dari kolom tersebut.
+
+### Langkah pertama saat melanjutkan
+
+```bash
+set -a
+. /home/pnnatuna/private/cron/pn-natuna.env
+set +a
+cd "$PN_NATUNA_SOURCE_ROOT"
+git pull --ff-only origin continue-joomla-rebuild-polish
+git log -1 --oneline
+```
+
+HEAD harus `45423b0` atau commit sesudahnya.
+
+### Backup wajib sebelum retry
+
+Migrasi `20260810` membangun ulang seluruh nested-set menu (`lft/rgt/level`). Pastikan dump privat tidak kosong:
+
+```bash
+DB_BACKUP_DIR="/home/pnnatuna/private/backups/db-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$DB_BACKUP_DIR"
+chmod 700 "$DB_BACKUP_DIR"
+MYSQLDUMP_BIN="$(command -v mariadb-dump || command -v mysqldump)"
+"$MYSQLDUMP_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" --single-transaction --quick --skip-lock-tables "$DB_NAME" pnn_menu pnn_content pnn_modules pnn_project_migrations > "$DB_BACKUP_DIR/pre-32b7274.sql"
+test -s "$DB_BACKUP_DIR/pre-32b7274.sql" && echo "Database backup: OK"
+chmod 600 "$DB_BACKUP_DIR/pre-32b7274.sql"
+```
+
+Jangan lanjut jika `Database backup: OK` tidak muncul.
+
+### Retry migrasi
+
+```bash
+"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/apply-db-migrations.py" \
+  --mysql "$MYSQL_BIN" \
+  --mysql-defaults-file "$MYSQL_DEFAULTS_FILE" \
+  --database "$DB_NAME"
+```
+
+Target: `20260803` di-skip; `20260804` sampai `20260810` di-apply. Jangan gunakan `--reapply`.
+
+### Validasi menu dan finalisasi
+
+```bash
+"$MYSQL_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" -N -B "$DB_NAME" -e "SELECT COUNT(*) total_items,SUM(lft>=rgt) invalid_bounds,COUNT(*)-COUNT(DISTINCT lft) duplicate_lft,COUNT(*)-COUNT(DISTINCT rgt) duplicate_rgt FROM pnn_menu WHERE client_id=0;"
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/css/template.css" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/css/template.css" && echo "CSS: OK"
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/js/template.js" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/js/template.js" && echo "JavaScript: OK"
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/html/com_content/article/default.php" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/html/com_content/article/default.php" && echo "Renderer: OK"
+cd "$PN_NATUNA_JPATH_ROOT"
+"$PHP_BIN" cli/joomla.php cache:clean
+/bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"
+```
+
+Nilai `invalid_bounds`, `duplicate_lft`, dan `duplicate_rgt` harus `0`. Jika `cmp` gagal, salin file terkait dari private checkout ke webroot sebelum membersihkan cache.
+
+---
+
 ## Status cPanel Aktual — `new.pn-natuna.go.id`
 
 Setup ini sudah dibuktikan berhasil pada akun cPanel `pnnatuna`:
