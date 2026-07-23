@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupYouTubeShowcase();
   setupMobileMenuFilter();
   setupMobileRailStatus();
+  setupTransparencyArchives();
   const mobileQuery = window.matchMedia('(max-width: 760px)');
 
   if (!toggle || !menu) {
@@ -1666,6 +1667,79 @@ function setupYouTubeShowcase() {
     items.forEach((item) => item.addEventListener('click', () => setActive(item)));
     play.addEventListener('click', playVideo);
     setActive(active);
+  });
+}
+
+function setupTransparencyArchives() {
+  const initialLimit = 10;
+  const familyByPath = [
+    [/ringkasan-lkjip|sakip|laporan-tahunan/, 'performance'],
+    [/anggaran|keuangan|lhkpn|lelang/, 'finance'],
+    [/laporan-skm|laporan-spak|survei/, 'survey'],
+    [/e-brosur|peraturan|pelayanan-informasi/, 'information'],
+  ];
+  const family = familyByPath.find(([pattern]) => pattern.test(window.location.pathname))?.[1] || 'performance';
+
+  document.querySelectorAll('.transparency-archive').forEach((archive, archiveIndex) => {
+    const documents = Array.from(archive.querySelectorAll(':scope > .transparency-document'));
+    if (!documents.length) return;
+    archive.dataset.documentFamily = family;
+
+
+    documents.forEach((documentLink) => {
+      const copy = documentLink.querySelector(':scope > span');
+      const title = copy?.querySelector('strong')?.textContent.trim() || 'Dokumen resmi';
+      const meta = copy?.querySelector('small');
+      const year = title.match(/(?:Tahun\s+)?(20\d{2})/i)?.[1] || '';
+
+      const icon = document.createElement('span');
+      icon.className = 'transparency-document__icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 12h6M9 16h6"/></svg>';
+      documentLink.prepend(icon);
+
+      if (meta) {
+        meta.className = 'transparency-document__meta';
+        meta.innerHTML = '<span>Dokumen resmi</span><b>Google Drive</b>';
+      }
+      if (year && copy) {
+        const badge = document.createElement('em');
+        badge.className = 'transparency-document__year';
+        badge.textContent = year;
+        copy.append(badge);
+      }
+      documentLink.setAttribute('aria-label', `${title} — buka dokumen Google Drive di tab baru`);
+    });
+
+    if (documents.length <= initialLimit) return;
+    const hiddenDocuments = documents.slice(initialLimit);
+    hiddenDocuments.forEach((documentLink) => { documentLink.hidden = true; });
+
+    const archiveId = archive.id || `transparency-archive-${archiveIndex}`;
+    archive.id = archiveId;
+    const hiddenYears = hiddenDocuments
+      .map((link) => link.querySelector('.transparency-document__year')?.textContent)
+      .filter(Boolean);
+    const olderPeriods = hiddenYears.length === hiddenDocuments.length;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'transparency-archive__toggle';
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-controls', archiveId);
+    const collapsedText = olderPeriods
+      ? `Lihat ${hiddenDocuments.length} dokumen tahun sebelumnya`
+      : `Tampilkan ${hiddenDocuments.length} dokumen lainnya`;
+    button.textContent = collapsedText;
+    archive.append(button);
+
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      hiddenDocuments.forEach((documentLink) => { documentLink.hidden = expanded; });
+      button.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      button.textContent = expanded ? collapsedText : 'Sembunyikan dokumen tambahan';
+      if (expanded) archive.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
   });
 }
 

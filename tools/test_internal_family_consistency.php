@@ -3,7 +3,7 @@
 $css = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/css/template.css');
 $article = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/html/com_content/article/default.php');
 $profileMarkup = (string) file_get_contents(__DIR__ . '/profile-service-style.html');
-$profileMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260715_profile_service_style.sql');
+$profileMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260814_clarify_secretariat_subdivision_cards.sql');
 $jurisdictionMarkup = (string) file_get_contents(__DIR__ . '/jurisdiction-service-style.html');
 $jurisdictionMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260715_jurisdiction_service_style.sql');
 $headerBadgeMarkup = (string) file_get_contents(__DIR__ . '/header-brand-badges.html');
@@ -22,7 +22,7 @@ $expect((bool) preg_match('/\\.svc-subnav a \\{[^}]*min-height: 44px;/s', $css),
 $expect(str_contains($article, 'class="svc-subnav"'), 'Profile detail pages must reuse service-family subnavigation.');
 $expect(str_contains($article, 'aria-current="page"'), 'Profile detail navigation needs active state.');
 $expect(str_contains($article, "str_starts_with(\$profilePath, '/profil-pengadilan/')"), 'Profile navigation must be scoped to profile detail routes.');
-$expect(substr_count($profileMarkup, 'class="svc-card"') === 13, 'Profile landing must render 13 service cards.');
+$expect(substr_count($profileMarkup, 'class="svc-card"') === 17, 'Profile landing must render all 17 current profile routes.');
 foreach (['svc-hero', 'svc-kicker', 'svc-lead', 'svc-grid', 'svc-icon', 'svc-more'] as $class) {
     $expect(str_contains($profileMarkup, 'class="' . $class), 'Profile landing missing exact service component ' . $class . '.');
 }
@@ -30,7 +30,13 @@ $expect(!str_contains($profileMarkup, 'profile-gateway'), 'Profile landing must 
 foreach (['Jejak lembaga', 'Arah lembaga', 'Pelajari mandat', 'Lihat bagan', 'Lihat wilayah', 'Lihat profil', 'Buka unit'] as $action) {
     $expect(str_contains($profileMarkup, $action), 'Profile cards need contextual action: ' . $action . '.');
 }
+foreach (['kata-sambutan', 'subbagian-kepegawaian-ortala', 'subbagian-ptip', 'subbagian-umum-keuangan'] as $latestProfileRoute) {
+    $expect(str_contains($profileMarkup, $latestProfileRoute), 'Profile landing missing latest route: ' . $latestProfileRoute . '.');
+}
+$expect(substr_count($profileMarkup, 'class="svc-directory-group"') === 2, 'Profile landing must separate level-3 routes into two hierarchy groups.');
+$expect(str_contains($profileMarkup, 'Unit Kepaniteraan') && str_contains($profileMarkup, 'Subbagian Kesekretariatan'), 'Profile landing needs explicit parent-unit headings.');
 $expect(substr_count($profileMarkup, '<svg viewBox=') >= 14, 'Profile cards need content-specific icons, not one repeated icon.');
+$expect(str_contains($profileMigration, "path='profil-pengadilan'") && str_contains($profileMigration, 'WHERE id=@profile_article_id'), 'Profile migration must update the article linked by the menu, not a duplicate alias.');
 $expect(str_contains($article, '$profileRegistryPaths') && str_contains($article, '$profileSecretariatPaths') && str_contains($article, '$showProfileUnits'), 'Profile unit submenu must follow kepaniteraan and kesekretariatan branches.');
 foreach (['subbagian-ptip', 'subbagian-kepegawaian-ortala', 'subbagian-umum-keuangan'] as $secretariatRoute) {
     $expect(str_contains($article, $secretariatRoute), 'Secretariat submenu route missing: ' . $secretariatRoute . '.');
@@ -65,6 +71,36 @@ $expect((bool) preg_match('/body\.is-dark \.asn-berakhlak-mark--dark\s*\{[^}]*di
 if (!empty($profileHex[1])) {
     $expect(hex2bin($profileHex[1]) === rtrim($profileMarkup, "\r\n"), 'Profile migration payload must exactly match readable profile markup source.');
 }
+$expect((bool) preg_match('/body\.is-dark \.content-primary \.svc-cta a\.svc-btn-gold[\s\S]*?color:\s*#2f140e;/s', $css), 'Dark CTA gold buttons must retain dark high-contrast text.');
+$expect((bool) preg_match('/body\.is-dark \.content-primary \.svc-cta a\.svc-btn-line[\s\S]*?color:\s*#fff8ed;/s', $css), 'Dark CTA outline buttons must retain light high-contrast text.');
+$expect((bool) preg_match('/body\.is-dark \.content-primary \.svc-cta :is\(h2, p\)[\s\S]*?color:\s*#fff8ed;/s', $css), 'Dark CTA heading and copy must stay light over the dark gradient.');
+$brandOverride = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/html/mod_custom/default.php');
+$expect(str_contains($brandOverride, "\$tag = \$active && \$active->home ? 'h1' : 'p';"), 'Brand module must keep h1 only on the home menu item.');
+$expect(str_contains($brandOverride, 'class="brand-title"'), 'Brand module needs a stable class independent of heading tag.');
+$expect(str_contains($css, '.brand-lockup .brand-title'), 'Brand title styling must not depend on an h1 element.');
+$expect((bool) preg_match('/\.news-portal__news-card > a\s*\{[^}]*min-height:\s*179px;/s', $css), 'Mobile news cards need a consistent minimum height.');
+$expect((bool) preg_match('/\.news-portal__trust > a\s*\{[^}]*justify-self:\s*stretch;[^}]*width:\s*100%;/s', $css), 'Mobile trust action must fill its stacked panel.');
+$expect(str_contains($css, '.brand-lockup p:not(.brand-title)'), 'Mobile header must hide the address without hiding contextual brand title paragraphs.');
+$spotlightMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260819_redesign_change_agent_role_model_spotlights.sql');
+$expect(substr_count($spotlightMigration, 'class="zi-spotlight ') === 2, 'Agen Perubahan and Role Model must each receive one editorial spotlight.');
+$expect(str_contains($spotlightMigration, 'zi-spotlight__mark') && !str_contains($spotlightMigration, 'zi-spotlight__year'), 'Spotlight decoration must not hardcode a stale year.');
+$expect(str_contains($css, '.zi-spotlight--agent') && str_contains($css, '.zi-spotlight--role'), 'Both Zona Integritas spotlights need distinct visual themes.');
+$expect((bool) preg_match('/body\.is-dark \.content-primary \.zi-spotlight__copy > a[\s\S]*?color:\s*#fff;/s', $css), 'Dark spotlight buttons must retain white high-contrast text.');
+$transparencyArrowMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260820_normalize_transparency_document_arrows.sql');
+$expect(str_contains($transparencyArrowMigration, 'REGEXP_REPLACE') && str_contains($transparencyArrowMigration, 'aria-hidden="true"'), 'Transparency migration must remove every legacy markup arrow variant.');
+$expect((bool) preg_match('/\.transparency-archive\s*\{[^}]*width:\s*min\(100%,\s*1040px\);/s', $css), 'Two-column transparency archives need a bounded desktop width.');
+$expect((bool) preg_match('/a\.transparency-document::after\s*\{[^}]*content:\s*"↗";/s', $css), 'Transparency documents must use exactly one CSS-generated external arrow.');
+$transparencyRepairMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260821_repair_transparency_document_links.sql');
+$templateJs = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/js/template.js');
+$expect(str_contains($transparencyRepairMigration, "REPLACE(introtext,'</span>1','</span></a>')"), 'Transparency repair must restore closing anchors, not merely hide the visible artifact.');
+$expect((bool) preg_match('/\.transparency-archive\s*\{[^}]*grid-template-columns:\s*repeat\(2,/s', $css), 'Transparency archives need two desktop columns.');
+$expect(str_contains($templateJs, 'const initialLimit = 10;') && str_contains($templateJs, 'Tampilkan ${hiddenDocuments.length} dokumen lainnya'), 'Long transparency archives need an accessible ten-document disclosure.');
+$expect(str_contains($templateJs, 'transparency-document__icon') && str_contains($templateJs, 'transparency-document__year'), 'Transparency cards need document icons and safe year badges.');
+$expect(str_contains($templateJs, "meta.innerHTML = '<span>Dokumen resmi</span><b>Google Drive</b>'"), 'Repeated Google Drive instructions must become compact metadata badges.');
+$expect(!str_contains($templateJs, 'transparency-archive__source'), 'Transparency archive must not repeat source instructions above every grid.');
+$expect(str_contains($templateJs, "documentLink.setAttribute('aria-label'"), 'External document behavior needs a complete accessible label.');
+$expect(str_contains($css, '[data-document-family="performance"]') && str_contains($css, '[data-document-family="finance"]') && str_contains($css, '[data-document-family="survey"]') && str_contains($css, '[data-document-family="information"]'), 'Transparency document families need distinct accents.');
+$expect((bool) preg_match('/a\.transparency-document\s*\{[^}]*min-height:\s*105px;/s', $css), 'Desktop transparency cards need consistent row height.');
 $expect(str_contains($css, '@media (max-width: 620px)'), 'Family gateways need a mobile breakpoint.');
 if ($failures) { fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL); exit(1); }
 echo "internal family consistency contract: ok\n";

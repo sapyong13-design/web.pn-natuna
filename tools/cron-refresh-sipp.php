@@ -10,4 +10,6 @@ if (!is_file(JPATH_ROOT . '/templates/pn_natuna_2026/sipp-schedule.php')) {
 }
 require JPATH_ROOT . '/templates/pn_natuna_2026/sipp-schedule.php';
 $schedule = pn_natuna_sipp_refresh_cache();
-printf("SIPP schedule cache refreshed: %d rows\n", count($schedule['rows'] ?? []));
+$today = count($schedule['days']['today']['rows'] ?? []);
+$tomorrow = count($schedule['days']['tomorrow']['rows'] ?? []);
+printf("SIPP schedule cache refreshed: %d today, %d tomorrow\n", $today, $tomorrow);
