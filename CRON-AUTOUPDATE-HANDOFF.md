@@ -327,6 +327,97 @@ Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
 
+## Deploy Staging Commit `149f88e`
+
+Gunakan prosedur ini saat diminta meng-upgrade `new.pn-natuna.go.id`. Target hanya staging; jangan menyentuh document root domain utama.
+
+### 1. Muat env dan verifikasi marker staging
+
+```bash
+set -a
+. /home/pnnatuna/private/cron/pn-natuna.env
+set +a
+printf 'SOURCE=%s\nWEBROOT=%s\nDB=%s\n' "$PN_NATUNA_SOURCE_ROOT" "$PN_NATUNA_JPATH_ROOT" "$DB_NAME"
+test -f "$PN_NATUNA_JPATH_ROOT/.pn-natuna-staging" || { echo 'STOP: marker staging hilang'; exit 1; }
+test "$(cat "$PN_NATUNA_JPATH_ROOT/.pn-natuna-staging")" = 'new.pn-natuna.go.id' || { echo 'STOP: marker staging salah'; exit 1; }
+```
+
+### 2. Pull commit target
+
+```bash
+cd "$PN_NATUNA_SOURCE_ROOT"
+git status --short --branch
+git pull --ff-only origin continue-joomla-rebuild-polish
+git log -1 --oneline
+```
+
+Target minimal: `149f88e feat: polish court information experiences`. Checkout harus bersih sebelum pull.
+
+### 3. Backup DB wajib
+
+```bash
+DB_BACKUP_DIR="/home/pnnatuna/private/backups/db-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$DB_BACKUP_DIR" && chmod 700 "$DB_BACKUP_DIR"
+MYSQLDUMP_BIN="$(command -v mariadb-dump || command -v mysqldump)"
+"$MYSQLDUMP_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" --single-transaction --quick --skip-lock-tables --no-tablespaces "$DB_NAME" > "$DB_BACKUP_DIR/pre-149f88e.sql"
+chmod 600 "$DB_BACKUP_DIR/pre-149f88e.sql"
+test -s "$DB_BACKUP_DIR/pre-149f88e.sql" && echo "Database backup: OK — $DB_BACKUP_DIR/pre-149f88e.sql"
+```
+
+Jangan lanjut bila backup tidak menampilkan `Database backup: OK`.
+
+### 4. Sinkronkan code ke webroot staging
+
+```bash
+cd "$PN_NATUNA_SOURCE_ROOT"
+"$PYTHON_BIN" tools/deploy-cpanel.py \
+  --target "$PN_NATUNA_JPATH_ROOT" \
+  --branch continue-joomla-rebuild-polish \
+  --url https://new.pn-natuna.go.id \
+  --no-pull
+```
+
+Target: `Staging deployed: commit 149f88e` atau commit sesudahnya.
+
+### 5. Terapkan migrasi normal
+
+```bash
+"$PYTHON_BIN" tools/apply-db-migrations.py \
+  --mysql "$MYSQL_BIN" \
+  --mysql-defaults-file "$MYSQL_DEFAULTS_FILE" \
+  --database "$DB_NAME"
+```
+
+Jangan gunakan `--reapply`. Registry akhir minimal harus memuat `20260821_repair_transparency_document_links.sql`. Migrasi percobaan `20260815` dan `20260816` tidak boleh ada.
+
+### 6. Validasi menu, file, cache, dan updater
+
+```bash
+"$MYSQL_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" -N -B "$DB_NAME" -e "SELECT COUNT(*) total_items,SUM(lft>=rgt) invalid_bounds,COUNT(*)-COUNT(DISTINCT lft) duplicate_lft,COUNT(*)-COUNT(DISTINCT rgt) duplicate_rgt FROM pnn_menu WHERE client_id=0;"
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/css/template.css" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/css/template.css" && echo 'CSS: OK'
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/js/template.js" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/js/template.js" && echo 'JavaScript: OK'
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/sipp-schedule.php" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/sipp-schedule.php" && echo 'SIPP renderer: OK'
+cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/html/mod_custom/default.php" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/html/mod_custom/default.php" && echo 'Brand override: OK'
+cd "$PN_NATUNA_JPATH_ROOT"
+"$PHP_BIN" cli/joomla.php cache:clean
+/bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"
+```
+
+Nilai `invalid_bounds`, `duplicate_lft`, dan `duplicate_rgt` harus `0`.
+
+### 7. Smoke test
+
+```bash
+for path in / /profil-pengadilan /berita-dan-pengumuman /informasi-perkara /zona-integritas/agen-perubahan /zona-integritas/role-model /transparansi/ringkasan-lkjip /transparansi/laporan-survei-harian; do
+  code="$(curl -L -s -o /dev/null -w '%{http_code}' "https://new.pn-natuna.go.id$path")"
+  printf '%s %s\n' "$code" "$path"
+done
+```
+
+Semua harus HTTP `200`. Larangan tetap: jangan `--full-staging`, `--reset-database`, `--reapply`, mengubah Python App, atau deploy ke domain utama.
+
+---
+
 ## Resume Deployment Batch `32b7274` / `45423b0`
 
 Status staging terakhir pada 21 Juli 2026:

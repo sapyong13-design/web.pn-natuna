@@ -20,6 +20,15 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 - Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"`.
 - Jangan commit `/home/pnnatuna/private/cron/pn-natuna.env`, `mysql.cnf`, password, atau isi log. Private checkout hanya menyimpan kode; konfigurasi/kredensial tetap di luar webroot.
 
+## Lanjut besok — deploy staging commit `149f88e`
+
+- Permintaan berikutnya bila Faris mengatakan **deploy/up ke new PN Natuna**: jalankan prosedur staging di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Deploy Staging Commit 149f88e**. Tidak perlu meminta ulang urutan deployment.
+- Target hanya `https://new.pn-natuna.go.id`; private checkout `/home/pnnatuna/repos/web.pn-natuna`; webroot dan DB wajib dibaca dari `/home/pnnatuna/private/cron/pn-natuna.env`.
+- Commit GitHub aktif: `149f88e feat: polish court information experiences`, branch `continue-joomla-rebuild-polish`.
+- Urutan wajib: muat env → pastikan `.pn-natuna-staging` berisi `new.pn-natuna.go.id` → pull `149f88e` → backup DB tervalidasi → deploy helper dengan `--no-pull` → migrasi normal → validasi menu → cache clean → refresh cron → smoke test.
+- Larangan: jangan `--reapply`, `--full-staging`, `--reset-database`, atau mengarah ke document root domain utama. Jangan mengubah Python Application URL/virtualenv saat deploy Joomla.
+- Bila `git status` private checkout tidak bersih, backup gagal, marker salah, migrasi gagal, atau nested-set tidak valid: berhenti dan tampilkan output; jangan memaksa lanjut.
+
 ## Handoff deployment staging 21 Juli 2026
 
 - Paket fitur aktif di GitHub: commit `32b7274` (**transparency archives, kartu Jam Layanan, Sambutan Wakil Ketua**) ditambah fix runner migrasi `eab76e4` dan `45423b0`; branch `continue-joomla-rebuild-polish` sinkron sampai `45423b0`.
