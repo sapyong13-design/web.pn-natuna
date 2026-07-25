@@ -7587,9 +7587,10 @@ body.nav-stuck .main-menu {
   letter-spacing: 0.08em;
 }
 
+/* Ukuran headline dimiliki blok .hero-welcome-copy di bawah supaya hanya ada
+   satu sumber kebenaran; di sini cuma warna dan bayangan. */
 .home-slider .hero-slide:not(.hero-slide-news) h2 {
   color: #fff;
-  font-size: clamp(2.3rem, 4.6vw, 4rem);
   text-shadow: 0 3px 22px rgba(12, 6, 3, 0.55);
 }
 
@@ -7746,9 +7747,6 @@ body.nav-stuck .main-menu {
     padding-bottom: 104px;
   }
 
-  .home-slider .hero-slide:not(.hero-slide-news) h2 {
-    font-size: clamp(1.9rem, 7vw, 2.5rem);
-  }
 
   .hero-actions {
     gap: 8px;
@@ -11351,32 +11349,8 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   padding-bottom: 12px;
 }
 
-.home-slider .hero-institution {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 10px;
-  color: var(--hero-cream);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.home-slider .hero-institution::before {
-  content: "";
-  width: 32px;
-  height: 1px;
-  background: var(--hero-gold);
-}
-
-.home-slider .hero-institution span {
-  padding: 3px 8px;
-  border: 1px solid rgba(226, 185, 79, 0.62);
-  border-radius: var(--radius);
-  color: var(--hero-gold);
-  letter-spacing: 0.12em;
-}
+/* .hero-institution dan salam hero dihapus 25 Jul 2026: eyebrow mengulang persis
+   h1 di header, dan tanggalnya mengulang baris "Hari ini" pada ribbon. */
 
 .home-slider .hero-welcome-copy .hero-kicker {
   margin-bottom: 8px;
@@ -11386,13 +11360,13 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 .home-slider .hero-welcome-copy h2 {
-  max-width: 720px;
-  margin-bottom: 12px;
+  max-width: 980px;
+  margin-bottom: 14px;
   font-family: var(--font-display);
-  font-size: clamp(3rem, 5.15vw, 5.5rem);
+  font-size: clamp(2.9rem, 5.35vw, 5.6rem);
   font-weight: 760;
   letter-spacing: -0.045em;
-  line-height: 0.94;
+  line-height: 0.92;
   text-wrap: balance;
 }
 
@@ -11444,18 +11418,65 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   white-space: nowrap;
 }
 
-.home-slider .hero-service-ribbon .hero-status {
-  display: flex;
-  min-width: 182px;
-  border-radius: 0;
-  background: rgba(31, 91, 75, 0.48);
-  color: #b8f1d7;
-  font-size: 0.76rem;
+/* Provenance indeks: jumlah responden dinyatakan per indeks, bukan disamaratakan. */
+.hero-service-ribbon p small {
+  margin-top: 1px;
+  color: rgba(255, 248, 237, 0.56);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-.home-slider .hero-service-ribbon .hero-status.is-closed {
-  background: rgba(109, 30, 19, 0.62);
-  color: #ffd2c5;
+/* Status PTSP berdiri sendiri di atas headline, menggantikan eyebrow lama:
+   satu penanda di posisi itu, tanpa menambah kata baru.
+   Isinya ditulis JavaScript, jadi kotaknya dicadangkan sejak paint pertama dan
+   chrome pill baru muncul setelah class state terpasang — nol geseran. */
+.home-slider .hero-welcome-copy .hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 33px;
+  margin: 0 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 7px 15px 7px 12px;
+  background: none;
+  color: var(--hero-cream);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.home-slider .hero-welcome-copy .hero-status::before {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.home-slider .hero-welcome-copy .hero-status:empty::before {
+  display: none;
+}
+
+.home-slider .hero-welcome-copy .hero-status.is-open {
+  border-color: rgba(120, 214, 173, 0.46);
+  background: rgba(18, 58, 46, 0.5);
+  color: #bdf3db;
+}
+
+.home-slider .hero-welcome-copy .hero-status.is-open::before {
+  background: #57d6a4;
+}
+
+.home-slider .hero-welcome-copy .hero-status.is-closed {
+  border-color: rgba(226, 138, 118, 0.42);
+  background: rgba(84, 24, 16, 0.52);
+  color: #ffd6ca;
+}
+
+.home-slider .hero-welcome-copy .hero-status.is-closed::before {
+  background: #e87a5f;
 }
 
 .hero-actions-primary {
@@ -11476,23 +11497,8 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   box-shadow: none;
 }
 
-.hero-actions-secondary {
-  display: flex;
-  gap: 22px;
-}
-
-.hero-actions-secondary a {
-  color: rgba(255, 248, 237, 0.84);
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-decoration-color: rgba(226, 185, 79, 0.62);
-  text-underline-offset: 4px;
-}
-
-.hero-actions-secondary a:hover,
-.hero-actions-secondary a:focus-visible {
-  color: var(--hero-gold);
-}
+/* .hero-actions-secondary dihapus 25 Jul 2026: baris Zona Integritas & SIPP
+   dicabut dari hero. Keduanya tetap dapat diakses lewat navigasi utama. */
 
 .hero-cinema .hero-photo-chip {
   border: 0;
@@ -11558,7 +11564,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 @media (max-width: 1440px) {
   .hero-cinema .hero-backdrop img { object-position: 66% 42%; }
   .hero-cinema .hero-slides { min-height: 420px; }
-  .home-slider .hero-welcome-copy h2 { font-size: clamp(2.8rem, 5vw, 4.6rem); }
+  .home-slider .hero-welcome-copy h2 { font-size: clamp(2.7rem, 5.25vw, 4.9rem); }
 }
 
 @media (max-width: 900px) {
@@ -11586,7 +11592,6 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   .hero-cinema .hero-welcome-copy { max-width: 680px; }
   .hero-service-ribbon { flex-wrap: wrap; width: min(620px, 100%); }
   .home-slider .hero-service-ribbon p { flex: 1 1 31%; }
-  .home-slider .hero-service-ribbon .hero-status { flex-basis: 100%; min-height: 42px; }
 }
 
 @media (max-width: 560px) {
@@ -11605,18 +11610,15 @@ body.is-dark .transparency-family { color: var(--color-ink); }
     visibility: visible;
     transition: opacity 220ms ease-out;
   }
-  .home-slider .hero-institution { font-size: 0.62rem; letter-spacing: 0.11em; }
-  .home-slider .hero-institution::before { width: 20px; }
-  .home-slider .hero-welcome-copy h2 { font-size: clamp(2.25rem, 11vw, 3rem); line-height: 0.98; }
+  .home-slider .hero-welcome-copy h2 { font-size: clamp(2.2rem, 10.6vw, 3rem); line-height: 0.96; }
   .home-slider .hero-welcome-copy .hero-intro { max-width: 34ch; font-size: 0.84rem; }
   .hero-service-ribbon { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
   .home-slider .hero-service-ribbon p { min-height: 48px; padding: 7px 10px; border-bottom: 1px solid rgba(255, 248, 237, 0.18); }
-  .home-slider .hero-service-ribbon .hero-status { grid-column: 1 / -1; min-width: 0; min-height: 40px; }
-  .hero-service-ribbon p:last-child { border-bottom: 0; }
+  .hero-service-ribbon p:last-child { grid-column: 1 / -1; border-bottom: 0; }
   .hero-service-ribbon p strong { font-size: 0.68rem; white-space: normal; }
+  .home-slider .hero-welcome-copy .hero-status { margin-bottom: 12px; font-size: 0.74rem; }
   .hero-actions-primary { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
   .home-slider .hero-actions-primary a.is-primary { justify-content: center; min-height: 44px; padding: 7px 10px; text-align: center; font-size: 0.76rem; }
-  .hero-actions-secondary { gap: 18px; }
   .hero-cinema .hero-slide-news { align-self: start; }
 }
 
@@ -11761,16 +11763,13 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   .hero-cinema .hero-slide:not(.is-active) { position: absolute; inset: 0; visibility: hidden; }
   .hero-cinema .hero-slide.is-active { position: relative; visibility: visible; }
   .hero-cinema .hero-welcome-copy { padding-bottom: 0; }
-  .home-slider .hero-welcome-copy h2 { margin-bottom: 10px; font-size: clamp(2rem, 9vw, 2.65rem); line-height: 0.98; }
-  .hero-intro-desktop,
-  .hero-actions-secondary,
-  .hero-service-ribbon p:nth-child(3),
-  .hero-service-ribbon p:nth-child(4) { display: none !important; }
+  .home-slider .hero-welcome-copy h2 { margin-bottom: 10px; font-size: clamp(1.9rem, 8.4vw, 2.5rem); line-height: 0.98; }
+  .hero-intro-desktop { display: none !important; }
   .hero-intro-mobile { display: block; max-width: 34ch; font-size: 0.85rem; line-height: 1.55; }
-  .hero-service-ribbon { display: grid; grid-template-columns: 1fr; width: 100%; }
-  .home-slider .hero-service-ribbon .hero-status,
-  .home-slider .hero-service-ribbon p:nth-child(2) { display: flex; min-height: 44px; border: 0; border-bottom: 1px solid rgba(255, 248, 237, 0.18); }
-  .home-slider .hero-service-ribbon p:nth-child(2) { justify-content: space-between; align-items: center; }
+  /* Tiga data tetap tampil: dua kolom, baris terakhir melebar penuh. */
+  .hero-service-ribbon { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .home-slider .hero-service-ribbon p { display: grid; min-height: 44px; border: 0; }
+  .hero-service-ribbon p:last-child { grid-column: 1 / -1; }
   .hero-actions-primary { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px; }
   .home-slider .hero-actions-primary a { justify-content: center; min-height: 48px; padding: 8px; text-align: center; font-size: 0.76rem; }
   .hero-cinema .hero-slide-news { align-self: start; }

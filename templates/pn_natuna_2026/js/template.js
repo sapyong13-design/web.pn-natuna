@@ -204,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDynamicServiceHours();
   setupBackToTop();
   setupHeroNewsTabs();
-  setupHeroGreeting();
   setupHeroServiceStatus();
   setupMaklumatLightbox();
   setupStickyNav();
@@ -1493,25 +1492,8 @@ function pnNatunaJakartaNow() {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
 }
 
-function setupHeroGreeting() {
-  const el = document.getElementById('hero-greeting');
-  if (!el) {
-    return;
-  }
-  const now = pnNatunaJakartaNow();
-  const h = now.getHours();
-  let greet = 'Selamat Malam';
-  if (h >= 4 && h < 11) {
-    greet = 'Selamat Pagi';
-  } else if (h >= 11 && h < 15) {
-    greet = 'Selamat Siang';
-  } else if (h >= 15 && h < 19) {
-    greet = 'Selamat Sore';
-  }
-  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  el.textContent = greet + ' \u2014 ' + days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
-}
+/* setupHeroGreeting dihapus bersama baris salam di hero: tidak ada lagi
+   #hero-greeting di markup, dan tanggal hanya hidup di ribbon "Hari ini". */
 
 function setupHeroServiceStatus() {
   const elements = document.querySelectorAll('#hero-service-status, [data-service-status]');
@@ -1524,6 +1506,8 @@ function setupHeroServiceStatus() {
   let open = false;
   let label = '';
 
+  // Baris "Jam loket" hero digantikan IPAK, jadi pill status kembali memikul
+  // jam bukanya. Ini satu-satunya tempat jam layanan muncul di hero.
   if (day >= 1 && day <= 4) {
     open = minutes >= 480 && minutes < 990;
     label = open ? 'Buka sekarang · tutup 16.30 WIB' : 'Tutup · buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'besok 08.00 WIB');
