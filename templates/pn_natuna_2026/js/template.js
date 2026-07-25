@@ -196,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', syncMenuBreakpoint, { passive: true });
 
   setupAccessibilityTools();
+  setupAccessPanelSemantics();
   setupSearchOverlay();
   setupCarousels();
   setupInstagramPostSliders();
@@ -203,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupLiveClock();
   setupDynamicServiceHours();
   setupBackToTop();
-  setupHeroNewsTabs();
   setupHeroServiceStatus();
   setupMaklumatLightbox();
   setupStickyNav();
@@ -215,6 +215,49 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEditorialArticleShare();
   setupHomePrefetch();
 });
+
+/**
+ * Widget aksesibilitas bawaan Joomla (media/vendor/accessibility) merender
+ * tombol Close dan Reset sebagai <i> di dalam <h3>, sehingga nama aksesibel
+ * heading terbaca "XAccessibility Options♲" dan kedua tombol itu tidak bisa
+ * dijangkau keyboard. Berkas vendor tidak boleh diedit - akan tertimpa saat
+ * Joomla diperbarui - jadi semantiknya diperbaiki dari sini.
+ */
+function setupAccessPanelSemantics() {
+  const repair = (heading) => {
+    if (heading.dataset.semanticsFixed) return;
+    heading.dataset.semanticsFixed = '1';
+
+    const buttons = Array.from(heading.querySelectorAll('i[title]'));
+    const label = Array.from(heading.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent.trim())
+      .join(' ')
+      .trim();
+    if (label) heading.setAttribute('aria-label', label);
+
+    buttons.forEach((button) => {
+      button.setAttribute('role', 'button');
+      button.setAttribute('aria-label', button.getAttribute('title'));
+      button.setAttribute('tabindex', '0');
+      button.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        button.click();
+      });
+    });
+  };
+
+  const scan = () => {
+    document.querySelectorAll('._access-menu h3, .access-panel h3').forEach(repair);
+  };
+
+  scan();
+  if (!('MutationObserver' in window)) return;
+  // Panel dibangun vendor setelah load dan bisa dibangun ulang; amati sekali.
+  const observer = new MutationObserver(scan);
+  observer.observe(document.body, { childList: true, subtree: true });
+}
 
 function setupAmpuhDirectory() {
   const root = document.querySelector('[data-ampuh-directory]');
@@ -1171,9 +1214,6 @@ function setupCarousels() {
   document.querySelectorAll('.survey-carousel').forEach((el) => {
     initCarousel(el, { slide: '.survey-slide', dot: '[data-survey-slide]', caption: '.survey-caption' });
   });
-  document.querySelectorAll('.hero-slider').forEach((el) => {
-    initCarousel(el, { slide: '.hero-slide', dot: '[data-hero-slide]', interval: '6000', nav: '[data-hero-nav]' });
-  });
 }
 
 function setupInstagramCarousels() {
@@ -1360,82 +1400,6 @@ function setupBackToTop() {
   window.addEventListener('scroll', onScroll, { passive: true });
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   onScroll();
-}
-
-function setupHeroNewsTabs() {
-  const slide = document.querySelector('.hero-slide-news');
-  if (!slide) {
-    return;
-  }
-  const tabs = Array.from(slide.querySelectorAll('[data-hero-tab]'));
-  const panels = Array.from(slide.querySelectorAll('[data-hero-panel]'));
-  const preview = document.getElementById('hero-news-preview');
-  const caption = document.getElementById('hero-news-caption');
-
-  const setPreview = (link) => {
-    if (!preview || !link) {
-      return;
-    }
-    slide.querySelectorAll('.hero-tab-list a.is-preview').forEach((a) => a.classList.remove('is-preview'));
-    link.classList.add('is-preview');
-    const src = link.dataset.image || '';
-    const cap = link.dataset.caption || '';
-    if (!src || preview.getAttribute('src') === src) {
-
-      if (caption && cap) {
-        caption.textContent = cap;
-      }
-      return;
-    }
-    preview.classList.add('is-swapping');
-    window.setTimeout(() => {
-      preview.setAttribute('src', src);
-      if (caption) {
-        caption.textContent = cap;
-      }
-      preview.addEventListener('load', () => preview.classList.remove('is-swapping'), { once: true });
-      window.setTimeout(() => preview.classList.remove('is-swapping'), 700);
-    }, 180);
-  };
-
-
-  const activateTab = (tab, moveFocus = false) => {
-    tabs.forEach((t) => {
-      const active = t === tab;
-      t.classList.toggle('is-active', active);
-      t.setAttribute('aria-selected', String(active));
-      t.tabIndex = active ? 0 : -1;
-    });
-    panels.forEach((panel) => {
-      const active = panel.dataset.heroPanel === tab.dataset.heroTab;
-      panel.classList.toggle('is-active', active);
-      panel.hidden = !active;
-    });
-    const activePanel = panels.find((panel) => panel.dataset.heroPanel === tab.dataset.heroTab);
-    setPreview(activePanel ? activePanel.querySelector('a[data-image]') : null);
-    if (moveFocus) tab.focus();
-  };
-  tabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => activateTab(tab));
-    tab.addEventListener('keydown', (event) => {
-      let next = null;
-      if (event.key === 'ArrowLeft') next = tabs[(index + tabs.length - 1) % tabs.length];
-      if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
-      if (event.key === 'Home') next = tabs[0];
-      if (event.key === 'End') next = tabs[tabs.length - 1];
-      if (!next) return;
-      event.preventDefault();
-      event.stopPropagation();
-      activateTab(next, true);
-    });
-  });
-
-  slide.querySelectorAll('.hero-tab-list a[data-image]').forEach((link) => {
-    link.addEventListener('mouseenter', () => setPreview(link));
-    link.addEventListener('focus', () => setPreview(link));
-  });
-
-  activateTab(tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') || tabs[0]);
 }
 
 function setupMobileMenuFilter() {

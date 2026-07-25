@@ -66,7 +66,7 @@ $expect(str_contains($modules[482]['content'] ?? '', '/images/role-model/joko-ci
 $expect(!str_contains($modules[482]['content'] ?? '', 'joko-ciptanto-role-model-2026.png'), 'Role Model module must not reference removed PNG image.');
 $expect(is_file(__DIR__ . '/../images/role-model/joko-ciptanto-role-model-2026.webp'), 'Wakil Ketua Role Model image is missing.');
 $expect(is_file(__DIR__ . '/../images/layanan/maklumat-pelayanan-2026.webp'), 'Maklumat Pelayanan image is missing.');
-$expect(is_file(__DIR__ . '/../images/layanan/maklumat-layanan-informasi-publik.png'), 'Maklumat Informasi Publik image is missing.');
+$expect(is_file(__DIR__ . '/../images/layanan/maklumat-layanan-informasi-publik.webp'), 'Maklumat Informasi Publik image is missing.');
 $expect(is_file(__DIR__ . '/../images/surveys/SKM_TW2_2026.png'), 'SKM publication image is missing.');
 $expect(is_file(__DIR__ . '/../images/surveys/IPAK_TW2_2026.png'), 'IPAK publication image is missing.');
 

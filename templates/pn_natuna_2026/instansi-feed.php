@@ -364,7 +364,7 @@ function pn_natuna_instansi_fallback(): array
         'ma' => [
             'title' => 'Mahkamah Agung RI',
             'class' => 'instansi-ma',
-            'logo' => '/images/brand/logo-ma.png',
+            'logo' => '/images/brand/logo-ma.webp',
             'news' => [
                 ['date' => '1 Jul', 'title' => 'Ketua MA Hadiri Upacara Peringatan HUT Ke-80 Bhayangkara', 'url' => 'https://mahkamahagung.go.id/id/berita/7330/ketua-ma-hadiri-upacara-peringatan-hut-ke-80-bhayangkara'],
                 ['date' => '26 Jun', 'title' => 'Sekretaris MA Harap 25 Pejabat Pengawas yang Dilantik Menjadi Motor Penggerak Perubahan', 'url' => 'https://mahkamahagung.go.id/id/berita/7323/sekretaris-ma-harap-25-pejabat-pengawas-yang-dilantik-menjadi-motor-penggerak-perubahan'],
@@ -383,7 +383,7 @@ function pn_natuna_instansi_fallback(): array
         'badilum' => [
             'title' => 'Direktorat Jenderal Badilum',
             'class' => 'instansi-badilum',
-            'logo' => '/images/brand/logo-badilum.png',
+            'logo' => '/images/brand/logo-badilum.webp',
             'news' => [
                 ['date' => '05 Jun', 'title' => 'Berita kegiatan Direktorat Jenderal Badilum', 'url' => 'https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html'],
                 ['date' => '05 Jun', 'title' => 'Asesmen AMPUH satuan kerja peradilan umum', 'url' => 'https://badilum.mahkamahagung.go.id/berita/berita-kegiatan.html'],
@@ -402,7 +402,7 @@ function pn_natuna_instansi_fallback(): array
         'pt' => [
             'title' => 'Pengadilan Tinggi Kepulauan Riau',
             'class' => 'instansi-pt',
-            'logo' => '/images/brand/logo-pt-kepri.png',
+            'logo' => '/images/brand/logo-pt-kepri.webp',
             'news' => [
                 ['date' => '09 Jun', 'title' => 'Rapat evaluasi AKIP internal PT Kepulauan Riau', 'url' => 'https://pt-kepri.go.id/'],
                 ['date' => '25 Mei', 'title' => 'Panitera PT Kepri hadiri kegiatan aksi perubahan', 'url' => 'https://pt-kepri.go.id/'],
@@ -542,9 +542,9 @@ function pn_natuna_render_instansi_feed(): void
 {
     $data = pn_natuna_instansi_load();
     $meta = [
-        'ma' => ['short' => 'Mahkamah Agung RI', 'logo' => '/images/brand/logo-ma.png', 'site' => 'https://www.mahkamahagung.go.id/'],
-        'badilum' => ['short' => 'Ditjen Badilum', 'logo' => '/images/brand/logo-badilum.png', 'site' => 'https://badilum.mahkamahagung.go.id/'],
-        'pt' => ['short' => 'Pengadilan Tinggi Kepulauan Riau', 'logo' => '/images/brand/logo-pt-kepri.png', 'site' => 'https://pt-kepri.go.id/'],
+        'ma' => ['short' => 'Mahkamah Agung RI', 'logo' => '/images/brand/logo-ma.webp', 'site' => 'https://www.mahkamahagung.go.id/'],
+        'badilum' => ['short' => 'Ditjen Badilum', 'logo' => '/images/brand/logo-badilum.webp', 'site' => 'https://badilum.mahkamahagung.go.id/'],
+        'pt' => ['short' => 'Pengadilan Tinggi Kepulauan Riau', 'logo' => '/images/brand/logo-pt-kepri.webp', 'site' => 'https://pt-kepri.go.id/'],
     ];
     $renderData = array_intersect_key($data, $meta);
     $updated = pn_natuna_instansi_updated_label();
@@ -580,16 +580,22 @@ function pn_natuna_render_instansi_feed(): void
              role="tabpanel"
              aria-labelledby="instansi-tab-<?php echo htmlspecialchars((string) $key, ENT_QUOTES, 'UTF-8'); ?>"
              <?php echo $i === 0 ? '' : 'hidden'; ?>>
-          <div class="instansi-sub-grid">
-            <div class="instansi-sub-col">
-              <h3>Berita</h3>
-              <?php pn_natuna_instansi_render_list($instansi['news']); ?>
-            </div>
-            <div class="instansi-sub-col">
-              <h3>Pengumuman</h3>
-              <?php pn_natuna_instansi_render_list($instansi['announcements']); ?>
-            </div>
+        <?php
+        // Label tetap pendek secara visual, tapi nama instansi ikut masuk ke
+        // nama aksesibel. Tanpa ini, outline heading beranda memuat "Berita" 3x
+        // dan "Pengumuman" 3x - navigasi lewat heading jadi tidak berguna.
+        $panelLabel = $meta[$key]['short'] ?? $instansi['title'];
+        ?>
+        <div class="instansi-sub-grid">
+          <div class="instansi-sub-col">
+            <h3>Berita<span class="visually-hidden"> <?php echo htmlspecialchars($panelLabel, ENT_QUOTES, 'UTF-8'); ?></span></h3>
+            <?php pn_natuna_instansi_render_list($instansi['news']); ?>
           </div>
+          <div class="instansi-sub-col">
+            <h3>Pengumuman<span class="visually-hidden"> <?php echo htmlspecialchars($panelLabel, ENT_QUOTES, 'UTF-8'); ?></span></h3>
+            <?php pn_natuna_instansi_render_list($instansi['announcements']); ?>
+          </div>
+        </div>
           <a class="instansi-panel-link" href="<?php echo htmlspecialchars($meta[$key]['site'] ?? '#', ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
             Kunjungi situs <?php echo htmlspecialchars($instansi['title'], ENT_QUOTES, 'UTF-8'); ?> &rarr;
           </a>

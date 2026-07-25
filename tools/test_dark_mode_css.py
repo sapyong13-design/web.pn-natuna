@@ -19,16 +19,20 @@ required = {
     "quick service outer surface": "body.is-dark .quick-links.app-strip",
     "unified dark topbar": "body.is-dark .topbar {\n  background: #151c22;",
     "dark brand header": "body.is-dark .header-brand",
-    "dark brand title": "body.is-dark .brand-lockup h1",
+    "dark brand title": "body.is-dark .brand-lockup .brand-title",
     "dark brand address": "body.is-dark .brand-lockup p",
 
-    "news tabs": "body.is-dark .hero-news-panel .hero-tabs button",
-    "news list items": "body.is-dark .hero-news-panel .hero-tab-list a",
+    # Kartu berita dan pita Zona Integritas di hero sengaja tidak punya aturan
+    # `body.is-dark`: keduanya duduk di atas foto gedung yang selalu gelap, jadi
+    # warnanya dipatok sekali dan identik di kedua mode. Kontraknya justru
+    # memastikan tidak ada yang menempelkan token mode terang ke sana.
+    "hero news card surface": ".hero-news-card {",
+    "hero integrity strip surface": ".hero-integrity {",
     "profile fact gradients": "body.is-dark .sejarah-fact-grid > div",
     "mission card gradients": "body.is-dark .visimisi-mission-grid article",
     "AMPUH dark accents": "body.is-dark .ampuh-directory",
     "mobile dark surface tokens": "body.is-dark {\n    --mobile-surface: #0f151a;",
-    "mobile dark header title": "body.is-dark .brand-lockup h1::before",
+    "mobile dark header title": "body.is-dark .brand-lockup .brand-title::before",
     "mobile dark menu control": "body.is-dark .menu-toggle",
     "mobile start heading": "body.is-dark.is-home .mobile-section-heading",
     "dark active video item": "body.is-dark .youtube-showcase-item.is-active",

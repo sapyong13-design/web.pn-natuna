@@ -65,7 +65,7 @@ if (trim((string) $this->getDescription()) === '') {
     "inLanguage": "id-ID",
     "name": "Pengadilan Negeri Natuna Kelas II",
     "url": "<?php echo $siteUrl; ?>/",
-    "logo": "<?php echo $siteUrl; ?>/images/brand/logo-pn-natuna.png",
+    "logo": "<?php echo $siteUrl; ?>/images/brand/logo-pn-natuna.webp",
     "image": "<?php echo $siteUrl; ?>/images/brand/og-image.jpg",
     "telephone": "+62-773-3211203",
     "email": "pn.natuna@gmail.com",
@@ -108,9 +108,20 @@ if (trim((string) $this->getDescription()) === '') {
   <header class="site-header">
     <div class="topbar">
       <jdoc:include type="modules" name="topbar" style="none" />
+      <?php
+      // Tanggal dan jam dirender server-side supaya kotaknya sudah berukuran benar
+      // sejak paint pertama. Sebelumnya kedua span kosong lalu diisi JS, membuat
+      // topbar melompat 40px -> 69px dan menggeser seluruh halaman (CLS 1,109).
+      $clockNow = Factory::getDate('now', 'Asia/Jakarta');
+      $clockDays = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      $clockMonths = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      $clockDate = $clockDays[(int) $clockNow->format('w')] . ', ' . $clockNow->format('j')
+          . ' ' . $clockMonths[(int) $clockNow->format('n')] . ' ' . $clockNow->format('Y');
+      ?>
       <div class="topbar-clock" aria-label="Tanggal dan waktu saat ini">
-        <span id="live-clock-date"></span>
-        <span id="live-clock-time"></span>
+        <span id="live-clock-date"><?php echo htmlspecialchars($clockDate, ENT_QUOTES, 'UTF-8'); ?></span>
+        <span id="live-clock-time"><?php echo $clockNow->format('H:i:s'); ?> WIB</span>
       </div>
     </div>
     <div class="header-brand">
@@ -123,7 +134,7 @@ if (trim((string) $this->getDescription()) === '') {
       <div id="main-menu-list" class="main-menu-list mobile-menu-panel" aria-label="Menu Navigasi">
         <div class="mobile-menu-heading">
           <div class="mobile-menu-brand" id="mobile-menu-title">
-            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.png" alt="" width="40" height="40" loading="lazy" decoding="async">
+            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp" alt="" width="40" height="40" loading="lazy" decoding="async">
             <span><strong>PN Natuna</strong><small>Pengadilan Negeri Kelas II</small></span>
           </div>
           <button class="menu-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>

@@ -3,7 +3,7 @@ $root=dirname(__DIR__);$index=file_get_contents($root.'/templates/pn_natuna_2026
 $e(str_contains($index,'data-mobile-menu-filter'),'Mobile menu filter input missing.');
 $e(str_contains($index,'data-mobile-menu-empty'),'Mobile menu empty state missing.');
 $e(str_contains($index,'data-sidebar-rail-status'),'Sidebar rail status missing.');
-$e(str_contains($hero,'hero-slide-integrity__cta'),'Integrity full-poster CTA missing.');
+$e(str_contains($hero,'hero-integrity__poster'),'Tombol poster penuh Zona Integritas hilang.');
 $e(str_contains($hero,'data-youtube-count'),'YouTube count status missing.');
 $e(str_contains($js,'setupMobileMenuFilter'),'Mobile menu filtering behavior missing.');
 $e(str_contains($js,"window.scrollY > 900"),'Back-to-top threshold must be 900px.');
@@ -25,7 +25,7 @@ $e((bool)preg_match('/\.header-brand\s*\{[^}]*height:\s*68px;[^}]*padding:\s*8px
 $e((bool)preg_match('/\.brand-mark\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;/s',$css),'Mobile logo must be 42px.');
 $e((bool)preg_match('/\.menu-toggle\s*\{[^}]*width:\s*48px;[^}]*height:\s*48px;/s',$css),'Mobile menu control must be a 48px square.');
 $e((bool)preg_match('/\.announcement-showcase__actions\s*\{[^}]*justify-content:\s*center;/s',$css),'Announcement action group must be centered on mobile.');
-$e((bool)preg_match('/\.hero-tabs,\s*\.instansi-tabbar\s*\{[^}]*justify-content:\s*center;/s',$css),'Mobile tabs must be centered as action groups.');
+$e((bool)preg_match('/\.instansi-tabbar\s*\{[^}]*justify-content:\s*center;/s',$css),'Tabbar instansi harus terpusat sebagai grup aksi di mobile.');
 $e(str_contains($css,'.section-action { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; padding: 10px 16px; line-height: 1.2; text-align: center; }'),'Mobile section-action pills must center their content internally.');
 $e(str_contains($css,'scrollbar-width: none'),'Mobile rail scrollbar suppression missing.');
 $e(str_contains($css,'font-size: .68rem'),'Bottom navigation font floor missing.');
