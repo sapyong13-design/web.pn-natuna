@@ -33,14 +33,16 @@ $expect(!str_contains($hero, 'data-hero-slide='), 'Hero harus tetap satu komposi
 
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-480.webp 480w'), 'Hero backdrop needs responsive 480w source.');
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-768.webp 768w'), 'Hero backdrop needs responsive 768w source.');
-$expect(str_contains($hero, 'integritas-tolak-gratifikasi-pungli-2026-480.webp'), 'Pratinjau poster Zona Integritas harus memakai varian 480w.');
+$expect(str_contains($hero, 'fetchpriority="high"'), 'Active hero backdrop must retain high fetch priority.');
 $expect(!str_contains($js, 'prefetchIntegrityPoster'), 'Secondary hero poster must not be idle-prefetched.');
 $expect(!str_contains($js, 'setupMobileHeroHeight'), 'Hero must not measure every slide at runtime.');
 $expect(!str_contains($css, '--hero-mobile-slide-height'), 'Mobile hero must use intrinsic CSS geometry.');
 
-$expect(str_contains($hero, 'fetchpriority="high"'), 'Active hero backdrop must retain high fetch priority.');
-$posterTag = preg_match('/<img[^>]*integritas-tolak-gratifikasi-pungli-2026-480\.webp[^>]*>/s', $hero, $posterMatch) ? $posterMatch[0] : '';
-$expect($posterTag !== '' && str_contains($posterTag, 'loading="lazy"'), 'Pratinjau poster Zona Integritas harus tetap lazy loaded.');
+// Poster Zona Integritas tidak lagi dimuat di hero dalam bentuk apa pun: pada
+// 92px gambarnya tidak terbaca. Sekarang hanya dibuka penuh lewat lightbox.
+$expect(str_contains($hero, 'data-maklumat-zoom="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp"'), 'Poster Zona Integritas harus dibuka lewat lightbox.');
+$expect(!str_contains($hero, 'integritas-tolak-gratifikasi-pungli-2026-480.webp'), 'Hero tidak boleh memuat pratinjau poster kecil lagi.');
+$expect(!preg_match('/<img[^>]*integritas-tolak-gratifikasi[^>]*>/s', $hero), 'Hero tidak boleh memuat aset poster sebagai gambar.');
 $expect(str_contains($index, 'id="theme-color-meta"'), 'Theme-color meta needs a stable hook.');
 $expect(str_contains($js, 'syncBrowserTheme'), 'Theme changes must synchronize browser chrome.');
 $expect(str_contains($js, 'document.documentElement.style.colorScheme'), 'Theme changes must synchronize native controls.');

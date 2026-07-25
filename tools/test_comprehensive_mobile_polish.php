@@ -3,7 +3,7 @@ $root=dirname(__DIR__);$index=file_get_contents($root.'/templates/pn_natuna_2026
 $e(str_contains($index,'data-mobile-menu-filter'),'Mobile menu filter input missing.');
 $e(str_contains($index,'data-mobile-menu-empty'),'Mobile menu empty state missing.');
 $e(str_contains($index,'data-sidebar-rail-status'),'Sidebar rail status missing.');
-$e(str_contains($hero,'hero-integrity__poster'),'Tombol poster penuh Zona Integritas hilang.');
+$e(str_contains($hero,'hero-pledge__poster'),'Tombol poster penuh Zona Integritas hilang.');
 $e(str_contains($hero,'data-youtube-count'),'YouTube count status missing.');
 $e(str_contains($js,'setupMobileMenuFilter'),'Mobile menu filtering behavior missing.');
 $e(str_contains($js,"window.scrollY > 900"),'Back-to-top threshold must be 900px.');

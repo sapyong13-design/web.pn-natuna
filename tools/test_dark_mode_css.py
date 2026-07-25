@@ -22,12 +22,13 @@ required = {
     "dark brand title": "body.is-dark .brand-lockup .brand-title",
     "dark brand address": "body.is-dark .brand-lockup p",
 
-    # Kartu berita dan pita Zona Integritas di hero sengaja tidak punya aturan
-    # `body.is-dark`: keduanya duduk di atas foto gedung yang selalu gelap, jadi
-    # warnanya dipatok sekali dan identik di kedua mode. Kontraknya justru
-    # memastikan tidak ada yang menempelkan token mode terang ke sana.
-    "hero news card surface": ".hero-news-card {",
-    "hero integrity strip surface": ".hero-integrity {",
+    # Pita berita dan baris Zona Integritas di hero sengaja tidak punya aturan
+    # `body.is-dark`: keduanya duduk di atas alas gelap yang sama di kedua mode,
+    # jadi warnanya dipatok sekali. Kontraknya memastikan alas itu tetap ada -
+    # tanpa alas, judul berita jatuh di atas dinding gedung yang terang.
+    "hero footbar surface": ".hero-footbar {",
+    "hero newsbar grid": ".hero-newsbar__list {",
+    "hero pledge row": ".hero-pledge {",
     "profile fact gradients": "body.is-dark .sejarah-fact-grid > div",
     "mission card gradients": "body.is-dark .visimisi-mission-grid article",
     "AMPUH dark accents": "body.is-dark .ampuh-directory",

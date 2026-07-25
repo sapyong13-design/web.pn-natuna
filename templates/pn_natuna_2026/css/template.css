@@ -961,7 +961,9 @@ body.is-dark .access-panel-voice.is-active {
 
 .home-slider {
   min-height: 310px;
-  padding-block: 44px;
+  /* Padding atas dirapatkan dari 44px: setiap piksel di sini menggeser pita
+     berita makin jauh ke bawah lipatan. */
+  padding-block: 30px 44px;
 }
 
 .home-slider .custom {
@@ -10823,7 +10825,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   position: relative;
   align-self: end;
   max-width: 760px;
-  padding-bottom: 12px;
+  padding-bottom: 0;
 }
 
 /* Scrim lokal, bukan scrim global yang lebih gelap: headline kini memanjang
@@ -10848,283 +10850,294 @@ body.is-dark .transparency-family { color: var(--color-ink); }
       rgba(16, 7, 5, 0.22) 100%);
 }
 
-/* === Hero berlapis =========================================================
-   Dulu tiga slide bergantian tiap 7 detik, jadi dua dari tiga komposisi selalu
-   tersembunyi - termasuk daftar berita, satu-satunya tempat berita pengadilan
-   muncul di beranda. Sekarang ketiganya tampil bersamaan dalam satu layar:
-   sambutan di kiri, berita dan Zona Integritas mengisi paruh kanan yang dulu
-   cuma foto gedung. Tanpa rotasi, tanpa dot, tanpa panah.
-   Kartu memakai latar pekat, bukan backdrop-filter (invariant HANDOFF).      */
-.hero-stack-grid {
+/* === Hero tiga lapis =======================================================
+   Percobaan sebelumnya menempelkan dua kartu ke paruh kanan foto. Hasilnya
+   dua bahasa desain bertabrakan - foto sinematik versus kotak widget - dan
+   gedung tertutup dari kiri oleh scrim serta dari kanan oleh kartu, menyisakan
+   pita sempit di tengah. Sekarang hero disusun sebagai tiga lapis melebar:
+   panggung foto, pita berita, lalu baris Zona Integritas. Tidak ada yang
+   melayang di atas foto, dan berita mendapat lebar penuh halaman.           */
+.hero-stage {
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: clamp(22px, 3vw, 52px);
   align-items: end;
-  min-height: 470px;
+  min-height: 390px;
 }
 
-.hero-aside {
-  display: grid;
-  align-content: end;
-  gap: 12px;
-  padding-bottom: 12px;
+/* Baris data dan tombol disejajarkan, bukan ditumpuk. Menumpuknya menghabiskan
+   ~85px tinggi dan mendorong pita berita makin jauh ke bawah lipatan; sebaris
+   juga membaca lebih rapat sebagai satu blok aksi. */
+.hero-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
 }
 
-.hero-news-card {
-  padding: 14px 16px 16px;
-  border: 1px solid rgba(255, 248, 237, 0.16);
-  border-radius: 18px;
-  background: rgba(26, 12, 9, 0.84);
-  color: var(--hero-cream);
+.home-slider .hero-facts .hero-service-ribbon,
+.home-slider .hero-facts .hero-actions-primary {
+  margin-bottom: 0;
 }
 
-.hero-news-card__head {
+/* Alas pita: melebar sampai tepi hero, menggelap ke bawah. Tanpa alas, judul
+   berita jatuh persis di atas dinding gedung yang terang dan tidak terbaca -
+   itu masalah percobaan pertama, cuma berpindah tempat. */
+.hero-footbar {
+  position: relative;
+  z-index: 3;
+  margin: 20px calc(var(--page-padding) * -1) 0;
+  padding: 16px var(--page-padding) 18px;
+  background: linear-gradient(180deg, rgba(18, 8, 6, 0.62) 0%, rgba(15, 6, 4, 0.94) 62%, rgba(15, 6, 4, 0.97) 100%);
+}
+
+/* Padding bawah hero diserahkan ke alas pita supaya alasnya benar-benar rapat
+   ke tepi, bukan mengambang di atas sisa padding. */
+.home-slider:has(.hero-footbar) {
+  padding-bottom: 0;
+}
+
+/* Kredit foto pindah ke kanan-atas panggung: posisi lamanya di kiri-bawah kini
+   ditempati pita berita. Pil latarnya dikembalikan - `.hero-cinema
+   .hero-photo-chip` membuatnya transparan, yang aman di atas scrim kiri tapi
+   menjatuhkan kontras ke 1,23 di atas langit terang. Selektor ini lebih
+   spesifik supaya menang tanpa !important. */
+.hero-cinema .hero-stage .hero-photo-chip {
+  top: 6px;
+  right: 0;
+  bottom: auto;
+  left: auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(20, 9, 6, 0.72);
+  color: rgba(255, 246, 234, 0.94);
+}
+
+/* --- Pita berita: lebar penuh, tiga kolom setara --- */
+.hero-newsbar {
+  position: relative;
+  z-index: 3;
+}
+
+.hero-newsbar__head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
-.hero-news-card__head h3 {
+.hero-newsbar__head h3 {
   margin: 0;
   color: var(--hero-gold);
   font-family: var(--font-display);
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-/* Keempat tautan di kolom kanan melawan gaya tautan global situs (maroon +
-   garis bawah). Diprefiks .home-slider supaya menang spesifisitas, bukan
-   dipaksa dengan !important. */
-.home-slider .hero-news-card__head a,
-.home-slider .hero-news-card__lead,
-.home-slider .hero-news-card__list a,
-.home-slider .hero-integrity__body {
-  text-decoration: none;
-}
-
-.home-slider .hero-news-card__lead,
-.home-slider .hero-integrity__body {
-  color: var(--hero-cream);
-}
-
-.home-slider .hero-news-card__head a {
-  color: rgba(255, 248, 237, 0.78);
-}
-
-.home-slider .hero-news-card__list a {
-  color: rgba(255, 248, 237, 0.86);
-}
-
-.hero-news-card__head a {
-  color: rgba(255, 248, 237, 0.78);
-  font-size: 0.72rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.hero-news-card__lead {
+.hero-newsbar__list {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 248, 237, 0.14);
-  color: inherit;
-}
-
-.hero-news-card__thumb {
-  overflow: hidden;
-  aspect-ratio: 4 / 3;
-  border-radius: 12px;
-}
-
-.hero-news-card__thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-news-card__when {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
-}
-
-.hero-news-card__when time {
-  color: rgba(255, 248, 237, 0.62);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.hero-news-card__when em {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--hero-gold);
-  color: #2a1408;
-  font-size: 0.58rem;
-  font-style: normal;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.hero-news-card__title {
-  display: block;
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.32;
-}
-
-.hero-news-card__list {
-  display: grid;
-  gap: 9px;
-  margin: 10px 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 clamp(20px, 2.6vw, 40px);
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.hero-news-card__list a {
+.hero-newsbar__list li + li {
+  border-left: 1px solid rgba(255, 248, 237, 0.16);
+  padding-left: clamp(20px, 2.6vw, 40px);
+}
+
+.hero-newsbar__list a {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 10px;
-  color: rgba(255, 248, 237, 0.86);
-  font-size: 0.8rem;
-  line-height: 1.34;
-}
-
-.hero-news-card__list time {
-  padding-top: 2px;
-  color: rgba(255, 248, 237, 0.55);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.hero-news-card__lead:hover .hero-news-card__title,
-.hero-news-card__lead:focus-visible .hero-news-card__title,
-.hero-news-card__head a:hover,
-.hero-news-card__head a:focus-visible,
-.hero-news-card__list a:hover span,
-.hero-news-card__list a:focus-visible span {
-  color: var(--hero-gold);
-}
-
-/* Poster cetak diturunkan jadi lampiran; janjinya yang jadi teks. */
-.hero-integrity {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 92px;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 14px;
-  border: 1px solid rgba(226, 185, 79, 0.4);
-  border-radius: 16px;
-  background: linear-gradient(96deg, rgba(48, 18, 12, 0.9), rgba(28, 12, 9, 0.84));
-}
-
-.hero-integrity__body {
-  display: grid;
-  gap: 2px;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
   color: var(--hero-cream);
 }
 
-.hero-integrity__mark {
-  color: var(--hero-gold);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.hero-integrity__claim {
-  font-family: var(--font-display);
-  font-size: 1.02rem;
-  font-weight: 700;
-  line-height: 1.14;
-}
-
-.hero-integrity__pledge {
-  color: rgba(255, 248, 237, 0.7);
-  font-size: 0.72rem;
-}
-
-.hero-integrity__body:hover .hero-integrity__claim,
-.hero-integrity__body:focus-visible .hero-integrity__claim {
-  color: var(--hero-gold);
-}
-
-.hero-integrity__poster {
-  position: relative;
-  display: block;
+.hero-newsbar__thumb {
   overflow: hidden;
-  aspect-ratio: 16 / 9;
-  padding: 0;
-  border: 1px solid rgba(255, 248, 237, 0.22);
+  aspect-ratio: 16 / 10;
   border-radius: 10px;
-  background: none;
-  cursor: zoom-in;
+  background: rgba(255, 248, 237, 0.08);
 }
 
-.hero-integrity__poster img {
+.hero-newsbar__thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.hero-integrity__zoom {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  background: rgba(20, 9, 6, 0.78);
-  color: var(--hero-cream);
+.hero-newsbar__when {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.hero-newsbar__when time {
+  color: rgba(255, 248, 237, 0.66);
   font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
 }
 
-/* Di layar sangat lebar kolom kanan tidak ikut melar; foto gedung tetap punya
-   ruang bernapas di antara kedua kolom. */
-.hero-aside {
-  justify-self: end;
-  max-width: 560px;
+.hero-newsbar__when em {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--hero-gold);
+  color: #2a1408;
+  font-size: 0.56rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-@media (max-width: 1080px) {
-  /* Dua kolom berhenti sebelum kartu berita jadi terlalu sempit dibaca. */
-  .hero-stack-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+.hero-newsbar__title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.34;
+  text-wrap: pretty;
+}
+
+/* --- Baris Zona Integritas: pernyataan, bukan kartu --- */
+.hero-pledge {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 248, 237, 0.14);
+}
+
+.hero-pledge__body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--hero-cream);
+  font-size: 0.86rem;
+}
+
+.hero-pledge__mark {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  transform: rotate(45deg);
+  background: var(--hero-gold);
+}
+
+.hero-pledge__text strong {
+  color: var(--hero-gold);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hero-pledge__poster {
+  flex: none;
+  padding: 7px 14px;
+  border: 1px solid rgba(226, 185, 79, 0.46);
+  border-radius: 999px;
+  background: none;
+  color: var(--hero-gold);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: zoom-in;
+}
+
+/* --- Interaksi --- */
+.hero-newsbar__list a:hover .hero-newsbar__thumb img,
+.hero-newsbar__list a:focus-visible .hero-newsbar__thumb img {
+  transform: scale(1.06);
+}
+
+.hero-newsbar__list a:hover .hero-newsbar__title,
+.hero-newsbar__list a:focus-visible .hero-newsbar__title,
+.hero-newsbar__head a:hover,
+.hero-newsbar__head a:focus-visible,
+.hero-pledge__body:hover .hero-pledge__text,
+.hero-pledge__body:focus-visible .hero-pledge__text {
+  color: var(--hero-gold);
+}
+
+.hero-pledge__poster:hover,
+.hero-pledge__poster:focus-visible {
+  border-color: var(--hero-gold);
+  background: rgba(226, 185, 79, 0.14);
+}
+
+/* Keempat tautan hero melawan gaya tautan global situs (maroon + garis bawah).
+   Diprefiks .home-slider supaya menang spesifisitas, bukan dipaksa !important. */
+.home-slider .hero-newsbar__head a,
+.home-slider .hero-newsbar__list a,
+.home-slider .hero-pledge__body {
+  text-decoration: none;
+}
+
+.home-slider .hero-newsbar__list a,
+.home-slider .hero-pledge__body {
+  color: var(--hero-cream);
+}
+
+.home-slider .hero-newsbar__head a {
+  color: rgba(255, 248, 237, 0.8);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-newsbar__thumb img {
+    transition: none;
+  }
+
+  .hero-newsbar__list a:hover .hero-newsbar__thumb img {
+    transform: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-stage {
     min-height: 0;
   }
 
-  .hero-aside {
-    justify-self: stretch;
-    max-width: none;
-    padding-bottom: 0;
-  }
-}
-
-@media (max-width: 560px) {
-  .hero-news-card__lead {
-    grid-template-columns: 74px minmax(0, 1fr);
+  .hero-newsbar__list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
   }
 
-  .hero-integrity {
-    grid-template-columns: minmax(0, 1fr) 74px;
+  .hero-newsbar__list li + li {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 248, 237, 0.14);
+    padding-left: 0;
+    padding-top: 12px;
+  }
+
+  .hero-newsbar__list a {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+  }
+
+  .hero-newsbar__title {
+    font-size: 0.88rem;
+  }
+
+  .hero-pledge {
+    flex-wrap: wrap;
+    gap: 12px;
   }
 }
 

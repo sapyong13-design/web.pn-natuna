@@ -34,36 +34,41 @@ foreach (['.hero-slide', '.hero-slider-dots', '.hero-nav', '.hero-tab-list'] as 
     $expect(!str_contains($css, $selector), "CSS slider mati tersisa: {$selector}");
 }
 
-// --- Ketiga komposisi tampil bersamaan --------------------------------------
+// --- Tiga lapis melebar, bukan kartu melayang di atas foto ------------------
 $expect(str_contains($php, 'class="hero-cinema hero-stack"'), 'Akar hero harus memakai kontrak hero-stack.');
-$expect(str_contains($php, 'class="hero-stack-grid"'), 'Hero harus memakai grid dua kolom statis.');
+$expect(str_contains($php, 'class="hero-stage"'), 'Panggung foto hilang.');
+$expect(str_contains($php, 'class="hero-footbar"'), 'Alas pita hilang; tanpa alas, judul berita jatuh di atas dinding gedung yang terang.');
+foreach (['hero-news-card', 'hero-integrity', 'hero-aside', 'hero-stack-grid'] as $stale) {
+    $expect(!str_contains($php, $stale), "Kartu melayang versi lama tersisa: {$stale}");
+    $expect(!str_contains($css, '.' . $stale), "CSS kartu melayang versi lama tersisa: .{$stale}");
+}
 $copy = strpos($php, 'hero-welcome-copy');
-$news = strpos($php, 'hero-news-card');
-$poster = strpos($php, 'hero-integrity');
+$news = strpos($php, 'hero-newsbar');
+$poster = strpos($php, 'hero-pledge');
 $expect($copy !== false, 'Kolom sambutan hilang.');
-$expect($news !== false, 'Kartu berita hilang dari hero.');
-$expect($poster !== false, 'Pita Zona Integritas hilang dari hero.');
+$expect($news !== false, 'Pita berita hilang dari hero.');
+$expect($poster !== false, 'Baris Zona Integritas hilang dari hero.');
 $expect($copy < $news && $news < $poster, 'Urutan hero harus sambutan, berita, lalu Zona Integritas.');
-$expect((bool) preg_match('/\.hero-stack-grid\s*\{[^}]*display:\s*grid;/s', $css), 'hero-stack-grid harus berupa grid.');
+$expect((bool) preg_match('/\.hero-footbar\s*\{[^}]*background:\s*linear-gradient/s', $css), 'Alas pita wajib punya latar sendiri.');
+$expect((bool) preg_match('/\.hero-newsbar__list\s*\{[^}]*grid-template-columns:\s*repeat\(3/s', $css), 'Pita berita harus tiga kolom setara di desktop.');
 
-// --- Berita: satu-satunya tempat berita sendiri di atas fold ----------------
-$expect(str_contains($php, 'pn_natuna_hero_latest_articles(12, 3)'), 'Kartu berita harus mengambil tiga artikel kategori 12.');
-$expect(str_contains($php, 'href="/berita-dan-pengumuman"'), 'Kartu berita butuh tautan ke arsip lengkap.');
+// --- Berita: satu-satunya tempat berita sendiri di beranda ------------------
+$expect(str_contains($php, 'pn_natuna_hero_latest_articles(12, 3)'), 'Pita berita harus mengambil tiga artikel kategori 12.');
+$expect(str_contains($php, 'href="/berita-dan-pengumuman"'), 'Pita berita butuh tautan ke arsip lengkap.');
 $expect(str_contains($php, 'pn_natuna_hero_article_url('), 'Item berita harus memakai URL Joomla yang ter-route.');
 $expect(str_contains($php, 'pn_natuna_hero_date('), 'Item berita harus menampilkan tanggal.');
+$expect(str_contains($php, 'pn_natuna_hero_article_image('), 'Tiap item berita harus punya gambar; itu yang membuat pita layak dilihat.');
 
-// --- Zona Integritas: janji jadi teks, poster jadi lampiran -----------------
-$expect(str_contains($php, 'href="/zona-integritas"'), 'Pita Zona Integritas harus menaut ke /zona-integritas.');
+// --- Zona Integritas: pernyataan satu baris, poster jadi lampiran -----------
+$expect(str_contains($php, 'href="/zona-integritas"'), 'Baris Zona Integritas harus menaut ke /zona-integritas.');
 $expect(str_contains($php, 'data-maklumat-zoom="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp"'), 'Poster penuh harus dibuka lewat lightbox yang sudah ada.');
-$expect(str_contains($php, 'aria-label="Lihat poster Zona Integritas ukuran penuh"'), 'Tombol poster butuh label aksesibel yang spesifik.');
-$expect(str_contains($php, 'integritas-tolak-gratifikasi-pungli-2026-480.webp'), 'Pratinjau poster harus memakai varian 480w, bukan berkas penuh.');
-$expect((bool) preg_match('/class="hero-integrity__poster"[^>]*>\s*<img[^>]*loading="lazy"/s', $php), 'Pratinjau poster harus lazy-loaded.');
+$expect(!str_contains($php, 'integritas-tolak-gratifikasi-pungli-2026-480.webp'), 'Pratinjau poster kecil dihapus: pada 92px posternya tidak terbaca sama sekali.');
 
 // --- Kontras: teks hero tidak boleh mewarisi warna gelap bodi ---------------
 $expect((bool) preg_match('/\.home-slider \.hero-welcome-copy h2\s*\{[^}]*color:\s*#fff;/s', $css), 'Headline hero harus menyatakan warnanya sendiri; `.hero h2` akan membuatnya gelap.');
 $expect((bool) preg_match('/\.home-slider \.hero-welcome-copy \.hero-intro\s*\{[^}]*color:\s*rgba\(255, 244, 230/s', $css), 'Intro hero harus menyatakan warnanya sendiri; `.hero p { color: #34414c }` akan menang.');
 $expect((bool) preg_match('/\.hero-cinema \.hero-welcome-copy::before\s*\{/s', $css), 'Kolom kiri butuh scrim lokal agar headline tetap kontras di atas atap yang terang.');
-$expect(str_contains($css, '.home-slider .hero-news-card__lead'), 'Tautan kartu berita harus melawan gaya tautan global secara eksplisit.');
+$expect(str_contains($css, '.home-slider .hero-newsbar__list a'), 'Tautan pita berita harus melawan gaya tautan global secara eksplisit.');
 
 // --- Aset poster ------------------------------------------------------------
 $expect(is_file($asset), 'Aset WebP Zona Integritas hilang.');
