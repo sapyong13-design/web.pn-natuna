@@ -35,6 +35,16 @@ if (is_file($asset)) {
     $expect(filesize($asset) <= 500 * 1024, 'Integrity asset must not exceed 500 KiB.');
 }
 
+// --- Poster dipajang, bukan ditempel (25 Jul 2026) -------------------------
+$css = (string) preg_replace('#/\*.*?\*/#s', '', $css);
+$expect((bool) preg_match('/\.home-slider \.hero-slide-integrity__link\s*\{[^}]*border-color:\s*rgba\(226, 185, 79/s', $css), 'Poster butuh bingkai emas, bukan garis putih tipis di atas foto.');
+$expect((bool) preg_match('/@media \(min-width: 761px\).*?\.home-slider \.hero-slide-integrity__cta\s*\{/s', $css), 'Desktop butuh petunjuk bahwa poster bisa dibuka penuh; sebelumnya CTA-nya display:none tanpa pengganti.');
+
+// --- Hierarki kartu berita -------------------------------------------------
+// Sebelumnya nama section 36px sementara judul berita yang diklik cuma 14px.
+$expect((bool) preg_match('/\.home-slider \.hero-tab-list \.hero-item-title\s*\{[^}]*font-size:\s*1rem/s', $css), 'Judul berita wajib lebih dominan daripada kutipannya.');
+$expect((bool) preg_match('/\.home-slider \.hero-news-panel h2\s*\{[^}]*font-size:\s*clamp\(1\.35rem/s', $css), 'Nama section tidak boleh lebih besar daripada berita yang ditawarkannya.');
+
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);

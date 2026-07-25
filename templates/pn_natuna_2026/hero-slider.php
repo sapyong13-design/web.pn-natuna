@@ -58,13 +58,19 @@ function pn_natuna_hero_is_new(string $created): bool
 function pn_natuna_hero_excerpt(?string $introtext, int $length = 90): string
 {
     $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $introtext)));
-    if ($text === '') {
-        return '';
+    if ($text === '' || mb_strlen($text) <= $length) {
+        return $text;
     }
-    if (mb_strlen($text) > $length) {
-        $text = rtrim(mb_substr($text, 0, $length), ' .,;:') . '&hellip;';
+    // Potong di batas kata, bukan di tengah kata. Pemotongan per karakter
+    // menghasilkan "upay..." dan "membe..." yang terbaca seperti teks rusak.
+    $cut = mb_substr($text, 0, $length + 1);
+    $lastSpace = mb_strrpos($cut, ' ');
+    if ($lastSpace !== false && $lastSpace >= (int) ($length * 0.6)) {
+        $cut = mb_substr($cut, 0, $lastSpace);
+    } else {
+        $cut = mb_substr($cut, 0, $length);
     }
-    return $text;
+    return rtrim($cut, " \t\n\r\0\x0B.,;:-") . '&hellip;';
 }
 
 function pn_natuna_hero_article_url(object $article, int $catId): string
@@ -199,12 +205,17 @@ function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel,
 {
     ?>
     <ul id="hero-panel-<?php echo $panel; ?>" class="hero-tab-list<?php echo $active ? ' is-active' : ''; ?>" data-hero-panel="<?php echo $panel; ?>" role="tabpanel" aria-labelledby="hero-tab-<?php echo $panel; ?>" <?php echo $active ? '' : 'hidden'; ?>>
-      <?php if ($items) : foreach ($items as $item) : ?>
+      <?php if ($items) : foreach ($items as $item) : $itemImage = pn_natuna_hero_article_image($item); ?>
         <li>
           <a href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($item, $catId), ENT_QUOTES, 'UTF-8'); ?>"
-             data-image="<?php echo htmlspecialchars(pn_natuna_hero_article_image($item), ENT_QUOTES, 'UTF-8'); ?>"
+             data-image="<?php echo htmlspecialchars($itemImage, ENT_QUOTES, 'UTF-8'); ?>"
              data-caption="<?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>">
             <time><?php echo pn_natuna_hero_date($item->created); ?></time>
+            <?php /* Hanya tampil di mobile: di sana panel pratinjau besar disembunyikan,
+                      jadi tanpa ini daftar berita jadi teks polos tanpa satu gambar pun. */ ?>
+            <span class="hero-item-thumb" aria-hidden="true">
+              <img src="<?php echo htmlspecialchars($itemImage, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="160" height="120" loading="lazy" decoding="async">
+            </span>
             <span class="hero-item-body">
               <span class="hero-item-title">
                 <?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>
@@ -298,7 +309,10 @@ function pn_natuna_render_hero_slider(): void
       </div>
       <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna &middot; Ranai, Kepulauan Riau</span>
 
-      <div class="hero-slides">
+      <!-- aria-live diatur JS: "off" selama rotasi otomatis supaya pembaca layar
+           tidak diinterupsi tiap 7 detik, "polite" begitu dijeda atau dikendalikan
+           manual - saat itu pergantian memang hasil tindakan pengguna. -->
+      <div class="hero-slides" aria-live="off">
 
         <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
           <div class="hero-copy hero-welcome-copy">
@@ -334,7 +348,6 @@ function pn_natuna_render_hero_slider(): void
 
         <div class="hero-slide hero-slide-news" role="group" aria-label="Berita dan pengumuman terbaru">
           <div class="hero-copy hero-news-panel">
-            <p class="hero-kicker">Informasi Terkini</p>
             <h2>Berita &amp; Pengumuman</h2>
             <div class="hero-tabs" role="tablist" aria-label="Pilih jenis informasi">
               <button id="hero-tab-berita" type="button" class="is-active" data-hero-tab="berita" role="tab" aria-controls="hero-panel-berita" aria-selected="true" tabindex="0">Berita</button>
@@ -359,10 +372,15 @@ function pn_natuna_render_hero_slider(): void
       <button type="button" class="hero-nav hero-nav-prev" data-hero-nav="-1" aria-label="Slide sebelumnya">&#8249;</button>
       <button type="button" class="hero-nav hero-nav-next" data-hero-nav="1" aria-label="Slide berikutnya">&#8250;</button>
 
-      <div class="hero-slider-dots">
-        <button type="button" data-hero-slide="0" class="is-active" aria-label="Slide selamat datang" aria-pressed="true"></button>
-        <button type="button" data-hero-slide="1" aria-label="Slide Tolak Gratifikasi dan Pungutan Liar" aria-pressed="false"></button>
-        <button type="button" data-hero-slide="2" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
+      <div class="hero-slider-controls">
+        <div class="hero-slider-dots">
+          <button type="button" data-hero-slide="0" class="is-active" aria-label="Slide selamat datang" aria-pressed="true"></button>
+          <button type="button" data-hero-slide="1" aria-label="Slide Tolak Gratifikasi dan Pungutan Liar" aria-pressed="false"></button>
+          <button type="button" data-hero-slide="2" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
+        </div>
+        <button type="button" class="hero-pause" data-hero-pause aria-pressed="false" aria-label="Jeda pergantian slide otomatis">
+          <span class="hero-pause__glyph" aria-hidden="true"></span>
+        </button>
       </div>
     </div>
     <?php

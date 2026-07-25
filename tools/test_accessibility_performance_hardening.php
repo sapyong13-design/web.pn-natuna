@@ -54,6 +54,29 @@ foreach ([
     $expect(is_file($root . '/images/hero/' . $image), "Responsive hero image missing: {$image}");
 }
 
+// --- Kendali rotasi hero (25 Jul 2026) -------------------------------------
+// WCAG 2.2.2: konten yang bergerak otomatis lebih dari 5 detik wajib punya
+// kontrol jeda. Jeda saat hover dan prefers-reduced-motion sudah ada, tapi
+// keduanya tidak terlihat dan tidak bisa dioperasikan dengan sengaja.
+$expect(str_contains($hero, 'data-hero-pause'), 'Slider hero wajib punya tombol jeda.');
+$expect((bool) preg_match('/class="hero-pause"[^>]*aria-pressed="false"/s', $hero), 'Tombol jeda wajib menyatakan status aria-pressed.');
+$expect(str_contains($js, "pause: '[data-hero-pause]'"), 'Tombol jeda wajib disambungkan ke initCarousel.');
+$expect(str_contains($js, 'let userPaused = false;'), 'Jeda pengguna harus dibedakan dari jeda sementara akibat hover/fokus.');
+$expect(str_contains($js, 'pauseButton.hidden = reducedMotion;'), 'Tombol jeda disembunyikan saat rotasi memang tidak pernah jalan.');
+$expect((bool) preg_match('/\.home-slider \.hero-pause\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/s', $css), 'Tombol jeda wajib 44px.');
+
+// aria-live "off" selama rotasi otomatis supaya pembaca layar tidak
+// diinterupsi tiap 7 detik, "polite" begitu kendali berpindah ke pengguna.
+$expect((bool) preg_match('/class="hero-slides"[^>]*aria-live="off"/s', $hero), 'Wadah slide wajib punya hook aria-live.');
+$expect(str_contains($js, "liveRegion.setAttribute('aria-live', autoRunning ? 'off' : 'polite')"), 'aria-live wajib mengikuti status rotasi.');
+
+// --- Kartu berita hero -----------------------------------------------------
+$expect((bool) preg_match('/\.home-slider \.hero-tabs button\s*\{[^}]*min-height:\s*44px/s', $css), 'Tab Berita/Pengumuman wajib 44px.');
+$expect(str_contains($hero, 'class="hero-item-thumb"'), 'Tiap item berita wajib punya thumbnail untuk mobile.');
+$expect((bool) preg_match('/@media \(max-width: 900px\).*?\.home-slider \.hero-tab-list \.hero-item-thumb\s*\{[^}]*display:\s*block/s', $css), 'Thumbnail wajib tampil di mobile, tempat panel pratinjau besar disembunyikan.');
+$expect(!str_contains($hero, 'hero-kicker'), 'Kicker "Informasi Terkini" dihapus: h2 di bawahnya menyatakan hal yang sama.');
+$expect(str_contains($hero, 'mb_strrpos($cut'), 'Kutipan wajib dipotong di batas kata, bukan di tengah kata.');
+
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);

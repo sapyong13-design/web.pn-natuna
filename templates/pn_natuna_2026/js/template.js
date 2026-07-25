@@ -1135,6 +1135,25 @@ function initCarousel(root, opts) {
   let activeIndex = 0;
   let timer = null;
   let userInteracted = false;
+  // Dibedakan dari `timer`: hover dan focus juga menghentikan timer, tapi itu
+  // jeda sementara. Hanya `userPaused` yang mencerminkan niat pengguna, dan
+  // hanya itu yang boleh mengubah tampilan tombol jeda.
+  let userPaused = false;
+  const pauseButton = opts.pause ? root.querySelector(opts.pause) : null;
+  const liveRegion = opts.live ? root.querySelector(opts.live) : null;
+
+  const syncControls = () => {
+    const autoRunning = !reducedMotion && !userPaused && !userInteracted;
+    if (pauseButton) {
+      pauseButton.setAttribute('aria-pressed', String(userPaused));
+      pauseButton.setAttribute('aria-label', userPaused
+        ? 'Lanjutkan pergantian slide otomatis'
+        : 'Jeda pergantian slide otomatis');
+    }
+    // Mengumumkan tiap 7 detik justru mengganggu; begitu rotasi berhenti,
+    // pergantian adalah hasil tindakan pengguna dan layak diumumkan.
+    if (liveRegion) liveRegion.setAttribute('aria-live', autoRunning ? 'off' : 'polite');
+  };
 
   const setActive = (index) => {
     activeIndex = (index + slides.length) % slides.length;
@@ -1157,7 +1176,7 @@ function initCarousel(root, opts) {
     timer = null;
   };
   const start = () => {
-    if (reducedMotion) return;
+    if (reducedMotion || userPaused) return;
     stop();
     timer = window.setInterval(() => {
       if (root.closest('.is-scroll-active')) return;
@@ -1165,7 +1184,24 @@ function initCarousel(root, opts) {
     }, interval);
   };
 
-  const stopAfterInteraction = () => { userInteracted = true; stop(); };
+  const stopAfterInteraction = () => { userInteracted = true; stop(); syncControls(); };
+
+  if (pauseButton) {
+    // Tanpa prefers-reduced-motion rotasi memang jalan, jadi tombolnya relevan.
+    // Dengan reduced-motion rotasi tidak pernah jalan - tombolnya disembunyikan
+    // supaya tidak menawarkan kendali atas sesuatu yang tidak bergerak.
+    pauseButton.hidden = reducedMotion;
+    pauseButton.addEventListener('click', () => {
+      userPaused = !userPaused;
+      if (userPaused) {
+        stop();
+      } else {
+        userInteracted = false;
+        start();
+      }
+      syncControls();
+    });
+  }
   dots.forEach((dot, dotIndex) => {
     dot.addEventListener('click', () => {
       setActive(dotIndex);
@@ -1206,6 +1242,7 @@ function initCarousel(root, opts) {
   root.addEventListener('focusin', stop);
   setActive(0);
   start();
+  syncControls();
 }
 
 function setupCarousels() {
@@ -1216,7 +1253,7 @@ function setupCarousels() {
     initCarousel(el, { slide: '.survey-slide', dot: '[data-survey-slide]', caption: '.survey-caption' });
   });
   document.querySelectorAll('.hero-slider').forEach((el) => {
-    initCarousel(el, { slide: '.hero-slide', dot: '[data-hero-slide]', interval: '6000', nav: '[data-hero-nav]' });
+    initCarousel(el, { slide: '.hero-slide', dot: '[data-hero-slide]', interval: '6000', nav: '[data-hero-nav]', pause: '[data-hero-pause]', live: '.hero-slides' });
   });
 }
 
