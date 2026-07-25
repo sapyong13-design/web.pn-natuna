@@ -14,6 +14,7 @@ Jalankan saat ada PDF baru:
 """
 
 import html
+import json
 import os
 import re
 import ssl
@@ -33,6 +34,14 @@ MYSQL_DEFAULTS_FILE = os.environ.get('MYSQL_DEFAULTS_FILE', '')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
+# Berapa periode terakhir yang ditawarkan di pemilih kartu.
+MAX_PERIODS = 12
+# Hasil parse tiap PDF disimpan per file id supaya cron tidak mengunduh ulang
+# seluruh folder tiap kali jalan; PDF di Drive tidak pernah berubah isinya.
+CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    'cache', 'pn_natuna_dipa_periods.json',
+)
 # ==========================
 MAX_HTML_BYTES = 2 * 1024 * 1024
 MAX_PDF_BYTES = 25 * 1024 * 1024
@@ -124,6 +133,86 @@ def find_latest(files):
     return candidates[0]
 
 
+def collect_periods(files):
+    """Semua periode DIPA di folder, terbaru lebih dulu, maksimum MAX_PERIODS.
+
+    Satu bulan bisa punya lebih dari satu berkas (laporan 01 sendiri, 03 sendiri,
+    lalu gabungan). Yang dipakai satu per bulan: gabungan `01 dan 03` menang
+    karena hanya berkas itu memuat kedua unit organisasi.
+    """
+    best = {}
+    for fid, name in files:
+        low = name.lower()
+        if not low.endswith('.pdf'):
+            continue
+        if 'dipa' not in low and 'realisasi' not in low and 'lra' not in low:
+            continue
+        year, month, has_both = parse_period(name)
+        if not year or not month:
+            continue
+        key = (year, month)
+        current = best.get(key)
+        if current is None or (has_both, name) > (current['has_both'], current['name']):
+            best[key] = {'id': fid, 'name': name, 'year': year, 'month': month, 'has_both': has_both}
+    ordered = sorted(best.values(), key=lambda x: (x['year'], x['month']), reverse=True)
+    return ordered[:MAX_PERIODS]
+
+
+def load_cache():
+    try:
+        with open(CACHE_PATH, encoding='utf-8') as handle:
+            cached = json.load(handle)
+        return cached if isinstance(cached, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def save_cache(cache):
+    """Tulis atomik supaya cron yang terputus tidak meninggalkan JSON separuh."""
+    directory = os.path.dirname(CACHE_PATH)
+    try:
+        os.makedirs(directory, exist_ok=True)
+        fd, staged = tempfile.mkstemp(prefix='.dipa-cache-', suffix='.json', dir=directory)
+        with os.fdopen(fd, 'w', encoding='utf-8') as handle:
+            json.dump(cache, handle, ensure_ascii=False)
+        os.replace(staged, CACHE_PATH)
+    except OSError as exc:
+        print(f'      [WARN] Cache periode tidak tersimpan: {exc}', file=sys.stderr)
+
+
+def period_label(entry):
+    names = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+    return f'{names[entry["month"]]} {entry["year"]}'
+
+
+def period_short(entry):
+    names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+             'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+    return f'{names[entry["month"]]} {str(entry["year"])[2:]}'
+
+
+def attach_deltas(periods):
+    """Isi `delta` tiap unit: selisih poin persentase terhadap bulan sebelumnya.
+
+    Dihitung dari urutan periode yang benar-benar tersedia, bukan kalender. Bila
+    Mei tidak ada di folder, pembanding Juni adalah April - dan itu dinyatakan
+    lewat `delta_vs` supaya kartunya tidak berbohong soal apa yang dibandingkan.
+    """
+    ascending = sorted(periods, key=lambda x: (x['year'], x['month']))
+    for index, entry in enumerate(ascending):
+        previous = ascending[index - 1] if index else None
+        for unit, values in entry.get('data', {}).items():
+            prior = (previous or {}).get('data', {}).get(unit) if previous else None
+            if prior is None:
+                values['delta'] = None
+                values['delta_vs'] = ''
+                continue
+            values['delta'] = values['pct'] - prior['pct']
+            values['delta_vs'] = period_label(previous)
+    return periods
+
+
 def gdrive_download(file_id, dest):
     url = f'https://drive.google.com/uc?export=download&id={file_id}'
     data = fetch(url, MAX_PDF_BYTES, ('application/pdf', 'application/octet-stream', 'text/html'))
@@ -187,35 +276,102 @@ def format_rp(amount):
     return f'Rp {amount:,}'
 
 
-def build_html(data, period_label, file_id=''):
-    """Generate donut chart HTML."""
-    period_label = html.escape(str(period_label), quote=True)
-    colors = {'01': '#1f5b4b', '03': '#8f1f0b'}
-    labels = {'01': 'DIPA 01', '03': 'DIPA 03'}
+def format_delta(delta):
+    """Badge kenaikan poin persentase terhadap bulan pembanding.
+
+    Serapan itu kumulatif, jadi arah normalnya naik. Penurunan tetap
+    ditangani - kalau muncul, itu justru tanda data perlu diperiksa, bukan
+    sesuatu yang boleh disembunyikan.
+    """
+    if delta is None:
+        return None, '', ''
+    value = f'{abs(delta):.2f}'.replace('.', ',')
+    if delta > 0.005:
+        return 'is-up', '&#9650;', f'+{value}'
+    if delta < -0.005:
+        return 'is-down', '&#9660;', f'-{value}'
+    return 'is-flat', '&#8213;', value
+
+
+def build_panel(entry, colors, labels):
+    label_text = html.escape(period_label(entry), quote=True)
+    gdrive_url = html.escape(
+        f'https://drive.google.com/file/d/{entry["id"]}/view' if entry.get('id') else '#', quote=True
+    )
     items = []
     for unit in ['01', '03']:
-        if unit not in data:
+        values = entry.get('data', {}).get(unit)
+        if not values:
             continue
-        d = data[unit]
-        pct_str = f'{d["pct"]:.2f}'.replace('.', ',')
+        pct_str = f'{values["pct"]:.2f}'.replace('.', ',')
+        state, glyph, amount = format_delta(values.get('delta'))
+        if state:
+            vs = html.escape(str(values.get('delta_vs') or ''), quote=True)
+            title = f'Selisih {amount} poin dibanding {vs}' if vs else f'Selisih {amount} poin'
+            delta_html = (
+                f'<span class="dipa-delta {state}" title="{html.escape(title, quote=True)}">'
+                f'<span aria-hidden="true">{glyph}</span> {amount} poin</span>'
+            )
+        else:
+            delta_html = '<span class="dipa-delta is-none">periode awal</span>'
         items.append(
             f'<div class="dipa-item">'
-            f'<div class="dipa-ring" style="--pct:{d["pct"]};--dipa-color:{colors[unit]};">'
+            f'<div class="dipa-ring" style="--pct:{values["pct"]};--dipa-color:{colors[unit]};">'
             f'<span class="dipa-ring-pct">{pct_str}%</span></div>'
             f'<span class="dipa-label">{labels[unit]}</span>'
-            f'<span class="dipa-amount">{format_rp(d["pagu"])}</span>'
-            f'<span class="dipa-sub">terserap {format_rp(d["realisasi"])}</span>'
+            f'{delta_html}'
+            f'<span class="dipa-amount">{format_rp(values["pagu"])}</span>'
+            f'<span class="dipa-sub">terserap {format_rp(values["realisasi"])}</span>'
             f'</div>'
         )
-    gdrive_url = f'https://drive.google.com/file/d/{file_id}/view' if file_id else '#'
     return (
-        f'<div class="dipa-widget">'
-        f'<div class="dipa-subhead">Realisasi Anggaran DIPA</div>'
-        f'<div class="dipa-period">Periode {period_label}</div>'
-        f'<a class="dipa-link" href="{gdrive_url}" target="_blank" rel="noopener" title="Buka laporan PDF">'
+        f'<div class="dipa-period">Periode {label_text}</div>'
+        f'<a class="dipa-link" href="{gdrive_url}" target="_blank" rel="noopener" '
+        f'title="Buka laporan PDF {label_text}">'
         f'<div class="dipa-grid">{"".join(items)}</div>'
         f'<span class="dipa-link-hint">Klik untuk lihat laporan PDF</span>'
         f'</a>'
+    )
+
+
+def build_html(periods):
+    """Kartu DIPA dengan pemilih periode.
+
+    Panel periode teraktif dirender `is-active` dari server, jadi kartunya sudah
+    benar sebelum JS jalan - tanpa JS pemilihnya tidak berpindah, tapi angkanya
+    tetap tampil. Ini pola yang sama dengan tab Kabar Instansi.
+    """
+    colors = {'01': '#1f5b4b', '03': '#8f1f0b'}
+    labels = {'01': 'DIPA 01', '03': 'DIPA 03'}
+    usable = [p for p in periods if p.get('data')]
+    if not usable:
+        return ''
+    tabs, panels = [], []
+    for index, entry in enumerate(usable):
+        active = index == 0
+        slug = f'{entry["year"]}-{entry["month"]:02d}'
+        tabs.append(
+            f'<button type="button" role="tab" id="dipa-tab-{slug}" data-dipa-tab="{slug}"'
+            f' aria-controls="dipa-panel-{slug}" aria-selected="{"true" if active else "false"}"'
+            f' tabindex="{0 if active else -1}"'
+            f' class="dipa-tab{" is-active" if active else ""}">{html.escape(period_short(entry), quote=True)}</button>'
+        )
+        panels.append(
+            f'<div class="dipa-panel{" is-active" if active else ""}" id="dipa-panel-{slug}"'
+            f' role="tabpanel" aria-labelledby="dipa-tab-{slug}"{"" if active else " hidden"}>'
+            f'{build_panel(entry, colors, labels)}</div>'
+        )
+    picker = ''
+    if len(usable) > 1:
+        picker = (
+            f'<div class="dipa-tabs" role="tablist" aria-label="Pilih periode laporan DIPA">'
+            f'{"".join(tabs)}</div>'
+        )
+    return (
+        f'<div class="dipa-widget" data-dipa-board>'
+        f'<div class="dipa-subhead">Realisasi Anggaran DIPA</div>'
+        f'{picker}'
+        f'<div class="dipa-panels">{"".join(panels)}</div>'
         f'</div>'
     )
 
@@ -250,49 +406,85 @@ def update_module_db(widget_html):
     return result.returncode == 0, result.stderr
 
 
+def resolve_periods(entries, cache):
+    """Parse tiap periode, pakai cache bila file id-nya sudah pernah diparse.
+
+    PDF di Drive tidak pernah berubah isinya, jadi hasil parse boleh disimpan
+    permanen per file id. Satu berkas gagal tidak boleh menjatuhkan seluruh
+    refresh - periode itu saja yang dilewati.
+    """
+    resolved, fetched = [], 0
+    for entry in entries:
+        cached = cache.get(entry['id'])
+        if isinstance(cached, dict) and cached.get('data'):
+            entry['data'] = {
+                unit: dict(values) for unit, values in cached['data'].items()
+            }
+            resolved.append(entry)
+            continue
+        tmp_pdf = os.path.join(os.path.dirname(__file__), f'_dipa_{entry["id"][:12]}.pdf')
+        try:
+            size = gdrive_download(entry['id'], tmp_pdf)
+            data = parse_dipa(tmp_pdf)
+        except Exception as exc:
+            print(f'      [WARN] {entry["name"]} dilewati: {exc}', file=sys.stderr)
+            continue
+        finally:
+            if os.path.exists(tmp_pdf):
+                os.remove(tmp_pdf)
+        if not data:
+            print(f'      [WARN] {entry["name"]} tidak menghasilkan data DIPA.', file=sys.stderr)
+            continue
+        fetched += 1
+        entry['data'] = data
+        cache[entry['id']] = {'name': entry['name'], 'data': data}
+        resolved.append(entry)
+        print(f'      + {period_label(entry)} ({size} byte)')
+    return resolved, fetched
+
+
 def main():
     print('[1/4] List file dari Google Drive folder...')
     files = list_folder(FOLDER_ID)
-    print(f'      Ditemukan {len(files)} file:')
-    for fid, name in files:
-        print(f'        - {name}')
+    print(f'      Ditemukan {len(files)} file.')
 
-    print('\n[2/4] Cari PDF terbaru...')
-    latest = find_latest(files)
-    if not latest:
+    print(f'\n[2/4] Kumpulkan periode (maks {MAX_PERIODS})...')
+    entries = collect_periods(files)
+    if not entries:
         print('[ERROR] Tidak ada PDF DIPA ditemukan.')
         sys.exit(1)
-    print(f'      Terbaru: {latest["name"]} ({latest["year"]}-{latest["month"]:02d})')
+    for entry in entries:
+        print(f'        - {period_label(entry)}  {entry["name"]}')
 
-    print('\n[3/4] Download & parse PDF...')
-    tmp_pdf = os.path.join(os.path.dirname(__file__), '_dipa_latest.pdf')
-    sz = gdrive_download(latest['id'], tmp_pdf)
-    print(f'      Downloaded {sz} bytes')
-    data = parse_dipa(tmp_pdf)
-    os.remove(tmp_pdf)
-    for unit, d in data.items():
-        print(f'      DIPA {unit}: {d["pct"]:.2f}% | pagu {format_rp(d["pagu"])} | realisasi {format_rp(d["realisasi"])}')
-
-    if not data:
-        print('[ERROR] Gagal parse data DIPA.')
+    print('\n[3/4] Parse PDF (cache dipakai bila ada)...')
+    cache = load_cache()
+    periods, fetched = resolve_periods(entries, cache)
+    if not periods:
+        print('[ERROR] Tidak ada periode yang berhasil diparse.')
         sys.exit(1)
+    save_cache(cache)
+    print(f'      {len(periods)} periode siap, {fetched} diunduh baru, {len(periods) - fetched} dari cache.')
 
-    # period label dari filename
-    period_label = latest['name'].replace('.pdf', '').replace('_', ' ')
-    # extract just the month+year part
-    pm = re.search(r'(\w+\s+\d{4})', latest['name'])
-    if pm:
-        period_label = pm.group(1)
+    attach_deltas(periods)
+    for entry in periods:
+        for unit, values in sorted(entry.get('data', {}).items()):
+            delta = values.get('delta')
+            trend = 'awal' if delta is None else f'{delta:+.2f} poin vs {values.get("delta_vs")}'
+            print(f'      {period_label(entry):16} DIPA {unit}: {values["pct"]:6.2f}%  {trend}')
 
     print('\n[4/4] Update module Joomla (DB)...')
-    html = build_html(data, period_label, latest['id'])
-    ok, err = update_module_db(html)
+    markup = build_html(periods)
+    if not markup:
+        print('[ERROR] Widget kosong, DB tidak diubah.')
+        sys.exit(1)
+    ok, err = update_module_db(markup)
     if ok:
         print('      Module updated.')
     else:
-        print('      [ERROR] Pembaruan database gagal.', file=sys.stderr)
+        print(f'      [ERROR] Pembaruan database gagal: {err}', file=sys.stderr)
+        sys.exit(1)
 
-    print(f'\nSELESAI. DIPA widget menampilkan data {period_label}.')
+    print(f'\nSELESAI. Kartu DIPA menawarkan {len(periods)} periode, teraktif {period_label(periods[0])}.')
 
 
 if __name__ == '__main__':

@@ -294,19 +294,30 @@ SELESAI.
 ## 10. Auto-Refresh Realisasi Anggaran DIPA (Google Drive → PDF → Donut Chart)
 
 Widget **Realisasi Anggaran DIPA** di sidebar (bawah Indeks Pelayanan Publik)
-menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi.
+menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi, dengan
+**pemilih periode** dan **delta terhadap bulan pembanding**.
 
 ### Sumber data
 - Folder Google Drive (public): `1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV`
 - Naming: `{Laporan Realisasi/LRA} DIPA ... {Bulan} {Tahun}.pdf`
-- Latest: Juni 2026
 
 ### Cara kerja `tools/refresh-dipa.py`
 1. List file folder Gdrive via `embeddedfolderview`.
-2. Cari PDF **TERBARU** (prefer "01 dan 03" combined, sort by tahun+bulan).
-3. Download → parse text → extract baris **"JUMLAH SELURUHNYA"** per Unit Organisasi (01, 03) → dapat %, pagu, realisasi.
-4. Generate donut chart HTML (CSS conic-gradient, 2 ring) + link ke PDF gdrive.
-5. Update hanya blok `.dipa-widget` pada module Joomla aktif (DB id 816); module 817 adalah versi lama yang unpublished.
+2. `collect_periods()` mengambil **semua** bulan yang ada, satu berkas per bulan (laporan gabungan `01 dan 03` menang karena hanya berkas itu memuat kedua unit), terbaru lebih dulu, dibatasi `MAX_PERIODS` (12).
+3. `resolve_periods()` mengunduh + parse tiap PDF. **Hasil parse di-cache per file id** di `cache/pn_natuna_dipa_periods.json` (gitignored) — PDF di Drive tidak pernah berubah isinya, jadi cron berikutnya hanya mengunduh bulan yang benar-benar baru. Satu berkas gagal hanya melewati periode itu, tidak menjatuhkan refresh.
+4. `attach_deltas()` menghitung selisih **poin persentase** terhadap periode sebelumnya.
+5. `build_html()` merender tab periode + satu panel per bulan; panel teraktif ditandai `is-active` dari server.
+6. Update hanya blok `.dipa-widget` pada module Joomla aktif (DB id 816); module 817 versi lama yang unpublished.
+
+### Delta: poin persentase, dan pembandingnya periode yang tersedia
+
+Serapan itu kumulatif, jadi naik dari 38,20% ke 54,96% adalah **+16,76 poin** — bukan "+43%". Badge memakai satuan `poin` supaya tidak ambigu: `▲` hijau naik, `▼` merah turun, `―` datar. Penurunan tidak disembunyikan; kalau muncul, itu tanda data perlu diperiksa.
+
+**Pembandingnya periode yang benar-benar ada di folder, bukan bulan kalender.** Kalau Mei tidak diunggah, pembanding Juni adalah April, dan itu dinyatakan di `title` badge (`Selisih +16,76 poin dibanding April 2026`). Periode paling awal menampilkan *"periode awal"*, bukan badge kosong.
+
+### Pemilih periode
+
+Tablist dengan label pendek (`Jun 26`, `Mei 26`, …). Perilaku keyboard (←/→/Home/End) dan strukturnya identik dengan tab Kabar Instansi — `setupDipaPeriods()` di `template.js` sengaja mencerminkan `setupInstansiTabs()` supaya hanya ada satu cara tab bekerja di situs ini. Panel aktif sudah benar dari server, jadi **tanpa JS angkanya tetap tampil**, hanya tidak bisa berganti bulan. Kontrak: `tools/test_dipa_periods.py`.
 
 ### Menjalankan
 ```bash
@@ -317,15 +328,17 @@ MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
 ### Saat upload PDF baru (mis. Juli 2026)
 1. Upload `Laporan Realisasi Anggaran DIPA 01 dan 03 Juli 2026.pdf` ke folder.
 2. Jalankan `python tools/refresh-dipa.py`.
-3. Donut auto-update ke Juli (%, pagu, link PDF).
+3. Juli masuk sebagai tab baru dan jadi periode aktif; bulan lama tetap bisa dipilih dan tidak diunduh ulang.
 
 ### Konfigurasi (`tools/refresh-dipa.py`)
-- `FOLDER_ID`, `MODULE_ID` (816), `MYSQL_BIN`/`DB_USER`/`DB_NAME` (env var)
+- `FOLDER_ID`, `MODULE_ID` (816), `MAX_PERIODS` (12), `CACHE_PATH`
+- `MYSQL_BIN`/`MYSQL_DEFAULTS_FILE`/`DB_USER`/`DB_PASS`/`DB_NAME` (env var)
 
 ### Catatan parsing
 Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
+Menghapus `cache/pn_natuna_dipa_periods.json` memaksa parse ulang seluruh folder — lakukan itu bila parser diperbaiki, karena cache menyimpan hasil parser lama.
 
 ## Deploy Staging Commit `149f88e`
 

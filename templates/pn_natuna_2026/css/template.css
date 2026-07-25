@@ -5682,6 +5682,108 @@ body.is-dark .maklumat-doc img {
   margin-top: 4px;
 }
 
+/* --- Pemilih periode DIPA ---
+   Panel teraktif dirender `is-active` dari server, jadi angkanya sudah benar
+   sebelum JS jalan. Tanpa JS pemilihnya tidak berpindah, tapi tidak ada yang
+   kosong - pola yang sama dengan tab Kabar Instansi. */
+.dipa-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dipa-tab {
+  min-height: 30px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #fff;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.dipa-tab:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dipa-tab.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.dipa-panel[hidden] {
+  display: none;
+}
+
+/* --- Delta terhadap periode pembanding ---
+   Satuannya poin persentase, bukan persen dari persen: serapan kumulatif naik
+   dari 38,20% ke 54,96% adalah +16,76 poin. Menyebutnya "persen" akan salah. */
+.dipa-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.dipa-delta.is-up {
+  background: rgba(31, 91, 75, 0.12);
+  color: #1f5b4b;
+}
+
+.dipa-delta.is-down {
+  background: rgba(143, 31, 11, 0.12);
+  color: #8f1f0b;
+}
+
+.dipa-delta.is-flat {
+  background: rgba(29, 39, 48, 0.08);
+  color: var(--color-muted);
+}
+
+/* Periode paling awal tidak punya pembanding; dinyatakan, bukan dikosongkan. */
+.dipa-delta.is-none {
+  padding: 0;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.6rem;
+  font-weight: 600;
+  font-style: italic;
+}
+
+body.is-dark .dipa-tab {
+  border-color: var(--dark-content-line);
+  background: var(--dark-content-raised);
+  color: #d5dde4;
+}
+
+body.is-dark .dipa-tab.is-active {
+  border-color: var(--dark-content-accent);
+  background: #7a2518;
+  color: #fff8ed;
+}
+
+body.is-dark .dipa-delta.is-up {
+  background: rgba(120, 214, 173, 0.16);
+  color: #78d6ad;
+}
+
+body.is-dark .dipa-delta.is-down {
+  background: rgba(255, 154, 132, 0.16);
+  color: #ff9a84;
+}
+
 /* === Hero slider (2 slide: selamat datang + berita/pengumuman) === */
 .hero-slider {
   display: grid;
