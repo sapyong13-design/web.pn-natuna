@@ -5657,22 +5657,52 @@ body.is-dark .maklumat-doc img {
   color: var(--color-muted);
 }
 
-.dipa-link {
-  display: block;
-  text-decoration: none;
+/* Tiap angka penyerapan kini tautannya sendiri: ke analisis DIPA-nya di
+   dashboard dipantx bila DIPA_DASHBOARD_URL diset, atau ke laporan PDF bila
+   belum. Wadah `.dipa-link` yang dulu membungkus seluruh grid dihapus karena
+   satu tautan tidak bisa punya dua tujuan. */
+a.dipa-item {
+  padding: 6px 4px;
+  border-radius: 12px;
   color: inherit;
+  text-decoration: none;
+  transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
 }
 
-.dipa-link .dipa-item {
-  transition: transform 200ms ease, box-shadow 200ms ease;
-}
-
-.dipa-link:hover .dipa-item,
-.dipa-link:focus-visible .dipa-item {
+a.dipa-item:hover,
+a.dipa-item:focus-visible {
   transform: translateY(-2px);
+  background-color: rgba(29, 39, 48, 0.04);
   box-shadow: 0 8px 18px rgba(29, 39, 48, 0.12);
 }
 
+/* Laporan PDF dipisah jadi aksi sendiri, bukan berbagi tautan dengan angka. */
+.dipa-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.dipa-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  color: var(--color-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.dipa-action:hover,
+.dipa-action:focus-visible {
+  background-color: rgba(29, 39, 48, 0.06);
+  text-decoration: underline;
+}
+
+/* Dipakai hanya pada mode fallback, saat angka masih menaut ke PDF. */
 .dipa-link-hint {
   display: block;
   text-align: center;

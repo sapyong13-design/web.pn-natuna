@@ -321,6 +321,33 @@ MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
 
 ### Konfigurasi (`tools/refresh-dipa.py`)
 - `FOLDER_ID`, `MODULE_ID` (816), `MYSQL_BIN`/`DB_USER`/`DB_NAME` (env var)
+- `DIPA_DASHBOARD_URL` (env var, opsional) — basis URL dashboard **dipantx**, mis. `https://dipa.pn-natuna.go.id`
+
+### Dua tujuan kartu: analisis vs laporan mentah
+
+Kartu punya dua tautan yang sengaja dipisah, karena satu tautan tidak bisa punya dua tujuan:
+
+| Diklik | Tujuan |
+|---|---|
+| Angka penyerapan **DIPA 01** | `{DIPA_DASHBOARD_URL}/detail?tahun=&bulan=&dipa=01` |
+| Angka penyerapan **DIPA 03** | idem, `dipa=03` |
+| Tombol **Laporan PDF ↗** | PDF di Google Drive, tab baru |
+
+`DIPA_DASHBOARD_URL` kosong → kedua angka jatuh ke PDF dan muncul teks *"Klik untuk lihat laporan PDF"*, persis perilaku sebelum 25 Jul 2026. **Tidak ada tautan mati sebelum dashboard benar-benar terpasang.** Kontrak: `tools/test_dipa_widget_links.py`.
+
+**Kartu tidak mengambil datanya dari dipantx, dan jangan diubah supaya begitu.** Keduanya membaca PDF SP2D bulanan yang sama — diverifikasi 25 Jul 2026: kartu dan `metrics.ts` dipantx menghasilkan angka identik sampai rupiah untuk Juni 2026 (DIPA 01 54,96% / pagu Rp 14.335.987.000; DIPA 03 42,46% / pagu Rp 178.354.000). Jadi tidak ada data yang didapat dari menyandarkan kartu ke dashboard, sementara kartu jadi ikut mati bila proses Node mati. dipantx adalah **tujuan detail**, bukan sumber.
+
+Deep link periode lama aman: `rowsForRoute` di `src/app/detail/page.tsx` mengabaikan tahun/bulan yang tidak tersedia dan memilih periode terbaru.
+
+### Prasyarat sebelum dipantx bisa di-deploy ke cPanel
+
+Ketiganya diperiksa 25 Jul 2026 pada checkout `C:/tmp/dipantx` (repo privat `sapyong13-design/dipantx`):
+
+1. **`playwright` ada di `dependencies`, bukan `devDependencies`.** `npm install` di cPanel akan menarik Playwright plus unduhan browser; di shared hosting itu biasanya menabrak kuota disk/inode. Playwright hanya dipakai `scripts/myintress-login.ts` — pindahkan ke `devDependencies` dulu.
+2. **Tidak bisa di-export statis.** `src/app/myintress/actions.ts` memakai `'use server'` dan `page.tsx`-nya `dynamic = 'force-dynamic'`; keduanya memblokir `output: 'export'`. Jadi wajib ada proses Node hidup — tidak ada jalan "build jadi HTML statis lalu taruh di `public_html`".
+3. **`GOOGLE_SHEETS_CSV_URL` masih kosong**, jadi dipantx berjalan dari `data/sample-realisasi.csv` (snapshot Juni 2026 hasil konversi manual). Sampai Sheet itu dirawat bulanan, cron PDF di sini adalah pipeline yang **lebih segar** daripada dashboard.
+
+Belum diverifikasi karena butuh akses cPanel: apakah hosting `pnnatuna` punya **Setup Node.js App**, dan apakah `next build` sanggup jalan dalam batas memori shared hosting.
 
 ### Catatan parsing
 Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`

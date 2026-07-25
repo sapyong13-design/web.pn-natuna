@@ -33,6 +33,10 @@ MYSQL_DEFAULTS_FILE = os.environ.get('MYSQL_DEFAULTS_FILE', '')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
+# Basis URL dashboard dipantx, mis. https://dipa.pn-natuna.go.id
+# Kosong = kartu tetap menaut ke PDF seperti sebelumnya. Kartu tidak pernah
+# bergantung pada dashboard untuk datanya; dashboard hanya tujuan detail.
+DASHBOARD_URL = os.environ.get('DIPA_DASHBOARD_URL', '').rstrip('/')
 # ==========================
 MAX_HTML_BYTES = 2 * 1024 * 1024
 MAX_PDF_BYTES = 25 * 1024 * 1024
@@ -187,35 +191,71 @@ def format_rp(amount):
     return f'Rp {amount:,}'
 
 
-def build_html(data, period_label, file_id=''):
-    """Generate donut chart HTML."""
+def detail_url(unit, year, month):
+    """Deep link ke analisis satu DIPA di dashboard dipantx.
+
+    Kembalikan string kosong bila DIPA_DASHBOARD_URL belum diset - kartu lalu
+    jatuh ke laporan PDF, jadi tidak pernah ada tautan mati sebelum dashboard
+    benar-benar terpasang.
+
+    dipantx mengabaikan tahun/bulan yang tidak tersedia dan memilih periode
+    terbaru (`rowsForRoute` di src/app/detail/page.tsx), jadi tautan periode
+    lama tetap aman - hanya menampilkan data terkini, bukan error.
+    """
+    if not DASHBOARD_URL or not year or not month:
+        return ''
+    return f'{DASHBOARD_URL}/detail?tahun={int(year)}&bulan={int(month)}&dipa={unit}'
+
+
+def build_html(data, period_label, file_id='', year=None, month=None):
+    """Generate donut chart HTML.
+
+    Dua tujuan yang dipisah, sesuai pemakaian: angka penyerapan menuju analisis
+    rinci di dipantx, sedangkan laporan mentahnya menuju PDF di Drive.
+    """
     period_label = html.escape(str(period_label), quote=True)
     colors = {'01': '#1f5b4b', '03': '#8f1f0b'}
     labels = {'01': 'DIPA 01', '03': 'DIPA 03'}
+    gdrive_url = html.escape(
+        f'https://drive.google.com/file/d/{file_id}/view' if file_id else '#', quote=True
+    )
     items = []
     for unit in ['01', '03']:
         if unit not in data:
             continue
         d = data[unit]
         pct_str = f'{d["pct"]:.2f}'.replace('.', ',')
+        target = html.escape(detail_url(unit, year, month), quote=True)
+        if target:
+            href, extra = target, ''
+            title = f'Buka analisis {labels[unit]} periode {period_label}'
+        else:
+            href, extra = gdrive_url, ' target="_blank" rel="noopener"'
+            title = f'Buka laporan PDF {labels[unit]} periode {period_label}'
         items.append(
-            f'<div class="dipa-item">'
-            f'<div class="dipa-ring" style="--pct:{d["pct"]};--dipa-color:{colors[unit]};">'
-            f'<span class="dipa-ring-pct">{pct_str}%</span></div>'
+            f'<a class="dipa-item" href="{href}"{extra} title="{html.escape(title, quote=True)}">'
+            f'<span class="dipa-ring" style="--pct:{d["pct"]};--dipa-color:{colors[unit]};">'
+            f'<span class="dipa-ring-pct">{pct_str}%</span></span>'
             f'<span class="dipa-label">{labels[unit]}</span>'
             f'<span class="dipa-amount">{format_rp(d["pagu"])}</span>'
             f'<span class="dipa-sub">terserap {format_rp(d["realisasi"])}</span>'
+            f'</a>'
+        )
+    if DASHBOARD_URL:
+        footer = (
+            f'<div class="dipa-actions">'
+            f'<a class="dipa-action" href="{gdrive_url}" target="_blank" rel="noopener">'
+            f'Laporan PDF <span aria-hidden="true">&#8599;</span></a>'
             f'</div>'
         )
-    gdrive_url = f'https://drive.google.com/file/d/{file_id}/view' if file_id else '#'
+    else:
+        footer = '<span class="dipa-link-hint">Klik untuk lihat laporan PDF</span>'
     return (
         f'<div class="dipa-widget">'
         f'<div class="dipa-subhead">Realisasi Anggaran DIPA</div>'
         f'<div class="dipa-period">Periode {period_label}</div>'
-        f'<a class="dipa-link" href="{gdrive_url}" target="_blank" rel="noopener" title="Buka laporan PDF">'
         f'<div class="dipa-grid">{"".join(items)}</div>'
-        f'<span class="dipa-link-hint">Klik untuk lihat laporan PDF</span>'
-        f'</a>'
+        f'{footer}'
         f'</div>'
     )
 
@@ -285,7 +325,7 @@ def main():
         period_label = pm.group(1)
 
     print('\n[4/4] Update module Joomla (DB)...')
-    html = build_html(data, period_label, latest['id'])
+    html = build_html(data, period_label, latest['id'], latest.get('year'), latest.get('month'))
     ok, err = update_module_db(html)
     if ok:
         print('      Module updated.')
