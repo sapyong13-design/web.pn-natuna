@@ -22,13 +22,10 @@ required = {
     "dark brand title": "body.is-dark .brand-lockup .brand-title",
     "dark brand address": "body.is-dark .brand-lockup p",
 
-    # Pita berita dan baris Zona Integritas di hero sengaja tidak punya aturan
-    # `body.is-dark`: keduanya duduk di atas alas gelap yang sama di kedua mode,
-    # jadi warnanya dipatok sekali. Kontraknya memastikan alas itu tetap ada -
-    # tanpa alas, judul berita jatuh di atas dinding gedung yang terang.
-    "hero footbar surface": ".hero-footbar {",
-    "hero newsbar grid": ".hero-newsbar__list {",
-    "hero pledge row": ".hero-pledge {",
+    # Panel berita hero kembali ke slider tiga slide, jadi kontrak dark mode-nya
+    # ikut kembali ke selektor panel itu.
+    "news tabs": "body.is-dark .hero-news-panel .hero-tabs button",
+    "news list items": "body.is-dark .hero-news-panel .hero-tab-list a",
     "profile fact gradients": "body.is-dark .sejarah-fact-grid > div",
     "mission card gradients": "body.is-dark .visimisi-mission-grid article",
     "AMPUH dark accents": "body.is-dark .ampuh-directory",

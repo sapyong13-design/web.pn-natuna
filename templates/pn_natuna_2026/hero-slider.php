@@ -195,6 +195,33 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
     <?php
 }
 
+function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel, bool $active): void
+{
+    ?>
+    <ul id="hero-panel-<?php echo $panel; ?>" class="hero-tab-list<?php echo $active ? ' is-active' : ''; ?>" data-hero-panel="<?php echo $panel; ?>" role="tabpanel" aria-labelledby="hero-tab-<?php echo $panel; ?>" <?php echo $active ? '' : 'hidden'; ?>>
+      <?php if ($items) : foreach ($items as $item) : ?>
+        <li>
+          <a href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($item, $catId), ENT_QUOTES, 'UTF-8'); ?>"
+             data-image="<?php echo htmlspecialchars(pn_natuna_hero_article_image($item), ENT_QUOTES, 'UTF-8'); ?>"
+             data-caption="<?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>">
+            <time><?php echo pn_natuna_hero_date($item->created); ?></time>
+            <span class="hero-item-body">
+              <span class="hero-item-title">
+                <?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>
+                <?php if (pn_natuna_hero_is_new($item->created)) : ?><span class="hero-badge-new">Baru</span><?php endif; ?>
+              </span>
+              <?php $excerpt = pn_natuna_hero_excerpt($item->introtext ?? ''); ?>
+              <em class="hero-item-excerpt"><?php echo $excerpt; ?></em>
+            </span>
+          </a>
+        </li>
+      <?php endforeach; else : ?>
+        <li class="hero-tab-empty"><a href="/berita-dan-pengumuman">Belum ada data terbaru &mdash; lihat arsip</a></li>
+      <?php endif; ?>
+    </ul>
+    <?php
+}
+
 /** Jumlah agenda sidang hari ini dari cache SIPP; 0 bila cache belum tersedia. */
 function pn_natuna_hero_agenda_today(): int
 {
@@ -255,36 +282,30 @@ function pn_natuna_hero_survey_scores(): array
     return $scores;
 }
 
-/**
- * Hero beranda: satu komposisi statis, tanpa rotasi.
- *
- * Susunannya tiga lapis vertikal, bukan kartu melayang di atas foto:
- * panggung foto dengan sambutan di kiri, lalu pita berita selebar layar, lalu
- * satu baris Zona Integritas. Kartu melayang membuat foto tertutup dari dua
- * sisi dan terlihat seperti panel admin yang ditempel; pita memberi berita
- * ruang selebar halaman dan membiarkan gedung tetap terlihat utuh.
- */
 function pn_natuna_render_hero_slider(): void
 {
-    $berita = pn_natuna_hero_latest_articles(12, 3);
+    $berita = pn_natuna_hero_latest_articles(12, 4);
+    $pengumuman = pn_natuna_hero_latest_articles(13, 4);
 
     $agendaToday = pn_natuna_hero_agenda_today();
     $surveyScores = pn_natuna_hero_survey_scores();
-
+    $previewImg = $berita ? pn_natuna_hero_article_image($berita[0]) : '/images/sejarah/sejarah-pn-natuna.jpg';
+    $previewCaption = $berita ? $berita[0]->title : 'Berita Pengadilan Negeri Natuna';
     ?>
-    <div class="hero-cinema hero-stack">
+    <div class="hero-slider hero-cinema" data-interval="7000">
       <div class="hero-backdrop" aria-hidden="true">
         <span class="hero-backdrop-image"><img src="/images/hero/gedung-pn-natuna-2026-graded.webp" srcset="/images/hero/gedung-pn-natuna-2026-graded-480.webp 480w, /images/hero/gedung-pn-natuna-2026-graded-768.webp 768w, /images/hero/gedung-pn-natuna-2026-graded-1200.webp 1200w, /images/hero/gedung-pn-natuna-2026-graded.webp 1536w" sizes="100vw" alt="" width="1536" height="1024" fetchpriority="high" decoding="async"></span>
       </div>
+      <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna &middot; Ranai, Kepulauan Riau</span>
 
-      <div class="hero-stage">
-        <span class="hero-photo-chip">Gedung Pengadilan Negeri Natuna &middot; Ranai, Kepulauan Riau</span>
-        <div class="hero-copy hero-welcome-copy">
-          <p class="hero-status" id="hero-service-status"></p>
-          <h2>Selamat Datang di<br>Pengadilan Negeri<br>Natuna Kelas II</h2>
-          <p class="hero-intro hero-intro-desktop">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
-          <p class="hero-intro hero-intro-mobile">Urusan Anda bisa diselesaikan daring.<br>Temukan kebutuhan dalam dua langkah.</p>
-          <div class="hero-facts">
+      <div class="hero-slides">
+
+        <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
+          <div class="hero-copy hero-welcome-copy">
+            <p class="hero-status" id="hero-service-status"></p>
+            <h2>Selamat Datang di<br>Pengadilan Negeri<br>Natuna Kelas II</h2>
+            <p class="hero-intro hero-intro-desktop">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
+            <p class="hero-intro hero-intro-mobile">Urusan Anda bisa diselesaikan daring.<br>Temukan kebutuhan dalam dua langkah.</p>
             <div class="hero-service-ribbon" aria-label="Ringkasan agenda dan indeks layanan">
               <p><span>Agenda hari ini</span><strong><?php echo (int) $agendaToday; ?></strong></p>
               <?php foreach ($surveyScores as $score) : ?>
@@ -303,45 +324,45 @@ function pn_natuna_render_hero_slider(): void
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="hero-footbar">
-      <?php if ($berita !== []) : ?>
-        <section class="hero-newsbar" aria-labelledby="hero-newsbar-title">
-          <div class="hero-newsbar__head">
-            <h3 id="hero-newsbar-title">Berita Terkini</h3>
-            <a href="/berita-dan-pengumuman">Semua berita <span aria-hidden="true">&rarr;</span></a>
+        <div class="hero-slide hero-slide-integrity" role="group" aria-label="Tolak Gratifikasi dan Pungutan Liar">
+          <a class="hero-slide-integrity__link" href="/zona-integritas" aria-label="Buka informasi Zona Integritas: Tolak Gratifikasi dan Pungutan Liar">
+            <img class="hero-slide-integrity__image" src="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp" srcset="/images/hero/integritas-tolak-gratifikasi-pungli-2026-480.webp 480w, /images/hero/integritas-tolak-gratifikasi-pungli-2026-768.webp 768w, /images/hero/integritas-tolak-gratifikasi-pungli-2026-1200.webp 1200w, /images/hero/integritas-tolak-gratifikasi-pungli-2026.webp 1672w" sizes="(max-width: 760px) calc(100vw - 32px), 960px" alt="Pengadilan Negeri Natuna Kelas II secara tegas menolak segala bentuk gratifikasi dan pungutan liar" width="1672" height="941" loading="lazy" decoding="async" data-integrity-poster>
+            <span class="hero-slide-integrity__cta">Lihat poster penuh <span aria-hidden="true">↗</span></span>
+          </a>
+        </div>
+
+        <div class="hero-slide hero-slide-news" role="group" aria-label="Berita dan pengumuman terbaru">
+          <div class="hero-copy hero-news-panel">
+            <p class="hero-kicker">Informasi Terkini</p>
+            <h2>Berita &amp; Pengumuman</h2>
+            <div class="hero-tabs" role="tablist" aria-label="Pilih jenis informasi">
+              <button id="hero-tab-berita" type="button" class="is-active" data-hero-tab="berita" role="tab" aria-controls="hero-panel-berita" aria-selected="true" tabindex="0">Berita</button>
+              <button id="hero-tab-pengumuman" type="button" data-hero-tab="pengumuman" role="tab" aria-controls="hero-panel-pengumuman" aria-selected="false" tabindex="-1">Pengumuman</button>
+            </div>
+            <div class="hero-tab-panels">
+            <?php pn_natuna_hero_render_tab_list($berita, 12, 'berita', true); ?>
+            <?php pn_natuna_hero_render_tab_list($pengumuman, 13, 'pengumuman', false); ?>
+            </div>
+            <div class="hero-actions">
+              <a class="is-primary" href="/berita-dan-pengumuman">Lihat Semua Berita &amp; Pengumuman</a>
+            </div>
           </div>
-          <ul class="hero-newsbar__list">
-            <?php foreach ($berita as $item) : ?>
-              <li>
-                <a href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($item, 12), ENT_QUOTES, 'UTF-8'); ?>">
-                  <span class="hero-newsbar__thumb">
-                    <img src="<?php echo htmlspecialchars(pn_natuna_hero_article_image($item), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="800" height="600" loading="lazy" decoding="async">
-                  </span>
-                  <span class="hero-newsbar__copy">
-                    <span class="hero-newsbar__when">
-                      <time><?php echo htmlspecialchars(pn_natuna_hero_date($item->created), ENT_QUOTES, 'UTF-8'); ?></time>
-                      <?php if (pn_natuna_hero_is_new($item->created)) : ?><em>Baru</em><?php endif; ?>
-                    </span>
-                    <span class="hero-newsbar__title"><?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?></span>
-                  </span>
-                </a>
-              </li>
-            <?php endforeach; ?>
-          </ul>
-        </section>
-      <?php endif; ?>
+          <figure class="hero-media hero-news-media">
+            <img id="hero-news-preview" src="<?php echo htmlspecialchars($previewImg, ENT_QUOTES, 'UTF-8'); ?>" alt="Pratinjau berita" width="800" height="600" loading="lazy" decoding="async">
+            <figcaption id="hero-news-caption"><?php echo htmlspecialchars($previewCaption, ENT_QUOTES, 'UTF-8'); ?></figcaption>
+          </figure>
+        </div>
 
-      <div class="hero-pledge">
-        <a class="hero-pledge__body" href="/zona-integritas">
-          <span class="hero-pledge__mark" aria-hidden="true"></span>
-          <span class="hero-pledge__text"><strong>Zona Integritas</strong> &middot; Tolak Gratifikasi &amp; Pungutan Liar</span>
-        </a>
-        <button type="button" class="hero-pledge__poster" data-maklumat-zoom="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp" data-maklumat-label="Pengadilan Negeri Natuna Kelas II secara tegas menolak segala bentuk gratifikasi dan pungutan liar">
-          Lihat poster <span aria-hidden="true">&#8599;</span>
-        </button>
       </div>
+
+      <button type="button" class="hero-nav hero-nav-prev" data-hero-nav="-1" aria-label="Slide sebelumnya">&#8249;</button>
+      <button type="button" class="hero-nav hero-nav-next" data-hero-nav="1" aria-label="Slide berikutnya">&#8250;</button>
+
+      <div class="hero-slider-dots">
+        <button type="button" data-hero-slide="0" class="is-active" aria-label="Slide selamat datang" aria-pressed="true"></button>
+        <button type="button" data-hero-slide="1" aria-label="Slide Tolak Gratifikasi dan Pungutan Liar" aria-pressed="false"></button>
+        <button type="button" data-hero-slide="2" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
       </div>
     </div>
     <?php

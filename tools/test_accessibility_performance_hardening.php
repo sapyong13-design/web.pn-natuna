@@ -3,9 +3,7 @@ $root = dirname(__DIR__);
 $index = file_get_contents($root . '/templates/pn_natuna_2026/index.php');
 $hero = file_get_contents($root . '/templates/pn_natuna_2026/hero-slider.php');
 $js = file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
-// Komentar dibuang: penjelasan di CSS menyebut selektor slider lama, dan itu
-// akan salah terbaca sebagai kontrol slider yang kembali hidup.
-$css = preg_replace('#/\*.*?\*/#s', '', file_get_contents($root . '/templates/pn_natuna_2026/css/template.css'));
+$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) $failures[] = $message;
@@ -19,30 +17,28 @@ $expect(str_contains($index, 'autocomplete="off"'), 'Search input must disable i
 $expect(str_contains($index, 'enterkeyhint="search"'), 'Search input must request a search keyboard action.');
 $expect(str_contains($index, 'posbakum…'), 'Search placeholder must use an ellipsis.');
 
-// Tablist hero dibongkar bersama slider (25 Jul 2026). Yang tersisa untuk
-// diuji: tablist instansi, dan jaminan bahwa slider hero tidak diam-diam balik.
+foreach (['aria-controls="hero-panel-berita"', 'aria-controls="hero-panel-pengumuman"', 'role="tabpanel"', 'aria-labelledby="hero-tab-'] as $needle) {
+    $expect(str_contains($hero, $needle), "Hero tabs missing APG relationship: {$needle}");
+}
 foreach (["'ArrowLeft'", "'ArrowRight'", "'Home'", "'End'"] as $key) {
-    $expect(str_contains($js, $key), "Tablist instansi harus mendukung {$key}.");
+    $expect(substr_count($js, $key) >= 2, "Hero and instansi tabs must support {$key}.");
 }
 $expect(str_contains($js, "t.tabIndex = active ? 0 : -1"), 'Tablists must use roving tabindex.');
 
-foreach (['.hero-slider-dots', '.hero-nav', '.hero-slide'] as $selector) {
-    $expect(!str_contains($css, $selector), "Kontrol slider hero tidak boleh kembali: {$selector}");
-}
-$expect(!str_contains($hero, 'data-hero-slide='), 'Hero harus tetap satu komposisi statis, tanpa dot.');
+$expect((bool) preg_match('/\.hero-slider-dots button[^}]*min-width:\s*44px[^}]*min-height:\s*44px/s', $css), 'Hero dots need 44px hit areas.');
+$expect(str_contains($css, '.hero-slider-dots button::before'), 'Hero dots need a separate visual indicator.');
+$expect((bool) preg_match('/\.hero-slider-dots button\s*\{[^}]*background:\s*transparent/s', $css), 'Hero dot hit areas must stay visually transparent.');
 
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-480.webp 480w'), 'Hero backdrop needs responsive 480w source.');
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-768.webp 768w'), 'Hero backdrop needs responsive 768w source.');
-$expect(str_contains($hero, 'fetchpriority="high"'), 'Active hero backdrop must retain high fetch priority.');
+$expect(str_contains($hero, 'integritas-tolak-gratifikasi-pungli-2026-480.webp 480w'), 'Integrity poster needs responsive 480w source.');
 $expect(!str_contains($js, 'prefetchIntegrityPoster'), 'Secondary hero poster must not be idle-prefetched.');
 $expect(!str_contains($js, 'setupMobileHeroHeight'), 'Hero must not measure every slide at runtime.');
 $expect(!str_contains($css, '--hero-mobile-slide-height'), 'Mobile hero must use intrinsic CSS geometry.');
 
-// Poster Zona Integritas tidak lagi dimuat di hero dalam bentuk apa pun: pada
-// 92px gambarnya tidak terbaca. Sekarang hanya dibuka penuh lewat lightbox.
-$expect(str_contains($hero, 'data-maklumat-zoom="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp"'), 'Poster Zona Integritas harus dibuka lewat lightbox.');
-$expect(!str_contains($hero, 'integritas-tolak-gratifikasi-pungli-2026-480.webp'), 'Hero tidak boleh memuat pratinjau poster kecil lagi.');
-$expect(!preg_match('/<img[^>]*integritas-tolak-gratifikasi[^>]*>/s', $hero), 'Hero tidak boleh memuat aset poster sebagai gambar.');
+$expect(str_contains($hero, 'fetchpriority="high"'), 'Active hero backdrop must retain high fetch priority.');
+$posterTag = preg_match('/<img[^>]*data-integrity-poster[^>]*>/s', $hero, $posterMatch) ? $posterMatch[0] : '';
+$expect($posterTag !== '' && str_contains($posterTag, 'loading="lazy"'), 'Secondary integrity poster must remain lazy loaded.');
 $expect(str_contains($index, 'id="theme-color-meta"'), 'Theme-color meta needs a stable hook.');
 $expect(str_contains($js, 'syncBrowserTheme'), 'Theme changes must synchronize browser chrome.');
 $expect(str_contains($js, 'document.documentElement.style.colorScheme'), 'Theme changes must synchronize native controls.');
