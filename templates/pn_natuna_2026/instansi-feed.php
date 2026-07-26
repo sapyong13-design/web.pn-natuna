@@ -538,6 +538,32 @@ function pn_natuna_instansi_updated_label(): string
     return $jakarta->format('j') . ' ' . $months[(int) $jakarta->format('n')] . ' ' . $jakarta->format('Y') . ', ' . $jakarta->format('H.i') . ' WIB';
 }
 
+/**
+ * Sumber dianggap hidup hanya bila status yang dicatat cron memuat penanda
+ * `live`. Nilai seperti `official-cloudflare-challenge` berarti percobaan
+ * terakhir ditolak dan yang tayang adalah arsip terkurasi, bukan tarikan
+ * langsung — itu wajib dinyatakan, bukan disembunyikan di balik stempel
+ * "Diperbarui".
+ */
+function pn_natuna_instansi_source_is_live(?string $status): bool
+{
+    return is_string($status) && str_contains($status, 'live');
+}
+
+/**
+ * Umur cache dalam jam. Mengembalikan null bila cache tidak ada.
+ */
+function pn_natuna_instansi_cache_age_hours(): ?float
+{
+    $cacheFile = JPATH_ROOT . '/cache/pn_natuna_instansi_feed.json';
+    if (!is_file($cacheFile)) {
+        return null;
+    }
+    $ts = filemtime($cacheFile);
+
+    return $ts ? (time() - $ts) / 3600 : null;
+}
+
 function pn_natuna_render_instansi_feed(): void
 {
     $data = pn_natuna_instansi_load();
@@ -548,6 +574,15 @@ function pn_natuna_render_instansi_feed(): void
     ];
     $renderData = array_intersect_key($data, $meta);
     $updated = pn_natuna_instansi_updated_label();
+
+    // Prinsip Produk 3: pembaruan otomatis harus bisa gagal dengan jujur.
+    // Cron sudah mencatat `_status` per sumber sejak lama; sampai sekarang
+    // renderer tidak pernah membacanya, sehingga arsip terkurasi tayang di
+    // bawah stempel "Diperbarui <jam cron>" seolah baru ditarik.
+    $status = is_array($data['_status'] ?? null) ? $data['_status'] : [];
+    $ageHours = pn_natuna_instansi_cache_age_hours();
+    // Cron berjalan tiap jam; 48 jam berarti runner-nya sendiri sudah berhenti.
+    $cacheStale = $ageHours !== null && $ageHours > 48;
     ?>
     <div class="module-card instansi-news-board instansi-tab-board">
       <div class="instansi-board-head">
@@ -557,7 +592,13 @@ function pn_natuna_render_instansi_feed(): void
           <p class="section-desc">Berita dan pengumuman resmi dari Mahkamah Agung serta pengadilan tingkat banding.</p>
         </div>
         <?php if ($updated !== '') : ?>
-          <span class="instansi-updated">Diperbarui <?php echo htmlspecialchars($updated, ENT_QUOTES, 'UTF-8'); ?></span>
+          <span class="instansi-updated<?php echo $cacheStale ? ' is-stale' : ''; ?>">
+            <?php if ($cacheStale) : ?>
+              Perlu diperbarui &middot; tarikan terakhir <?php echo htmlspecialchars($updated, ENT_QUOTES, 'UTF-8'); ?>
+            <?php else : ?>
+              Diperbarui <?php echo htmlspecialchars($updated, ENT_QUOTES, 'UTF-8'); ?>
+            <?php endif; ?>
+          </span>
         <?php endif; ?>
       </div>
       <div class="instansi-tabbar" role="tablist" aria-label="Pilih instansi peradilan">
@@ -585,7 +626,21 @@ function pn_natuna_render_instansi_feed(): void
         // nama aksesibel. Tanpa ini, outline heading beranda memuat "Berita" 3x
         // dan "Pengumuman" 3x - navigasi lewat heading jadi tidak berguna.
         $panelLabel = $meta[$key]['short'] ?? $instansi['title'];
+        $archived = [];
+        foreach (['news' => 'Berita', 'announcements' => 'Pengumuman'] as $group => $groupLabel) {
+            if (!pn_natuna_instansi_source_is_live($status[$key . '_' . $group] ?? null)) {
+                $archived[] = $groupLabel;
+            }
+        }
         ?>
+        <?php if ($archived !== []) : ?>
+          <p class="instansi-source-note">
+            <?php echo htmlspecialchars(implode(' dan ', $archived), ENT_QUOTES, 'UTF-8'); ?>
+            di bawah berasal dari <strong>arsip terkurasi</strong>, bukan tarikan langsung &mdash;
+            situs sumber tidak dapat dihubungi pada pembaruan terakhir.
+            Buka situs resminya untuk data terkini.
+          </p>
+        <?php endif; ?>
         <div class="instansi-sub-grid">
           <div class="instansi-sub-col">
             <h3>Berita<span class="visually-hidden"> <?php echo htmlspecialchars($panelLabel, ENT_QUOTES, 'UTF-8'); ?></span></h3>

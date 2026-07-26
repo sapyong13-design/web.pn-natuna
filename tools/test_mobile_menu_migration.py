@@ -23,7 +23,11 @@ def check():
 def main():
  mysql(f'DROP DATABASE IF EXISTS {DB}; CREATE DATABASE {DB} CHARACTER SET utf8mb4;')
  try:
-  for t in ('pnn_menu','pnn_extensions','pnn_project_migrations'): mysql(f'CREATE TABLE {DB}.{t} LIKE {SOURCE}.{t}; INSERT INTO {DB}.{t} SELECT * FROM {SOURCE}.{t};')
+  # `pnn_content` wajib ikut disalin: sejak runner mengambil charset/collation
+  # langsung dari `pnn_content.introtext` (perbaikan konflik collation staging),
+  # DB sementara tanpa tabel itu membuat runner berhenti dengan
+  # "content text encoding unavailable" sebelum satu migrasi pun dijalankan.
+  for t in ('pnn_menu','pnn_content','pnn_extensions','pnn_project_migrations'): mysql(f'CREATE TABLE {DB}.{t} LIKE {SOURCE}.{t}; INSERT INTO {DB}.{t} SELECT * FROM {SOURCE}.{t};')
   for migration in MIGRATIONS: mysql(f"DELETE FROM {DB}.pnn_project_migrations WHERE name='{migration.name}'")
   with tempfile.TemporaryDirectory() as td:
    d=Path(td)

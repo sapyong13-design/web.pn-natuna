@@ -268,15 +268,14 @@ function pn_natuna_render_hero_slider(): void
            manual - saat itu pergantian memang hasil tindakan pengguna. -->
       <div class="hero-slides" aria-live="off">
 
-        <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
+        <div class="hero-slide hero-slide-welcome is-active" role="group" aria-label="Selamat datang">
           <div class="hero-copy hero-welcome-copy">
             <!-- Status PTSP pindah ke ribbon operasional di bawah. Satu fakta
                  tidak boleh muncul dua kali dalam hero yang sama. -->
-            <p class="hero-welcome-label">Selamat Datang di</p>
-            <h2>Pengadilan Negeri<br>Natuna Kelas II</h2>
+            <h2><span class="hero-welcome-label">Selamat Datang di</span>Pengadilan Negeri Natuna Kelas II</h2>
             <p class="hero-intro hero-intro-desktop">Memberikan layanan peradilan yang cepat, transparan, dan mudah diakses bagi masyarakat di seluruh wilayah hukum Pengadilan Negeri Natuna.</p>
             <p class="hero-intro hero-intro-mobile">Layanan peradilan yang cepat, transparan, dan mudah diakses di seluruh wilayah hukum Pengadilan Negeri Natuna.</p>
-            <div class="hero-service-ribbon" aria-label="Status operasional pengadilan">
+            <div class="hero-service-ribbon" role="group" aria-label="Status operasional pengadilan">
               <p class="hero-ribbon-status" data-service-status hidden>
                 <span>Status PTSP</span>
                 <strong>Memuat status layanan&hellip;</strong>
@@ -329,15 +328,15 @@ function pn_natuna_render_hero_slider(): void
 
       </div>
 
-      <button type="button" class="hero-nav hero-nav-prev" data-hero-nav="-1" aria-label="Slide sebelumnya">&#8249;</button>
-      <button type="button" class="hero-nav hero-nav-next" data-hero-nav="1" aria-label="Slide berikutnya">&#8250;</button>
-
       <div class="hero-slider-controls">
+        <button type="button" class="hero-nav hero-nav-prev" data-hero-nav="-1" aria-label="Slide sebelumnya">&#8249;</button>
         <div class="hero-slider-dots">
           <button type="button" data-hero-slide="0" class="is-active" aria-label="Slide selamat datang" aria-pressed="true"></button>
           <button type="button" data-hero-slide="1" aria-label="Slide Tolak Gratifikasi dan Pungutan Liar" aria-pressed="false"></button>
           <button type="button" data-hero-slide="2" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
         </div>
+        <button type="button" class="hero-nav hero-nav-next" data-hero-nav="1" aria-label="Slide berikutnya">&#8250;</button>
+        <p class="hero-slider-count" data-hero-count aria-hidden="true">1 dari 3</p>
         <button type="button" class="hero-pause" data-hero-pause aria-pressed="false" aria-label="Jeda pergantian slide otomatis">
           <span class="hero-pause__glyph" aria-hidden="true"></span>
         </button>

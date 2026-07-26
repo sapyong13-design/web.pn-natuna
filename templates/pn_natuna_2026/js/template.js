@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupAccessPanelSemantics();
   setupSearchOverlay();
   setupCarousels();
-  setupInstagramPostSliders();
   setupInstagramCarousels();
+  setupInstagramPostSliders();
   setupLiveClock();
   setupDynamicServiceHours();
   setupBackToTop();
@@ -718,7 +718,22 @@ function setupLiveClock() {
     }
 
     updateClock();
-    setInterval(updateClock, 1000);
+    // Jam berdetak tiap detik selamanya, termasuk saat tab disembunyikan: satu
+    // invalidasi layout per detik yang tidak pernah dilihat siapa pun, dan di
+    // ponsel itu baterai. Detaknya kini berhenti saat tab tak terlihat dan
+    // langsung menyusul begitu kembali, supaya jam tidak pernah tampil basi.
+    let ticker = null;
+    const mulai = () => { if (ticker === null) ticker = window.setInterval(updateClock, 1000); };
+    const henti = () => { if (ticker !== null) { window.clearInterval(ticker); ticker = null; } };
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        henti();
+      } else {
+        updateClock();
+        mulai();
+      }
+    });
+    if (!document.hidden) mulai();
   }
 }
 
@@ -1171,7 +1186,7 @@ function setupSearchOverlay() {
 function initCarousel(root, opts) {
   const slides = Array.from(root.querySelectorAll(opts.slide));
   const dots = Array.from(root.querySelectorAll(opts.dot));
-  const caption = opts.caption ? root.querySelector(opts.caption) : null;
+  // `opts.caption` dicabut bersama carousel survei: satu-satunya pemakainya.
   if (slides.length < 2) return;
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1186,18 +1201,24 @@ function initCarousel(root, opts) {
   let userPaused = false;
   const pauseButton = opts.pause ? root.querySelector(opts.pause) : null;
   const liveRegion = opts.live ? root.querySelector(opts.live) : null;
+  const slideCounter = root.querySelector('[data-hero-count]');
 
+  // Tombol jeda harus melaporkan apakah rotasi BENAR-BENAR berhenti, bukan
+  // hanya apakah pengguna menekan tombolnya. Sebelumnya ia membaca `userPaused`,
+  // sehingga sesudah klik panah/dot rotasi mati permanen lewat `userInteracted`
+  // tetapi tombolnya tetap berkata "Jeda" dengan aria-pressed=false — menawarkan
+  // menjeda sesuatu yang sudah berhenti.
   const syncControls = () => {
-    const autoRunning = !reducedMotion && !userPaused && !userInteracted;
+    const halted = reducedMotion || userPaused || userInteracted;
     if (pauseButton) {
-      pauseButton.setAttribute('aria-pressed', String(userPaused));
-      pauseButton.setAttribute('aria-label', userPaused
+      pauseButton.setAttribute('aria-pressed', String(halted));
+      pauseButton.setAttribute('aria-label', halted
         ? 'Lanjutkan pergantian slide otomatis'
         : 'Jeda pergantian slide otomatis');
     }
     // Mengumumkan tiap 7 detik justru mengganggu; begitu rotasi berhenti,
     // pergantian adalah hasil tindakan pengguna dan layak diumumkan.
-    if (liveRegion) liveRegion.setAttribute('aria-live', autoRunning ? 'off' : 'polite');
+    if (liveRegion) liveRegion.setAttribute('aria-live', halted ? 'polite' : 'off');
   };
 
   const setActive = (index) => {
@@ -1212,7 +1233,7 @@ function initCarousel(root, opts) {
       dot.classList.toggle('is-active', i === activeIndex);
       dot.setAttribute('aria-pressed', String(i === activeIndex));
     });
-    if (caption && slides[activeIndex]) caption.textContent = slides[activeIndex].dataset.label || '';
+    if (slideCounter) slideCounter.textContent = (activeIndex + 1) + ' dari ' + slides.length;
   };
 
   const stop = () => {
@@ -1228,6 +1249,13 @@ function initCarousel(root, opts) {
       setActive(activeIndex + 1);
     }, interval);
   };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stop();
+    } else if (!userPaused && !userInteracted && !reducedMotion) {
+      start();
+    }
+  });
 
   const stopAfterInteraction = () => { userInteracted = true; stop(); syncControls(); };
 
@@ -1284,7 +1312,15 @@ function initCarousel(root, opts) {
 
   root.addEventListener('mouseenter', stop);
   root.addEventListener('mouseleave', () => { if (!userInteracted && !root.matches(':focus-within')) start(); });
+  // `focusin` tanpa pasangan `focusout` mematikan rotasi selamanya begitu fokus
+  // keyboard menyentuh hero. Jeda karena fokus bersifat sementara — sama seperti
+  // hover — dan tidak boleh disamakan dengan jeda yang diminta pengguna.
   root.addEventListener('focusin', stop);
+  root.addEventListener('focusout', () => {
+    window.setTimeout(() => {
+      if (!userInteracted && !root.matches(':focus-within') && !root.matches(':hover')) start();
+    }, 0);
+  });
   setActive(0);
   start();
   syncControls();
@@ -1294,13 +1330,11 @@ function setupCarousels() {
   document.querySelectorAll('.role-carousel').forEach((el) => {
     initCarousel(el, { slide: '.role-slide', dot: '[data-role-slide]', interval: '5000' });
   });
-  document.querySelectorAll('.survey-carousel').forEach((el) => {
-    initCarousel(el, { slide: '.survey-slide', dot: '[data-survey-slide]', caption: '.survey-caption' });
-  });
   document.querySelectorAll('.hero-slider').forEach((el) => {
     initCarousel(el, { slide: '.hero-slide', dot: '[data-hero-slide]', interval: '6000', nav: '[data-hero-nav]', pause: '[data-hero-pause]', live: '.hero-slides' });
   });
 }
+
 
 function setupInstagramCarousels() {
   document.querySelectorAll('[data-instagram-carousel]').forEach((carousel) => {

@@ -12,11 +12,22 @@ if ($css === false) {
 $checks = [
     '@media (min-width: 1921px)' => 'ultra-wide breakpoint is missing',
     'max-width: 1920px' => 'shell maximum width is missing',
-    'margin-inline: auto' => 'shell centering is missing',
     'body.nav-stuck .main-menu' => 'sticky navigation containment is missing',
-    'left: 50%' => 'sticky navigation centered anchor is missing',
     'margin-left: -960px' => 'sticky navigation centered offset is missing',
 ];
+
+$ultrawide = [];
+if (preg_match('/@media \(min-width: 1921px\) \{([\s\S]*)\n\}/', $css, $match)) {
+    $ultrawide = $match[1];
+}
+if (!str_contains($ultrawide, '.site-header,') || !str_contains($ultrawide, '.site-footer {') || !str_contains($ultrawide, 'margin-inline: auto;')) {
+    fwrite(STDERR, "FAIL: ultra-wide shell group must center header through footer.\n");
+    exit(1);
+}
+if (!preg_match('/body\.nav-stuck \.main-menu \{[^}]*left:\s*50%;[^}]*width:\s*1920px;[^}]*margin-left:\s*-960px;/s', $ultrawide)) {
+    fwrite(STDERR, "FAIL: ultra-wide sticky navigation must center its 1920px frame.\n");
+    exit(1);
+}
 
 foreach ($checks as $needle => $message) {
     if (!str_contains($css, $needle)) {

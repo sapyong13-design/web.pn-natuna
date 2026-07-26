@@ -162,47 +162,6 @@ def convert_pdf_to_png(pdf_path, png_path, width):
     return png_path
 
 
-def build_module_content(latest):
-    """Build HTML carousel content untuk Joomla module survey."""
-    # Remote metadata is untrusted even when currently constrained by matching rules.
-    slides = []
-    dots = []
-    first_label = ''
-    for idx, stype in enumerate(SURVEY_TYPES):
-        info = latest.get(stype)
-        if not info:
-            continue
-        img = html.escape(f'/images/surveys/{stype}_TW{info["tw"]}_{info["year"]}.png', quote=True)
-        base = html.escape(str(SURVEY_LABELS.get(stype, stype)), quote=True)
-        tag = html.escape(f'TW{info["tw"]} {info["year"]}', quote=True)
-        full_label = f'{base} &mdash; {tag}'
-        if not first_label:
-            first_label = full_label
-        active = ' is-active' if idx == 0 else ''
-        short = 'IKM' if stype == 'SKM' else stype
-        slides.append(
-            f'<div class="survey-slide{active}" data-label="{full_label}">'
-            f'<a href="{img}" target="_blank" rel="noopener">'
-            f'<img src="{img}" alt="{base} {tag}" loading="lazy"></a>'
-            f'</div>'
-        )
-        dots.append(
-            f'<button type="button" data-survey-slide="{idx}"{active} aria-label="{short}"></button>'
-        )
-    return (
-        '<h2>Indeks Pelayanan Publik</h2>\n'
-        '<div class="survey-carousel" data-interval="5000">\n'
-        '<div class="survey-carousel-viewport">\n'
- + '\n'.join(slides) + '\n'
-        '</div>\n'
-        f'<div class="survey-caption">{first_label}</div>\n'
-        '<div class="survey-carousel-dots">\n'
- + '\n'.join(dots) + '\n'
-        '</div>\n'
-        '</div>'
-    )
-
-
 def run_mysql(sql):
     cmd = [MYSQL_BIN]
     if MYSQL_DEFAULTS_FILE:

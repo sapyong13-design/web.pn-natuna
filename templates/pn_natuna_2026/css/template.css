@@ -499,6 +499,9 @@ body.is-dark .topbar-clock #live-clock-time {
   font-size: var(--step--1);
   font-weight: 700;
 }
+.access-panel-voice-select-wrap[hidden] {
+  display: none;
+}
 
 .access-panel-voice-select {
   width: 100%;
@@ -792,22 +795,23 @@ body.is-dark .access-panel-voice.is-active {
   background: rgba(255, 255, 255, 0.84);
   box-shadow: 0 14px 32px rgba(29, 39, 48, 0.08);
 }
-.header-brand-lockup::after {
-  content: "";
-  position: absolute;
-  top: 14%;
-  bottom: 14%;
-  left: clamp(78px, 7.2vw, 98px);
-  width: 1px;
-  background: rgba(185, 143, 36, 0.3);
-  pointer-events: none;
-}
 .header-brand-lockup .ampuh-certified-link,
 .header-brand-lockup .asn-berakhlak-link { display: grid; place-items: center; flex: 0 0 auto; border: 0; border-radius: 8px; padding: 3px; background: transparent; box-shadow: none; }
 .header-brand-lockup .ampuh-certified-link { width: clamp(62px, 5.8vw, 80px); aspect-ratio: 1; }
 .header-brand-lockup .ampuh-certified-mark { display: block; width: 100%; height: 100%; object-fit: contain; }
 .header-brand-lockup .asn-berakhlak-mark { display: block; width: clamp(170px, 19vw, 280px); max-width: 100%; height: auto; object-fit: contain; }
 .header-brand-lockup .asn-berakhlak-mark--dark { display: none; }
+/* Pemisah dulu pseudo-element absolut dengan `left: clamp(78px, 7.2vw, 98px)`
+   yang dihitung untuk logo AMPUH 62-80px. Override >=1024 mengecilkan logo itu
+   jadi 46-58px tanpa ikut menggeser garisnya, sehingga garis emas mendarat di
+   tengah wordmark BerAKHLAK. Pemisah kini menempel pada badge kedua, jadi ia
+   selalu berada tepat di antara keduanya berapa pun ukuran logonya. Aturan ini
+   wajib berada setelah reset `border: 0` di atas; spesifisitasnya sama. */
+.header-brand-lockup .asn-berakhlak-link {
+  border-left: 1px solid rgba(185, 143, 36, 0.3);
+  border-radius: 0;
+  padding-left: clamp(10px, 1.2vw, 16px);
+}
 .header-brand-lockup a:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
 
 .brand-mark {
@@ -5568,77 +5572,6 @@ body.is-dark .maklumat-doc img {
   line-height: 1.38 !important;
 }
 
-/* === Survey carousel (IKM + IPAK) === */
-.survey-carousel {
-  display: grid;
-  gap: 10px;
-  max-width: 360px;
-  margin-inline: auto;
-}
-
-.survey-carousel-viewport {
-  position: relative;
-  aspect-ratio: 210 / 297;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #fff;
-}
-
-.survey-slide {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 280ms ease;
-}
-
-.survey-slide.is-active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.survey-slide img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.survey-slide a {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.survey-caption {
-  text-align: center;
-  font-size: var(--step--1);
-  font-weight: 700;
-  color: var(--color-ink);
-  line-height: 1.35;
-}
-
-.survey-carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-}
-
-.survey-carousel-dots button {
-  width: 26px;
-  height: 6px;
-  border: 0;
-  border-radius: 999px;
-  background: #d2d8de;
-  cursor: pointer;
-  transition: width 180ms ease, background 180ms ease;
-}
-
-.survey-carousel-dots button.is-active {
-  width: 32px;
-  background: var(--color-primary);
-}
-
 /* === Realisasi Anggaran DIPA (donut) === */
 .dipa-widget {
   display: grid;
@@ -6039,7 +5972,6 @@ body.is-dark .dipa-delta.is-down {
 
 .hero-nav {
   position: absolute;
-  top: 42%;
   z-index: 5;
   display: grid;
   place-items: center;
@@ -6064,8 +5996,6 @@ body.is-dark .dipa-delta.is-down {
   background: #fff;
 }
 
-.hero-nav-prev { left: -8px; }
-.hero-nav-next { right: -8px; }
 
 .hero-slider-dots button {
   position: relative;
@@ -6224,8 +6154,6 @@ body.is-dark .dipa-delta.is-down {
 }
 
 @media (max-width: 900px) {
-  .hero-nav-prev { left: 4px; }
-  .hero-nav-next { right: 4px; }
   .hero-nav { opacity: 0.85; }
 }
 
@@ -7916,10 +7844,6 @@ body.nav-stuck .main-menu {
 }
 
 .home-slider .hero-nav {
-  top: auto;
-  bottom: 22px;
-  width: 42px;
-  height: 42px;
   border-color: rgba(255, 255, 255, 0.32);
   background: rgba(24, 11, 7, 0.58);
   color: #fff;
@@ -7932,14 +7856,6 @@ body.nav-stuck .main-menu {
   border-color: #f3c96b;
 }
 
-.home-slider .hero-nav-prev {
-  left: auto;
-  right: calc(var(--page-padding) + 52px);
-}
-
-.home-slider .hero-nav-next {
-  right: var(--page-padding);
-}
 
 @media (max-width: 900px) {
   .hero.home-slider {
@@ -7963,13 +7879,6 @@ body.nav-stuck .main-menu {
     display: none;
   }
 
-  .home-slider .hero-nav-prev {
-    right: 60px;
-  }
-
-  .home-slider .hero-nav-next {
-    right: var(--page-padding);
-  }
 }
 
 /* --- Link Layanan Cepat: badge ikon seragam --- */
@@ -8448,17 +8357,15 @@ body.nav-stuck .main-menu {
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Slide non-aktif benar-benar disembunyikan (carousel hero/role/survey) --- */
+/* --- Slide non-aktif benar-benar disembunyikan (carousel hero/role) --- */
 .hero-slide,
-.role-slide,
-.survey-slide {
+.role-slide {
   visibility: hidden;
   transition: opacity 320ms ease, visibility 0s linear 320ms;
 }
 
 .hero-slide.is-active,
-.role-slide.is-active,
-.survey-slide.is-active {
+.role-slide.is-active {
   visibility: visible;
   transition: opacity 320ms ease;
 }
@@ -9528,11 +9435,6 @@ a.instagram-follow-standalone {
 
 /* --- Tap target dots di layar sentuh --- */
 @media (pointer: coarse) {
-  .hero-slider-dots button {
-    min-width: 44px;
-    min-height: 44px;
-  }
-
   .hero-slider-dots {
     gap: 4px;
   }
@@ -11530,8 +11432,11 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   background: linear-gradient(90deg, transparent, rgba(226, 185, 79, 0.18), transparent);
 }
 
+/* Tinggi baris grid = slide tertinggi. Poster dibatasi 820px (820 x 941/1672 =
+   461,5px) supaya rasio slide yang sedang tidak dilihat berhenti mendikte
+   komposisi slide sambutan. */
 .hero-cinema .hero-slides {
-  min-height: 440px;
+  min-height: 462px;
   align-items: end;
 }
 
@@ -11548,8 +11453,8 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   position: relative;
   isolation: isolate;
   align-self: end;
-  max-width: 760px;
-  padding: 22px 28px 24px;
+  max-width: 620px;
+  padding: var(--space-6);
 }
 
 /* Bidang tinta lokal mengunci latar di belakang seluruh copy. Scrim foto tetap
@@ -11561,7 +11466,6 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   inset: 0;
   z-index: -1;
   background: #29130f;
-  clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
 }
 
 .hero-cinema .hero-welcome-copy > * {
@@ -11569,16 +11473,19 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   z-index: 1;
 }
 
-/* Preface sambutan sengaja sentence case, tanpa uppercase/tracking lebar. Ia
-   memberi kehangatan sebelum nama lembaga tanpa menjadi eyebrow dekoratif yang
-   sama pada setiap seksi. */
+/* Sapaan adalah eyebrow, bukan headline. Dalam identitas kelembagaan - prasasti,
+   segel, papan nama pengadilan - sapaan tidak pernah sederajat dengan nama.
+   Emas #e2b94f di atas tinta #29130f = 9,45:1. */
 .home-slider .hero-welcome-label {
-  margin: 0 0 8px;
-  color: #e9cdbd;
+  display: block;
+  margin: 0 0 var(--space-3);
+  color: var(--hero-gold);
   font-family: var(--font-body);
   font-size: var(--step--1);
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .home-slider .hero-welcome-copy .hero-kicker {
@@ -11603,11 +11510,6 @@ body.is-dark .transparency-family { color: var(--color-ink); }
    tetapi tidak memenuhi seluruh bidang tinta seperti poster kampanye. Tablet
    dan mobile sudah memakai skala lebih tenang dan tidak ikut aturan ini. */
 @media (min-width: 901px) {
-  .home-slider .hero-welcome-label {
-    margin-bottom: 12px;
-    font-size: var(--step-0);
-    font-weight: 700;
-  }
 
   .home-slider .hero-welcome-copy h2 {
     max-width: 700px;
@@ -11619,9 +11521,9 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 .home-slider .hero-welcome-copy .hero-intro {
-  max-width: 630px;
+  max-width: 52ch;
   margin: 0 0 18px;
-  font-size: clamp(0.93rem, 1.2vw, 1.05rem);
+  font-size: var(--step-1);
   line-height: 1.55;
 }
 
@@ -11674,7 +11576,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 
 .hero-service-ribbon p strong {
   color: var(--hero-ribbon-fg);
-  font-size: var(--step--2);
+  font-size: var(--step--1);
   line-height: 1.3;
   white-space: normal;
 }
@@ -11747,14 +11649,18 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   margin-bottom: 12px;
 }
 
-.home-slider .hero-actions-primary a.is-primary {
-  min-height: 46px;
+/* Kedua tautan diatur bersama: sebelumnya hanya `.is-primary` yang menerima
+   ukuran, sehingga tombol sekunder mewarisi 16px dan tampil 13,6% lebih besar
+   daripada tombol utamanya. */
+.home-slider .hero-actions-primary a {
+  min-height: 48px;
   padding-inline: 22px;
   border-radius: var(--radius);
-  font-size: var(--step--1);
+  font-size: var(--step-0);
+  font-weight: 750;
 }
 
-.home-slider .hero-actions-primary a.is-primary + a.is-primary {
+.home-slider .hero-actions-primary a:not(.is-primary) {
   border-color: rgba(255, 248, 237, 0.76);
   color: var(--hero-cream);
   background: rgba(35, 17, 14, 0.55);
@@ -11774,8 +11680,6 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   letter-spacing: 0.045em;
 }
 .hero-cinema .hero-nav {
-  width: 38px;
-  height: 38px;
   border-color: rgba(226, 185, 79, 0.52);
   background: rgba(35, 17, 14, 0.58);
   color: var(--hero-gold);
@@ -11857,7 +11761,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
       linear-gradient(180deg, rgba(24, 11, 8, 0.2) 12%, rgba(24, 11, 8, 0.9) 78%),
       linear-gradient(90deg, rgba(32, 14, 11, 0.86), rgba(32, 14, 11, 0.2));
   }
-  .hero-cinema .hero-slides { min-height: 610px; }
+  .hero-cinema .hero-slides { min-height: 420px; }
   .hero-cinema .hero-welcome-copy { max-width: 680px; }
   .hero-service-ribbon { flex-wrap: wrap; width: min(620px, 100%); }
   .home-slider .hero-service-ribbon p { flex: 1 1 31%; }
@@ -11886,7 +11790,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   .hero-service-ribbon p strong { font-size: var(--step--2); }
   .home-slider .hero-welcome-copy .hero-status { margin-bottom: 12px; font-size: var(--step--2); }
   .hero-actions-primary { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-  .home-slider .hero-actions-primary a.is-primary { justify-content: center; min-height: 44px; padding: 7px 10px; text-align: center; font-size: var(--step--2); }
+  .home-slider .hero-actions-primary a { justify-content: center; padding: 7px 10px; text-align: center; font-size: var(--step--2); }
   .hero-cinema .hero-slide-news { align-self: start; }
 }
 
@@ -12045,7 +11949,6 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   .hero-actions-primary { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px; }
   .home-slider .hero-actions-primary a { justify-content: center; min-height: 48px; padding: 8px; text-align: center; font-size: var(--step--2); }
   .hero-cinema .hero-slide-news { align-self: start; }
-  .hero-slide-news .hero-media { display: none; }
   .hero-slide-news .hero-copy { min-width: 0; }
   .hero-tab-list li:nth-child(n+4) { display: none; }
 
@@ -13188,7 +13091,7 @@ body.is-dark .app-links a:focus-visible {
 
 @media (min-width: 761px) {
   .home-slider .hero-slide-integrity {
-    width: min(960px, 100%);
+    width: min(820px, 100%);
     margin-inline: auto;
   }
 }
@@ -13348,7 +13251,6 @@ body.is-dark .hero-news-panel :is(.hero-item-title, .hero-item-body) {
   .instansi-tabbar { width: max-content; max-width: 100%; margin-inline: auto; }
   .hero-slider-dots,
   .role-carousel-dots,
-  .survey-carousel-dots,
   .instagram-slider-dots { justify-content: center; }
 
   @media (hover: none) {
@@ -14213,8 +14115,8 @@ body.is-dark .sipp-day-tabs button[aria-selected="false"] b {
   }
 
   .brand-mark {
-    width: clamp(56px, 4.6vw, 68px);
-    height: clamp(56px, 4.6vw, 68px);
+    width: clamp(72px, 6vw, 88px);
+    height: clamp(72px, 6vw, 88px);
   }
 
   .brand-lockup strong {
@@ -14460,17 +14362,228 @@ body.is-dark .sipp-day-tabs button[aria-selected="true"] b {
    desktop hidup di ujung berkas supaya tidak ada breakpoint lama yang diam-diam
    mengembalikan headline 71,7px. */
 @media (min-width: 901px) {
-  .home-slider .hero-welcome-label {
-    margin-bottom: 12px;
-    font-size: var(--step-0);
-    font-weight: 700;
-  }
 
   .home-slider .hero-welcome-copy h2 {
-    max-width: 700px;
+    max-width: 100%;
     font-size: clamp(3.25rem, 4.5vw, 4rem);
     font-weight: 700;
     letter-spacing: -0.035em;
     line-height: 1;
   }
+}
+
+/* ===== HERO EDITORIAL KELEMBAGAAN 2026-07-26 =====
+   Pemilik komposisi hero terakhir. Blok ini menutup enam temuan audit; setiap
+   aturan menyebut angka yang diperbaikinya supaya tidak ada yang dicabut tanpa
+   tahu apa yang dijaganya. Tambalan `translateY(-32px)` sengaja dihapus: begitu
+   poster berhenti merampas 97,6px, copy tidak perlu digeser dari posisi
+   layoutnya sendiri. */
+
+/* Reflow SC 1.4.10. `clamp(3.25rem, ...)` memakai batas bawah berbasis rem,
+   jadi pada zoom teks 200% batas bawah (104px) justru mengalahkan batas atas
+   64px: headline membengkak jadi lima baris dan halaman meluber 32px. `min()`
+   memasang langit-langit absolut yang tidak ikut membesar bersama root. */
+@media (min-width: 901px) {
+  .home-slider .hero-welcome-copy h2 {
+    font-size: clamp(3.25rem, 4.5vw, 4rem);
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-slider .hero-welcome-copy h2 {
+    font-size: clamp(2.2rem, 10.6vw, 3rem);
+    overflow-wrap: break-word;
+  }
+}
+
+/* Kendali rotasi jadi satu rumpun. Sebelumnya panah berdiri sendiri di tepi
+   kanan (x 1215-1311) sementara dot dan jeda di tengah (x 589-733), sehingga
+   urutan fokus melompat 1215px ke kanan lalu balik ke tengah. */
+.home-slider .hero-slider-controls {
+  bottom: 18px;
+  gap: var(--space-2);
+}
+
+.home-slider .hero-cinema .hero-slider-controls .hero-nav {
+  position: static;
+  inset: auto;
+  transform: none;
+}
+
+.home-slider .hero-slider-count {
+  margin: 0;
+  color: var(--hero-cream);
+  font-size: var(--step--2);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px rgba(19, 10, 8, 0.85);
+}
+
+/* SC 1.4.11. Cincin fokus digambar di luar tombol, langsung di atas foto:
+   terukur 1,13-1,73:1 di belakang dot dan panah kanan, dan hanya lolos di
+   belakang tombol jeda karena crop di titik itu kebetulan gelap. Pelat tinta
+   6px mengunci rasio 9,45:1 apa pun crop fotonya. */
+.home-slider .hero-cinema :is(.hero-nav, .hero-pause, .hero-slider-dots button):focus-visible {
+  outline: 3px solid var(--hero-gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px #29130f;
+}
+
+/* `pauseButton.hidden = reducedMotion` dikalahkan `.hero-pause{display:grid}`,
+   sehingga pada reduced-motion tombolnya tetap tampil, berganti label jadi
+   "Lanjutkan", lalu tidak melakukan apa pun karena `start()` return dini. */
+.home-slider .hero-pause[hidden] {
+  display: none;
+}
+
+/* Placeholder status juga mengabaikan `hidden` karena `p{display:grid}`. Kotak
+   tetap dicadangkan (CLS 0,020 dipegang), tapi teks "Memuat status layanan..."
+   berhenti tercat sebelum JS menggantinya. */
+.home-slider .hero-service-ribbon p[hidden] {
+  visibility: hidden;
+}
+
+/* Bar bawah tetap 68px menutupi 63% CTA primer pada 320x568. Ruang bebasnya
+   dinyatakan lewat tinggi viewport, bukan lebar, supaya zoom halaman 200% -
+   yang menghasilkan viewport pendek pada lebar desktop - ikut tertangani. */
+@media (max-width: 760px) {
+  .hero.home-slider {
+    padding-bottom: calc(var(--mobile-bar-height) + var(--space-6));
+  }
+}
+
+/* Pada layar 568px tinggi, bar tetap 68px berdiri di y=498 sementara blok copy
+   berakhir di y=583: CTA primer tertutup 63%. Padding hero tidak bisa
+   menolongnya karena bar mengambang di atas viewport, bukan di alur dokumen -
+   yang harus mengecil adalah bloknya. Pernyataan misi adalah baris paling tidak
+   berkonsekuensi di sana; ribbon status dan tombol tindakan tetap utuh. */
+@media (max-width: 760px) and (max-height: 640px) {
+  .home-slider .hero-welcome-copy .hero-intro {
+    display: none !important;
+  }
+
+  body.is-home .hero-cinema .hero-welcome-copy {
+    padding-block: var(--space-4);
+  }
+}
+
+/* Zoom halaman 200% memberi viewport pendek pada lebar desktop, jadi ruang
+   bebas bar dinyatakan lewat tinggi, bukan lebar. */
+@media (max-height: 620px) {
+  body.is-home .hero.home-slider {
+    padding-bottom: calc(var(--mobile-bar-height) + var(--space-4));
+  }
+}
+
+/* Aturan 7781 menetapkan `.hero-copy` 820px dengan empat kelas, jadi bidang
+   tinta mengabaikan max-width 620px di aturan dasarnya dan menyisakan 162px
+   tinta mati di kanan anak terlebar. 620px adalah lebar ribbon itu sendiri,
+   sehingga tepi kanan akhirnya punya alasan. */
+.home-slider .hero-slide:not(.hero-slide-news) .hero-welcome-copy {
+  max-width: 620px;
+}
+
+/* Panel pratinjau besar seharusnya menghilang di bawah 900px - thumbnail per
+   item mengambil alih di breakpoint itu (13920). Aturan penyembunyiannya
+   terlanjur ditulis di blok max-width:760px, sehingga pada 761-900px keduanya
+   tampil sekaligus dan slide berita menumpuk setinggi 1089px. Karena tinggi
+   baris grid sama dengan slide tertinggi, angka itulah yang mendorong copy
+   sambutan keluar dari viewport pertama pada tablet. */
+@media (max-width: 900px) {
+  .hero-slide-news .hero-news-media {
+    display: none;
+  }
+}
+
+/* Anggaran vertikal desktop. Header sudah memakan 237px, jadi padding hero
+   yang lebih ramping adalah satu-satunya cara rumpun kendali ikut masuk
+   lipatan 768 tanpa memotong isi slide. */
+@media (min-width: 1024px) {
+  .hero.home-slider {
+    padding-top: var(--space-7);
+    padding-bottom: var(--space-6);
+  }
+}
+
+/* `align-items: end` memaku copy sambutan ke dasar track, dan tinggi track
+   ditentukan slide tertinggi - bukan slide yang sedang dilihat. Di 1024 itu
+   menyisakan 95px kosong di atas copy dan mendorong ribbon 44px keluar
+   lipatan. Memusatkan copy di dalam track membagi selisih itu alih-alih
+   menimpakan seluruhnya ke bawah, tanpa transform dan tanpa memindahkan
+   elemen dari posisi layoutnya. */
+@media (min-width: 901px) {
+  .hero-cinema .hero-slide-welcome {
+    align-self: center;
+  }
+}
+
+/* Track mobile mencadangkan 540px demi tinggi yang stabil, tetapi pada layar
+   568px tinggi angka itu sendiri yang mendorong CTA ke belakang bar tetap.
+   420px tetap mencadangkan ruang - tidak ada pengukuran runtime, tidak ada
+   geseran - sambil mengembalikan tombol ke atas bar. */
+@media (max-width: 760px) and (max-height: 640px) {
+  .hero-cinema .hero-slides {
+    min-height: 420px;
+  }
+}
+
+/* Caption gedung duduk di y=746 sementara dasar bidang tinta ada di y=777, jadi
+   teksnya berada di dalam panel dan tepi panel memotongnya tepat di bawah
+   baseline. Ia bukan bagian dari kolom baca - ia keterangan foto - jadi
+   tempatnya di bawah panel, bukan di atasnya. */
+@media (min-width: 901px) {
+  .hero-cinema .hero-photo-chip {
+    bottom: 26px;
+    font-size: var(--step--3);
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Rumpun kendali berada di tengah, caption di kiri. Di 901-1150px keduanya
+   bertemu: pada 1024 tepi kanan caption (353) menembus tepi kiri kendali (335)
+   sebesar 18px dan pitanya juga bertumpuk vertikal. Caption sudah tidak tampil
+   di bawah 900px, jadi ambang itu hanya melebar sampai kendali punya ruang. */
+@media (min-width: 901px) and (max-width: 1150px) {
+  .hero-cinema .hero-photo-chip {
+    display: none;
+  }
+}
+
+/* --- Kejujuran sumber feed instansi 2026-07-26 ---------------------------
+   Cron mencatat `_status` per sumber sejak awal, tetapi renderer tidak pernah
+   membacanya: arsip terkurasi tayang di bawah stempel "Diperbarui <jam cron>"
+   seolah baru ditarik. Prinsip Produk 3 menuntut pembaruan otomatis gagal
+   dengan jujur, jadi keadaan itu sekarang dinyatakan. Nadanya peringatan yang
+   tenang, bukan galat: datanya tetap sahih, hanya bukan yang terbaru. */
+.instansi-source-note {
+  margin: 0 0 var(--space-4);
+  border-left: 3px solid var(--color-accent);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+.instansi-source-note strong {
+  font-weight: 800;
+}
+
+/* Kesegaran cache dinyatakan dengan kosakata yang sama dengan ribbon SIPP
+   ("Perlu diperbarui") supaya pembaca menemukan satu bahasa, bukan dua. */
+.instansi-updated.is-stale {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+body.is-dark .instansi-source-note {
+  border-left-color: #f2c95d;
+  background: rgba(242, 201, 93, 0.1);
+  color: var(--dark-content-text);
+}
+
+body.is-dark .instansi-updated.is-stale {
+  color: #f5d884;
 }

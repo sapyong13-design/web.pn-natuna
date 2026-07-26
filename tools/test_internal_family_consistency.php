@@ -7,11 +7,11 @@ $profileMigration = (string) file_get_contents(__DIR__ . '/../database/migration
 $jurisdictionMarkup = (string) file_get_contents(__DIR__ . '/jurisdiction-service-style.html');
 $jurisdictionMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260715_jurisdiction_service_style.sql');
 $headerBadgeMarkup = (string) file_get_contents(__DIR__ . '/header-brand-badges.html');
-$headerBadgeMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260725_dark_header_brand_badges.sql');
+$brandAssetMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260824_optimize_brand_logo_assets.sql');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void { if (!$condition) $failures[] = $message; };
 $expect(str_contains($css, 'body.access-underline-links .main-menu a'), 'Main navigation needs a dedicated underline-mode override.');
-$expect(str_contains($css, 'text-decoration: none !important'), 'Main navigation must disable per-line underline in accessibility mode.');
+$expect((bool) preg_match('/body\.access-underline-links \.main-menu a\s*\{[^}]*text-decoration:\s*none !important;/s', $css), 'Main navigation must disable per-line underline in accessibility mode.');
 $expect(str_contains($css, '@media (min-width: 901px)') && str_contains($css, 'box-shadow: none !important'), 'Desktop underline mode must use block highlight without extra rules.');
 $expect(str_contains($css, '@media (max-width: 900px)') && str_contains($css, 'box-shadow: inset 3px 0 var(--color-accent)'), 'Mobile drawer must retain one vertical accessibility indicator.');
 $expect(str_contains($css, 'body.access-links-highlight .main-menu a:not(:focus-visible)'), 'Main navigation must suppress persistent link boxes while retaining keyboard focus.');
@@ -51,20 +51,31 @@ if (!empty($jurisdictionHex[1])) {
 }
 $expect(!str_contains($jurisdictionMarkup, 'mencakup Kabupaten Natuna'), 'Jurisdiction copy must not assert an unverified single-regency scope.');
 $expect(str_contains($jurisdictionMarkup, 'Kabupaten Natuna dan Kabupaten Kepulauan Anambas') && str_contains($jurisdictionMarkup, 'sedang diverifikasi'), 'Jurisdiction copy must clearly mark both regencies as under verification.');
-$expect(strpos($headerBadgeMarkup, 'logo-ampuh-certified.png') < strpos($headerBadgeMarkup, 'logo-asn-berakhlak.png'), 'AMPUH badge must sit left of BerAKHLAK.');
+$expect(strpos($headerBadgeMarkup, 'logo-ampuh-certified.webp') < strpos($headerBadgeMarkup, 'logo-asn-berakhlak.webp'), 'AMPUH badge must sit left of BerAKHLAK.');
 $expect(str_contains($headerBadgeMarkup, 'class="ampuh-certified-mark"'), 'AMPUH badge needs its own size class.');
-$expect(str_contains($headerBadgeMarkup, 'logo-asn-berakhlak-dark.png'), 'BerAKHLAK badge needs a dedicated dark-mode raster.');
+// Migrasi 20260725 menyimpan snapshot PNG historis. Payload DB aktif adalah
+// hasil tepat snapshot itu setelah semua substitusi asset migrasi 20260824.
+// Jadi fixture tetap byte-identik dengan database, namun tidak mengabadikan PNG.
+$expect(str_contains($headerBadgeMarkup, 'logo-asn-berakhlak-dark.webp'), 'BerAKHLAK badge needs the current dedicated dark-mode WebP raster.');
 $expect(str_contains($headerBadgeMarkup, 'asn-berakhlak-mark--light') && str_contains($headerBadgeMarkup, 'asn-berakhlak-mark--dark'), 'Header markup must render switchable BerAKHLAK variants.');
-$expect(is_file(dirname(__DIR__) . '/images/brand/logo-asn-berakhlak-dark.png'), 'Dark BerAKHLAK raster must exist.');
-$expect((bool) preg_match('/content=CONVERT\\(0x([0-9a-f]+) USING utf8mb4\\)/', $headerBadgeMigration, $headerBadgeHex), 'Header badge migration must contain UTF-8 hex markup.');
-if (!empty($headerBadgeHex[1])) {
-    $expect(hex2bin($headerBadgeHex[1]) === rtrim($headerBadgeMarkup, "\r\n"), 'Header badge migration payload must match readable source.');
-}
+$expect(is_file(dirname(__DIR__) . '/images/brand/logo-asn-berakhlak-dark.webp'), 'Current dark BerAKHLAK WebP raster must exist.');
+$expect(str_contains($brandAssetMigration, "'logo-asn-berakhlak-dark.png', 'logo-asn-berakhlak-dark.webp'"), 'Brand asset migration must promote the dark badge from PNG to WebP.');
+$expect(!str_contains($headerBadgeMarkup, '.png'), 'Header fixture must not retain retired PNG badge assets.');
+$headerBadgeMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260725_dark_header_brand_badges.sql');
+$expect((bool) preg_match('/content=CONVERT\\(0x([0-9a-f]+) USING utf8mb4\\)/', $headerBadgeMigration, $headerBadgeHex), 'Header badge baseline migration must contain UTF-8 hex markup.');
+$expectedHeaderBadgeMarkup = !empty($headerBadgeHex[1]) ? str_replace(['logo-pn-natuna.png', 'logo-ampuh-certified.png', 'logo-asn-berakhlak-dark.png', 'logo-asn-berakhlak.png'], ['logo-pn-natuna.webp', 'logo-ampuh-certified.webp', 'logo-asn-berakhlak-dark.webp', 'logo-asn-berakhlak.webp'], hex2bin($headerBadgeHex[1])) : '';
+$expect($expectedHeaderBadgeMarkup === rtrim($headerBadgeMarkup, "\r\n"), 'Header fixture must exactly match the baseline payload after the current brand-asset migration.');
 $expect(str_contains($article, "'Visi & Misi'"), 'Profile submenu needs concise labels.');
 $expect((bool) preg_match('/introtext=CONVERT\\(0x([0-9a-f]+) USING utf8mb4\\)/', $profileMigration, $profileHex), 'Profile migration must contain UTF-8 hex markup.');
 $expect(str_contains($headerBadgeMarkup, 'header-brand-lockup'), 'AMPUH and BerAKHLAK must share one lockup container.');
 $expect((bool) preg_match('/\\.header-brand-lockup \\{[^}]*display: flex;/s', $css), 'Blended header lockup must use one flex surface.');
-$expect(str_contains($css, '.header-brand-lockup::after'), 'Blended header lockup needs a visual divider.');
+// Pemisah dulu pseudo-element absolut ber-`left` hardcoded, dan asersi ini
+// mengunci mekanismenya. Posisi itu dihitung untuk logo AMPUH 62-80px lalu
+// meleset ke tengah wordmark BerAKHLAK setelah override >=1024 mengecilkan logo
+// jadi 46-58px. Yang wajib dijaga adalah ADANYA pemisah di antara kedua badge,
+// bukan cara menggambarnya; implementasi sekarang memakai border pada badge
+// kedua sehingga posisinya mengikuti ukuran tetangganya.
+$expect((bool) preg_match('/\.header-brand-lockup(::after|[^{]*\.asn-berakhlak-link)\s*\{[^}]*border-left:\s*1px solid|\.header-brand-lockup::after/s', $css), 'Blended header lockup needs a visual divider between both badges.');
 $expect((bool) preg_match('/body\.is-dark \.court-brand-badges\.header-brand-lockup\s*\{[^}]*background:\s*#222d35/s', $css), 'Dark header badge plate must use a dark surface.');
 $expect((bool) preg_match('/body\.is-dark \.asn-berakhlak-mark--light\s*\{[^}]*display:\s*none/s', $css), 'Dark mode must hide the light BerAKHLAK raster.');
 $expect((bool) preg_match('/body\.is-dark \.asn-berakhlak-mark--dark\s*\{[^}]*display:\s*block/s', $css), 'Dark mode must reveal the dark BerAKHLAK raster.');

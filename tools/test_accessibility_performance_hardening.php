@@ -67,8 +67,17 @@ $expect((bool) preg_match('/\.home-slider \.hero-pause\s*\{[^}]*width:\s*44px;[^
 
 // aria-live "off" selama rotasi otomatis supaya pembaca layar tidak
 // diinterupsi tiap 7 detik, "polite" begitu kendali berpindah ke pengguna.
+//
+// Asersi kedua dulu mencocokkan potongan sumber `autoRunning ? 'off' : 'polite'`
+// secara harfiah, sehingga ia menjaga NAMA VARIABEL dan bukan perilakunya. Yang
+// benar-benar wajib dijaga: status tombol jeda dan aria-live harus ikut berhenti
+// ketika rotasi berhenti karena interaksi (`userInteracted`), bukan hanya ketika
+// pengguna menekan tombol jeda (`userPaused`). Pernah gagal: sesudah klik panah
+// rotasi mati permanen sementara tombolnya tetap menawarkan "Jeda".
 $expect((bool) preg_match('/class="hero-slides"[^>]*aria-live="off"/s', $hero), 'Wadah slide wajib punya hook aria-live.');
-$expect(str_contains($js, "liveRegion.setAttribute('aria-live', autoRunning ? 'off' : 'polite')"), 'aria-live wajib mengikuti status rotasi.');
+$expect((bool) preg_match('/reducedMotion\s*\|\|\s*userPaused\s*\|\|\s*userInteracted/', $js), 'Status jeda hero wajib memperhitungkan rotasi yang berhenti karena interaksi, bukan hanya tombol jeda.');
+$expect((bool) preg_match("/liveRegion\\.setAttribute\\('aria-live'/", $js), 'aria-live wajib mengikuti status rotasi.');
+$expect((bool) preg_match("/addEventListener\\('focusout'/", $js), 'Jeda karena fokus keyboard wajib punya pasangan lepas; tanpa itu rotasi mati permanen.');
 
 // --- Kartu berita hero -----------------------------------------------------
 $expect((bool) preg_match('/\.home-slider \.hero-tabs button\s*\{[^}]*min-height:\s*44px/s', $css), 'Tab Berita/Pengumuman wajib 44px.');
@@ -194,10 +203,14 @@ $expect(str_contains($hero, 'class="hero-welcome-label">Selamat Datang di'), 'He
 $expect(str_contains($hero, 'seluruh wilayah hukum Pengadilan Negeri Natuna'), 'Copy hero wajib mencakup seluruh wilayah hukum, bukan hanya Kabupaten Natuna.');
 $expect(!str_contains($hero, 'Melayani masyarakat pencari keadilan di Kabupaten Natuna'), 'Copy hero lama yang mempersempit wilayah wajib dihapus.');
 $expect((bool) preg_match('/@media \(max-width:\s*560px\).*?\.hero-intro-desktop\s*\{\s*display:\s*none\s*!important/s', $css), 'Mobile wajib menampilkan satu varian intro, bukan desktop dan mobile sekaligus.');
-// Proporsi masthead desktop. Headline 71,7px dengan label 14px menghasilkan
-// rasio 1:5,1 dan memenuhi bidang tinta seperti poster. Putusan editorial:
-// label 16px, headline maksimum 64px, bobot 700, line-height 1.
-$expect((bool) preg_match('/@media \(min-width:\s*901px\).*?\.hero-welcome-label\s*\{[^}]*font-size:\s*var\(--step-0\)/s', $css), 'Label sambutan desktop wajib satu langkah lebih besar dari meta biasa.');
+// Proporsi masthead desktop. Sapaan pernah disetel setara headline (61,47px),
+// yang membuatnya memakan 33,4% massa blok judul dan mendorong nama lembaga ke
+// baris dua. Dalam identitas kelembagaan sapaan tidak pernah sederajat dengan
+// nama: ia kembali menjadi eyebrow emas kapital di bawah ukuran teks isi,
+// sementara headline memegang skala inskripsi 52-64px.
+$expect((bool) preg_match('/\.home-slider \.hero-welcome-label\s*\{[^}]*font-size:\s*var\(--step--1\)[^}]*text-transform:\s*uppercase/s', $css), 'Sapaan hero wajib tetap eyebrow kecil kapital, bukan baris headline.');
+$expect((bool) preg_match('/\.home-slider \.hero-welcome-label\s*\{[^}]*color:\s*var\(--hero-gold\)/s', $css), 'Eyebrow sambutan wajib memakai emas hero yang kontrasnya terukur di atas tinta.');
+$expect(!preg_match('/\.home-slider \.hero-welcome-label\s*\{[^}]*font:\s*inherit/s', $css), 'Sapaan hero tidak boleh mewarisi skala display headline.');
 $expect((bool) preg_match('/@media \(min-width:\s*901px\).*?\.hero-welcome-copy h2\s*\{[^}]*font-size:\s*clamp\(3\.25rem,\s*4\.5vw,\s*4rem\)[^}]*font-weight:\s*700[^}]*line-height:\s*1/s', $css), 'Masthead desktop wajib memakai skala editorial 52-64px, bobot 700, line-height 1.');
 
 if ($failures) {

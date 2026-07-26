@@ -18,6 +18,61 @@ Options -Indexes
 	</IfModule>
 </FilesMatch>
 
+## --- Kompresi dan cache aset statis ---------------------------------------
+## Aset template disajikan langsung oleh Apache, di luar jangkauan `$gzip` di
+## configuration.php yang hanya memampatkan keluaran HTML dari PHP. Tanpa blok
+## ini `templates/pn_natuna_2026/css/template.css` dikirim 387 KB mentah kepada
+## setiap pengunjung; terkompresi menjadi sekitar 71 KB. Untuk pengguna di
+## wilayah kepulauan dengan koneksi tidak stabil, selisih itu bukan angka
+## teknis.
+##
+## Cache panjang aman karena index.php menempelkan `?v=filemtime` pada CSS/JS
+## dan tools/deploy-cpanel.py menyalin dengan shutil.copy2 yang mempertahankan
+## mtime sumber, sehingga nilai buster berubah tepat ketika isi berkas berubah.
+## `AddOutputFilterByType` disediakan mod_filter, BUKAN mod_deflate. Menjaga
+## blok ini hanya dengan `<IfModule mod_deflate.c>` membuat seluruh situs
+## membalas 500 pada host yang memuat deflate tanpa filter — sudah terbukti di
+## Apache 2.4.66 lokal. Kedua modul wajib disyaratkan bersarang.
+<IfModule mod_filter.c>
+	<IfModule mod_deflate.c>
+		AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+		AddOutputFilterByType DEFLATE application/javascript application/x-javascript text/javascript
+		AddOutputFilterByType DEFLATE application/json application/xml application/rss+xml
+		AddOutputFilterByType DEFLATE image/svg+xml application/vnd.ms-fontobject
+	</IfModule>
+	<IfModule mod_brotli.c>
+		AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
+		AddOutputFilterByType BROTLI_COMPRESS application/javascript text/javascript
+		AddOutputFilterByType BROTLI_COMPRESS application/json application/xml image/svg+xml
+	</IfModule>
+</IfModule>
+<IfModule mod_setenvif.c>
+	## WebP, JPEG, PNG, dan WOFF2 sudah terkompresi di dalam formatnya sendiri;
+	## memampatkan ulang hanya membakar CPU tanpa mengurangi byte.
+	SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|avif|ico|zip|gz|woff2?)$ no-gzip dont-vary
+</IfModule>
+<IfModule mod_expires.c>
+	ExpiresActive On
+	## CSS/JS memakai cache-buster, tetapi 30 hari dipilih alih-alih satu tahun
+	## supaya kekeliruan deploy dapat pulih sendiri tanpa meminta pengunjung
+	## membersihkan cache.
+	ExpiresByType text/css "access plus 30 days"
+	ExpiresByType text/javascript "access plus 30 days"
+	ExpiresByType application/javascript "access plus 30 days"
+	## Nama berkas gambar dan font berubah ketika isinya diganti.
+	ExpiresByType font/woff2 "access plus 1 year"
+	ExpiresByType font/woff "access plus 1 year"
+	ExpiresByType image/webp "access plus 1 year"
+	ExpiresByType image/avif "access plus 1 year"
+	ExpiresByType image/jpeg "access plus 1 year"
+	ExpiresByType image/png "access plus 1 year"
+	ExpiresByType image/svg+xml "access plus 1 year"
+	ExpiresByType image/x-icon "access plus 1 year"
+	## HTML tidak pernah di-cache: jadwal sidang, status PTSP, dan berita
+	## berubah tanpa mengubah URL-nya.
+	ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
 <IfModule mod_authz_core.c>
 	<FilesMatch "(^\.|configuration\.php$|(?:^|\.)(?:env|ini|log|sql|sqlite|dump|bak|backup|old|orig|save|swp|pem|key|p12|pfx)(?:\.|$)|(?:composer|package)-lock\.json$|composer\.json$)">
 		Require all denied

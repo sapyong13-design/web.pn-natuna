@@ -58,6 +58,32 @@ if (!str_contains($source, 'array_intersect_key($data, $meta)')) {
     exit(1);
 }
 $fallback = pn_natuna_instansi_fallback();
-assertSameValue('/images/brand/logo-badilum.png', $fallback['badilum']['logo'] ?? null, 'Badilum fallback must use the Badilum logo.');
+// Aset dipindahkan ke WebP pada optimasi bobot 25 Jul 2026 (916 KB -> 3,4 KB);
+// kontrak ini tertinggal memakai .png dan sudah merah sejak saat itu tanpa
+// terlihat, karena runner harian hanya memindai `tools/test_*.php` sementara
+// berkas ini bernama `test-instansi-feed.php` dengan tanda hubung.
+assertSameValue('/images/brand/logo-badilum.webp', $fallback['badilum']['logo'] ?? null, 'Badilum fallback must use the Badilum logo.');
+assertSameValue(true, is_file(dirname(__DIR__) . '/images/brand/logo-badilum.webp'), 'Aset logo Badilum yang dirujuk wajib ada di disk.');
+
+// Prinsip Produk 3: pembaruan otomatis wajib gagal dengan jujur. Cron sudah
+// mencatat `_status` per sumber sejak awal, tetapi renderer tidak pernah
+// membacanya, sehingga arsip terkurasi tayang di bawah stempel
+// "Diperbarui <jam cron>" seolah baru ditarik. Kontrak ini menjaga sambungan
+// itu tetap ada, bukan menjaga kata-katanya.
+assertSameValue(true, pn_natuna_instansi_source_is_live('live-rss'), 'RSS langsung wajib terbaca sebagai sumber hidup.');
+assertSameValue(true, pn_natuna_instansi_source_is_live('live-google-news-after-official-cloudflare-challenge'), 'Sumber cadangan yang berhasil ditarik tetap sumber hidup.');
+assertSameValue(false, pn_natuna_instansi_source_is_live('official-cloudflare-challenge'), 'Percobaan yang ditolak Cloudflare bukan sumber hidup.');
+assertSameValue(false, pn_natuna_instansi_source_is_live('fallback'), 'Arsip terkurasi bukan sumber hidup.');
+assertSameValue(false, pn_natuna_instansi_source_is_live(null), 'Status yang hilang wajib dianggap tidak hidup, bukan diasumsikan hidup.');
+
+$renderer = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/instansi-feed.php');
+if (!str_contains($renderer, "pn_natuna_instansi_source_is_live(\$status[\$key . '_' . \$group] ?? null)")) {
+    fwrite(STDERR, "FAIL: renderer wajib membaca _status per sumber, bukan hanya waktu tulis cache.\n");
+    exit(1);
+}
+if (!str_contains($renderer, 'instansi-source-note')) {
+    fwrite(STDERR, "FAIL: sumber yang jatuh ke arsip terkurasi wajib dinyatakan kepada pembaca.\n");
+    exit(1);
+}
 
 fwrite(STDOUT, "2 institution feed tests passed.\n");

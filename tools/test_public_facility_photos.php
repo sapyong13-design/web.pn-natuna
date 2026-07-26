@@ -63,9 +63,10 @@ if (is_file($variantMigrationPath)) {
     $expect(!str_contains($variantSql, 'facility-thumb') && !str_contains($variantSql, 'id = 480'), 'Homepage facility gallery must remain untouched.');
 }
 $css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
-foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible', 'body.is-dark .facility-documentary', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'] as $selector) {
+foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible', 'body.is-dark .facility-documentary', '@media (prefers-reduced-motion: reduce)'] as $selector) {
     $expect(str_contains($css, $selector), "Facility documentary CSS is missing {$selector}.");
 }
+$expect((bool) preg_match('/@media \(max-width: 760px\) \{\s*\.content-primary \.facility-documentary__media \{\s*height:\s*200px;/s', $css), 'Mobile documentary rule must cap the facility media at 200px.');
 $expect(str_contains($css, '.facility-documentary--ptsp .facility-documentary__media img') && str_contains($css, 'object-fit: contain;'), 'PTSP mobile crop must preserve all staff.');
 $expect(str_contains($css, '.facility-documentary--disability .facility-documentary__media img') && substr_count($css, 'object-fit: contain;') >= 3, 'Disability photo must use contain framing.');
 $expect(str_contains($css, 'height: clamp(260px, 28vw, 320px);'), 'Desktop documentary height must be capped at 320px.');
