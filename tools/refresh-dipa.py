@@ -29,6 +29,13 @@ import pymupdf
 # ====== KONFIGURASI ======
 FOLDER_ID = '1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV'
 MODULE_ID = 816  # Modul "Kinerja & Akuntabilitas" — blok .dipa-widget di dalamnya yang di-update
+# Satu-satunya penanda blok widget di konten modul. build_html() menulis tag ini
+# dan update_module_db() mencarinya lewat pola yang sama, jadi keduanya tidak
+# bisa berbeda diam-diam. Atribut apa pun setelah class ikut cocok: menambahkan
+# `data-dipa-board` pernah membuat pencocokan literal gagal, dan akibatnya tiap
+# refresh menambah salinan widget alih-alih menggantinya.
+WIDGET_OPEN = '<div class="dipa-widget" data-dipa-board>'
+WIDGET_OPEN_RE = re.compile(r'<div class="dipa-widget"[^>]*>')
 MYSQL_BIN = os.environ.get('MYSQL_BIN', 'mysql')
 MYSQL_DEFAULTS_FILE = os.environ.get('MYSQL_DEFAULTS_FILE', '')
 DB_USER = os.environ.get('DB_USER', 'root')
@@ -368,7 +375,7 @@ def build_html(periods):
             f'{"".join(tabs)}</div>'
         )
     return (
-        f'<div class="dipa-widget" data-dipa-board>'
+        f'{WIDGET_OPEN}'
         f'<div class="dipa-subhead">Realisasi Anggaran DIPA</div>'
         f'{picker}'
         f'<div class="dipa-panels">{"".join(panels)}</div>'
@@ -389,18 +396,27 @@ def run_mysql(sql):
 
 
 def update_module_db(widget_html):
-    """Replace hanya blok <div class="dipa-widget">...</div> di akhir konten modul.
+    """Ganti blok widget DIPA di konten modul; bagian lain jangan disentuh.
 
-    Modul 816 berisi skor SKM/IPAK + widget DIPA; jangan timpa seluruh konten.
+    Modul 816 memuat skor SKM/IPAK lalu widget DIPA sebagai blok terakhir, jadi
+    penggantian dilakukan dengan memotong dari tag pembuka widget sampai ujung
+    konten. Pencocokannya lewat WIDGET_OPEN_RE supaya perubahan atribut pada tag
+    pembuka tidak diam-diam berubah jadi penambahan salinan kedua.
     """
     result = run_mysql(f'SELECT content FROM pnn_modules WHERE id = {MODULE_ID};')
     if result.returncode != 0:
         return False, result.stderr
     current = result.stdout.rstrip('\n').replace('\\n', '\n')
-    if '<div class="dipa-widget">' in current:
-        new_content = re.sub(r'<div class="dipa-widget">.*$', widget_html, current, flags=re.S)
+    found = WIDGET_OPEN_RE.findall(current)
+    if len(found) > 1:
+        return False, (f'Konten modul {MODULE_ID} memuat {len(found)} blok .dipa-widget. '
+                       'Rapikan manual dulu; refresh menolak menebak mana yang benar.')
+    if found:
+        new_content = current[:WIDGET_OPEN_RE.search(current).start()] + widget_html
     else:
         new_content = current + widget_html
+    if len(WIDGET_OPEN_RE.findall(new_content)) != 1:
+        return False, 'Hasil penggantian tidak menyisakan tepat satu blok .dipa-widget.'
     escaped = new_content.replace('\\', '\\\\').replace("'", "\\'")
     result = run_mysql(f"UPDATE pnn_modules SET content = '{escaped}' WHERE id = {MODULE_ID};")
     return result.returncode == 0, result.stderr

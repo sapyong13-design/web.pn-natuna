@@ -112,6 +112,67 @@ expect(rd.build_html([]) == '', 'Tanpa periode yang terparse, widget harus koson
 expect(rd.build_html([{'id': 'X', 'year': 2026, 'month': 6, 'data': {}}]) == '',
        'Periode tanpa data DIPA tidak boleh menghasilkan kartu kosong.')
 
+# --- update_module_db: mengganti, bukan menumpuk -------------------------
+# Modul 816 memuat skor SKM/IPAK lalu widget DIPA. Refresh jalan tiap hari, jadi
+# menjalankannya dua kali wajib menghasilkan konten yang sama persis. Pernah
+# tidak: tag pembuka widget diberi atribut `data-dipa-board`, pencocokan literal
+# di update_module_db meleset, dan tiap refresh menambah satu salinan widget.
+SKM = '<h2>Kinerja</h2><div class="survey-scores">skor SKM dan IPAK</div>'
+
+
+class FakeResult:
+    def __init__(self, stdout='', returncode=0, stderr=''):
+        self.stdout, self.returncode, self.stderr = stdout, returncode, stderr
+
+
+def fake_db(initial):
+    """Ganti run_mysql dengan penyimpan konten di memori."""
+    state = {'content': initial, 'writes': 0}
+
+    def run(sql):
+        if sql.lstrip().upper().startswith('SELECT'):
+            return FakeResult(stdout=state['content'] + '\n')
+        written = re.match(r"UPDATE .*? SET content = '(.*)' WHERE", sql, re.S).group(1)
+        state['content'] = written.replace("\\'", "'")
+        state['writes'] += 1
+        return FakeResult()
+
+    return state, run
+
+
+asli = rd.run_mysql
+try:
+    # Dua kali refresh berturut-turut: satu blok, bukan dua.
+    state, rd.run_mysql = fake_db(SKM + markup)
+    for _ in range(2):
+        ok, err = rd.update_module_db(markup)
+        expect(ok, f'Refresh berulang harus berhasil, dapat {err!r}.')
+    blocks = len(rd.WIDGET_OPEN_RE.findall(state['content']))
+    expect(blocks == 1, f'Refresh dua kali harus menyisakan satu blok widget, dapat {blocks}.')
+    expect(state['content'].startswith(SKM), 'Skor SKM/IPAK di atas widget tidak boleh ikut tertimpa.')
+
+    # Tag pembuka versi lama (tanpa atribut) harus tetap dikenali dan diganti.
+    state, rd.run_mysql = fake_db(SKM + '<div class="dipa-widget">kartu versi lama</div>')
+    ok, _ = rd.update_module_db(markup)
+    expect(ok and len(rd.WIDGET_OPEN_RE.findall(state['content'])) == 1,
+           'Blok widget dengan tag pembuka lama wajib diganti, bukan ditambahi.')
+    expect('kartu versi lama' not in state['content'], 'Sisa markup versi lama harus hilang.')
+
+    # Modul yang belum punya widget: tambahkan sekali.
+    state, rd.run_mysql = fake_db(SKM)
+    rd.update_module_db(markup)
+    expect(len(rd.WIDGET_OPEN_RE.findall(state['content'])) == 1,
+           'Modul tanpa widget harus mendapat tepat satu blok.')
+
+    # Sudah terlanjur dobel: tolak dan jangan menulis apa pun.
+    state, rd.run_mysql = fake_db(SKM + markup + markup)
+    ok, err = rd.update_module_db(markup)
+    expect(not ok, 'Konten yang sudah memuat dua blok widget harus ditolak, bukan ditebak.')
+    expect(state['writes'] == 0, 'Penolakan tidak boleh menyentuh database.')
+    expect('2 blok' in err, f'Pesan galat harus menyebut jumlah blok yang ditemukan, dapat {err!r}.')
+finally:
+    rd.run_mysql = asli
+
 if failures:
     sys.stderr.write('\n'.join(failures) + '\n')
     raise SystemExit(1)

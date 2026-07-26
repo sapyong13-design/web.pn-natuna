@@ -299,15 +299,17 @@ menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi, dengan
 
 ### Sumber data
 - Folder Google Drive (public): `1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV`
-- Naming: `{Laporan Realisasi/LRA} DIPA ... {Bulan} {Tahun}.pdf`
+- Penamaan berkas **tidak konsisten** dan tidak bisa dipercaya. Folder per Juli 2026 berisi `Laporan Realisasi Anggaran DIPA 01 dan 03 Juni 2026.pdf`, `Realisasi DIPA 01 Mei 2026.pdf`, dan `LRA DIPA 01 dan 03 Maret 2026.pdf`. Berkas Mei yang namanya hanya menyebut "DIPA 01" ternyata memuat **kedua** unit organisasi — pagu DIPA 03-nya `178.354.000`, sama persis dengan bulan lain. Jadi isi PDF yang menentukan, bukan namanya.
 
 ### Cara kerja `tools/refresh-dipa.py`
 1. List file folder Gdrive via `embeddedfolderview`.
-2. `collect_periods()` mengambil **semua** bulan yang ada, satu berkas per bulan (laporan gabungan `01 dan 03` menang karena hanya berkas itu memuat kedua unit), terbaru lebih dulu, dibatasi `MAX_PERIODS` (12).
+2. `collect_periods()` mengambil **semua** bulan yang ada, satu berkas per bulan, terbaru lebih dulu, dibatasi `MAX_PERIODS` (12). Kalau satu bulan punya beberapa berkas, yang bernama `01 dan 03` dimenangkan — bukan karena hanya itu yang lengkap (lihat catatan penamaan di atas), tapi karena namanya paling eksplisit menjanjikan kedua unit.
 3. `resolve_periods()` mengunduh + parse tiap PDF. **Hasil parse di-cache per file id** di `cache/pn_natuna_dipa_periods.json` (gitignored) — PDF di Drive tidak pernah berubah isinya, jadi cron berikutnya hanya mengunduh bulan yang benar-benar baru. Satu berkas gagal hanya melewati periode itu, tidak menjatuhkan refresh.
 4. `attach_deltas()` menghitung selisih **poin persentase** terhadap periode sebelumnya.
 5. `build_html()` merender tab periode + satu panel per bulan; panel teraktif ditandai `is-active` dari server.
-6. Update hanya blok `.dipa-widget` pada module Joomla aktif (DB id 816); module 817 versi lama yang unpublished.
+6. `update_module_db()` mengganti blok `.dipa-widget` pada modul Joomla aktif (DB id 816); module 817 versi lama yang unpublished. Modul 816 juga memuat skor SKM/IPAK di atas widget, jadi yang diganti hanya potongan dari tag pembuka widget sampai ujung konten.
+
+**Tag pembuka widget adalah kontrak.** `WIDGET_OPEN` ditulis `build_html()` dan dicari `update_module_db()` lewat `WIDGET_OPEN_RE` yang mentoleransi atribut apa pun. Keduanya wajib memakai konstanta itu. Pernah tidak: tag diberi atribut `data-dipa-board` sementara pencocokan masih literal `<div class="dipa-widget">`, sehingga tiap refresh **menambah** satu salinan widget alih-alih menggantinya. Sekarang refresh menolak jalan kalau menemukan lebih dari satu blok, dan memverifikasi hasilnya menyisakan tepat satu. Kontraknya di `tools/test_dipa_periods.py`.
 
 ### Delta: poin persentase, dan pembandingnya periode yang tersedia
 
