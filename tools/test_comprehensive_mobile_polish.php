@@ -28,7 +28,10 @@ $e((bool)preg_match('/\.announcement-showcase__actions\s*\{[^}]*justify-content:
 $e((bool)preg_match('/\.hero-tabs,\s*\.instansi-tabbar\s*\{[^}]*justify-content:\s*center;/s',$css),'Mobile tabs must be centered as action groups.');
 $e(str_contains($css,'.section-action { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; padding: 10px 16px; line-height: 1.2; text-align: center; }'),'Mobile section-action pills must center their content internally.');
 $e(str_contains($css,'scrollbar-width: none'),'Mobile rail scrollbar suppression missing.');
-$e(str_contains($css,'font-size: .68rem'),'Bottom navigation font floor missing.');
+// Lantai tipografi navigasi bawah. Dulu dijepit pada literal .68rem; sekarang
+// diambil dari skala. Yang dijaga adalah label bar bawah memakai langkah kecil
+// yang dinyatakan, bukan angka lepas - dan tidak lebih kecil dari --step--3.
+$e((bool) preg_match('/\.mobile-quick-actions a\s*\{[^}]*font-size:\s*var\(--step--[123]\)/s', $css),'Bottom navigation font floor missing.');
 $e(str_contains($css,'@media (hover: none)'),'Touch active feedback missing.');
 $e(str_contains($css,'font-size: 200%'),'200 percent text zoom guard missing.');
 if($f){fwrite(STDERR,implode(PHP_EOL,$f).PHP_EOL);exit(1);}echo "comprehensive mobile polish contract: ok\n";

@@ -8,6 +8,9 @@
 /administrator/logs/
 /tmp/
 /media/instagram/
+# Live mode Impeccable: config proyek dilacak, state prosesnya tidak.
+# server.json memuat pid, port, dan token sesi.
+/.impeccable/live/server.json
 
 # Production secrets and local environment overrides
 /configuration.php

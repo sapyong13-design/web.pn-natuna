@@ -18,7 +18,10 @@ $expect((bool) preg_match('/\.main-menu-list \.dark-status-on\s*\{[^}]*display:\
 $expect((bool) preg_match('/\.main-menu-list \.dark-toggle\[aria-pressed="true"\] \.dark-status-off\s*\{[^}]*display:\s*none;/s', $css), 'Pressed dark toggle must hide off status.');
 $expect(str_contains($js, 'offStatus.hidden = active'), 'Dark toggle must hide off status through the hidden attribute.');
 $expect(str_contains($js, 'onStatus.hidden = !active'), 'Dark toggle must hide on status through the hidden attribute.');
-$expect((bool) preg_match('/\.main-menu li ul li ul a\s*\{[^}]*font-size:\s*\.78rem;/s', $css), 'Third-level links must use at least .78rem.');
+// Lantai keterbacaan menu level tiga. Dulu .78rem literal (12,48px). Skala kecil
+// --step--2 menghitung ke 12,16px, di bawah lantai itu, jadi level ini wajib
+// memakai --step--1 (14,08px) - bukan langkah yang lebih kecil.
+$expect((bool) preg_match('/\.main-menu li ul li ul a\s*\{[^}]*font-size:\s*var\(--step--1\)/s', $css), 'Third-level links must not fall below the recorded readability floor.');
 $expect((bool) preg_match('/\.mobile-menu-footer\s*\{[^}]*min-height:\s*68px;/s', $css), 'Drawer footer must use compact 68px minimum height.');
 $expect(str_contains($css, '.mobile-menu-summary-link'), 'Summary link styling is missing.');
 $expect((bool) preg_match('/@media \(min-width:\s*761px\).*?\.main-menu > \.main-menu-list \.mobile-menu-scroll > ul > li > ul > li > a\s*\{[^}]*justify-content:\s*flex-start;[^}]*text-align:\s*left/s', $css), 'All desktop submenu links must align left.');

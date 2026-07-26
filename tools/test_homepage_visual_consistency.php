@@ -12,7 +12,9 @@ foreach (['--home-radius-control', '--home-radius-card', '--home-radius-overlay'
 }
 $expect((bool) preg_match('/body\.is-home \.home-juknis-main > \.module-card\s*\{[^}]*border-inline:\s*0;[^}]*border-radius:\s*0;[^}]*box-shadow:\s*none/s', $css), 'Structural homepage modules must use a flat editorial surface.');
 $expect((bool) preg_match('/body\.is-home \.home-juknis-sidebar > \.module-card[^}]*border-radius:\s*var\(--home-radius-card\)/s', $css), 'Interactive sidebar modules need one shared card radius.');
-$expect((bool) preg_match('/body\.is-home \.section-kicker\s*\{[^}]*font-size:\s*\.76rem;[^}]*letter-spacing:\s*\.08em/s', $css), 'Homepage kicker typography must be calmer and more readable.');
+// Kicker beranda memakai langkah kecil dari skala; --step--2 menghitung ke
+// 12,16px, nilai yang sama dengan .76rem literal sebelumnya.
+$expect((bool) preg_match('/body\.is-home \.section-kicker\s*\{[^}]*font-size:\s*var\(--step--2\);[^}]*letter-spacing:\s*\.08em/s', $css), 'Homepage kicker typography must be calmer and more readable.');
 $expect((bool) preg_match('/body\.is-home \.section-desc\s*\{[^}]*max-width:\s*68ch/s', $css), 'Homepage descriptions need a readable line length.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?body\.is-home :is\([^}]*font-size:\s*max\(\.78rem, 14px\)/s', $css), 'Important mobile UI copy needs a 14px floor.');
 $expect((bool) preg_match('/body\.is-home \.module-card\.facility-band\s*\{[^}]*background:\s*#[0-9a-fA-F]{6}/s', $css), 'Facility section must use a committed solid surface instead of layered gradients.');

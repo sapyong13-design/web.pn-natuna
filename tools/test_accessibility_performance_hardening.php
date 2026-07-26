@@ -77,6 +77,70 @@ $expect((bool) preg_match('/@media \(max-width: 900px\).*?\.home-slider \.hero-t
 $expect(!str_contains($hero, 'hero-kicker'), 'Kicker "Informasi Terkini" dihapus: h2 di bawahnya menyatakan hal yang sama.');
 $expect(str_contains($hero, 'mb_strrpos($cut'), 'Kutipan wajib dipotong di batas kata, bukan di tengah kata.');
 
+// --- Beranda: perbaikan editorial (26 Jul 2026) ----------------------------
+// Sembilan perbaikan hasil audit beranda. Yang dikunci di sini adalah hal yang
+// bisa mundur diam-diam: kontras yang gagal di satu tema saja, target sentuh
+// yang lolos karena selektornya tidak pernah diuji, dan jadwal basi yang
+// kembali menyebut dirinya "Hari Ini".
+$sipp = file_get_contents($root . '/templates/pn_natuna_2026/sipp-schedule.php');
+
+// Tanpa reset ini, kontrol form jatuh ke huruf UA: 32 string di beranda
+// dirender Arial, termasuk seluruh tab periode DIPA dan tombol Cari.
+$expect((bool) preg_match('/button,\s*input,\s*select,\s*textarea,\s*optgroup\s*\{[^}]*font:\s*inherit/s', $css), 'Kontrol form wajib mewarisi huruf brand.');
+
+foreach (['--step--2', '--step-0', '--step-4', '--space-4', '--space-8'] as $token) {
+    $expect(str_contains($css, $token . ':'), "Token skala hilang: {$token}");
+}
+
+// Tiga tingkat seksi. Kalau ketiganya kembali sama, halaman kehilangan satu-
+// satunya sinyal spasial bahwa ada seksi yang lebih penting dari seksi lain.
+$gaps = [];
+foreach (['feature', 'standard', 'ancillary'] as $tier) {
+    $found = (bool) preg_match('/--section-gap-' . $tier . ':\s*(\d+)px/', $css, $tierMatch);
+    $expect($found, "Jarak seksi {$tier} hilang.");
+    $gaps[] = $found ? (int) $tierMatch[1] : 0;
+}
+$expect($gaps[0] > $gaps[1] && $gaps[1] > $gaps[2], 'Tingkat seksi wajib menurun: feature > standard > ancillary.');
+
+// Jadwal basi tidak boleh menyebut dirinya hari ini.
+$expect(str_contains($sipp, 'function pn_natuna_sipp_day_status'), 'Status basi per hari wajib punya helper sendiri.');
+$expect(str_contains($sipp, 'function pn_natuna_sipp_label_date'), 'Label tanggal SIPP wajib bisa diurai untuk dibandingkan.');
+$expect(str_contains($sipp, "DateTimeZone('Asia/Jakarta')"), 'Perbandingan tanggal wajib memakai zona waktu Jakarta.');
+$expect(str_contains($sipp, 'sipp-tab-stale'), 'Tab basi wajib ditandai.');
+$expect(str_contains($sipp, 'sipp-stale-notice'), 'Panel basi wajib menyatakan tanggal aslinya.');
+$expect(str_contains($sipp, '$status[\'stale\'] ? ($schedule[\'date_label\']'), 'Judul tab wajib mengikuti status basi, bukan selalu "Hari Ini".');
+$expect(str_contains($sipp, 'aria-label="Detil perkara'), 'Tiap tautan detil wajib menyebut nomor perkaranya.');
+$expect(str_contains($sipp, 'tel:'), 'Keadaan kosong wajib menawarkan jalan keluar, bukan menyuruh menunggu.');
+$expect(str_contains($hero, "function_exists('pn_natuna_sipp_day_status')"), 'Ribbon hero wajib memeriksa kebasian sebelum mencetak angka agenda.');
+
+// Kontras: kalimat "apakah pengadilan buka?" gagal di kedua tema sebelum ini.
+$expect((bool) preg_match('/\.hero-welcome-copy \.hero-status\.is-closed\s*\{[^}]*color:\s*#ffe3da/s', $css), 'Pil status tutup wajib punya warna depan eksplisit.');
+$expect((bool) preg_match('/\.hero-welcome-copy \.hero-status\.is-open\s*\{[^}]*color:\s*#d6f8e8/s', $css), 'Pil status buka wajib punya warna depan eksplisit.');
+// Selektornya muncul lebih dari sekali, jadi keberadaan selektor saja tidak
+// membuktikan apa pun. Yang dijaga adalah tiga anak tab benar-benar mendapat
+// warna depan: strong, span, dan b. Sebelum ini span dan b mewarisi maroon ke
+// atas permukaan gelap dan turun ke 1,2:1.
+foreach (['true', 'false'] as $terpilih) {
+    $anak = 0;
+    foreach (['strong', 'span', 'b'] as $bagian) {
+        $pola = '/body\.is-dark \.sipp-day-tabs button\[aria-selected="' . $terpilih . '"\] ' . $bagian . '[^{}]*\{[^}]*color:\s*#[0-9a-f]{3,6}/s';
+        if (preg_match($pola, $css)) {
+            $anak++;
+        }
+    }
+    $expect($anak === 3, "Mode gelap: ketiga baris tab hari (aria-selected={$terpilih}) wajib punya warna depan eksplisit, baru {$anak}/3.");
+}
+
+// Kartu jadwal mobile: tombol menimpa nomor perkara di 12 dari 12 kartu.
+$expect((bool) preg_match('/\.sipp-card\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\);/s', $css), 'Di mobile tombol Detil wajib turun ke barisnya sendiri.');
+$expect((bool) preg_match('/\.sipp-chip:not\(\.sipp-chip-room\):not\(\.sipp-chip-circuit\)\s*\{[^}]*border-radius:\s*10px/s', $css), 'Chip agenda multibaris tidak boleh memakai radius pil.');
+
+// Target sentuh 44px adalah kontrak pemilik, bukan ambang 24px WCAG 2.5.8.
+foreach (['.dipa-tab', '.section-action', '.instansi-tabbar button', '.footer-link-section a', '.skip-link'] as $target) {
+    $expect((bool) preg_match('/' . preg_quote($target, '/') . '[^{}]*\{[^}]*min-height:\s*44px/s', $css), "Target sentuh di bawah 44px: {$target}");
+}
+$expect((bool) preg_match('/\.footer-social \.social-link\s*\{[^}]*min-width:\s*44px;\s*min-height:\s*44px/s', $css), 'Tombol sosial footer wajib 44px di kedua sumbu.');
+
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);

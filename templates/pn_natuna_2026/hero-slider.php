@@ -134,11 +134,7 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
     }
     $feature = array_values($articles)[0];
     $featureExcerpt = pn_natuna_hero_excerpt($feature->introtext ?: ($feature->metadesc ?: $feature->fulltext), 150);
-    if ((int) ($feature->id ?? 0) === 208) {
-        $featureExcerpt = 'Penetapan resmi pemenang lelang Barang Milik Negara Pengadilan Negeri Natuna tanggal 11 Juni 2026.';
-    } elseif ((int) ($feature->id ?? 0) === 209) {
-        $featureExcerpt = 'Informasi resmi lelang Barang Milik Negara Pengadilan Negeri Natuna tanggal 4 Juni 2026.';
-    }
+    // Video pertama yang mengisi shell pemutar; sisanya jadi rail di sebelahnya.
     $activeVideo = $videos[0] ?? null;
     ?>
     <section class="module-card announcement-showcase" aria-labelledby="announcement-showcase-title">
@@ -299,6 +295,9 @@ function pn_natuna_render_hero_slider(): void
     $pengumuman = pn_natuna_hero_latest_articles(13, 4);
 
     $agendaToday = pn_natuna_hero_agenda_today();
+    $sippStale = function_exists('pn_natuna_sipp_day_status')
+        ? (pn_natuna_sipp_day_status('today')['stale'] ?? false)
+        : false;
     $surveyScores = pn_natuna_hero_survey_scores();
     $previewImg = $berita ? pn_natuna_hero_article_image($berita[0]) : '/images/sejarah/sejarah-pn-natuna.jpg';
     $previewCaption = $berita ? $berita[0]->title : 'Berita Pengadilan Negeri Natuna';
@@ -317,11 +316,15 @@ function pn_natuna_render_hero_slider(): void
         <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
           <div class="hero-copy hero-welcome-copy">
             <p class="hero-status" id="hero-service-status"></p>
-            <h2>Selamat Datang di<br>Pengadilan Negeri<br>Natuna Kelas II</h2>
+            <h2>Pengadilan Negeri<br>Natuna Kelas II</h2>
             <p class="hero-intro hero-intro-desktop">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
             <p class="hero-intro hero-intro-mobile">Urusan Anda bisa diselesaikan daring.<br>Temukan kebutuhan dalam dua langkah.</p>
             <div class="hero-service-ribbon" aria-label="Ringkasan agenda dan indeks layanan">
-              <p><span>Agenda hari ini</span><strong><?php echo (int) $agendaToday; ?></strong></p>
+              <?php if ($sippStale) : ?>
+                <p><span>Jadwal sidang</span><strong><a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">Cek SIPP</a></strong></p>
+              <?php else : ?>
+                <p><span>Agenda hari ini</span><strong><?php echo (int) $agendaToday; ?></strong></p>
+              <?php endif; ?>
               <?php foreach ($surveyScores as $score) : ?>
                 <p>
                   <span><?php echo htmlspecialchars($score['label'], ENT_QUOTES, 'UTF-8'); ?></span>

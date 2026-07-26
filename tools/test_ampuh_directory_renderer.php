@@ -140,14 +140,16 @@ $expect($cssRule('body.nav-stuck .ampuh-directory__tools', 'top\s*:\s*var\(--nav
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?body\.nav-stuck \.ampuh-directory__tools\s*\{[^}]*top\s*:\s*56px/s', $ampuhCss), 'Mobile sticky tools must clear the fixed 56px header.');
 $expect((bool) preg_match('/\.ampuh-directory__gobi-select\s*\{[^}]*display\s*:\s*none/s', $ampuhCss), 'Mobile GOBI select must remain hidden on desktop.');
 $expect($cssRule('.ampuh-directory__gobi-title', 'font-size\s*:\s*1\.5rem'), 'Desktop GOBI title needs prominent 1.5rem hierarchy.');
-$expect((bool) preg_match('/\.ampuh-directory__meta\s*\{[^}]*margin-top\s*:\s*7px[^}]*font-size\s*:\s*\.72rem[^}]*font-weight\s*:\s*600/s', $ampuhCss), 'GOBI metadata needs smaller, lighter type with clear title spacing.');
+// Ukuran kecil kini diambil dari skala tipografi, bukan angka lepas. Yang
+// dijaga tetap maksudnya: tipe kecil, bobot ringan, jarak judul jelas.
+$expect((bool) preg_match('/\.ampuh-directory__meta\s*\{[^}]*margin-top\s*:\s*7px[^}]*font-size\s*:\s*var\(--step--2\)[^}]*font-weight\s*:\s*600/s', $ampuhCss), 'GOBI metadata needs smaller, lighter type with clear title spacing.');
 $expect((bool) preg_match('/@media \(max-width:\s*760px\).*?\.ampuh-directory__gobi-title\s*\{[^}]*font-size\s*:\s*1\.22rem/s', $ampuhCss), 'Mobile GOBI title needs prominent 1.22rem hierarchy.');
 $expect($cssRule('.ampuh-directory__checklist', 'grid-template-columns\s*:\s*72px\s+minmax\(0,\s*1fr\)\s+190px'), 'Desktop checklist rows need a strong number, content, and action hierarchy.');
 $expect($cssRule('.ampuh-directory__subchecklist', 'grid-template-columns\s*:\s*62px\s+minmax\(0,\s*1fr\)'), 'Desktop sub-checklist rows must use number and content columns without empty-link space.');
 $expect($cssRule('.ampuh-directory__check-title', 'font-size\s*:\s*1\.12rem') && $cssRule('.ampuh-directory__check-title', 'line-height\s*:\s*1\.45'), 'Checklist titles need readable desktop type.');
 $expect($cssRule('.ampuh-directory__sub-title', 'font-size\s*:\s*1rem') && $cssRule('.ampuh-directory__sub-title', 'line-height\s*:\s*1\.52'), 'Sub-checklist titles need readable desktop type.');
 $expect(str_contains($ampuhCss, '.ampuh-directory__checklist > [data-ampuh-panel], .ampuh-directory__subchecklist > [data-ampuh-panel] { grid-column: 1/-1;'), 'Checklist disclosure panel must span all row areas.');
-$expect($cssRule('.ampuh-directory__files-heading', 'font-size\s*:\s*\.78rem'), 'Ordinary document-list heading needs compact styling.');
+$expect($cssRule('.ampuh-directory__files-heading', 'font-size\s*:\s*var\(--step--2\)'), 'Ordinary document-list heading needs compact styling.');
 $expect(!str_contains($ampuhCss, '.ampuh-directory__subchecklist h5 [data-ampuh-toggle]'), 'Removed document disclosure selector must not remain.');
 $expect($cssRule('.ampuh-directory__tools', 'position\s*:\s*sticky'), 'AMPUH search tools need contextual sticky positioning.');
 $expect($cssRule('.ampuh-directory__match', 'background\s*:\s*var\(--color-accent-soft\)'), 'Search matches need token-based highlighting.');
