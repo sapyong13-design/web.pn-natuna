@@ -141,6 +141,65 @@ foreach (['.dipa-tab', '.section-action', '.instansi-tabbar button', '.footer-li
 }
 $expect((bool) preg_match('/\.footer-social \.social-link\s*\{[^}]*min-width:\s*44px;\s*min-height:\s*44px/s', $css), 'Tombol sosial footer wajib 44px di kedua sumbu.');
 
+// --- Hero: ribbon operasional + kontras komposit (26 Jul 2026) -------------
+// Hero tidak boleh menjadi dashboard mini. IKM/IPAK tetap tersedia di modul
+// Kinerja & Akuntabilitas; ribbon hanya memuat dua fakta yang mengubah tindakan
+// saat ini: status PTSP dan kondisi jadwal SIPP.
+$expect(str_contains($hero, 'aria-label="Status operasional pengadilan"'), 'Ribbon hero wajib menyatakan tujuan operasionalnya.');
+$expect(substr_count($hero, 'class="hero-ribbon-status') === 2, 'Ribbon hero wajib memuat tepat dua status operasional.');
+$expect(str_contains($hero, 'data-service-status hidden'), 'Status PTSP wajib diisi dari waktu Jakarta, bukan dibekukan di PHP.');
+$expect(!str_contains($hero, 'pn_natuna_hero_survey_scores'), 'Helper survei hero yang tidak dipakai wajib dihapus.');
+$ribbonStart = strpos($hero, '<div class="hero-service-ribbon"');
+$ribbonEnd = $ribbonStart === false ? false : strpos($hero, '</div>', $ribbonStart);
+$ribbonMarkup = $ribbonStart === false || $ribbonEnd === false ? '' : substr($hero, $ribbonStart, $ribbonEnd - $ribbonStart);
+$expect(!str_contains($ribbonMarkup, 'IKM') && !str_contains($ribbonMarkup, 'IPAK'), 'IKM/IPAK tidak boleh diduplikasi di ribbon hero.');
+
+// Hitung WCAG contrast ratio dari token. Ini menjaga hasil, bukan nama warna:
+// token boleh diganti kelak selama tiga pasangannya tetap lulus 4,5:1.
+$hexRgb = static function (string $hex): array {
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    return [hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))];
+};
+$luminance = static function (array $rgb): float {
+    $linear = array_map(static function (int $channel): float {
+        $value = $channel / 255;
+        return $value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
+    }, $rgb);
+    return 0.2126 * $linear[0] + 0.7152 * $linear[1] + 0.0722 * $linear[2];
+};
+$contrast = static function (string $foreground, string $background) use ($hexRgb, $luminance): float {
+    $a = $luminance($hexRgb($foreground));
+    $b = $luminance($hexRgb($background));
+    return (max($a, $b) + 0.05) / (min($a, $b) + 0.05);
+};
+$tokens = [];
+foreach (['bg', 'fg', 'muted'] as $token) {
+    if (preg_match('/--hero-ribbon-' . $token . ':\s*(#[0-9a-fA-F]{6})/', $css, $match)) {
+        $tokens[$token] = $match[1];
+    }
+}
+$expect(count($tokens) === 3, 'Ketiga token warna ribbon hero wajib berupa warna opak enam digit.');
+if (count($tokens) === 3) {
+    $expect($contrast($tokens['fg'], $tokens['bg']) >= 4.5, 'Teks utama ribbon hero gagal kontras 4,5:1.');
+    $expect($contrast($tokens['muted'], $tokens['bg']) >= 4.5, 'Label/meta ribbon hero gagal kontras 4,5:1.');
+    $expect($contrast('#ffd6ca', $tokens['bg']) >= 4.5, 'Status SIPP basi gagal kontras 4,5:1.');
+}
+$expect((bool) preg_match('/\.hero-service-ribbon\s*\{[^}]*background:\s*var\(--hero-ribbon-bg\)/s', $css), 'Ribbon harus memakai permukaan opak yang terukur, bukan alpha di atas foto.');
+$expect((bool) preg_match('/\.hero-cinema \.hero-backdrop::after\s*\{[^}]*linear-gradient\(92deg,\s*rgba\(28, 12, 10, 0\.9\)/s', $css), 'Scrim teks hero wajib mempertahankan lapisan opak minimum pada kolom kiri.');
+$expect((bool) preg_match('/\.hero-cinema \.hero-welcome-copy::before\s*\{[^}]*background:\s*#29130f/s', $css), 'Kolom copy hero wajib memiliki bidang tinta opak yang sama dengan ribbon.');
+$expect(str_contains($hero, 'class="hero-welcome-label">Selamat Datang di'), 'Hero wajib membuka sambutan dengan label kecil, bukan menambah baris headline besar.');
+$expect(str_contains($hero, 'seluruh wilayah hukum Pengadilan Negeri Natuna'), 'Copy hero wajib mencakup seluruh wilayah hukum, bukan hanya Kabupaten Natuna.');
+$expect(!str_contains($hero, 'Melayani masyarakat pencari keadilan di Kabupaten Natuna'), 'Copy hero lama yang mempersempit wilayah wajib dihapus.');
+$expect((bool) preg_match('/@media \(max-width:\s*560px\).*?\.hero-intro-desktop\s*\{\s*display:\s*none\s*!important/s', $css), 'Mobile wajib menampilkan satu varian intro, bukan desktop dan mobile sekaligus.');
+// Proporsi masthead desktop. Headline 71,7px dengan label 14px menghasilkan
+// rasio 1:5,1 dan memenuhi bidang tinta seperti poster. Putusan editorial:
+// label 16px, headline maksimum 64px, bobot 700, line-height 1.
+$expect((bool) preg_match('/@media \(min-width:\s*901px\).*?\.hero-welcome-label\s*\{[^}]*font-size:\s*var\(--step-0\)/s', $css), 'Label sambutan desktop wajib satu langkah lebih besar dari meta biasa.');
+$expect((bool) preg_match('/@media \(min-width:\s*901px\).*?\.hero-welcome-copy h2\s*\{[^}]*font-size:\s*clamp\(3\.25rem,\s*4\.5vw,\s*4rem\)[^}]*font-weight:\s*700[^}]*line-height:\s*1/s', $css), 'Masthead desktop wajib memakai skala editorial 52-64px, bobot 700, line-height 1.');
+
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);

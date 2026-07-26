@@ -243,51 +243,6 @@ function pn_natuna_hero_agenda_today(): int
     }
 }
 
-/**
- * Skor IKM dan IPAK terbaru beserta jumlah respondennya, dibaca dari modul 816
- * (sumbernya tools/refresh-survey.py). Array kosong bila widget belum terisi —
- * hero tidak boleh gagal hanya karena survei belum diperbarui.
- *
- * @return list<array{label:string, value:string, responden:string}>
- */
-function pn_natuna_hero_survey_scores(): array
-{
-    try {
-        $db = Factory::getDbo();
-        $query = $db->getQuery(true)
-            ->select($db->quoteName('content'))
-            ->from($db->quoteName('#__modules'))
-            ->where($db->quoteName('id') . ' = 816');
-        $db->setQuery($query);
-        $content = (string) $db->loadResult();
-    } catch (Throwable $e) {
-        return [];
-    }
-
-    $pattern = '/survey-score-label">(?P<label>[^<]*)<\/span>\s*'
-        . '<span class="survey-score-value">\s*(?P<score>[\d.,]+)\s*<em>\s*\/\s*(?P<max>[\d.,]+)\s*<\/em>.*?'
-        . 'survey-score-meta">(?P<meta>[^<]*)</su';
-    if (!preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
-        return [];
-    }
-
-    $scores = [];
-    foreach ($matches as $match) {
-        $label = trim(html_entity_decode($match['label'], ENT_QUOTES, 'UTF-8'));
-        // "SKM / IKM" disingkat jadi "IKM" agar muat di baris data hero.
-        if (stripos($label, 'IKM') !== false) {
-            $label = 'IKM';
-        }
-        $meta = html_entity_decode($match['meta'], ENT_QUOTES, 'UTF-8');
-        $responden = preg_match('/(\d+)\s*responden/ui', $meta, $r) ? $r[1] . ' responden' : '';
-        $scores[] = [
-            'label' => $label,
-            'value' => $match['score'] . ' / ' . $match['max'],
-            'responden' => $responden,
-        ];
-    }
-    return $scores;
-}
 
 function pn_natuna_render_hero_slider(): void
 {
@@ -295,10 +250,10 @@ function pn_natuna_render_hero_slider(): void
     $pengumuman = pn_natuna_hero_latest_articles(13, 4);
 
     $agendaToday = pn_natuna_hero_agenda_today();
-    $sippStale = function_exists('pn_natuna_sipp_day_status')
-        ? (pn_natuna_sipp_day_status('today')['stale'] ?? false)
-        : false;
-    $surveyScores = pn_natuna_hero_survey_scores();
+    $sippStatus = function_exists('pn_natuna_sipp_day_status')
+        ? pn_natuna_sipp_day_status('today')
+        : ['stale' => false, 'updated' => ''];
+    $sippStale = (bool) ($sippStatus['stale'] ?? false);
     $previewImg = $berita ? pn_natuna_hero_article_image($berita[0]) : '/images/sejarah/sejarah-pn-natuna.jpg';
     $previewCaption = $berita ? $berita[0]->title : 'Berita Pengadilan Negeri Natuna';
     ?>
@@ -315,25 +270,27 @@ function pn_natuna_render_hero_slider(): void
 
         <div class="hero-slide is-active" role="group" aria-label="Selamat datang">
           <div class="hero-copy hero-welcome-copy">
-            <p class="hero-status" id="hero-service-status"></p>
+            <!-- Status PTSP pindah ke ribbon operasional di bawah. Satu fakta
+                 tidak boleh muncul dua kali dalam hero yang sama. -->
+            <p class="hero-welcome-label">Selamat Datang di</p>
             <h2>Pengadilan Negeri<br>Natuna Kelas II</h2>
-            <p class="hero-intro hero-intro-desktop">Melayani masyarakat pencari keadilan di Kabupaten Natuna dengan pelayanan cepat, transparan, dan mudah diakses.</p>
-            <p class="hero-intro hero-intro-mobile">Urusan Anda bisa diselesaikan daring.<br>Temukan kebutuhan dalam dua langkah.</p>
-            <div class="hero-service-ribbon" aria-label="Ringkasan agenda dan indeks layanan">
-              <?php if ($sippStale) : ?>
-                <p><span>Jadwal sidang</span><strong><a href="https://sipp.pn-natuna.go.id/" target="_blank" rel="noopener">Cek SIPP</a></strong></p>
-              <?php else : ?>
-                <p><span>Agenda hari ini</span><strong><?php echo (int) $agendaToday; ?></strong></p>
-              <?php endif; ?>
-              <?php foreach ($surveyScores as $score) : ?>
-                <p>
-                  <span><?php echo htmlspecialchars($score['label'], ENT_QUOTES, 'UTF-8'); ?></span>
-                  <strong><?php echo htmlspecialchars($score['value'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                  <?php if ($score['responden'] !== '') : ?>
-                    <small><?php echo htmlspecialchars($score['responden'], ENT_QUOTES, 'UTF-8'); ?></small>
-                  <?php endif; ?>
-                </p>
-              <?php endforeach; ?>
+            <p class="hero-intro hero-intro-desktop">Memberikan layanan peradilan yang cepat, transparan, dan mudah diakses bagi masyarakat di seluruh wilayah hukum Pengadilan Negeri Natuna.</p>
+            <p class="hero-intro hero-intro-mobile">Layanan peradilan yang cepat, transparan, dan mudah diakses di seluruh wilayah hukum Pengadilan Negeri Natuna.</p>
+            <div class="hero-service-ribbon" aria-label="Status operasional pengadilan">
+              <p class="hero-ribbon-status" data-service-status hidden>
+                <span>Status PTSP</span>
+                <strong>Memuat status layanan&hellip;</strong>
+              </p>
+              <p class="hero-ribbon-status<?php echo $sippStale ? ' is-stale' : ''; ?>">
+                <span>Jadwal sidang</span>
+                <?php if ($sippStale) : ?>
+                  <strong>Perlu diperbarui</strong>
+                  <small>Cek SIPP melalui tombol di bawah</small>
+                <?php else : ?>
+                  <strong><?php echo (int) $agendaToday; ?> perkara hari ini</strong>
+                  <small>Data terbaru dari SIPP</small>
+                <?php endif; ?>
+              </p>
             </div>
             <div class="hero-actions hero-actions-primary">
               <a class="is-primary" href="/layanan-publik">Layanan Pengadilan</a>

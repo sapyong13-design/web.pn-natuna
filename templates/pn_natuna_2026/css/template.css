@@ -11545,13 +11545,41 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 .hero-cinema .hero-welcome-copy {
+  position: relative;
+  isolation: isolate;
   align-self: end;
   max-width: 760px;
-  padding-bottom: 12px;
+  padding: 22px 28px 24px;
 }
 
-/* .hero-institution dan salam hero dihapus 25 Jul 2026: eyebrow mengulang persis
-   h1 di header, dan tanggalnya mengulang baris "Hari ini" pada ribbon. */
+/* Bidang tinta lokal mengunci latar di belakang seluruh copy. Scrim foto tetap
+   menjadi transisi visual, tetapi bukan lagi satu-satunya penjaga kontras.
+   Foto gedung di sisi kanan tetap terbuka; hanya kolom baca yang opak. */
+.hero-cinema .hero-welcome-copy::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #29130f;
+  clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
+}
+
+.hero-cinema .hero-welcome-copy > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Preface sambutan sengaja sentence case, tanpa uppercase/tracking lebar. Ia
+   memberi kehangatan sebelum nama lembaga tanpa menjadi eyebrow dekoratif yang
+   sama pada setiap seksi. */
+.home-slider .hero-welcome-label {
+  margin: 0 0 8px;
+  color: #e9cdbd;
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  font-weight: 700;
+  line-height: 1.2;
+}
 
 .home-slider .hero-welcome-copy .hero-kicker {
   margin-bottom: 8px;
@@ -11571,6 +11599,25 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   text-wrap: balance;
 }
 
+/* Masthead editorial desktop: nama lembaga tetap menjadi puncak hierarki,
+   tetapi tidak memenuhi seluruh bidang tinta seperti poster kampanye. Tablet
+   dan mobile sudah memakai skala lebih tenang dan tidak ikut aturan ini. */
+@media (min-width: 901px) {
+  .home-slider .hero-welcome-label {
+    margin-bottom: 12px;
+    font-size: var(--step-0);
+    font-weight: 700;
+  }
+
+  .home-slider .hero-welcome-copy h2 {
+    max-width: 700px;
+    font-size: clamp(3.25rem, 4.5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+}
+
 .home-slider .hero-welcome-copy .hero-intro {
   max-width: 630px;
   margin: 0 0 18px;
@@ -11578,26 +11625,38 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   line-height: 1.55;
 }
 
+/* Ribbon hanya memuat status operasional yang membantu keputusan saat ini:
+   PTSP buka/tutup dan kondisi jadwal SIPP. IKM/IPAK tetap hidup di modul
+   Kinerja & Akuntabilitas, tidak diduplikasi di hero.
+
+   Permukaannya sengaja opak. Sebelumnya alpha 52% berada di atas foto + empat
+   gradient, sehingga kontras berubah mengikuti crop dan tak bisa dibuktikan
+   dari CSS. Tiga token ini mengunci rasio minimum terhadap permukaan yang sama. */
 .hero-service-ribbon {
-  display: flex;
+  --hero-ribbon-bg: #29130f;
+  --hero-ribbon-fg: #fff4e6;
+  --hero-ribbon-muted: #e9cdbd;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
-  width: fit-content;
+  width: min(620px, 100%);
   max-width: 100%;
   margin: 0 0 17px;
-  border-block: 1px solid rgba(255, 248, 237, 0.16);
-  color: var(--hero-cream);
-  background: rgba(35, 17, 14, 0.52);
+  border-block: 1px solid rgba(255, 248, 237, 0.24);
+  color: var(--hero-ribbon-fg);
+  background: var(--hero-ribbon-bg);
 }
 
 .home-slider .hero-service-ribbon p {
   display: grid;
   align-content: center;
-  gap: 2px;
-  min-height: 50px;
+  gap: 3px;
+  min-width: 0;
+  min-height: 64px;
   margin: 0;
-  padding: 7px 13px;
-  border-right: 1px solid rgba(255, 248, 237, 0.12);
-  color: var(--hero-cream);
+  padding: 9px 14px;
+  border-right: 1px solid rgba(255, 248, 237, 0.18);
+  color: var(--hero-ribbon-fg);
   text-shadow: none;
 }
 
@@ -11606,7 +11665,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 .hero-service-ribbon p span {
-  color: rgba(255, 248, 237, 0.64);
+  color: var(--hero-ribbon-muted);
   font-size: var(--step--3);
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -11614,19 +11673,23 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 .hero-service-ribbon p strong {
+  color: var(--hero-ribbon-fg);
   font-size: var(--step--2);
-  line-height: 1.25;
-  white-space: nowrap;
+  line-height: 1.3;
+  white-space: normal;
 }
 
-/* Provenance indeks: jumlah responden dinyatakan per indeks, bukan disamaratakan. */
 .hero-service-ribbon p small {
-  margin-top: 1px;
-  color: rgba(255, 248, 237, 0.56);
+  color: var(--hero-ribbon-muted);
   font-size: var(--step--3);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  white-space: normal;
+}
+
+.hero-service-ribbon .is-stale strong {
+  color: #ffd6ca;
 }
 
 /* Status PTSP berdiri sendiri di atas headline, menggantikan eyebrow lama:
@@ -11818,10 +11881,9 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   }
   .home-slider .hero-welcome-copy h2 { font-size: clamp(2.2rem, 10.6vw, 3rem); line-height: 0.96; }
   .home-slider .hero-welcome-copy .hero-intro { max-width: 34ch; font-size: var(--step--1); }
-  .hero-service-ribbon { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-  .home-slider .hero-service-ribbon p { min-height: 48px; padding: 7px 10px; border-bottom: 1px solid rgba(255, 248, 237, 0.18); }
-  .hero-service-ribbon p:last-child { grid-column: 1 / -1; border-bottom: 0; }
-  .hero-service-ribbon p strong { font-size: var(--step--2); white-space: normal; }
+  .hero-service-ribbon { width: 100%; }
+  .home-slider .hero-service-ribbon p { min-height: 64px; padding: 9px 10px; }
+  .hero-service-ribbon p strong { font-size: var(--step--2); }
   .home-slider .hero-welcome-copy .hero-status { margin-bottom: 12px; font-size: var(--step--2); }
   .hero-actions-primary { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
   .home-slider .hero-actions-primary a.is-primary { justify-content: center; min-height: 44px; padding: 7px 10px; text-align: center; font-size: var(--step--2); }
@@ -11917,7 +11979,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   .court-badges { display: none !important; }
   .brand-lockup .brand-title { font-size: 0; line-height: 1; text-shadow: none; }
   .brand-lockup .brand-title::before {
-    content: "PN Natuna";
+    content: "Pengadilan Negeri Natuna";
     display: block;
     color: var(--color-primary);
     font-family: var(--font-display);
@@ -11926,7 +11988,7 @@ body.is-dark .transparency-family { color: var(--color-ink); }
     letter-spacing: -0.025em;
   }
   .brand-lockup .brand-title::after {
-    content: "Pengadilan Negeri Kelas II";
+    content: "Kelas II";
     display: block;
     margin-top: 5px;
     color: var(--color-muted);
@@ -11958,24 +12020,28 @@ body.is-dark .transparency-family { color: var(--color-ink); }
     background: var(--mobile-surface-raised);
     box-shadow: 0 8px 24px rgba(47, 20, 14, 0.14);
   }
-  body.nav-stuck .header-brand { height: 56px; min-height: 56px; padding-block: 5px; }
-  body.nav-stuck .brand-lockup img { width: 38px; height: 38px; }
-  body.nav-stuck .brand-lockup .brand-title::before { font-size: 1.08rem; }
-  body.nav-stuck .brand-lockup .brand-title::after { margin-top: 2px; font-size: var(--step--3); }
+  /* Sticky hanya memadatkan tinggi header; identitas, logo, dan ukuran huruf
+     tidak boleh berubah saat pengguna menggulir. Sebelumnya logo 42→38px,
+     judul --step--1→1.08rem, dan subjudul --step--2→--step--3 sehingga lockup
+     tampak berganti desain di tengah scroll. */
+  body.nav-stuck .header-brand { height: 60px; min-height: 60px; padding-block: 4px; }
+  body.nav-stuck .brand-lockup img { width: 42px; height: 42px; }
+  body.nav-stuck .brand-lockup .brand-title::before { font-size: var(--step--1); line-height: 1.05; }
+  body.nav-stuck .brand-lockup .brand-title::after { margin-top: 3px; font-size: var(--step--2); line-height: 1.15; }
   body.nav-stuck .main-menu { position: absolute; top: 0; right: 0; left: auto; width: 64px; height: 56px; background: transparent; box-shadow: none; animation: none; }
 
   .hero.home-slider { min-height: 0; padding: 20px 16px 64px; }
   .hero-cinema .hero-slides { min-height: 0; }
   .hero-cinema .hero-slide:not(.is-active) { position: absolute; inset: 0; visibility: hidden; }
   .hero-cinema .hero-slide.is-active { position: relative; visibility: visible; }
-  .hero-cinema .hero-welcome-copy { padding-bottom: 0; }
   .home-slider .hero-welcome-copy h2 { margin-bottom: 10px; font-size: clamp(1.9rem, 8.4vw, 2.5rem); line-height: 0.98; }
+  .hero-cinema .hero-welcome-copy { padding: 18px 16px 20px; }
   .hero-intro-desktop { display: none !important; }
   .hero-intro-mobile { display: block; max-width: 34ch; font-size: var(--step--1); line-height: 1.55; }
-  /* Tiga data tetap tampil: dua kolom, baris terakhir melebar penuh. */
-  .hero-service-ribbon { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-  .home-slider .hero-service-ribbon p { display: grid; min-height: 44px; border: 0; }
-  .hero-service-ribbon p:last-child { grid-column: 1 / -1; }
+  /* Dua status operasional, dua kolom setara. Tidak ada lagi pola 2+1 yang
+     membuat data terakhir tampak lebih penting hanya karena posisinya. */
+  .hero-service-ribbon { width: 100%; }
+  .home-slider .hero-service-ribbon p { min-height: 64px; border-bottom: 0; }
   .hero-actions-primary { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 10px; }
   .home-slider .hero-actions-primary a { justify-content: center; min-height: 48px; padding: 8px; text-align: center; font-size: var(--step--2); }
   .hero-cinema .hero-slide-news { align-self: start; }
@@ -12032,11 +12098,11 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 
   a:active, button:active, summary:active { transform: scale(0.97); }
   .site-header { height: 68px; }
-  .header-brand { height: 68px; min-height: 68px; padding: 8px 68px 8px 12px; }
+  .header-brand { height: 68px; min-height: 68px; align-items: flex-start; justify-content: center; padding: 8px 68px 8px 12px; }
   .brand-lockup { grid-template-columns: 42px minmax(0, 1fr); gap: 9px; align-items: center; }
   .brand-mark { width: 42px; height: 42px; }
-  .brand-lockup .brand-title::before { font-size: 1.16rem; line-height: 1.05; }
-  .brand-lockup .brand-title::after { margin-top: 3px; font-size: var(--step--3); line-height: 1.15; }
+  .brand-lockup .brand-title::before { font-size: var(--step--1); line-height: 1.05; white-space: nowrap; }
+  .brand-lockup .brand-title::after { margin-top: 3px; font-size: var(--step--2); line-height: 1.15; }
   .main-menu { width: 64px; height: 68px; padding: 0 8px; }
   .menu-toggle { display: grid; width: 48px; min-width: 48px; height: 48px; min-height: 48px; place-items: center; align-content: center; gap: 1px; border-radius: 12px; padding: 4px; font-size: var(--step--3); font-weight: 800; line-height: 1; }
   .menu-toggle__icon { display: block; width: 20px; height: 20px; }
@@ -14189,12 +14255,16 @@ body.is-dark .sipp-day-tabs button[aria-selected="false"] b {
 
   .sipp-card-link {
     grid-column: 2;
+    display: inline-flex;
+    align-items: center;
     justify-self: end;
     justify-content: center;
     width: fit-content;
     min-width: 96px;
     min-height: 44px;
     padding: var(--space-2) var(--space-4);
+    text-align: center;
+    line-height: 1;
   }
 }
 
@@ -14382,5 +14452,25 @@ body.is-dark .sipp-day-tabs button[aria-selected="true"] b {
     --section-gap-feature: 56px;
     --section-gap-standard: 34px;
     --section-gap-ancillary: 22px;
+  }
+}
+
+/* Final cascade owner: aturan responsif hero lama tersebar di beberapa blok dan
+   salah satunya (max-width:1440px) berada setelah skala dasar. Putusan editorial
+   desktop hidup di ujung berkas supaya tidak ada breakpoint lama yang diam-diam
+   mengembalikan headline 71,7px. */
+@media (min-width: 901px) {
+  .home-slider .hero-welcome-label {
+    margin-bottom: 12px;
+    font-size: var(--step-0);
+    font-weight: 700;
+  }
+
+  .home-slider .hero-welcome-copy h2 {
+    max-width: 700px;
+    font-size: clamp(3.25rem, 4.5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1;
   }
 }
