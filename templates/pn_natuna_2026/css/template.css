@@ -14188,10 +14188,13 @@ body.is-dark .sipp-day-tabs button[aria-selected="false"] b {
   }
 
   .sipp-card-link {
-    grid-column: 1 / -1;
+    grid-column: 2;
+    justify-self: end;
     justify-content: center;
+    width: fit-content;
+    min-width: 96px;
     min-height: 44px;
-    padding-block: var(--space-2);
+    padding: var(--space-2) var(--space-4);
   }
 }
 
