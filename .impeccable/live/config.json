@@ -1,0 +1,6 @@
+{
+  "files": ["templates/pn_natuna_2026/index.php"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}
