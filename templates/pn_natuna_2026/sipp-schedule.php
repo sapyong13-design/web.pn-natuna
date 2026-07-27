@@ -76,6 +76,29 @@ function pn_natuna_sipp_load_cache(): array
     }
     return ['days' => ['today' => $empty, 'tomorrow' => $empty]];
 }
+function pn_natuna_sipp_case_category(string $caseNumber): array
+{
+    $normalized = strtolower(trim($caseNumber));
+
+    if (preg_match('/(?:pid\.sus-(?:prk|perikanan)|perikanan)/i', $caseNumber)) {
+        return ['key' => 'fishery', 'label' => 'Perikanan'];
+    }
+    if (preg_match('/(?:pdt\.[^\/]*eks|\beks(?:ekusi)?\b)/i', $caseNumber)) {
+        return ['key' => 'execution', 'label' => 'Eksekusi'];
+    }
+    if (preg_match('/(?:\/phi\/|\/niaga(?:\.|\/)|pdt\.sus-(?:phi|niaga))/i', $caseNumber)) {
+        return ['key' => 'special-civil', 'label' => 'Perdata Khusus'];
+    }
+    if (preg_match('/\/pdt\.(?:g|p|g\.s|bth|plw|kons)[^\/]*\//i', $caseNumber)) {
+        return ['key' => 'civil', 'label' => 'Perdata'];
+    }
+    if (str_contains($normalized, '/pid.') || preg_match('/\/(?:tipikor)\//i', $caseNumber)) {
+        return ['key' => 'criminal', 'label' => 'Pidana'];
+    }
+
+    return ['key' => 'other', 'label' => 'Perkara'];
+}
+
 function pn_natuna_sipp_may_fetch_party(array $row): bool
 {
     return ($row['detail'] ?? '') !== '' && stripos((string) ($row['case'] ?? ''), 'Pid.Sus-Anak') === false;
@@ -270,20 +293,24 @@ function pn_natuna_sipp_render_schedule(): void
           <?php if ($schedule['rows']) : ?>
             <div class="sipp-cards">
               <?php foreach ($schedule['rows'] as $index => $row) : ?>
-                <article class="sipp-card">
-                  <span class="sipp-card-number" aria-label="Nomor <?php echo $index + 1; ?>"><?php echo str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT); ?></span>
+                <?php $category = pn_natuna_sipp_case_category((string) ($row['case'] ?? '')); ?>
+                <article class="sipp-card sipp-card--<?php echo htmlspecialchars($category['key'], ENT_QUOTES, 'UTF-8'); ?>" data-case-category="<?php echo htmlspecialchars($category['key'], ENT_QUOTES, 'UTF-8'); ?>">
+                  <span class="sipp-card-number" aria-label="Nomor <?php echo $index + 1; ?>, kategori <?php echo htmlspecialchars($category['label'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT); ?></span>
                   <div class="sipp-card-main">
+                    <span class="sipp-card-category"><?php echo htmlspecialchars($category['label'], ENT_QUOTES, 'UTF-8'); ?></span>
                     <strong class="sipp-card-case"><?php echo htmlspecialchars($row['case'], ENT_QUOTES, 'UTF-8'); ?></strong>
                     <?php if (($row['party'] ?? '') !== '') : ?>
                       <p class="sipp-card-party"><span><?php echo htmlspecialchars($row['party_label'], ENT_QUOTES, 'UTF-8'); ?></span><?php echo htmlspecialchars($row['party'], ENT_QUOTES, 'UTF-8'); ?></p>
                     <?php endif; ?>
+                    <div class="sipp-card-footer">
                     <div class="sipp-card-meta">
                       <span class="sipp-chip sipp-chip-room"><?php echo htmlspecialchars($row['room'], ENT_QUOTES, 'UTF-8'); ?></span>
                       <span class="sipp-chip"><?php echo htmlspecialchars($row['agenda'], ENT_QUOTES, 'UTF-8'); ?></span>
                       <?php if (strtoupper(trim($row['circuit'])) !== 'TIDAK') : ?><span class="sipp-chip sipp-chip-circuit">Sidang Keliling</span><?php endif; ?>
                     </div>
+                      <a class="sipp-card-link" href="<?php echo htmlspecialchars($row['detail'] ?: $url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener" aria-label="Lihat detail perkara <?php echo htmlspecialchars($row['case'], ENT_QUOTES, 'UTF-8'); ?> — buka SIPP di tab baru">Lihat detail <span aria-hidden="true">&rarr;</span></a>
+                    </div>
                   </div>
-                  <a class="sipp-card-link" href="<?php echo htmlspecialchars($row['detail'] ?: $url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener" aria-label="Detil perkara <?php echo htmlspecialchars($row['case'], ENT_QUOTES, 'UTF-8'); ?> — buka SIPP di tab baru">Detil &rarr;</a>
                 </article>
               <?php endforeach; ?>
             </div>

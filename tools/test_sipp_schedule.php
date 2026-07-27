@@ -34,6 +34,21 @@ $expect(pn_natuna_sipp_may_fetch_party(['case' => '41/Pid.Sus/2026/PN Ntn', 'det
 $expect(pn_natuna_sipp_may_fetch_party(['case' => '3/Pid.Sus-Anak/2026/PN Ntn', 'detail' => 'https://example.test']) === false, 'Juvenile case must never fetch party detail.');
 $expect(pn_natuna_sipp_may_fetch_party(['case' => '4/Pdt.G/2026/PN Ntn', 'detail' => '']) === false, 'Missing detail URL must use party fallback.');
 
+foreach ([
+    '41/Pid.Sus/2026/PN Ntn' => ['criminal', 'Pidana'],
+    '3/Pid.Sus-Anak/2026/PN Ntn' => ['criminal', 'Pidana'],
+    '4/Pid.Sus-PRK/2019/PN Ran' => ['fishery', 'Perikanan'],
+    '4/Pdt.G/2026/PN Ntn' => ['civil', 'Perdata'],
+    '5/Pdt.P/2026/PN Ntn' => ['civil', 'Perdata'],
+    '2/Pdt.G.S/2026/PN Ntn' => ['civil', 'Perdata'],
+    '1/Pdt.Eks/2026/PN Ntn' => ['execution', 'Eksekusi'],
+    '1/Pdt.Sus-PHI/2026/PN Ntn' => ['special-civil', 'Perdata Khusus'],
+    'tanpa-format' => ['other', 'Perkara'],
+] as $caseNumber => [$expectedKey, $expectedLabel]) {
+    $category = pn_natuna_sipp_case_category($caseNumber);
+    $expect($category === ['key' => $expectedKey, 'label' => $expectedLabel], "{$caseNumber} category must be {$expectedKey}.");
+}
+
 $cacheFile = pn_natuna_sipp_cache_file();
 $original = is_file($cacheFile) ? file_get_contents($cacheFile) : null;
 register_shutdown_function(static function () use ($cacheFile, $original): void {
@@ -61,6 +76,9 @@ $expect(str_contains($output, 'Jadwal Sidang Hari Ini &amp; Besok'), 'Renderer m
 $expect(str_contains($output, '>01<') && str_contains($output, '>02<'), 'Cards must show numbered sequence.');
 $expect(str_contains($output, 'Terdakwa</span>TRI YADI'), 'Card must show public primary party.');
 $expect(substr_count($output, 'class="sipp-card-party"') === 1, 'Only eligible adult card may render party identity.');
+$expect(substr_count($output, 'sipp-card--criminal') === 2, 'Fixture cards must render criminal category classes.');
+$expect(substr_count($output, '>Pidana<') === 2, 'Fixture cards must render visible Pidana labels.');
+$expect(str_contains($output, 'data-case-category="criminal"'), 'Rendered cards must expose machine-readable category.');
 $expect(str_contains($output, 'Tidak ada sidang besok'), 'Tomorrow empty state must remain visible in its panel.');
 $expect(str_contains($output, 'role="tablist"') && str_contains($output, 'role="tabpanel"'), 'Day switcher must use accessible tab semantics.');
 

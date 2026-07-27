@@ -846,6 +846,7 @@ body.is-dark .access-panel-voice.is-active {
 .brand-lockup .brand-title {
   margin: 0;
   color: var(--color-primary);
+  font-weight: 700;
   font-size: clamp(1.8rem, 4vw, 3rem);
   line-height: .98;
   letter-spacing: -0.04em;
@@ -4357,8 +4358,20 @@ body.is-dark .instagram-profile span {
   .mobile-menu-footer .mobile-menu-contact { height: 48px; }
   .mobile-menu-group-label { display: block !important; grid-template-columns: 1fr !important; min-height: 0; margin: 8px 10px 3px; padding: 7px 2px 4px; border-bottom: 1px solid var(--nav-drawer-line); color: var(--nav-drawer-accent); font-size: var(--step--3); font-weight: 850; letter-spacing: .075em; text-transform: uppercase; }
   .main-menu-list .dark-toggle-copy [hidden] { display: none !important; }
-  .mobile-menu-footer .dark-toggle { min-width: 0; flex: 1 1 auto; white-space: nowrap; }
-  .mobile-menu-footer .dark-toggle-copy { min-width: 0; flex-wrap: nowrap; white-space: nowrap; }
+  .mobile-menu-footer .dark-toggle {
+    min-width: 0;
+    flex: 1 1 auto;
+    justify-content: center;
+    padding-inline: 14px;
+    white-space: nowrap;
+  }
+  .mobile-menu-footer .dark-toggle-copy {
+    min-width: 0;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    text-align: center;
+  }
   .mobile-menu-footer .dark-toggle-copy strong,
   .mobile-menu-footer .dark-toggle-copy small { white-space: nowrap; }
   .mobile-menu-footer .dark-toggle-moon { color: var(--nav-drawer-text); }
@@ -7824,6 +7837,102 @@ body.nav-stuck .main-menu {
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 30px 70px rgba(12, 6, 3, 0.45);
 }
+@media (min-width: 901px) {
+  .home-slider .hero-slide-news {
+    grid-template-columns: minmax(0, 1.04fr) minmax(400px, .96fr);
+    align-items: center;
+  }
+
+  .home-slider .hero-slide-news .hero-news-panel {
+    align-self: center;
+    height: fit-content;
+    padding: 16px 18px;
+  }
+
+  .home-slider .hero-slide-news .hero-news-panel h2 {
+    margin-bottom: 4px;
+    font-size: clamp(1.45rem, 1.8vw, 1.85rem);
+  }
+
+  .home-slider .hero-slide-news .hero-tabs {
+    margin-block: 6px;
+  }
+
+  .home-slider .hero-slide-news .hero-tab-list {
+    gap: 2px;
+  }
+
+  .home-slider .hero-slide-news .hero-tab-list:not(.is-active) {
+    display: none;
+  }
+
+  .home-slider .hero-slide-news .hero-tab-list a {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 54px;
+    padding: 5px 8px;
+  }
+
+  .home-slider .hero-slide-news .hero-item-title {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: .94rem;
+    line-height: 1.24;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .home-slider .hero-slide-news .hero-item-excerpt {
+    display: none;
+  }
+
+  .home-slider .hero-slide-news .hero-actions {
+    margin-top: 6px;
+  }
+
+  .home-slider .hero-slide-news .hero-actions a {
+    min-height: 42px;
+    padding-block: 8px;
+  }
+
+  .home-slider .hero-slide-news .hero-media {
+    align-self: center;
+    width: 100%;
+    height: 397px;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  .home-slider .hero-slide-news .hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .home-slider .hero-slide-news .hero-media figcaption {
+    display: -webkit-box;
+    min-height: 58px;
+    padding: 25px 14px 12px;
+    overflow: hidden;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Sisakan ruang antara card dan rumpun kontrol slider 44px. */
+  .home-slider .hero-slide-news,
+  .home-slider .hero-slide-integrity {
+    position: relative;
+    top: -64px;
+  }
+}
+
+/* Label ini menjelaskan foto gedung pada slide sambutan. Pada slide berita,
+   panel dan kontrol menempati area bawah sehingga label tidak punya ruang. */
+.home-slider .hero-cinema:has(.hero-slide-news.is-active) .hero-photo-chip {
+  visibility: hidden;
+  opacity: 0;
+}
 
 /* Dots & panah di atas foto */
 .home-slider .hero-slider-dots {
@@ -9194,7 +9303,7 @@ body.is-dark .youtube-showcase-item:is(.is-active, [aria-current="true"]) .youtu
 
 .sipp-card {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
   gap: 10px 16px;
   border: 1px solid var(--color-line);
@@ -9232,6 +9341,64 @@ body.is-dark .youtube-showcase-item:is(.is-active, [aria-current="true"]) .youtu
   font-weight: 700;
   letter-spacing: 0.01em;
 }
+.sipp-card-category {
+  width: fit-content;
+  margin-bottom: -4px;
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: var(--case-ink, #44515c);
+  background: var(--case-soft, #eef1f3);
+  font-size: var(--step--3);
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.sipp-card--criminal {
+  --case-ink: #8f1f0b;
+  --case-soft: #f9e2dc;
+  --case-line: #b33a24;
+}
+
+.sipp-card--civil {
+  --case-ink: #176247;
+  --case-soft: #dff1e9;
+  --case-line: #27815f;
+}
+
+.sipp-card--execution,
+.sipp-card--special-civil {
+  --case-ink: #17558a;
+  --case-soft: #dfeaf5;
+  --case-line: #2c6da4;
+}
+
+.sipp-card--fishery {
+  --case-ink: #12617a;
+  --case-soft: #d9f1f7;
+  --case-line: #39a7c4;
+}
+
+.sipp-card--other {
+  --case-ink: #5d6670;
+  --case-soft: #edf0f2;
+  --case-line: #8a949d;
+}
+
+.sipp-card[class*="sipp-card--"] {
+  border-left-color: var(--case-line);
+}
+
+.sipp-card[class*="sipp-card--"] .sipp-card-case {
+  color: var(--case-ink);
+}
+
+.sipp-card[class*="sipp-card--"] .sipp-card-number {
+  border-color: color-mix(in srgb, var(--case-line) 42%, transparent);
+  background: var(--case-soft);
+  color: var(--case-ink);
+}
 
 .sipp-card-party {
   margin: 0;
@@ -9246,6 +9413,14 @@ body.is-dark .youtube-showcase-item:is(.is-active, [aria-current="true"]) .youtu
   font-size: var(--step--2);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.sipp-card-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+  min-width: 0;
 }
 
 .sipp-card-meta {
@@ -9286,20 +9461,28 @@ body.is-dark .youtube-showcase-item:is(.is-active, [aria-current="true"]) .youtu
 }
 
 .sipp-card-link {
-  flex-shrink: 0;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--case-line, var(--color-primary)) 55%, transparent);
   border-radius: 999px;
-  padding: 7px 16px;
-  background: var(--color-primary);
-  color: #fff;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--case-ink, var(--color-primary));
   font-size: var(--step--1);
   font-weight: 800;
+  line-height: 1;
   text-decoration: none;
-  transition: background 0.16s ease, transform 0.16s ease;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
 .sipp-card-link:hover,
 .sipp-card-link:focus-visible {
-  background: var(--color-primary-dark);
+  background: var(--case-ink, var(--color-primary-dark));
+  color: #fff;
   transform: translateY(-1px);
 }
 
@@ -9473,10 +9656,48 @@ body.is-dark .sipp-card {
 body.is-dark .sipp-card {
   border-left-color: var(--color-accent);
 }
+body.is-dark .sipp-card--criminal {
+  --case-ink: #ff9f8a;
+  --case-soft: rgba(179, 58, 36, .22);
+  --case-line: #e16d57;
+}
+
+body.is-dark .sipp-card--civil {
+  --case-ink: #8ed8b8;
+  --case-soft: rgba(39, 129, 95, .24);
+  --case-line: #55b38e;
+}
+
+body.is-dark .sipp-card--execution,
+body.is-dark .sipp-card--special-civil {
+  --case-ink: #9bcaf1;
+  --case-soft: rgba(44, 109, 164, .26);
+  --case-line: #6aa6d7;
+}
+
+body.is-dark .sipp-card--fishery {
+  --case-ink: #9adeef;
+  --case-soft: rgba(57, 167, 196, .22);
+  --case-line: #6ac4dc;
+}
+
+body.is-dark .sipp-card--other {
+  --case-ink: #c5cdd3;
+  --case-soft: rgba(138, 148, 157, .2);
+  --case-line: #8a949d;
+}
+
 
 body.is-dark .news-card strong,
 body.is-dark .sipp-card-case {
   color: #edf2f7;
+}
+body.is-dark .sipp-card[class*="sipp-card--"] {
+  border-left-color: var(--case-line);
+}
+
+body.is-dark .sipp-card[class*="sipp-card--"] .sipp-card-case {
+  color: var(--case-ink);
 }
 
 body.is-dark .news-card:hover strong {
@@ -12699,6 +12920,54 @@ body.is-dark .maklumat-compact-doc h3 {
 .module-card:has(.app-links) {
   margin-bottom: 0;
 }
+/* Link layanan cepat mengikuti bahasa permukaan card utama: card putih di atas
+   latar seksi krem; tiap link memakai tint tipis sebagai kontrol bersarang. */
+body.is-home .quick-links.app-strip {
+  background: #f8f1e8;
+}
+
+body.is-home .module-card:has(.app-links) {
+  padding: 24px;
+  border-color: rgba(103, 22, 7, 0.16);
+  background: #fffdf9;
+  box-shadow: none;
+}
+
+body.is-home .module-card:has(.app-links) .app-links {
+  gap: 14px 16px;
+}
+
+body.is-home .module-card:has(.app-links) .app-links a {
+  border-color: #e4d2a3;
+  background: #fbf7ef;
+  box-shadow: none;
+}
+
+body.is-home .module-card:has(.app-links) .app-links a:is(:hover, :focus-visible) {
+  border-color: var(--color-accent);
+  background: #fff;
+  box-shadow: 0 7px 16px rgba(55, 36, 25, 0.065);
+}
+
+body.is-dark.is-home .quick-links.app-strip {
+  background: #11191f;
+}
+
+body.is-dark.is-home .module-card:has(.app-links) {
+  border-color: #46515a;
+  background: #19232b;
+}
+
+body.is-dark.is-home .module-card:has(.app-links) .app-links a {
+  border-color: #46515a;
+  background: #202b34;
+}
+
+@media (max-width: 600px) {
+  body.is-home .module-card:has(.app-links) {
+    padding: 16px;
+  }
+}
 
 @media (min-width: 761px) {
   .home-juknis-layout {
@@ -13983,26 +14252,18 @@ body.is-home .maklumat-compact-doc h3 {
    bekerja pada markup yang sudah ada.
    ========================================================================= */
 
-/* --- Tiga tingkat seksi ---------------------------------------------------
-   Dulu kelima jarak antarseksi persis 40px, varians nol, jadi tidak ada satu
-   pun sinyal spasial bahwa ada seksi yang lebih penting dari seksi lain. Basis
-   sekarang tingkat ancillary; feature dan standard menambah margin di atasnya.
-   Sengaja margin-atas, bukan gap: ruang di atas judul harus lebih besar
-   daripada ruang di bawahnya, dan gap grid tidak bisa asimetris. */
+/* --- Irama seksi seragam -------------------------------------------------
+   Semua blok utama memakai jarak yang sama. Konsistensi ini menjaga transisi
+   Layanan Publik ke Jadwal Sidang setara dengan pasangan seksi lainnya. */
 body.is-home .home-juknis-main {
-  gap: var(--section-gap-ancillary);
+  gap: var(--section-gap-standard);
 }
 
-body.is-home .home-juknis-main > .sipp-schedule-board {
-  margin-top: calc(var(--section-gap-feature) - var(--section-gap-ancillary));
-}
-
-body.is-home .home-juknis-main > .announcement-showcase,
-body.is-home .home-juknis-main > .instansi-news-board {
-  margin-top: calc(var(--section-gap-standard) - var(--section-gap-ancillary));
-}
-
-body.is-home .home-juknis-main > :first-child {
+body.is-home .home-juknis-main > :is(
+  .sipp-schedule-board,
+  .announcement-showcase,
+  .instansi-news-board
+) {
   margin-top: 0;
 }
 
@@ -14053,17 +14314,18 @@ body.is-dark .sipp-day-tabs button.sipp-tab-stale strong {
 }
 
 .sipp-stale-notice {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  border: 1px solid rgba(146, 88, 12, 0.34);
-  border-radius: var(--radius);
-  padding: var(--space-3) var(--space-4);
-  background: rgba(244, 214, 154, 0.2);
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 0 16px var(--space-3);
+  border-radius: 7px;
+  padding: 6px 10px;
+  background: rgba(244, 214, 154, 0.16);
   color: #6b4207;
-  font-size: var(--step--1);
+  font-size: var(--step--2);
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
 body.is-dark .sipp-stale-notice {
@@ -14146,27 +14408,23 @@ body.is-dark .sipp-day-tabs button[aria-selected="false"] b {
 }
 
 /* --- Kartu jadwal di mobile ----------------------------------------------
-   Tombol Detil menimpa nomor perkara di 12 dari 12 kartu, 19-72px horizontal,
-   persis saat orang memilih. Nomor register satu-satunya penanda identitas
-   perkara, jadi ia tidak boleh tertutup. Tombol turun ke barisnya sendiri. */
+   Footer turun vertikal agar aksi tidak menutupi identitas perkara. */
 @media (max-width: 760px) {
   .sipp-card {
     grid-template-columns: auto minmax(0, 1fr);
     row-gap: var(--space-3);
   }
 
+  .sipp-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .sipp-card-link {
-    grid-column: 2;
-    display: inline-flex;
-    align-items: center;
-    justify-self: end;
-    justify-content: center;
-    width: fit-content;
-    min-width: 96px;
-    min-height: 44px;
+    width: 100%;
+    min-width: 0;
     padding: var(--space-2) var(--space-4);
     text-align: center;
-    line-height: 1;
   }
 }
 
@@ -14586,4 +14844,25 @@ body.is-dark .instansi-source-note {
 
 body.is-dark .instansi-updated.is-stale {
   color: #f5d884;
+}
+
+/* TYPOGRAPHY WEIGHT INTEGRITY 2026-07-27
+   Plus Jakarta Sans lokal tersedia sampai 800. Batasi label UI sans agar
+   browser tidak menyintesis bobot 850/900 yang berbeda antarplatform. */
+:is(
+  .section-kicker,
+  .editorial-article__kicker,
+  .news-portal__hero-overlay > p,
+  .news-portal__heading > p,
+  .news-channel .section-kicker,
+  .read-more-link,
+  .mobile-menu-group-label,
+  .profile-status-badge,
+  .ampuh-directory__kicker,
+  .ampuh-directory__summary h2,
+  .ampuh-directory__summary dt,
+  .ampuh-directory__tools label,
+  .ampuh-directory__file-icon
+) {
+  font-weight: 800;
 }
