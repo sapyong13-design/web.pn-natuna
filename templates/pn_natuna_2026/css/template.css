@@ -170,11 +170,9 @@ img {
 }
 
 .topbar {
-  /* Tinggi topbar dulu berayun 89px -> 69px lalu 48px -> 40px saat metrik font
-     fallback digantikan webfont: lebar teks berubah, baris membungkus, dan
-     seluruh halaman ikut bergeser (CLS 1,109). Tinggi dipatok, bukan sekadar
-     min-height: isi final hanya satu baris 20px di dalam padding 12px. Keadaan
-     transien yang lebih tinggi terpotong di sini, bukan mendorong halaman. */
+  /* Satu baris stabil. Container query di bawah mengurangi informasi duplikat
+     saat zoom mempersempit ruang internal tanpa mengecilkan teks. */
+  container: topbar / inline-size;
   height: 40px;
   overflow: hidden;
   display: flex;
@@ -194,7 +192,7 @@ img {
 
 .topbar-info {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -248,6 +246,31 @@ img {
   min-width: 12.5em;
 }
 
+
+/* Media query viewport tidak selalu berubah saat browser zoom. Container query
+   membaca ruang aktual topbar: 1254px pada 125%, sekitar 1045px pada 150%. */
+@container topbar (max-width: 1440px) {
+  .topbar-desc {
+    display: none;
+  }
+}
+
+@container topbar (max-width: 1180px) {
+  .topbar-item:has(a[href^="mailto"]) {
+    display: none;
+  }
+}
+
+@container topbar (max-width: 900px) {
+  #live-clock-date {
+    display: none;
+  }
+
+  .topbar-clock #live-clock-time {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
 .topbar-item strong {
   color: #fff;
   font-weight: 700;
@@ -7919,8 +7942,12 @@ body.nav-stuck .main-menu {
     -webkit-line-clamp: 2;
   }
 
-  /* Sisakan ruang antara card dan rumpun kontrol slider 44px. */
-  .home-slider .hero-slide-news,
+  /* Kedua card berita tetap di antara nav dan kontrol slider. */
+  .home-slider .hero-slide-news {
+    position: relative;
+    top: -32px;
+  }
+
   .home-slider .hero-slide-integrity {
     position: relative;
     top: -64px;
@@ -13360,8 +13387,14 @@ body.is-dark .app-links a:focus-visible {
 
 @media (min-width: 761px) {
   .home-slider .hero-slide-integrity {
-    width: min(820px, 100%);
+    width: min(680px, 100%);
     margin-inline: auto;
+  }
+}
+
+@media (min-width: 1201px) {
+  .home-slider .hero-slide-integrity {
+    top: -24px;
   }
 }
 
@@ -14809,6 +14842,174 @@ body.is-dark .sipp-day-tabs button[aria-selected="true"] b {
   }
 }
 
+/* --- Panel sambutan: bidang baca, bukan dinding warna ---------------------
+   Pada browser zoom, panel 620px dan headline 4rem berubah menjadi massa tinta
+   yang menutup foto. Komposisi desktop ini tetap terbaca tanpa mendominasi hero. */
+@media (min-width: 901px) {
+  .home-slider .hero-slide:not(.hero-slide-news) .hero-welcome-copy {
+    max-width: 560px;
+    padding: var(--space-5);
+  }
+
+  .hero-cinema .hero-welcome-copy::before {
+    display: none;
+  }
+
+  .home-slider .hero-welcome-copy h2 {
+    max-width: 520px;
+    font-size: clamp(2.75rem, 4vw, 3.5rem);
+    line-height: 0.98;
+  }
+
+  .home-slider .hero-welcome-copy .hero-intro {
+    max-width: 48ch;
+    margin-bottom: var(--space-3);
+    font-size: var(--step-0);
+    line-height: 1.48;
+  }
+
+  .home-slider .hero-actions-primary {
+    margin-bottom: var(--space-2);
+  }
+
+  .home-slider .hero-actions-primary a {
+    min-height: 44px;
+    padding-inline: var(--space-4);
+    font-size: var(--step--1);
+  }
+
+  .home-slider .hero-service-ribbon {
+    --hero-ribbon-bg: rgba(20, 25, 30, 0.9);
+    width: 100%;
+    margin-bottom: 0;
+    border-color: rgba(226, 185, 79, 0.28);
+  }
+
+  .home-slider .hero-service-ribbon p {
+    min-height: 60px;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .home-slider .hero-photo-chip {
+    left: var(--page-padding);
+    bottom: 24px;
+  }
+
+  .home-slider .hero-slider-controls {
+    bottom: 18px;
+  }
+  .hero-cinema .hero-slides {
+    min-height: 410px;
+  }
+
+  .hero-cinema .hero-slide-welcome {
+    align-self: start;
+  }
+
+  .home-slider .hero-welcome-label {
+    margin-bottom: var(--space-2);
+  }
+
+  .home-slider .hero-slide-welcome .hero-welcome-label {
+    text-shadow: 0 1px 3px rgba(12, 8, 6, 0.96), 0 2px 10px rgba(12, 8, 6, 0.82);
+  }
+
+  .home-slider .hero-slide-welcome .hero-welcome-copy h2 {
+    text-shadow: 0 2px 3px rgba(12, 8, 6, 0.98), 0 5px 18px rgba(12, 8, 6, 0.9);
+  }
+
+  .home-slider .hero-slide-welcome .hero-welcome-copy .hero-intro {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(12, 8, 6, 1), 0 3px 10px rgba(12, 8, 6, 0.95);
+  }
+
+  .home-slider .hero-welcome-copy .hero-status {
+    margin-bottom: var(--space-2);
+  }
+
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  body.is-home .hero.home-slider {
+    padding-top: var(--space-4);
+    padding-bottom: 76px;
+  }
+
+  .hero-cinema .hero-slides {
+    min-height: 462px;
+  }
+  .home-slider .hero-slide-integrity {
+    top: 0;
+    width: min(660px, 100%);
+  }
+
+
+  .home-slider .hero-slide:not(.hero-slide-news) .hero-welcome-copy {
+    max-width: 480px;
+    padding: 20px;
+  }
+
+  .hero-cinema .hero-welcome-copy::before {
+    display: none;
+  }
+
+  .home-slider .hero-welcome-label {
+    margin-bottom: 7px;
+    font-size: 12px;
+  }
+
+  .home-slider .hero-welcome-copy h2 {
+    max-width: 440px;
+    margin-bottom: 8px;
+    font-size: 42px;
+    line-height: .98;
+  }
+
+  .home-slider .hero-welcome-copy .hero-intro {
+    max-width: 440px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    line-height: 1.42;
+  }
+
+  .home-slider .hero-actions-primary {
+    margin-bottom: 8px;
+  }
+
+  .home-slider .hero-actions-primary a {
+    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .home-slider .hero-service-ribbon {
+    width: 100%;
+  }
+
+  .home-slider .hero-service-ribbon p {
+    min-height: 54px;
+    padding: 7px 10px;
+  }
+
+  .home-slider .hero-service-ribbon p span,
+  .home-slider .hero-service-ribbon p small {
+    font-size: 10px;
+  }
+
+  .home-slider .hero-service-ribbon p strong {
+    font-size: 12px;
+  }
+
+  .home-slider .hero-photo-chip {
+    display: none;
+  }
+
+  .home-slider .hero-slider-controls {
+    bottom: 14px;
+  }
+}
+
+
 /* --- Kejujuran sumber feed instansi 2026-07-26 ---------------------------
    Cron mencatat `_status` per sumber sejak awal, tetapi renderer tidak pernah
    membacanya: arsip terkurasi tayang di bawah stempel "Diperbarui <jam cron>"
@@ -14824,6 +15025,7 @@ body.is-dark .sipp-day-tabs button[aria-selected="true"] b {
   font-size: var(--step--1);
   line-height: 1.55;
 }
+
 
 .instansi-source-note strong {
   font-weight: 800;
