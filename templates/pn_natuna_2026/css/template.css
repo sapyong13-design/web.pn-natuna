@@ -12304,7 +12304,13 @@ body.is-dark .transparency-family { color: var(--color-ink); }
    lebih besar. Ukurannya dinaikkan ke 48,8px dan bobotnya ke 700 supaya tinggi-x
    optiknya setara. Pembatas 22ch dilepas: judul memakai lebar kolom penuh, sehingga
    turun dari empat baris @27 karakter menjadi tiga baris yang benar-benar kepala berita. */
-.editorial-article .editorial-article__title { max-width: none; margin: 0; padding-bottom: 0; border-bottom: 0; color: var(--editorial-ink); font-family: Fraunces, Georgia, serif; font-size: clamp(1.9rem, 3.6vw, 3.05rem); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; text-align: start; text-wrap: balance; }
+/* `text-wrap: balance` menyamakan panjang tiap baris. Pada kop pendek yang dibatasi
+   `max-width` dalam ch itu tepat, tetapi judul artikel memakai lebar kolom penuh:
+   judul empat baris hanya mengisi 75% kolomnya (572px dari 760px) dan menyisakan
+   188px kosong di kanan, sehingga terlihat lebih sempit daripada fotonya. Jumlah
+   barisnya sama persis di ketiga mode - `balance` tidak menghemat tinggi, hanya
+   memendekkan baris. `pretty` mengisi 94-98% kolom dan tetap mencegah kata yatim. */
+.editorial-article .editorial-article__title { max-width: none; margin: 0; padding-bottom: 0; border-bottom: 0; color: var(--editorial-ink); font-family: Fraunces, Georgia, serif; font-size: clamp(1.9rem, 3.6vw, 3.05rem); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; text-align: start; text-wrap: pretty; }
 .editorial-article .editorial-article__meta { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px 20px; margin-top: 22px; border-top: 1px solid var(--editorial-rule); padding-top: 16px; color: var(--editorial-muted); font-size: var(--step--1); text-align: start; }
 .editorial-article__meta > * + *::before { content: "·"; margin-right: 20px; color: #b98f24; }
 /* Spesifisitas 0-2-0: `.content-primary figure` (0-1-1) memaksa `margin: 22px 0`
