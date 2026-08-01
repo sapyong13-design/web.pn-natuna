@@ -8575,11 +8575,12 @@ body.nav-stuck .main-menu {
     height: 24px;
   }
 
+  /* Kontrak proyek: target sentuh minimum 44px, termasuk widget mengambang. */
   .back-to-top {
     right: 10px;
-    bottom: 142px;
-    width: 40px;
-    height: 40px;
+    bottom: 146px;
+    width: 44px;
+    height: 44px;
   }
 
   .maklumat-doc img {
@@ -12282,18 +12283,30 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 /* Editorial article details: isolated from category listings and core fallback. */
-.editorial-article { --editorial-ink: #271815; --editorial-muted: #715f58; --editorial-paper: #fffdf9; --editorial-rule: #dccdbd; width: min(100%, 1120px); min-width: 0; margin-inline: auto; padding: clamp(32px, 6vw, 88px) clamp(16px, 4vw, 52px) 72px; color: var(--editorial-ink); overflow-wrap: anywhere; }
-.editorial-article__header { max-width: 920px; margin-inline: auto; text-align: center; }
+.editorial-article { --editorial-ink: #271815; --editorial-muted: #715f58; --editorial-paper: #fffdf9; --editorial-rule: #dccdbd; --editorial-measure: clamp(640px, 54vw, 760px); --editorial-wide: 860px; width: min(100%, 1120px); min-width: 0; margin-inline: auto; padding: clamp(32px, 6vw, 88px) clamp(16px, 4vw, 52px) 72px; color: var(--editorial-ink); overflow-wrap: break-word; }
+.editorial-article__header { width: min(100%, var(--editorial-measure)); margin-inline: auto; text-align: start; }
 .editorial-article__back, .editorial-article__return { display: inline-flex; align-items: center; min-height: 44px; color: #731d26; font-weight: 750; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.editorial-article__kicker { margin: 20px 0 12px; color: #9a6b16; font-size: var(--step--2); font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
-.editorial-article__title { max-width: 20ch; margin: 0 auto; font-family: Fraunces, Georgia, serif; font-size: clamp(2.35rem, 6vw, 5.25rem); font-weight: 650; line-height: .99; letter-spacing: -.045em; text-wrap: balance; }
-.editorial-article__meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; margin-top: 24px; color: var(--editorial-muted); font-size: var(--step--1); }
+/* Judul, kop, dan meta harus mengalahkan `.content-primary h1/p` (0-1-1) yang
+   memaksa 2,3rem, letter-spacing 0, garis dingin, dan teks rata kanan-kiri. */
+/* Kop siaran: lambang dan nama satuan kerja di atas garis emas. Menggantikan kicker
+   yang cuma mengulang teks tautan kembali persis di atasnya; kanalnya tidak diulang
+   di sini karena tautan kembali dan baris meta sudah menyebutkannya. */
+.editorial-article .editorial-article__masthead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; max-width: none; margin: 18px 0 14px; border-bottom: 2px solid #b98f24; padding-bottom: 12px; color: #7c5a12; font-size: var(--step--2); font-weight: 800; letter-spacing: .12em; text-align: start; text-transform: uppercase; }
+.editorial-article__masthead img { flex: none; width: 28px; height: 28px; object-fit: contain; }
+/* Dateline kedinasan: tempat dan tanggal peristiwa memimpin kalimat pembuka,
+   terpisah dari "Terbit" di baris meta yang tanggalnya bisa berbeda. */
+.editorial-article__dateline { font-weight: 800; letter-spacing: .04em; color: var(--editorial-ink); }
+.editorial-article .editorial-article__title { max-width: 22ch; margin: 0; padding-bottom: 0; border-bottom: 0; color: var(--editorial-ink); font-family: Fraunces, Georgia, serif; font-size: clamp(1.9rem, 3.4vw, 2.9rem); font-weight: 650; line-height: 1.08; letter-spacing: -.02em; text-align: start; text-wrap: balance; }
+.editorial-article .editorial-article__meta { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px 20px; margin-top: 22px; border-top: 1px solid var(--editorial-rule); padding-top: 16px; color: var(--editorial-muted); font-size: var(--step--1); text-align: start; }
 .editorial-article__meta > * + *::before { content: "·"; margin-right: 20px; color: #b98f24; }
-.editorial-article__status { width: fit-content; margin: 18px auto 0; border: 1px solid #bd7b19; border-radius: 4px; padding: 7px 12px; background: #fff0cc; color: #5c3500; font-weight: 800; }
-.editorial-article__hero, .editorial-article__hero-fallback { width: min(100%, 1040px); margin: clamp(30px, 5vw, 58px) auto 0; }
-.editorial-article__hero { overflow: hidden; border-radius: 4px; background: #ede6dc; box-shadow: 0 22px 60px rgba(55, 26, 20, .14); }
-.editorial-article__hero img { display: block; width: 100%; height: auto; max-height: 620px; aspect-ratio: 16 / 9; object-fit: cover; }
-.editorial-article__hero figcaption { padding: 11px 16px; color: var(--editorial-muted); font-size: var(--step--1); }
+/* Spesifisitas 0-2-0: `.content-primary figure` (0-1-1) memaksa `margin: 22px 0`
+   sehingga hero berhenti terpusat begitu lebarnya dibatasi. */
+.editorial-article .editorial-article__hero, .editorial-article .editorial-article__hero-fallback { width: min(100%, var(--editorial-wide)); margin: clamp(30px, 5vw, 58px) auto 0; }
+.editorial-article .editorial-article__hero { overflow: hidden; border-radius: 4px; background: #ede6dc; box-shadow: 0 22px 60px rgba(55, 26, 20, .14); }
+/* 3:2 mengikuti rasio kamera sumber: krop 0% untuk foto 3:2 dan 11% untuk 4:3,
+   turun dari 15,7% dan 25% ketika hero dipaksa 16:9. */
+.editorial-article__hero img { display: block; width: 100%; height: auto; max-height: 600px; aspect-ratio: 3 / 2; object-fit: cover; object-position: 50% 38%; }
+.editorial-article__hero figcaption { border-top: 1px solid var(--editorial-rule); padding: 10px 16px 12px; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.5; }
 .editorial-article__hero--document { max-width: 760px; padding: 20px; background: #f5eee5; }
 .editorial-article__hero--document img { object-fit: contain; }
 .editorial-article__hero-fallback { display: grid; place-content: center; min-height: clamp(260px, 42vw, 500px); border: 1px solid rgba(185, 143, 36, .45); padding: 32px; text-align: center; color: #fff8e9; background: radial-gradient(circle at 70% 20%, rgba(215, 171, 57, .32), transparent 35%), linear-gradient(135deg, #681923, #321713); }
@@ -12301,50 +12314,137 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 .editorial-article__hero-fallback strong { font-family: Fraunces, Georgia, serif; font-size: clamp(1.45rem, 3vw, 2.5rem); }
 .editorial-article__hero-fallback small { margin-top: 8px; color: #e9cc7c; letter-spacing: .12em; text-transform: uppercase; }
 .editorial-article--announcement .editorial-article__hero-fallback { min-height: 220px; background: linear-gradient(120deg, #f4eadb, #fffdf9); color: #551822; }
-.editorial-article__body { width: min(100%, 70ch); min-width: 0; margin: clamp(38px, 6vw, 72px) auto; font-size: clamp(1rem, 1.5vw, 1.1rem); line-height: 1.78; }
-.editorial-article__body > p:first-of-type { color: #44322d; font-size: 1.16em; line-height: 1.7; }
-.editorial-article__body h2, .editorial-article__body h3 { margin: 2em 0 .65em; font-family: Fraunces, Georgia, serif; line-height: 1.18; text-wrap: balance; }
-.editorial-article__body h2 { font-size: clamp(1.65rem, 3vw, 2.3rem); }
-.editorial-article__body h3 { font-size: clamp(1.3rem, 2vw, 1.7rem); }
+/* Kolom teks ikut melebar bersama layar: 640px pada laptop kecil sampai 760px pada
+   monitor lebar, dengan 20px huruf = 66-70 karakter. Jeda antarparagraf 2em sengaja
+   melampaui tinggi baris supaya pergantian paragraf terbaca. */
+.editorial-article__body { width: min(100%, var(--editorial-measure)); min-width: 0; margin: clamp(38px, 6vw, 72px) auto; font-size: clamp(1rem, 1.5vw, 1.25rem); line-height: 1.7; }
+/* Aturan generik `.content-primary li` merata-kanan-kirikan setiap butir. Di rel
+   selebar 200px itu memecah "Bukan Sekadar Pemeriksaan Berkas" jadi tiga baris
+   bersungai putih, jadi seluruh artikel - bukan hanya badannya - dilepaskan. */
+.editorial-article :is(p, li) { max-width: none; text-align: start; hyphens: manual; text-wrap: pretty; }
+.editorial-article__body > p { margin: 0 0 2em; }
+.editorial-article__body > p:first-of-type { color: #44322d; font-size: 1.16em; line-height: 1.6; }
+.editorial-article__body h2, .editorial-article__body h3 { margin: 2.25em 0 .6em; font-family: Fraunces, Georgia, serif; line-height: 1.25; text-wrap: balance; scroll-margin-top: 88px; }
+.editorial-article__body h2 { font-size: clamp(1.375rem, 2vw, 1.75rem); }
+.editorial-article__body h3 { font-size: clamp(1.2rem, 1.6vw, 1.4rem); }
 .editorial-article__body img, .editorial-article__body video, .editorial-article__body iframe { max-width: 100%; height: auto; }
 .editorial-article__body figure { max-width: 100%; margin: 2em 0; }
+/* Di dalam alur baca, foto tidak boleh lebih lebar daripada teksnya. Hanya hero
+   pembuka dan blok "Berita terkait" yang memakai pita 860px. */
+.editorial-article__body figure.editorial-article__figure { width: 100%; max-width: none; margin: clamp(34px, 4.5vw, 58px) 0; overflow: hidden; border-radius: 4px; background: #ede6dc; box-shadow: 0 18px 46px rgba(55, 26, 20, .14); }
+.editorial-article__figure img { display: block; width: 100%; height: auto; }
+.editorial-article__figure figcaption { border-top: 1px solid var(--editorial-rule); padding: 10px 16px 12px; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.5; }
+/* Dua atau tiga foto satu momen yang berdampingan: satu pita, bukan tumpukan. */
+.editorial-article__gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: none; margin: clamp(34px, 4.5vw, 58px) 0; }
+.editorial-article__gallery[data-photos="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.editorial-article__body .editorial-article__gallery figure.editorial-article__figure { width: 100%; margin: 0; }
+.editorial-article__body .editorial-article__gallery figure.editorial-article__figure figcaption { padding: 8px 12px 10px; font-size: var(--step--2); }
 .editorial-article__body blockquote { margin: 2em 0; border-left: 4px solid #b98f24; padding: 4px 0 4px 24px; color: #5d423a; font-family: Fraunces, Georgia, serif; font-size: 1.16em; }
 .editorial-article__body table { display: block; width: max-content; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
 .editorial-article__body th, .editorial-article__body td { border: 1px solid var(--editorial-rule); padding: 10px 12px; }
 .editorial-article__body a { color: #7a1d27; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
-.editorial-article__footer { width: min(100%, 70ch); margin: 0 auto; border-block: 1px solid var(--editorial-rule); padding: 26px 0; }
+/* Berita layanan berakhir dengan langkah berikutnya, bukan tombol berbagi lalu senyap. */
+.editorial-article__service { width: min(100%, var(--editorial-measure)); margin: clamp(38px, 5vw, 56px) auto 0; border-top: 2px solid #8f1f0b; background: #f7f1e8; padding: clamp(20px, 3vw, 28px) clamp(18px, 3vw, 26px); }
+.editorial-article__service h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: clamp(1.2rem, 1.8vw, 1.45rem); line-height: 1.2; }
+.editorial-article__service-lead { margin: 6px 0 16px; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.5; }
+.editorial-article__service ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.editorial-article__service li a { display: grid; align-content: center; gap: 2px; min-height: 44px; border: 1px solid var(--editorial-rule); border-radius: 3px; padding: 10px 14px; color: var(--editorial-ink); background: var(--editorial-paper); text-decoration: none; transition: border-color 160ms cubic-bezier(.16, 1, .3, 1); }
+.editorial-article__service li a:hover, .editorial-article__service li a:focus-visible { border-color: #8b4f49; }
+.editorial-article__service li strong { font-weight: 750; }
+.editorial-article__service li span { color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.45; }
+.editorial-article__service-contact { margin: 16px 0 0; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.6; }
+.editorial-article__service-contact a { color: #7a1d27; }
+.editorial-article__footer { width: min(100%, var(--editorial-measure)); margin: 0 auto; border-block: 1px solid var(--editorial-rule); padding: 26px 0; }
 .editorial-article__publication { display: grid; gap: 4px; color: var(--editorial-muted); }
 .editorial-article__publication strong { color: var(--editorial-ink); }
 .editorial-article__share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 20px; }
 .editorial-article__share button, .editorial-article__share a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #8b4f49; border-radius: 3px; padding: 8px 15px; color: #681923; background: transparent; font: inherit; font-weight: 750; text-decoration: none; cursor: pointer; }
 .editorial-article__share-status { flex-basis: 100%; min-height: 1.4em; color: var(--editorial-muted); font-size: var(--step--1); }
-.editorial-article__related { margin-top: clamp(46px, 7vw, 82px); }
-.editorial-article__related h2 { font-family: Fraunces, Georgia, serif; font-size: clamp(1.7rem, 3vw, 2.5rem); }
+.editorial-article__related { width: min(100%, var(--editorial-wide)); margin: clamp(46px, 7vw, 82px) auto 0; }
+.editorial-article__related h2 { margin-bottom: 18px; font-family: Fraunces, Georgia, serif; font-size: clamp(1.35rem, 2vw, 1.6rem); }
 .editorial-article__related-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.editorial-article__related-card { display: grid; min-width: 0; overflow: hidden; border: 1px solid var(--editorial-rule); color: var(--editorial-ink); background: var(--editorial-paper); text-decoration: none; }
+.editorial-article__related-card { display: grid; min-width: 0; overflow: hidden; border: 1px solid var(--editorial-rule); color: var(--editorial-ink); background: var(--editorial-paper); text-decoration: none; transition: border-color 160ms cubic-bezier(.16, 1, .3, 1), transform 160ms cubic-bezier(.16, 1, .3, 1); }
+.editorial-article__related-card:hover, .editorial-article__related-card:focus-within { border-color: #8b4f49; transform: translateY(-2px); }
+body.is-dark .editorial-article__related-card:hover, body.is-dark .editorial-article__related-card:focus-within { border-color: #c8a45a; }
 .editorial-article__related-card img, .editorial-article__related-fallback { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
 .editorial-article__related-fallback { display: grid; place-items: center; color: #e5c875; background: #541820; font-family: Fraunces, Georgia, serif; font-size: 2rem; }
 .editorial-article__related-card time { padding: 15px 16px 0; color: var(--editorial-muted); font-size: var(--step--1); }
 .editorial-article__related-card strong { padding: 7px 16px 18px; font-family: Fraunces, Georgia, serif; font-size: 1.16rem; line-height: 1.3; }
 .editorial-article__return { margin-top: 30px; }
-.editorial-article :focus-visible { outline: 3px solid #d1a42f; outline-offset: 3px; }
+/* #d1a42f hanya 2,32:1 di atas kartu putih; SC 1.4.11 menuntut 3:1 untuk indikator
+   non-teks. Inti cincin dibuat gelap, halo emasnya dipertahankan. */
+.editorial-article :focus-visible { outline: 3px solid #7a4b00; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(209, 164, 47, .35); }
+body.is-dark .editorial-article :focus-visible { outline-color: #f0c55a; }
 body.is-dark .editorial-article { --editorial-ink: #fff5ea; --editorial-muted: #cbb8ad; --editorial-paper: #281b18; --editorial-rule: #624640; }
 body.is-dark .editorial-article__body > p:first-of-type, body.is-dark .editorial-article__body blockquote { color: #eadbd0; }
 body.is-dark .editorial-article__back, body.is-dark .editorial-article__return, body.is-dark .editorial-article__body a { color: #efc96b; }
 body.is-dark .editorial-article__hero--document { background: #352522; }
+body.is-dark .editorial-article__hero, body.is-dark .editorial-article__figure { background: #352522; box-shadow: 0 18px 46px rgba(0, 0, 0, .42); }
 body.is-dark .editorial-article__share button, body.is-dark .editorial-article__share a { border-color: #c8a45a; color: #f4d989; }
+body.is-dark .editorial-article__masthead { border-bottom-color: #c8a45a; color: #e2bb63; }
+body.is-dark .editorial-article__service { border-top-color: #c8a45a; background: #352522; }
+body.is-dark .editorial-article__service li a { background: transparent; }
+body.is-dark .editorial-article__service li a:hover, body.is-dark .editorial-article__service li a:focus-visible { border-color: #c8a45a; }
+body.is-dark .editorial-article__service-contact a { color: #efc96b; }
+/* Halaman artikel tidak memakai cangkang kartu generik: pada 1366 kartu selebar
+   1.257px hanya membingkai kolom teks 640px, menyisakan 309px putih mati di tiap
+   sisi dan 117px di atas tautan kembali. Artikel berdiri di atas kertas halaman. */
+.content-primary:has(> .editorial-article), body.is-dark .content-primary:has(> .editorial-article) { border: 0; padding: 0; background: transparent; box-shadow: none; }
+.content-primary > .editorial-article { width: min(100%, 1040px); padding: clamp(28px, 3vw, 52px) clamp(16px, 3vw, 40px) 64px; }
+/* Daftar isi: disclosure di atas teks pada layar sempit, rel lengket di ruang kiri
+   kanvas begitu lebarnya cukup. Hanya artikel dengan lebih dari satu subjudul. */
+.editorial-article__rail { width: min(100%, var(--editorial-measure)); margin: clamp(28px, 4vw, 44px) auto -8px; }
+.editorial-article__toc { border: 1px solid var(--editorial-rule); border-radius: 4px; background: var(--editorial-paper); }
+.editorial-article__toc summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px 16px; color: var(--editorial-ink); font-weight: 800; cursor: pointer; }
+.editorial-article__toc summary span { color: var(--editorial-muted); font-size: var(--step--1); font-weight: 650; }
+.editorial-article__toc ol { display: grid; margin: 0; border-top: 1px solid var(--editorial-rule); padding: 6px 16px 12px; list-style: none; counter-reset: toc; }
+.editorial-article__toc li { counter-increment: toc; }
+.editorial-article__toc a { display: flex; gap: 10px; min-height: 44px; align-items: center; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.35; text-decoration: none; }
+.editorial-article__toc a::before { content: counter(toc); color: #9a6b16; font-variant-numeric: tabular-nums; font-weight: 800; }
+.editorial-article__toc a:hover, .editorial-article__toc a:focus-visible, .editorial-article__toc a[aria-current="true"] { color: var(--editorial-ink); text-decoration: underline; text-underline-offset: 3px; }
+.editorial-article__toc a[aria-current="true"] { font-weight: 800; }
+@media (min-width: 1200px) {
+  /* 200 + 56 + kolom teks (maks 760) = 1.016; kanvas dilebarkan ke 1.120 supaya muat. */
+  .content-primary > .editorial-article--railed { width: min(100%, 1120px); }
+  .editorial-article--railed { display: grid; grid-template-columns: 200px minmax(0, var(--editorial-measure)); justify-content: center; column-gap: 56px; }
+  .editorial-article--railed > * { grid-column: 2; }
+  .editorial-article--railed > .editorial-article__hero, .editorial-article--railed > .editorial-article__hero-fallback, .editorial-article--railed > .editorial-article__related { grid-column: 1 / -1; }
+  .editorial-article--railed > .editorial-article__rail { grid-column: 1; align-self: start; position: sticky; top: 88px; width: auto; margin: clamp(38px, 6vw, 72px) 0 0; }
+  .editorial-article--railed .editorial-article__toc { border: 0; border-left: 1px solid var(--editorial-rule); border-radius: 0; padding-left: 4px; background: transparent; }
+  .editorial-article--railed .editorial-article__toc summary { padding: 0 12px 10px; font-size: var(--step--1); letter-spacing: .06em; text-transform: uppercase; }
+  .editorial-article--railed .editorial-article__toc ol { border-top: 0; padding: 0 12px; }
+  .editorial-article--railed .editorial-article__toc a { min-height: 0; padding: 7px 0; }
+  /* Figur sudah selebar kolom teks; aturan ini menjaga bila ada override lain. */
+  .editorial-article--railed .editorial-article__body figure.editorial-article__figure { width: 100%; margin-inline: 0; }
+}
 @media (max-width: 760px) {
-  .editorial-article { padding: 28px 16px 72px; }
-  .editorial-article__title { font-size: clamp(2.15rem, 11vw, 3.6rem); }
+  /* Kartu halaman melepas padding-nya supaya kolom baca memakai lebar layar,
+     bukan 284px dari 390px seperti sebelumnya. */
+  .content-primary > .editorial-article { padding: 28px 0 72px; }
+  .editorial-article .editorial-article__title { font-size: clamp(1.75rem, 7.5vw, 2.1rem); line-height: 1.14; }
   .editorial-article__meta { gap: 6px 12px; }
   .editorial-article__meta > * + *::before { margin-right: 12px; }
-  .editorial-article__hero { width: calc(100% + 32px); margin-left: -16px; border-radius: 0; }
+  .editorial-article .editorial-article__hero { width: calc(100% + 32px); margin-left: -16px; border-radius: 0; }
+  .editorial-article__body figure.editorial-article__figure { width: calc(100% + 32px); max-width: none; margin-left: -16px; border-radius: 0; }
+  .editorial-article__gallery { width: calc(100% + 32px); margin-left: -16px; gap: 8px; }
+  .editorial-article__gallery[data-photos="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .editorial-article__gallery[data-photos="3"] .editorial-article__figure:first-child { grid-column: 1 / -1; }
+  /* Aturan full-bleed di atas berspesifisitas lebih tinggi, jadi anak galeri dinetralkan. */
+  .editorial-article__body .editorial-article__gallery figure.editorial-article__figure { width: 100%; margin: 0; border-radius: 0; }
+  .editorial-article__hero figcaption, .editorial-article__figure figcaption { padding-inline: 16px; }
   .editorial-article__hero--document { width: 100%; margin-left: 0; }
   .editorial-article__hero-fallback { min-height: 250px; }
   .editorial-article__related-grid { grid-template-columns: 1fr; }
-  .editorial-article__related-card { grid-template-columns: 112px minmax(0, 1fr); grid-template-rows: auto 1fr; }
-  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1 / 3; height: 100%; aspect-ratio: auto; }
+  /* Tinggi gambar tidak boleh lagi ditentukan tinggi judul yang membungkus. */
+  .editorial-article__related-card { grid-template-columns: 128px minmax(0, 1fr); grid-template-rows: auto auto 1fr; align-items: start; }
+  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1 / span 2; align-self: start; height: auto; aspect-ratio: 4 / 3; }
+  .editorial-article__related-card strong { overflow-wrap: normal; word-break: keep-all; font-size: 1rem; line-height: 1.35; }
   .editorial-article__share > span:first-child { flex-basis: 100%; }
+}
+@media (max-width: 360px) {
+  /* Di 320px kolom judul kartu tinggal 68px dan judul pecah 4-7 huruf per baris. */
+  .editorial-article__related-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; }
+  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1; aspect-ratio: 16 / 9; }
 }
 @media (prefers-reduced-motion: reduce) { .editorial-article *, .editorial-article *::before, .editorial-article *::after { scroll-behavior: auto; transition: none !important; animation: none !important; } }
 
@@ -15053,7 +15153,7 @@ body.is-dark .instansi-updated.is-stale {
    browser tidak menyintesis bobot 850/900 yang berbeda antarplatform. */
 :is(
   .section-kicker,
-  .editorial-article__kicker,
+  .editorial-article__masthead,
   .news-portal__hero-overlay > p,
   .news-portal__heading > p,
   .news-channel .section-kicker,

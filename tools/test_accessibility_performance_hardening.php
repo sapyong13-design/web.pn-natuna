@@ -118,7 +118,10 @@ $expect(str_contains($sipp, "DateTimeZone('Asia/Jakarta')"), 'Perbandingan tangg
 $expect(str_contains($sipp, 'sipp-tab-stale'), 'Tab basi wajib ditandai.');
 $expect(str_contains($sipp, 'sipp-stale-notice'), 'Panel basi wajib menyatakan tanggal aslinya.');
 $expect(str_contains($sipp, '$status[\'stale\'] ? ($schedule[\'date_label\']'), 'Judul tab wajib mengikuti status basi, bukan selalu "Hari Ini".');
-$expect(str_contains($sipp, 'aria-label="Detil perkara'), 'Tiap tautan detil wajib menyebut nomor perkaranya.');
+// Label ditulis ulang menjadi "Lihat detail perkara <nomor> — buka SIPP di tab baru"
+// oleh commit "Polish homepage hero and SIPP schedule". Yang dikontrak tetap sama:
+// tautan wajib menyebut nomor perkaranya, bukan sekadar "Lihat detail".
+$expect(str_contains($sipp, 'aria-label="Lihat detail perkara <?php echo htmlspecialchars($row[\'case\']'), 'Tiap tautan detil wajib menyebut nomor perkaranya.');
 $expect(str_contains($sipp, 'tel:'), 'Keadaan kosong wajib menawarkan jalan keluar, bukan menyuruh menunggu.');
 $expect(str_contains($hero, "function_exists('pn_natuna_sipp_day_status')"), 'Ribbon hero wajib memeriksa kebasian sebelum mencetak angka agenda.');
 

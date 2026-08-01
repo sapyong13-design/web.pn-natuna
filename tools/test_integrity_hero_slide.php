@@ -21,11 +21,15 @@ $expect(substr_count($php, 'data-hero-slide=') === 3, 'Hero must render exactly 
 $expect(str_contains($php, 'aria-label="Buka informasi Zona Integritas: Tolak Gratifikasi dan Pungutan Liar"'), 'Poster link needs a specific accessible label.');
 $expect((bool) preg_match('/\.hero-slide-integrity__image\s*\{[^}]*object-fit:\s*contain;/s', $css), 'Poster artwork must use object-fit contain.');
 $expect((bool) preg_match('/\.hero-slide-integrity__link\s*\{[^}]*display:\s*block;/s', $css), 'Poster must use a full-area link.');
-// 820px, bukan 960px: tinggi baris grid hero sama dengan slide tertinggi, jadi
-// rasio 1672:941 milik poster ikut menentukan apa yang jatuh di bawah lipatan
-// pada slide sambutan. 820 x 941/1672 = 461,5px mengembalikan ribbon, caption,
-// dan kendali ke dalam lipatan 768 tanpa memotong posternya.
-$expect((bool) preg_match('/@media \(min-width:\s*761px\)\s*\{.*?\.home-slider \.hero-slide-integrity\s*\{[^}]*width:\s*min\(820px, 100%\);[^}]*margin-inline:\s*auto;[^}]*\}/s', $css), 'Desktop integrity slide must cap artwork width at 820px and stay centered.');
+// Tinggi baris grid hero sama dengan slide tertinggi, jadi rasio 1672:941 milik
+// poster ikut menentukan apa yang jatuh di bawah lipatan pada slide sambutan.
+// Audit 18 Jul 2026 memakai cap 820px; commit "Refine homepage hero responsive
+// layout" mempersempitnya menjadi 680px (dan 660px pada 901-1200px). Kontrak
+// menjaga invariannya, bukan angka historisnya: poster desktop wajib dibatasi
+// paling lebar 820px dan tetap terpusat, supaya ribbon, caption, dan kendali
+// hero tidak terdorong ke bawah lipatan 768.
+preg_match('/@media \(min-width:\s*761px\)\s*\{.*?\.home-slider \.hero-slide-integrity\s*\{[^}]*width:\s*min\((\d+)px, 100%\);[^}]*margin-inline:\s*auto;[^}]*\}/s', $css, $integrityCap);
+$expect(isset($integrityCap[1]) && (int) $integrityCap[1] <= 820, 'Desktop integrity slide must cap artwork width at 820px or less and stay centered.');
 $expect(str_contains($php, 'hero-slider hero-cinema'), 'Hero root contract missing.');
 $js = (string) file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
 $expect(!str_contains($js, 'setupMobileHeroHeight'), 'Mobile hero must not measure every slide at runtime.');

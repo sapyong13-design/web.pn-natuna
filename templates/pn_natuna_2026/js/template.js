@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!toggle || !menu) {
     setupAccessibilityTools();
     setupEditorialArticleShare();
+    setupEditorialArticleToc();
     return;
   }
 
@@ -215,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroBackdropPause();
   setupLazyIframes();
   setupEditorialArticleShare();
+  setupEditorialArticleToc();
   setupHomePrefetch();
 });
 
@@ -1931,4 +1933,55 @@ function setupEditorialArticleShare() {
       }
     });
   });
+}
+
+/**
+ * Daftar isi artikel: terbuka apa adanya tanpa JavaScript, dilipat pada layar
+ * sempit begitu skrip hadir, lalu menandai bagian yang sedang dibaca.
+ */
+function setupEditorialArticleToc() {
+  const toc = document.querySelector('.editorial-article__toc');
+  if (!toc) return;
+  const wide = window.matchMedia('(min-width: 1200px)');
+  // Peristiwa `toggle` juga terpicu saat skrip yang mengubahnya, jadi keadaan
+  // terakhir yang diset skrip dibandingkan dulu sebelum dianggap aksi pengguna.
+  let scripted = null;
+  toc.addEventListener('toggle', () => {
+    if (toc.open !== scripted) toc.dataset.userToggled = '1';
+  });
+  const syncDisclosure = () => {
+    if (toc.dataset.userToggled) return;
+    scripted = wide.matches;
+    toc.open = wide.matches;
+  };
+  syncDisclosure();
+  wide.addEventListener('change', syncDisclosure);
+  if (!('IntersectionObserver' in window)) return;
+  const links = new Map();
+  toc.querySelectorAll('a[href^="#"]').forEach((link) => {
+    const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+    if (heading) links.set(heading, link);
+  });
+  if (!links.size) return;
+  const mark = (heading) => {
+    links.forEach((link, key) => {
+      if (key === heading) {
+        link.setAttribute('aria-current', 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
+  let active = null;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) active = entry.target;
+    });
+    const visible = Array.from(links.keys()).filter((heading) => {
+      const box = heading.getBoundingClientRect();
+      return box.top < window.innerHeight * 0.5 && box.bottom > 0;
+    });
+    mark(visible.length ? visible[visible.length - 1] : active);
+  }, { rootMargin: '-88px 0px -55% 0px', threshold: 0 });
+  links.forEach((_, heading) => observer.observe(heading));
 }

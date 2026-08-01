@@ -7,11 +7,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS = ROOT / "database" / "migrations"
-REPAIR = "20260823_repair_lazy_map_attribute.sql"
+# Migrasi yang sudah diterapkan bersifat immutable (runner menolak checksum berubah),
+# jadi setiap REPLACE tak aman diperbaiki oleh migrasi repair, bukan dengan menyunting
+# berkas lamanya. Setiap entri KNOWN_LEGACY wajib punya repair-nya di REPAIRS.
+REPAIRS = (
+    "20260823_repair_lazy_map_attribute.sql",
+    "20260830_repair_geraldo_degree_replay.sql",
+)
 KNOWN_LEGACY = {
     "20260731_lazy_home_map.sql",
     "20260801_lazy_home_map_canonical.sql",
     "20260809_compact_service_hours_heading.sql",
+    "20260826_sync_geraldo_degree_and_latest_news.sql",
 }
 # SQL literals use doubled single quotes for an embedded quote. This deliberately
 # scans only literal-to-literal REPLACE calls, where substring replay is provable.
@@ -35,7 +42,8 @@ def dangerous_replaces(path: Path) -> list[tuple[str, str]]:
 
 
 def main() -> int:
-    assert (MIGRATIONS / REPAIR).is_file(), f"Required repair migration missing: {REPAIR}"
+    for repair in REPAIRS:
+        assert (MIGRATIONS / repair).is_file(), f"Required repair migration missing: {repair}"
     offenders = [
         (path.name, source, replacement)
         for path in sorted(MIGRATIONS.glob("*.sql"))
