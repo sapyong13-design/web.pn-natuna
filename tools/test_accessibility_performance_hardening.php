@@ -216,6 +216,33 @@ $expect((bool) preg_match('/\.home-slider \.hero-welcome-label\s*\{[^}]*color:\s
 $expect(!preg_match('/\.home-slider \.hero-welcome-label\s*\{[^}]*font:\s*inherit/s', $css), 'Sapaan hero tidak boleh mewarisi skala display headline.');
 $expect((bool) preg_match('/@media \(min-width:\s*901px\).*?\.hero-welcome-copy h2\s*\{[^}]*font-size:\s*clamp\(3\.25rem,\s*4\.5vw,\s*4rem\)[^}]*font-weight:\s*700[^}]*line-height:\s*1/s', $css), 'Masthead desktop wajib memakai skala editorial 52-64px, bobot 700, line-height 1.');
 
+// --- Artikel berel: sumbu dan kurungan rel (31 Jul 2026) -------------------
+// Hero dan "Berita terkait" pernah 860px yang ditengahkan pada kanvas sementara
+// kolom teks digeser ke kanan oleh rel, sehingga tepi kiri jatuh di tiga sumbu
+// berbeda. Rel lengketnya pun tidak pernah berhenti: Chrome mengurung sticky ke
+// grid artikel, bukan barisnya, jadi rel melayang di atas "Berita terkait".
+$articleTemplate = file_get_contents($root . '/templates/pn_natuna_2026/html/com_content/article/default.php');
+$readingStart = strpos($articleTemplate, '<div class="editorial-article__reading">');
+$readingEnd = strpos($articleTemplate, '<?php if ($servicePanel)');
+$readingBlock = $readingStart === false || $readingEnd === false || $readingEnd < $readingStart
+    ? ''
+    : substr($articleTemplate, $readingStart, $readingEnd - $readingStart);
+$expect(str_contains($readingBlock, 'editorial-article__rail'), 'Rel wajib berada di dalam pembungkus baca supaya sticky-nya berhenti di ujung badan.');
+$expect(str_contains($readingBlock, 'editorial-article__body'), 'Badan artikel wajib berada di dalam pembungkus baca yang sama dengan rel.');
+$expect(substr_count($readingBlock, '</div>') >= 2, 'Pembungkus baca wajib ditutup setelah badan artikel.');
+$expect(!preg_match('/\.editorial-article--railed > \.editorial-article__rail/', $css), 'Rel tidak boleh menjadi anak langsung grid artikel; sticky-nya akan lolos sampai kaki halaman.');
+$expect((bool) preg_match('/\.editorial-article--railed \.editorial-article__rail\s*\{[^}]*position:\s*sticky/s', $css), 'Rel wajib tetap lengket di dalam pembungkus baca.');
+$expect((bool) preg_match('/\.editorial-article--railed > \.editorial-article__reading\s*\{[^}]*grid-column:\s*1 \/ -1/s', $css), 'Pembungkus baca wajib membentang penuh supaya kolomnya sendiri yang menata rel.');
+$railedColumns = [];
+foreach (['\.editorial-article--railed', '\.editorial-article--railed > \.editorial-article__reading'] as $selector) {
+    if (preg_match('/' . $selector . '\s*\{[^}]*grid-template-columns:\s*([^;]+);/s', $css, $columnMatch)) {
+        $railedColumns[] = trim($columnMatch[1]);
+    }
+}
+$expect(count($railedColumns) === 2 && $railedColumns[0] === $railedColumns[1], 'Pembungkus baca wajib memakai kolom yang sama dengan grid artikel; kalau berbeda, rel dan teks tidak lagi satu sumbu.');
+$expect((bool) preg_match('/\.editorial-article--railed > \.editorial-article__hero[^{]*\{[^}]*width:\s*100%/s', $css), 'Hero berel wajib selebar kolom baca, bukan 860px yang ditengahkan pada kanvas.');
+$expect((bool) preg_match('/\.editorial-article--railed > \.editorial-article__related\s*\{[^}]*grid-column:\s*1 \/ -1;[^}]*width:\s*100%/s', $css), '"Berita terkait" wajib membentang dari sumbu rel sampai tepi kanan kolom teks.');
+
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);

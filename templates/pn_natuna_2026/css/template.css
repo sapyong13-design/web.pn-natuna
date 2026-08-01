@@ -12408,8 +12408,19 @@ body.is-dark .editorial-article__service-contact a { color: #efc96b; }
   .content-primary > .editorial-article--railed { width: min(100%, 1120px); }
   .editorial-article--railed { display: grid; grid-template-columns: 200px minmax(0, var(--editorial-measure)); justify-content: center; column-gap: 56px; }
   .editorial-article--railed > * { grid-column: 2; }
-  .editorial-article--railed > .editorial-article__hero, .editorial-article--railed > .editorial-article__hero-fallback, .editorial-article--railed > .editorial-article__related { grid-column: 1 / -1; }
-  .editorial-article--railed > .editorial-article__rail { grid-column: 1; align-self: start; position: sticky; top: 88px; width: auto; margin: clamp(38px, 6vw, 72px) 0 0; }
+  /* Hero dan "Berita terkait" tadinya 860px yang ditengahkan pada kanvas, sementara
+     kolom teks digeser ke kanan oleh rel: di 1440 tepi kirinya jatuh di 212 (rel),
+     290 (foto), dan 468 (teks) - tiga sumbu, tidak ada yang lurus. Hero kini ikut
+     kolom baca, dan "Berita terkait" membentang penuh dari sumbu rel ke tepi teks. */
+  .editorial-article--railed > .editorial-article__hero, .editorial-article--railed > .editorial-article__hero-fallback { width: 100%; margin-inline: 0; }
+  .editorial-article--railed > .editorial-article__related { grid-column: 1 / -1; width: 100%; margin-inline: 0; }
+  /* Pembungkus baca mengulang kolom yang sama supaya rel dan teks tetap pada sumbu
+     yang sama, sekaligus mengurung `position: sticky`: Chrome mengurung sticky pada
+     grid artikel, bukan barisnya, sehingga tanpa pembungkus rel melayang di atas
+     "Berita terkait" dan kaki artikel sampai halaman habis. */
+  .editorial-article--railed > .editorial-article__reading { grid-column: 1 / -1; display: grid; grid-template-columns: 200px minmax(0, var(--editorial-measure)); column-gap: 56px; }
+  .editorial-article--railed > .editorial-article__reading > .editorial-article__body { grid-column: 2; }
+  .editorial-article--railed .editorial-article__rail { grid-column: 1; align-self: start; position: sticky; top: 88px; width: auto; margin: clamp(38px, 6vw, 72px) 0 0; }
   .editorial-article--railed .editorial-article__toc { border: 0; border-left: 1px solid var(--editorial-rule); border-radius: 0; padding-left: 4px; background: transparent; }
   .editorial-article--railed .editorial-article__toc summary { padding: 0 12px 10px; font-size: var(--step--1); letter-spacing: .06em; text-transform: uppercase; }
   .editorial-article--railed .editorial-article__toc ol { border-top: 0; padding: 0 12px; }

@@ -502,6 +502,10 @@ if ($referrer !== '') {
     <?php if ((int) $params->get('urls_position', 0) === 0) echo $this->loadTemplate('links'); ?>
     <?php if (!empty($item->pagination) && !$item->paginationposition && !$item->paginationrelative) echo $item->pagination; ?>
     <?php if (isset($item->toc)) echo $item->toc; ?>
+    <?php // Rel dan badan berbagi satu pembungkus supaya sticky-nya berhenti di ujung
+          // badan artikel. Tanpa pembungkus, Chrome mengurung sticky ke seluruh grid
+          // artikel, sehingga rel ikut melayang di atas "Berita terkait" dan kaki artikel. ?>
+    <div class="editorial-article__reading">
     <?php if ($hasRail) : ?>
       <aside class="editorial-article__rail" aria-label="Navigasi isi artikel">
         <details class="editorial-article__toc" open>
@@ -515,6 +519,7 @@ if ($referrer !== '') {
       </aside>
     <?php endif; ?>
     <div class="editorial-article__body" itemprop="articleBody"><?php echo $articleBody; ?></div>
+    </div>
     <?php if ($servicePanel) : ?>
       <aside class="editorial-article__service" aria-labelledby="service-heading">
         <h2 id="service-heading">Untuk pencari keadilan</h2>
