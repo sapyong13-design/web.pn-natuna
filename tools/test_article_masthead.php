@@ -51,11 +51,13 @@ $expect((bool) preg_match('/\.editorial-article__masthead img \{[^}]*width:\s*' 
 // kecil daripada judul Medium 42px meski angkanya lebih besar.
 $expect((bool) preg_match('/\.editorial-article \.editorial-article__title \{[^}]*font-weight:\s*(7|8|9)00/', $css), 'Article headline must stay at weight 700 or heavier to hold its own against a sans headline of the same size.');
 $expect(!preg_match('/\.editorial-article \.editorial-article__title \{[^}]*max-width:\s*\d+ch/', $css), 'Article headline must use the full reading column, not a 22ch stack.');
-// `balance` menyamakan panjang baris; pada judul selebar kolom penuh itu membuat judul
-// empat baris hanya mengisi 75% kolomnya (572px dari 760px) sehingga terlihat lebih
-// sempit daripada fotonya. Jumlah barisnya sama saja di kedua mode, jadi tidak ada yang
-// dihemat. Kop pendek berbatas `ch` di tempat lain tetap boleh memakai `balance`.
-$expect((bool) preg_match('/\.editorial-article \.editorial-article__title \{[^}]*text-wrap:\s*pretty/', $css), 'Article headline must fill its column; text-wrap:balance leaves a ragged gutter beside the photo.');
+// Judul memakai lebar kolom penuh, jadi tiap baris wajib mengisi kolomnya. Diukur pada
+// seluruh 84 judul: `balance` rata-rata 89% dengan 12 judul di bawah 80%, `pretty` masih
+// menarik kata turun (judul BPJS 72%), pembungkusan serakah 91% - dan jumlah barisnya
+// sama persis di ketiga mode, jadi tidak ada tinggi yang ditukar. Kata yatim yang timbul
+// ditangani templat lewat spasi tanpa-putus, bukan dengan memendekkan baris.
+$expect(!preg_match('/\.editorial-article \.editorial-article__title \{[^}]*text-wrap:\s*(balance|pretty)/', $css), 'Article headline must fill its column; balance and pretty both leave a gutter beside the full-width photo.');
+$expect(str_contains($template, '$headlineWords') && str_contains($template, '\u{00a0}'), 'A headline ending in a very short word must glue it to the previous word; greedy wrapping otherwise strands "II" and "RI" alone on the last line.');
 $expect((bool) preg_match('/\.editorial-article \.editorial-article__masthead \{[^}]*border-bottom: 2px solid/', $css), 'Masthead needs its gold rule.');
 $expect((bool) preg_match('/body\.is-dark \.editorial-article__masthead \{[^}]*\}/', $css), 'Masthead needs a dark mode.');
 $expect((bool) preg_match('/\.editorial-article__dateline \{[^}]*font-weight: 800/', $css), 'Dateline needs its own weight.');

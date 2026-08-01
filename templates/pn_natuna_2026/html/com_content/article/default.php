@@ -653,7 +653,23 @@ if ($referrer !== '') {
   <header class="editorial-article__header">
     <a class="editorial-article__back" href="<?php echo $this->escape($listingReturnUrl); ?>">← Daftar <?php echo $channel === 'news' ? 'berita' : 'pengumuman'; ?></a>
     <p class="editorial-article__masthead"><img src="/images/brand/logo-pn-natuna.webp" alt="" width="31" height="40" loading="eager" decoding="async"><span>Pengadilan Negeri Natuna Kelas II</span></p>
-    <?php if ($params->get('show_title', 1)) : ?><h1 class="editorial-article__title" itemprop="headline"><?php echo $this->escape($item->title); ?></h1><?php endif; ?>
+    <?php
+    // Judul dibungkus serakah supaya tiap baris mengisi kolom - lihat catatan pada
+    // `.editorial-article__title` di template.css. Konsekuensinya baris terakhir bisa
+    // tersisa satu kata sangat pendek: "Kelas II" dan "Mahkamah Agung RI" menyisakan
+    // "II" dan "RI" sendirian selebar 39px dan 56px. Kata sependek itu dilekatkan pada
+    // kata sebelumnya dengan spasi tanpa-putus. Ambangnya tiga huruf: "Riau" dan "Laut"
+    // sepanjang 104px masih kata utuh yang terbaca, sedangkan menggabungkan setiap kata
+    // empat huruf akan ikut menyeret "2024" dan "2026" - 48 dari 84 judul - dan justru
+    // menurunkan pengisian kolom.
+    $headline = trim((string) $item->title);
+    $headlineWords = preg_split('/\s+/u', $headline) ?: [];
+    if (count($headlineWords) > 2 && mb_strlen(preg_replace('/[^\p{L}\p{N}]/u', '', (string) end($headlineWords))) <= 3) {
+        $lastWord = array_pop($headlineWords);
+        $headline = implode(' ', $headlineWords) . "\u{00a0}" . $lastWord;
+    }
+    ?>
+    <?php if ($params->get('show_title', 1)) : ?><h1 class="editorial-article__title" itemprop="headline"><?php echo $this->escape($headline); ?></h1><?php endif; ?>
     <div class="editorial-article__meta">
       <time itemprop="datePublished" datetime="<?php echo $published->format(DATE_ATOM); ?>">Terbit <?php echo $publishedLabel; ?></time>
       <span><?php echo $this->escape($item->category_title); ?></span>
