@@ -12292,11 +12292,19 @@ body.is-dark .transparency-family { color: var(--color-ink); }
    yang cuma mengulang teks tautan kembali persis di atasnya; kanalnya tidak diulang
    di sini karena tautan kembali dan baris meta sudah menyebutkannya. */
 .editorial-article .editorial-article__masthead { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; max-width: none; margin: 18px 0 14px; border-bottom: 2px solid #b98f24; padding-bottom: 12px; color: #7c5a12; font-size: var(--step--2); font-weight: 800; letter-spacing: .12em; text-align: start; text-transform: uppercase; }
-.editorial-article__masthead img { flex: none; width: 28px; height: 28px; object-fit: contain; }
+/* Berkasnya 179x232 - potret. Kotak bujur sangkar 28px dulu meletterboxingnya jadi
+   efektif 21px, terbaca sebagai cakram hijau, bukan lambang. Kotaknya kini mengikuti
+   rasio aslinya pada tinggi 40px; sumber 232px masih cukup untuk layar 2x. */
+.editorial-article__masthead img { flex: none; width: 31px; height: 40px; object-fit: contain; }
 /* Dateline kedinasan: tempat dan tanggal peristiwa memimpin kalimat pembuka,
    terpisah dari "Terbit" di baris meta yang tanggalnya bisa berbeda. */
 .editorial-article__dateline { font-weight: 800; letter-spacing: .04em; color: var(--editorial-ink); }
-.editorial-article .editorial-article__title { max-width: 22ch; margin: 0; padding-bottom: 0; border-bottom: 0; color: var(--editorial-ink); font-family: Fraunces, Georgia, serif; font-size: clamp(1.9rem, 3.4vw, 2.9rem); font-weight: 650; line-height: 1.08; letter-spacing: -.02em; text-align: start; text-wrap: balance; }
+/* Fraunces bertinggi-x 0,45em - 20% lebih pendek daripada sans - jadi judul 46,4px
+   bobot 650 terbaca lebih kecil daripada judul Medium 42px bobot 700 meski angkanya
+   lebih besar. Ukurannya dinaikkan ke 48,8px dan bobotnya ke 700 supaya tinggi-x
+   optiknya setara. Pembatas 22ch dilepas: judul memakai lebar kolom penuh, sehingga
+   turun dari empat baris @27 karakter menjadi tiga baris yang benar-benar kepala berita. */
+.editorial-article .editorial-article__title { max-width: none; margin: 0; padding-bottom: 0; border-bottom: 0; color: var(--editorial-ink); font-family: Fraunces, Georgia, serif; font-size: clamp(1.9rem, 3.6vw, 3.05rem); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; text-align: start; text-wrap: balance; }
 .editorial-article .editorial-article__meta { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px 20px; margin-top: 22px; border-top: 1px solid var(--editorial-rule); padding-top: 16px; color: var(--editorial-muted); font-size: var(--step--1); text-align: start; }
 .editorial-article__meta > * + *::before { content: "·"; margin-right: 20px; color: #b98f24; }
 /* Spesifisitas 0-2-0: `.content-primary figure` (0-1-1) memaksa `margin: 22px 0`
@@ -12322,7 +12330,9 @@ body.is-dark .transparency-family { color: var(--color-ink); }
    selebar 200px itu memecah "Bukan Sekadar Pemeriksaan Berkas" jadi tiga baris
    bersungai putih, jadi seluruh artikel - bukan hanya badannya - dilepaskan. */
 .editorial-article :is(p, li) { max-width: none; text-align: start; hyphens: manual; text-wrap: pretty; }
-.editorial-article__body > p { margin: 0 0 2em; }
+/* 2,15em = 43px pada isi 20px, menyamai jeda 42,8px milik Medium: 1,26x tinggi baris,
+   cukup untuk menandai pergantian gagasan tanpa memutus alirannya. */
+.editorial-article__body > p { margin: 0 0 2.15em; }
 .editorial-article__body > p:first-of-type { color: #44322d; font-size: 1.16em; line-height: 1.6; }
 .editorial-article__body h2, .editorial-article__body h3 { margin: 2.25em 0 .6em; font-family: Fraunces, Georgia, serif; line-height: 1.25; text-wrap: balance; scroll-margin-top: 88px; }
 .editorial-article__body h2 { font-size: clamp(1.375rem, 2vw, 1.75rem); }
@@ -12529,18 +12539,26 @@ body.is-dark .news-portal__trust span { color: #e3d8cc; }
 .news-channel-hero__overlay { align-self: end; max-width: 760px; padding: clamp(22px, 4vw, 40px); }
 .news-channel .section-kicker { margin: 0 0 9px; color: #f2cf76; font-size: var(--step--2); font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
 .news-channel-hero h1 { max-width: 19ch; margin: 0; color: #fff; font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 4.5vw, 3.8rem); line-height: 1.04; letter-spacing: -.035em; text-wrap: balance; }
+/* Sembilan dari sembilan paragraf halaman kanal masih mewarisi `text-align: justify`
+   dari `.content-primary p`. Di kolom kartu 313px tanpa kamus pemenggalan Indonesia,
+   itu menghasilkan sungai putih yang sama seperti yang sudah dicabut dari artikel. */
+.news-channel :is(p, li) { text-align: start; hyphens: manual; text-wrap: pretty; }
 .news-channel-hero__overlay > p:last-child { max-width: 62ch; margin: 12px 0 0; color: #f8e9dc; line-height: 1.55; }
 .news-channel-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 16px 0 clamp(34px, 5vw, 56px); }
 .news-channel-tabs a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #8a4a45; padding: 9px 12px; color: #681923; background: var(--channel-paper); font-weight: 800; text-align: center; text-decoration: none; }
 .news-channel-tabs a:is(:hover, :focus-visible, .is-active) { color: #fff; background: #681923; }
-.news-listing--cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+/* Dua kolom, bukan tiga: kartu 349px dengan foto 347x217 terlalu sempit untuk judul
+   peradilan yang panjang. Di 1440 kartunya menjadi 533px dengan foto 533x355 - sekelas
+   halaman tag Medium (572px, rasio 1,5), dan judulnya berhenti pecah 5 baris. */
+.news-listing--cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 .news-card { display: grid; grid-template-rows: auto 1fr; min-width: 0; overflow: hidden; border: 1px solid var(--channel-rule); background: var(--channel-paper); }
-.news-card-media { display: block; overflow: hidden; aspect-ratio: 16 / 10; background: #641c26; }
+.news-card-media { display: block; overflow: hidden; aspect-ratio: 3 / 2; background: #641c26; }
 .news-card-media img { width: 100%; height: 100%; object-fit: cover; }
 .news-card-body { display: grid; align-content: start; gap: 10px; min-width: 0; padding: 17px; }
 .news-meta { display: flex; flex-wrap: wrap; gap: 6px 11px; color: var(--channel-muted); font-size: var(--step--2); font-weight: 700; }
 .news-meta span { color: #9b6d16; text-transform: uppercase; letter-spacing: .07em; }
-.news-card h2, .announcement-item h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: 1.2rem; line-height: 1.3; }
+/* 23px Fraunces = tinggi-x 10,4px, setara judul kartu Medium 20px sans. */
+.news-card h2, .announcement-item h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: 1.44rem; line-height: 1.24; }
 .news-card h2 a, .announcement-item h2 a { color: inherit; text-decoration: none; }
 .news-card-body p { margin: 0; color: var(--channel-muted); font-size: var(--step--1); line-height: 1.55; }
 .read-more-link { width: fit-content; min-height: 32px; color: #681923; font-size: var(--step--1); font-weight: 850; text-decoration: underline; text-underline-offset: 3px; }

@@ -185,7 +185,10 @@ $imageUrl = $image && !preg_match('#^(?:https?:)?//#i', $image) ? '/' . ltrim($i
 // Editorial photography: responsive candidates plus a caption derived from the article
 // itself, so a photo never stands on the page without saying where it comes from.
 $photoSrcset = static function (string $src): string {
-    $path = parse_url($src, PHP_URL_PATH) ?: $src;
+    // Konten warisan menyimpan `src="images/..."` tanpa garis miring awal, sementara
+    // hero dinormalkan di tempat lain - tanpa penyeragaman ini seluruh foto badan
+    // artikel lama tidak pernah lolos pemeriksaan dan kehilangan srcset-nya.
+    $path = '/' . ltrim(parse_url($src, PHP_URL_PATH) ?: $src, '/');
     if (!str_starts_with($path, '/images/')) {
         return '';
     }
@@ -234,6 +237,24 @@ $articleBody = preg_replace_callback(
         return '<figure class="editorial-article__figure">' . $inner . '</figure>';
     },
     (string) $item->text
+);
+
+// Enam berita yang direstrukturisasi memakai bingkai editorial, tetapi puluhan berita
+// warisan menaruh fotonya sebagai `<img>` telanjang di badan artikel. Tanpa pass ini
+// mereka tidak pernah mendapat `srcset` sama sekali - foto 4032px seberat 1,5 MB
+// dikirim utuh ke ponsel. Yang sudah punya srcset dari pass bingkai dilewati.
+$articleBody = preg_replace_callback(
+    '#<img\b([^>]*?)src="([^"]+)"([^>]*)>#i',
+    static function (array $img) use ($photoSrcset, $photoSizes): string {
+        if (str_contains($img[0], 'srcset=')) {
+            return $img[0];
+        }
+        $srcset = $photoSrcset($img[2]);
+        return $srcset === ''
+            ? $img[0]
+            : '<img' . $img[1] . 'src="' . $img[2] . '"' . $img[3] . ' srcset="' . $srcset . '" sizes="' . $photoSizes . '">';
+    },
+    $articleBody
 );
 
 // Foto yang berdiri berdampingan tanpa teks di antaranya dirangkai menjadi satu
@@ -468,7 +489,7 @@ if ($referrer !== '') {
   <meta itemprop="inLanguage" content="<?php echo $this->escape($item->language === '*' ? $app->get('language') : $item->language); ?>">
   <header class="editorial-article__header">
     <a class="editorial-article__back" href="<?php echo $this->escape($listingReturnUrl); ?>">← Daftar <?php echo $channel === 'news' ? 'berita' : 'pengumuman'; ?></a>
-    <p class="editorial-article__masthead"><img src="/images/brand/logo-pn-natuna.webp" alt="" width="28" height="28" loading="eager" decoding="async"><span>Pengadilan Negeri Natuna Kelas II</span></p>
+    <p class="editorial-article__masthead"><img src="/images/brand/logo-pn-natuna.webp" alt="" width="31" height="40" loading="eager" decoding="async"><span>Pengadilan Negeri Natuna Kelas II</span></p>
     <?php if ($params->get('show_title', 1)) : ?><h1 class="editorial-article__title" itemprop="headline"><?php echo $this->escape($item->title); ?></h1><?php endif; ?>
     <div class="editorial-article__meta">
       <time itemprop="datePublished" datetime="<?php echo $published->format(DATE_ATOM); ?>">Terbit <?php echo $publishedLabel; ?></time>

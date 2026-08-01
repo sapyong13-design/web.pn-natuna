@@ -34,8 +34,23 @@ $expect(str_contains($template, '<span>Pengadilan Negeri Natuna Kelas II</span>'
 $expect(!str_contains($template, "'Berita' : 'Pengumuman Resmi'"), 'Masthead must not repeat the channel the back link and meta row already state.');
 $expect(str_contains($template, '/images/brand/logo-pn-natuna.webp'), 'Masthead must show the court emblem.');
 $expect(is_file($root . '/images/brand/logo-pn-natuna.webp'), 'Court emblem file is missing.');
-$expect((bool) preg_match('/logo-pn-natuna\.webp" alt="" width="28" height="28"/', $template), 'Emblem must be decorative and dimensioned to stop layout shift.');
+// Berkas lambangnya potret 179x232. Kotak bujur sangkar meletterboxingnya sampai
+// terbaca sebagai cakram, jadi yang dikontrak adalah rasio dan tinggi minimalnya.
+$emblemFile = $root . '/images/brand/logo-pn-natuna.webp';
+$expect((bool) preg_match('/logo-pn-natuna\.webp" alt="" width="(\d+)" height="(\d+)"/', $template, $emblemBox), 'Emblem must be decorative and dimensioned to stop layout shift.');
+if (isset($emblemBox[1]) && is_file($emblemFile) && ($emblemSize = @getimagesize($emblemFile))) {
+    $declaredRatio = (int) $emblemBox[1] / (int) $emblemBox[2];
+    $intrinsicRatio = $emblemSize[0] / $emblemSize[1];
+    $expect(abs($declaredRatio - $intrinsicRatio) / $intrinsicRatio < 0.03, sprintf('Emblem box %sx%s does not match the artwork ratio %dx%d; it would letterbox into a coloured disc.', $emblemBox[1], $emblemBox[2], $emblemSize[0], $emblemSize[1]));
+    $expect((int) $emblemBox[2] >= 36, 'Emblem must stay at least 36px tall to read as a seal.');
+    $expect($emblemSize[1] >= 2 * (int) $emblemBox[2], 'Emblem artwork must carry enough pixels for a 2x display.');
+}
+$expect((bool) preg_match('/\.editorial-article__masthead img \{[^}]*width:\s*' . preg_quote($emblemBox[1] ?? '', '/') . 'px;\s*height:\s*' . preg_quote($emblemBox[2] ?? '', '/') . 'px/', $css), 'Emblem CSS box must match the attributes it reserves.');
 
+// Fraunces bertinggi-x 0,45em; pada bobot 650 dan lebar 22ch judulnya terbaca lebih
+// kecil daripada judul Medium 42px meski angkanya lebih besar.
+$expect((bool) preg_match('/\.editorial-article \.editorial-article__title \{[^}]*font-weight:\s*(7|8|9)00/', $css), 'Article headline must stay at weight 700 or heavier to hold its own against a sans headline of the same size.');
+$expect(!preg_match('/\.editorial-article \.editorial-article__title \{[^}]*max-width:\s*\d+ch/', $css), 'Article headline must use the full reading column, not a 22ch stack.');
 $expect((bool) preg_match('/\.editorial-article \.editorial-article__masthead \{[^}]*border-bottom: 2px solid/', $css), 'Masthead needs its gold rule.');
 $expect((bool) preg_match('/body\.is-dark \.editorial-article__masthead \{[^}]*\}/', $css), 'Masthead needs a dark mode.');
 $expect((bool) preg_match('/\.editorial-article__dateline \{[^}]*font-weight: 800/', $css), 'Dateline needs its own weight.');

@@ -45,7 +45,15 @@ def clean_cache(php: str) -> None:
     code, output = run([php, "cli/joomla.php", "cache:clean"], ROOT)
     if code != 0:
         raise SystemExit("cache clean failed; refusing to verify against stale markup:\n" + output.strip())
-    print("cache cleaned")
+    # `cache:clean` tidak menyentuh peta PSR-4 ekstensi, padahal peta itulah yang
+    # menyembunyikan plugin yang baru didaftarkan lewat migrasi. Joomla membangunnya
+    # ulang pada permintaan berikutnya begitu berkasnya hilang.
+    dropped = 0
+    for stale in (ROOT / "cache" / "autoload_psr4.php", ROOT / "administrator" / "cache" / "autoload_psr4.php"):
+        if stale.is_file():
+            stale.unlink()
+            dropped += 1
+    print("cache cleaned" + (f" (+{dropped} peta namespace dibuang)" if dropped else ""))
 
 
 def run_contracts(php: str, python: str) -> int:

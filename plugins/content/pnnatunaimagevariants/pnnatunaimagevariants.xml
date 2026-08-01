@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="content" method="upgrade">
+	<name>plg_content_pnnatunaimagevariants</name>
+	<author>Pengadilan Negeri Natuna</author>
+	<creationDate>2026-08</creationDate>
+	<version>1.0.0</version>
+	<description>Membuat varian foto responsif -400/-800/-1200.webp begitu artikel disimpan, supaya berita baru tidak pernah mengirim foto ukuran penuh ke ponsel.</description>
+	<namespace path="src">Joomla\Plugin\Content\Pnnatunaimagevariants</namespace>
+	<files>
+		<folder plugin="pnnatunaimagevariants">services</folder>
+		<folder>src</folder>
+	</files>
+</extension>
