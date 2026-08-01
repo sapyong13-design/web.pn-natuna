@@ -12391,9 +12391,10 @@ body.is-dark .editorial-article__service-contact a { color: #efc96b; }
    sisi dan 117px di atas tautan kembali. Artikel berdiri di atas kertas halaman. */
 .content-primary:has(> .editorial-article), body.is-dark .content-primary:has(> .editorial-article) { border: 0; padding: 0; background: transparent; box-shadow: none; }
 .content-primary > .editorial-article { width: min(100%, 1040px); padding: clamp(28px, 3vw, 52px) clamp(16px, 3vw, 40px) 64px; }
-/* Daftar isi: disclosure di atas teks pada layar sempit, rel lengket di ruang kiri
-   kanvas begitu lebarnya cukup. Hanya artikel dengan lebih dari satu subjudul. */
+/* Daftar isi: disclosure di atas teks pada layar sempit, rel menggantung di margin
+   kiri begitu lebarnya cukup. Hanya artikel dengan lebih dari satu subjudul. */
 .editorial-article__rail { width: min(100%, var(--editorial-measure)); margin: clamp(28px, 4vw, 44px) auto -8px; }
+.editorial-article__reading { width: min(100%, var(--editorial-measure)); margin-inline: auto; }
 .editorial-article__toc { border: 1px solid var(--editorial-rule); border-radius: 4px; background: var(--editorial-paper); }
 .editorial-article__toc summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px 16px; color: var(--editorial-ink); font-weight: 800; cursor: pointer; }
 .editorial-article__toc summary span { color: var(--editorial-muted); font-size: var(--step--1); font-weight: 650; }
@@ -12404,23 +12405,16 @@ body.is-dark .editorial-article__service-contact a { color: #efc96b; }
 .editorial-article__toc a:hover, .editorial-article__toc a:focus-visible, .editorial-article__toc a[aria-current="true"] { color: var(--editorial-ink); text-decoration: underline; text-underline-offset: 3px; }
 .editorial-article__toc a[aria-current="true"] { font-weight: 800; }
 @media (min-width: 1200px) {
-  /* 200 + 56 + kolom teks (maks 760) = 1.016; kanvas dilebarkan ke 1.120 supaya muat. */
-  .content-primary > .editorial-article--railed { width: min(100%, 1120px); }
-  .editorial-article--railed { display: grid; grid-template-columns: 200px minmax(0, var(--editorial-measure)); justify-content: center; column-gap: 56px; }
-  .editorial-article--railed > * { grid-column: 2; }
-  /* Hero dan "Berita terkait" tadinya 860px yang ditengahkan pada kanvas, sementara
-     kolom teks digeser ke kanan oleh rel: di 1440 tepi kirinya jatuh di 212 (rel),
-     290 (foto), dan 468 (teks) - tiga sumbu, tidak ada yang lurus. Hero kini ikut
-     kolom baca, dan "Berita terkait" membentang penuh dari sumbu rel ke tepi teks. */
-  .editorial-article--railed > .editorial-article__hero, .editorial-article--railed > .editorial-article__hero-fallback { width: 100%; margin-inline: 0; }
-  .editorial-article--railed > .editorial-article__related { grid-column: 1 / -1; width: 100%; margin-inline: 0; }
-  /* Pembungkus baca mengulang kolom yang sama supaya rel dan teks tetap pada sumbu
-     yang sama, sekaligus mengurung `position: sticky`: Chrome mengurung sticky pada
-     grid artikel, bukan barisnya, sehingga tanpa pembungkus rel melayang di atas
-     "Berita terkait" dan kaki artikel sampai halaman habis. */
-  .editorial-article--railed > .editorial-article__reading { grid-column: 1 / -1; display: grid; grid-template-columns: 200px minmax(0, var(--editorial-measure)); column-gap: 56px; }
-  .editorial-article--railed > .editorial-article__reading > .editorial-article__body { grid-column: 2; }
-  .editorial-article--railed .editorial-article__rail { grid-column: 1; align-self: start; position: sticky; top: 88px; width: auto; margin: clamp(38px, 6vw, 72px) 0 0; }
+  /* Rel tidak boleh mendorong apa pun. Versi sebelumnya menjadikan artikel grid
+     `200px + teks`, sehingga kolom baca bergeser 128px ke kanan dari pusat layar:
+     artikel bersubjudul dan artikel biasa meletakkan teksnya di tempat berbeda.
+     Sekarang seluruh blok tetap di tempat yang sama seperti artikel tanpa rel, dan
+     relnya menggantung di margin kiri sebagai marginalia lewat margin negatif.
+     Rel dan badan berbagi satu sel grid supaya `position: sticky` terkurung pada
+     tinggi badan - Chrome mengurung sticky ke grid terdekat, bukan ke barisnya. */
+  .editorial-article--railed > .editorial-article__reading { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .editorial-article--railed > .editorial-article__reading > .editorial-article__body { grid-area: 1 / 1; }
+  .editorial-article--railed .editorial-article__rail { grid-area: 1 / 1; justify-self: start; align-self: start; position: sticky; top: 88px; width: 200px; margin: clamp(38px, 6vw, 72px) 0 0 calc((200px + clamp(32px, 3vw, 56px)) * -1); }
   .editorial-article--railed .editorial-article__toc { border: 0; border-left: 1px solid var(--editorial-rule); border-radius: 0; padding-left: 4px; background: transparent; }
   .editorial-article--railed .editorial-article__toc summary { padding: 0 12px 10px; font-size: var(--step--1); letter-spacing: .06em; text-transform: uppercase; }
   .editorial-article--railed .editorial-article__toc ol { border-top: 0; padding: 0 12px; }
