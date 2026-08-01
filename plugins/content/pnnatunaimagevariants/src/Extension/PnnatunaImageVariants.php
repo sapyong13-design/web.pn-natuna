@@ -52,6 +52,7 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
 
         $made = 0;
         $failed = 0;
+        $tooBig = 0;
         foreach ($paths as $path) {
             try {
                 $tally = VariantMaker::build(JPATH_ROOT, $path);
@@ -61,12 +62,23 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
             }
             $made += $tally['made'];
             $failed += $tally['failed'];
+            $tooBig += $tally['tooBig'];
         }
 
         if ($made > 0) {
             $this->getApplication()->enqueueMessage(
                 sprintf('%d varian foto responsif dibuat untuk artikel ini.', $made),
                 'notice'
+            );
+        }
+        if ($tooBig > 0) {
+            $this->getApplication()->enqueueMessage(
+                sprintf(
+                    '%d foto terlalu besar untuk diproses dengan batas memori server (%s). Artikel tetap tersimpan; jalankan php -d memory_limit=1024M tools/make-image-variants.php untuk menyelesaikannya.',
+                    $tooBig,
+                    (string) ini_get('memory_limit')
+                ),
+                'warning'
             );
         }
         if ($failed > 0) {

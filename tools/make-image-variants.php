@@ -26,6 +26,10 @@ use Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker;
 
 $quality = VariantMaker::QUALITY;
 
+// Foto kamera 24MP butuh 92 MB hanya untuk bitmapnya; CLI dinaikkan sendiri supaya
+// operator tidak perlu mengingat flag -d, sementara plugin tetap memakai batas server.
+@ini_set('memory_limit', '1024M');
+
 $root = dirname(__DIR__);
 $options = getopt('', ['dry-run', 'quality::', 'help']);
 if (isset($options['help'])) {
@@ -90,7 +94,7 @@ function referenced_images(mysqli $db, string $prefix): array
     return array_keys($paths);
 }
 
-$made = $skipped = $failed = 0;
+$made = $skipped = $failed = $tooBig = 0;
 $sourceBytes = $variantBytes = 0;
 $plan = [];
 
@@ -124,6 +128,7 @@ foreach (referenced_images($db, $config->dbprefix) as $path) {
     $made += $tally['made'];
     $skipped += $tally['skipped'];
     $failed += $tally['failed'];
+    $tooBig += $tally['tooBig'];
     $variantBytes += $tally['bytes'];
     if ($tally['made'] > 0) {
         $sourceBytes += (int) filesize($file);
@@ -142,11 +147,12 @@ if ($dryRun) {
 }
 
 printf(
-    "varian dibuat: %d (%.1f MB dari %.1f MB sumber), dilewati: %d, gagal: %d\n",
+    "varian dibuat: %d (%.1f MB dari %.1f MB sumber), dilewati: %d, terlalu besar: %d, gagal: %d\n",
     $made,
     $variantBytes / 1048576,
     $sourceBytes / 1048576,
     $skipped,
+    $tooBig,
     $failed
 );
 exit($failed > 0 ? 1 : 0);

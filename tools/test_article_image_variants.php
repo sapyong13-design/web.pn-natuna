@@ -20,13 +20,40 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
     }
 };
 
-// Templat harus benar-benar memakai varian itu. Dua regresi yang pernah terjadi:
-// foto badan artikel warisan tidak pernah disentuh, dan jalur relatif `images/...`
-// tanpa garis miring awal ditolak diam-diam sehingga srcset-nya hilang.
+// Templat harus benar-benar memakai varian itu, dan hanya boleh ada satu tempat yang
+// tahu bagaimana nama varian dibentuk. Tiga regresi yang pernah terjadi: foto badan
+// artikel warisan tidak pernah disentuh, jalur relatif `images/...` ditolak diam-diam,
+// dan kartu daftar menyajikan berkas asli - thumbnail 126px mengunduh foto 5 MB.
 $template = (string) file_get_contents($root . '/templates/pn_natuna_2026/html/com_content/article/default.php');
-$expect(str_contains($template, "\$path = '/' . ltrim(parse_url(\$src, PHP_URL_PATH) ?: \$src, '/');"), 'Srcset builder must normalise relative image paths; legacy content stores src without a leading slash.');
+$card = (string) file_get_contents($root . '/templates/pn_natuna_2026/html/com_content/category/blog_item.php');
+$helper = (string) file_get_contents($root . '/plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php');
+$expect(str_contains($helper, "\$path = '/' . ltrim(\$path, '/');"), 'Srcset builder must normalise relative image paths; legacy content stores src without a leading slash.');
+$expect(substr_count($template, 'VariantMaker::srcset(') === 1, 'Article template must route srcset through the shared builder.');
+$expect(substr_count($card, 'VariantMaker::srcset(') === 1, 'Listing cards must route srcset through the same shared builder.');
+$expect((bool) preg_match('/srcset="[^"]*\$this->escape\(\$cardCandidates\)/', $card) || str_contains($card, '$cardCandidates ?'), 'Listing card <img> must emit the srcset it built.');
+// Kartu ponsel kini menumpuk foto selebar kolom (354px di 390), bukan bilah 126px, jadi
+// `sizes` wajib mengikuti slot sungguhannya - kalau tidak, peramban memilih varian 126px
+// dan fotonya buram di layar retina.
+$expect(str_contains($card, "\$cardSizes = '(max-width: 760px) calc(100vw - 36px), 533px';"), 'Listing cards must declare the size they actually render at.');
 $expect(substr_count($template, "str_contains(\$img[0], 'srcset=')") >= 2, 'Every body image must pass through the srcset builder, not just those inside an editorial figure.');
 $expect(is_file($root . '/tools/make-image-variants.php'), 'The variant generator must ship with the site; Joomla never resizes on upload.');
+// Media Manager menyimpan `foo.jpg#joomlaImage://local-images/foo.jpg?width=...`.
+// Fragmen itu tidak boleh ikut tercetak ke `src` mana pun.
+$expect(substr_count($template, "strtok(") >= 2, 'Article template must strip the Media Manager fragment from hero and body images.');
+$expect(str_contains($card, "\$image = strtok(\$image, '#');"), 'Listing cards must strip the Media Manager fragment.');
+// Foto 24MP butuh 92 MB hanya untuk bitmapnya. Kehabisan memori adalah fatal error
+// yang tidak bisa ditangkap, jadi penyimpanan artikel akan mati dengan 500.
+$expect(str_contains($helper, 'public static function fits('), 'Variant maker must refuse photos that do not fit in the remaining memory.');
+$expect(str_contains($helper, "\$tally['tooBig']++"), 'Photos skipped for memory must be reported, not silently dropped.');
+$expect(str_contains((string) file_get_contents($root . '/plugins/content/pnnatunaimagevariants/src/Extension/PnnatunaImageVariants.php'), 'memory_limit'), 'The editor must be told which photos were skipped and how to finish them.');
+// Tiga cacat yang ditemukan lewat audit seluruh korpus (1 Agu 2026): foto hero dicetak
+// ulang di badan pada 75 dari 81 artikel berhero, 93 dari 93 kapsi berupa cap lembaga
+// berulang yang tanggalnya bahkan bertentangan dengan dateline, dan 165 dari 177 foto
+// badan tanpa `width`/`height` sehingga teks melompat di koneksi lambat.
+$expect(str_contains($template, '$photoKey'), 'Article template must drop a body photo that repeats the hero; 75 of 81 articles ship that duplicate.');
+$expect(str_contains($template, '$photoCaption = static function'), 'Figure captions must be derived from the image alt text, not a repeated institutional credit.');
+$expect(!str_contains($template, "'Dokumentasi Pengadilan Negeri Natuna · '"), 'The caption must not restate the publish date; it contradicted the article dateline.');
+$expect(str_contains($template, '$photoBox'), 'Body images must carry width/height so text does not jump while photos arrive.');
 
 $result = $db->query(
     "SELECT a.alias, a.images, a.introtext, a.`fulltext` FROM {$config->dbprefix}content a"

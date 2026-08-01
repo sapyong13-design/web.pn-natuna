@@ -21,6 +21,41 @@ final class VariantMaker
     public const QUALITY = 82;
 
     /**
+     * Merangkai `srcset` dari varian yang benar-benar ada di cakram. Dipakai templat
+     * artikel maupun kartu daftar supaya keduanya menawarkan berkas yang sama.
+     * Berkas asli hanya ditawarkan bila lebih besar daripada varian terbesar, supaya
+     * layar DPR 2 tetap terlayani tanpa memaksa DPR 1 mengunduhnya.
+     */
+    public static function srcset(string $root, string $src): string
+    {
+        $path = parse_url($src, PHP_URL_PATH);
+        if (!\is_string($path) || $path === '') {
+            return '';
+        }
+        $path = '/' . ltrim($path, '/');
+        if (!str_starts_with($path, '/images/')) {
+            return '';
+        }
+        $root = rtrim($root, '/\\');
+        $base = preg_replace('/\.[a-z0-9]+$/i', '', $path);
+        $candidates = [];
+        foreach (self::WIDTHS as $width) {
+            if (is_file($root . $base . '-' . $width . '.webp')) {
+                $candidates[] = $base . '-' . $width . '.webp ' . $width . 'w';
+            }
+        }
+        if (!$candidates) {
+            return '';
+        }
+        $size = @getimagesize($root . $path);
+        if ($size && (int) $size[0] > max(self::WIDTHS)) {
+            $candidates[] = $path . ' ' . (int) $size[0] . 'w';
+        }
+
+        return implode(', ', $candidates);
+    }
+
+    /**
      * Mengumpulkan jalur foto lokal dari satu artikel: hero pada JSON images dan
      * setiap `<img>` di badan. Jalur relatif warisan (`images/...`) diseragamkan
      * karena templat mencarinya sebagai `/images/...`.
@@ -60,20 +95,51 @@ final class VariantMaker
     }
 
     /**
+     * Memastikan bitmap sumber muat di sisa memori proses. GD memegang foto sebagai
+     * truecolor 4 byte per piksel: kamera 24MP butuh 92 MB sebelum kanvas resample
+     * dihitung. Kehabisan memori adalah fatal error yang tidak bisa ditangkap
+     * `try/catch`, jadi penyimpanan artikel akan mati dengan 500 - lebih baik foto itu
+     * dilewati dengan peringatan dan diselesaikan lewat CLI yang batasnya bisa dinaikkan.
+     */
+    public static function fits(int $width, int $height): bool
+    {
+        $limit = trim((string) ini_get('memory_limit'));
+        if ($limit === '' || $limit === '-1') {
+            return true;
+        }
+        $bytes = (int) $limit;
+        $unit = strtolower(substr($limit, -1));
+        $bytes *= match ($unit) {
+            'g' => 1073741824,
+            'm' => 1048576,
+            'k' => 1024,
+            default => 1,
+        };
+        $needed = (int) ($width * $height * 4 * 2.1);
+
+        return $needed < ($bytes - memory_get_usage(true));
+    }
+
+    /**
      * Membuat varian yang belum ada untuk satu foto. Tidak pernah memperbesar, dan
      * melewati varian yang sudah lebih baru daripada sumbernya, jadi aman diulang.
      *
-     * @return array{made:int,skipped:int,failed:int,bytes:int}
+     * @return array{made:int,skipped:int,failed:int,tooBig:int,bytes:int}
      */
     public static function build(string $root, string $path, int $quality = self::QUALITY): array
     {
-        $tally = ['made' => 0, 'skipped' => 0, 'failed' => 0, 'bytes' => 0];
+        $tally = ['made' => 0, 'skipped' => 0, 'failed' => 0, 'tooBig' => 0, 'bytes' => 0];
         $file = rtrim($root, '/\\') . $path;
         if (!is_file($file) || !\function_exists('imagewebp')) {
             return $tally;
         }
         $size = @getimagesize($file);
         if (!$size || !\in_array($size['mime'], ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return $tally;
+        }
+        if (!self::fits((int) $size[0], (int) $size[1])) {
+            $tally['tooBig']++;
+
             return $tally;
         }
 

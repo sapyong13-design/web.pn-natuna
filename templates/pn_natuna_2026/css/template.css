@@ -154,6 +154,7 @@ img {
   margin: -1px !important;
   overflow: hidden !important;
   clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
   white-space: nowrap !important;
   border: 0 !important;
 }
@@ -2570,14 +2571,6 @@ a.instagram-post-slide {
 .announcement-item p {
   margin: 0;
   color: #4d5963;
-}
-
-.read-more-link {
-  justify-self: start;
-  border-bottom: 2px solid var(--color-accent);
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 900;
 }
 
 .announcement-item {
@@ -12323,9 +12316,15 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 .editorial-article__hero-fallback small { margin-top: 8px; color: #e9cc7c; letter-spacing: .12em; text-transform: uppercase; }
 .editorial-article--announcement .editorial-article__hero-fallback { min-height: 220px; background: linear-gradient(120deg, #f4eadb, #fffdf9); color: #551822; }
 /* Kolom teks ikut melebar bersama layar: 640px pada laptop kecil sampai 760px pada
-   monitor lebar, dengan 20px huruf = 66-70 karakter. Jeda antarparagraf 2em sengaja
-   melampaui tinggi baris supaya pergantian paragraf terbaca. */
-.editorial-article__body { width: min(100%, var(--editorial-measure)); min-width: 0; margin: clamp(38px, 6vw, 72px) auto; font-size: clamp(1rem, 1.5vw, 1.25rem); line-height: 1.7; }
+   monitor lebar. Jeda antarparagraf 2em sengaja melampaui tinggi baris supaya
+   pergantian paragraf terbaca. */
+/* Lantai 1rem menahan ponsel dan tablet di 16px sampai 1,5vw melewatinya pada 1067px,
+   sehingga kolom tablet 640px direntang jadi 70 karakter per baris - baris terpanjang
+   di seluruh situs justru pada layar terkecil. Lantainya dinaikkan ke 17px dan kurvanya
+   dipatok pada dua titik desktop yang sudah benar: 0,5rem + 5vw/6 menghasilkan tepat
+   18px pada 1200 dan 20px pada 1440. `--editorial-measure` sengaja tidak diubah - 54vw
+   itulah yang mengunci 648px pada 1200, jadi mengubahnya akan menggeser desktop. */
+.editorial-article__body { width: min(100%, var(--editorial-measure)); min-width: 0; margin: clamp(38px, 6vw, 72px) auto; font-size: clamp(1.0625rem, 0.5rem + 5vw / 6, 1.25rem); line-height: 1.7; }
 /* Aturan generik `.content-primary li` merata-kanan-kirikan setiap butir. Di rel
    selebar 200px itu memecah "Bukan Sekadar Pemeriksaan Berkas" jadi tiga baris
    bersungai putih, jadi seluruh artikel - bukan hanya badannya - dilepaskan. */
@@ -12353,22 +12352,15 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 .editorial-article__body table { display: block; width: max-content; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
 .editorial-article__body th, .editorial-article__body td { border: 1px solid var(--editorial-rule); padding: 10px 12px; }
 .editorial-article__body a { color: #7a1d27; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
-/* Berita layanan berakhir dengan langkah berikutnya, bukan tombol berbagi lalu senyap. */
-.editorial-article__service { width: min(100%, var(--editorial-measure)); margin: clamp(38px, 5vw, 56px) auto 0; border-top: 2px solid #8f1f0b; background: #f7f1e8; padding: clamp(20px, 3vw, 28px) clamp(18px, 3vw, 26px); }
-.editorial-article__service h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: clamp(1.2rem, 1.8vw, 1.45rem); line-height: 1.2; }
-.editorial-article__service-lead { margin: 6px 0 16px; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.5; }
-.editorial-article__service ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.editorial-article__service li a { display: grid; align-content: center; gap: 2px; min-height: 44px; border: 1px solid var(--editorial-rule); border-radius: 3px; padding: 10px 14px; color: var(--editorial-ink); background: var(--editorial-paper); text-decoration: none; transition: border-color 160ms cubic-bezier(.16, 1, .3, 1); }
-.editorial-article__service li a:hover, .editorial-article__service li a:focus-visible { border-color: #8b4f49; }
-.editorial-article__service li strong { font-weight: 750; }
-.editorial-article__service li span { color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.45; }
-.editorial-article__service-contact { margin: 16px 0 0; color: var(--editorial-muted); font-size: var(--step--1); line-height: 1.6; }
-.editorial-article__service-contact a { color: #7a1d27; }
 .editorial-article__footer { width: min(100%, var(--editorial-measure)); margin: 0 auto; border-block: 1px solid var(--editorial-rule); padding: 26px 0; }
 .editorial-article__publication { display: grid; gap: 4px; color: var(--editorial-muted); }
 .editorial-article__publication strong { color: var(--editorial-ink); }
 .editorial-article__share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 20px; }
 .editorial-article__share button, .editorial-article__share a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #8b4f49; border-radius: 3px; padding: 8px 15px; color: #681923; background: transparent; font: inherit; font-weight: 750; text-decoration: none; cursor: pointer; }
+/* `hidden` disetel skrip saat `navigator.share` tidak ada, tetapi `display: inline-flex`
+   di atas mengalahkan aturan `[hidden]` bawaan peramban sehingga tombol yang seharusnya
+   mati tetap tampil 147x44 dan bisa diklik tanpa memberi umpan balik apa pun. */
+.editorial-article__share button[hidden], .editorial-article__share a[hidden] { display: none; }
 .editorial-article__share-status { flex-basis: 100%; min-height: 1.4em; color: var(--editorial-muted); font-size: var(--step--1); }
 .editorial-article__related { width: min(100%, var(--editorial-wide)); margin: clamp(46px, 7vw, 82px) auto 0; }
 .editorial-article__related h2 { margin-bottom: 18px; font-family: Fraunces, Georgia, serif; font-size: clamp(1.35rem, 2vw, 1.6rem); }
@@ -12376,10 +12368,14 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 .editorial-article__related-card { display: grid; min-width: 0; overflow: hidden; border: 1px solid var(--editorial-rule); color: var(--editorial-ink); background: var(--editorial-paper); text-decoration: none; transition: border-color 160ms cubic-bezier(.16, 1, .3, 1), transform 160ms cubic-bezier(.16, 1, .3, 1); }
 .editorial-article__related-card:hover, .editorial-article__related-card:focus-within { border-color: #8b4f49; transform: translateY(-2px); }
 body.is-dark .editorial-article__related-card:hover, body.is-dark .editorial-article__related-card:focus-within { border-color: #c8a45a; }
-.editorial-article__related-card img, .editorial-article__related-fallback { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+/* Satu bahasa foto untuk seluruh permukaan berita: kartu daftar sudah 3:2,
+   maka kartu terkait ikut 3:2. Sebelumnya satu pembaca melewati tiga rasio
+   dalam satu kunjungan - 3:2 di daftar, 16:9 di ekor artikel, 4:3 di ponsel. */
+.editorial-article__related-card img, .editorial-article__related-fallback { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
 .editorial-article__related-fallback { display: grid; place-items: center; color: #e5c875; background: #541820; font-family: Fraunces, Georgia, serif; font-size: 2rem; }
 .editorial-article__related-card time { padding: 15px 16px 0; color: var(--editorial-muted); font-size: var(--step--1); }
-.editorial-article__related-card strong { padding: 7px 16px 18px; font-family: Fraunces, Georgia, serif; font-size: 1.16rem; line-height: 1.3; }
+.editorial-article__related-card strong { display: block; overflow: hidden; padding: 7px 16px 18px; font-family: Fraunces, Georgia, serif; font-size: 1.16rem; line-height: 1.3; }
+.editorial-article__related-card strong span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .editorial-article__return { margin-top: 30px; }
 /* #d1a42f hanya 2,32:1 di atas kartu putih; SC 1.4.11 menuntut 3:1 untuk indikator
    non-teks. Inti cincin dibuat gelap, halo emasnya dipertahankan. */
@@ -12392,10 +12388,6 @@ body.is-dark .editorial-article__hero--document { background: #352522; }
 body.is-dark .editorial-article__hero, body.is-dark .editorial-article__figure { background: #352522; box-shadow: 0 18px 46px rgba(0, 0, 0, .42); }
 body.is-dark .editorial-article__share button, body.is-dark .editorial-article__share a { border-color: #c8a45a; color: #f4d989; }
 body.is-dark .editorial-article__masthead { border-bottom-color: #c8a45a; color: #e2bb63; }
-body.is-dark .editorial-article__service { border-top-color: #c8a45a; background: #352522; }
-body.is-dark .editorial-article__service li a { background: transparent; }
-body.is-dark .editorial-article__service li a:hover, body.is-dark .editorial-article__service li a:focus-visible { border-color: #c8a45a; }
-body.is-dark .editorial-article__service-contact a { color: #efc96b; }
 /* Halaman artikel tidak memakai cangkang kartu generik: pada 1366 kartu selebar
    1.257px hanya membingkai kolom teks 640px, menyisakan 309px putih mati di tiap
    sisi dan 117px di atas tautan kembali. Artikel berdiri di atas kertas halaman. */
@@ -12436,6 +12428,9 @@ body.is-dark .editorial-article__service-contact a { color: #efc96b; }
   /* Kartu halaman melepas padding-nya supaya kolom baca memakai lebar layar,
      bukan 284px dari 390px seperti sebelumnya. */
   .content-primary > .editorial-article { padding: 28px 0 72px; }
+  /* Badan naik 16px -> 17px; jeda barisnya dirapatkan supaya iramanya tetap 27px.
+     Kolom 358px hanya memuat 36 karakter - tidak perlu jeda selega kolom 66 karakter. */
+  .editorial-article__body { line-height: 1.62; }
   .editorial-article .editorial-article__title { font-size: clamp(1.75rem, 7.5vw, 2.1rem); line-height: 1.14; }
   .editorial-article__meta { gap: 6px 12px; }
   .editorial-article__meta > * + *::before { margin-right: 12px; }
@@ -12452,14 +12447,20 @@ body.is-dark .editorial-article__service-contact a { color: #efc96b; }
   .editorial-article__related-grid { grid-template-columns: 1fr; }
   /* Tinggi gambar tidak boleh lagi ditentukan tinggi judul yang membungkus. */
   .editorial-article__related-card { grid-template-columns: 128px minmax(0, 1fr); grid-template-rows: auto auto 1fr; align-items: start; }
-  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1 / span 2; align-self: start; height: auto; aspect-ratio: 4 / 3; }
-  .editorial-article__related-card strong { overflow-wrap: normal; word-break: keep-all; font-size: 1rem; line-height: 1.35; }
+  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1 / span 2; align-self: start; height: auto; aspect-ratio: 3 / 2; }
+  /* Judul tanpa batas membuat tiga kartu menumpuk 693px - pada berita pendek ekornya
+     jadi 42% halaman. Tiga baris cukup untuk mengenali judul, dan tinggi kartu di satu
+     baris jadi seragam. Clamp dipasang pada <span> di dalamnya, bukan pada <strong>:
+     <strong> adalah grid item, dan `display:-webkit-box` milik grid item diblokifikasi
+     menjadi `flow-root` sehingga clamp-nya mati diam-diam. */
+  .editorial-article__related-card strong { display: block; overflow: hidden; overflow-wrap: normal; word-break: keep-all; font-size: 1rem; line-height: 1.35; }
+  .editorial-article__related-card strong span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
   .editorial-article__share > span:first-child { flex-basis: 100%; }
 }
 @media (max-width: 360px) {
   /* Di 320px kolom judul kartu tinggal 68px dan judul pecah 4-7 huruf per baris. */
   .editorial-article__related-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; }
-  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1; aspect-ratio: 16 / 9; }
+  .editorial-article__related-card img, .editorial-article__related-fallback { grid-row: 1; aspect-ratio: 3 / 2; }
 }
 @media (prefers-reduced-motion: reduce) { .editorial-article *, .editorial-article *::before, .editorial-article *::after { scroll-behavior: auto; transition: none !important; animation: none !important; } }
 
@@ -12499,7 +12500,10 @@ body.is-dark .editorial-article__service-contact a { color: #efc96b; }
 .news-portal__trust > a { flex: 0 0 auto; padding: 8px 14px; }
 .news-portal__social { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }
 .news-portal__social a { padding: 8px 14px; }
-.news-portal a:focus-visible { outline: 3px solid #d5a530; outline-offset: 3px; }
+/* Sama seperti css:12384: #d5a530 hanya 2,25:1 di atas kertas kartu #fffdf9 dan gagal
+   SC 1.4.11. Inti cincin digelapkan, halo emasnya dipertahankan. */
+.news-portal a:focus-visible { outline: 3px solid #7a4b00; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(209, 164, 47, .35); }
+body.is-dark .news-portal a:focus-visible { outline-color: #f0c55a; }
 body.is-dark .news-portal { --portal-ink: #fff4e8; --portal-muted: #d5c0b3; --portal-paper: #1d282f; --portal-rule: #4b5961; }
 body.is-dark .news-portal__channels a, body.is-dark .news-portal__heading > a, body.is-dark .news-portal__trust > a, body.is-dark .news-portal__social a { border-color: #b79955; color: #f5d884; background: #172128; }
 body.is-dark .news-portal__trust { background: #253035; }
@@ -12533,17 +12537,21 @@ body.is-dark .news-portal__trust span { color: #e3d8cc; }
 
 /* NEWS CHANNEL CATEGORIES 2026-07-12 */
 .news-channel { --channel-ink: #281816; --channel-muted: #705e58; --channel-paper: #fffdf9; --channel-rule: #dfd1c1; width: min(100%, 1180px); min-width: 0; margin-inline: auto; padding: clamp(24px, 4vw, 56px) clamp(16px, 4vw, 48px) 72px; color: var(--channel-ink); overflow: clip; }
-.news-channel-hero { position: relative; isolation: isolate; display: grid; min-height: clamp(230px, 22vw, 280px); overflow: hidden; color: #fff9f0; background: #521821; }
+/* Kop kanal dulu 280px pada 1440 dan 220px pada 390 - satu layar penuh sebelum satu
+   judul pun terbaca. Tingginya dipangkas separuh; warna maroon dan kickernya tetap. */
+.news-channel-hero { position: relative; isolation: isolate; display: grid; min-height: clamp(112px, 8vw, 128px); overflow: hidden; color: #fff9f0; background: #521821; }
 .news-channel-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: rgba(81, 20, 28, .68); }
 .news-channel-hero > img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
-.news-channel-hero__overlay { align-self: end; max-width: 760px; padding: clamp(22px, 4vw, 40px); }
-.news-channel .section-kicker { margin: 0 0 9px; color: #f2cf76; font-size: var(--step--2); font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
-.news-channel-hero h1 { max-width: 19ch; margin: 0; color: #fff; font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 4.5vw, 3.8rem); line-height: 1.04; letter-spacing: -.035em; text-wrap: balance; }
+.news-channel-hero__overlay { align-self: end; max-width: 760px; padding: clamp(16px, 1.7vw, 25px); }
+.news-channel .section-kicker { margin: 0 0 6px; color: #f2cf76; font-size: var(--step--2); font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+.news-channel-hero h1 { max-width: 30ch; margin: 0; color: #fff; font-family: Fraunces, Georgia, serif; font-size: clamp(1.5rem, 2.3vw, 2.25rem); line-height: 1.08; letter-spacing: -.02em; text-wrap: balance; }
 /* Sembilan dari sembilan paragraf halaman kanal masih mewarisi `text-align: justify`
    dari `.content-primary p`. Di kolom kartu 313px tanpa kamus pemenggalan Indonesia,
    itu menghasilkan sungai putih yang sama seperti yang sudah dicabut dari artikel. */
 .news-channel :is(p, li) { text-align: start; hyphens: manual; text-wrap: pretty; }
-.news-channel-hero__overlay > p:last-child { max-width: 62ch; margin: 12px 0 0; color: #f8e9dc; line-height: 1.55; }
+/* 72ch, bukan 62ch: pada 1440 lede 123 karakter jadi dua baris, bukan tiga, tanpa
+   mengecilkan hurufnya. */
+.news-channel-hero__overlay > p:last-child { max-width: 72ch; margin: 8px 0 0; color: #f8e9dc; line-height: 1.5; }
 .news-channel-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 16px 0 clamp(34px, 5vw, 56px); }
 .news-channel-tabs a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #8a4a45; padding: 9px 12px; color: #681923; background: var(--channel-paper); font-weight: 800; text-align: center; text-decoration: none; }
 .news-channel-tabs a:is(:hover, :focus-visible, .is-active) { color: #fff; background: #681923; }
@@ -12561,19 +12569,54 @@ body.is-dark .news-portal__trust span { color: #e3d8cc; }
 .news-card h2, .announcement-item h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: 1.44rem; line-height: 1.24; }
 .news-card h2 a, .announcement-item h2 a { color: inherit; text-decoration: none; }
 .news-card-body p { margin: 0; color: var(--channel-muted); font-size: var(--step--1); line-height: 1.55; }
-.read-more-link { width: fit-content; min-height: 32px; color: #681923; font-size: var(--step--1); font-weight: 850; text-decoration: underline; text-underline-offset: 3px; }
 .news-listing--announcement { display: grid; border-top: 1px solid var(--channel-rule); }
 .announcement-item { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--channel-rule); padding: 20px 0; }
 .announcement-item .news-card-body { gap: 8px; padding: 0; }
 .announcement-item .news-meta { order: -1; }
 .news-channel-description { max-width: 74ch; margin: 0 0 26px; color: var(--channel-muted); }
 .news-channel-pagination { margin-top: 32px; }
-.news-channel :focus-visible { outline: 3px solid #d5a530; outline-offset: 3px; }
+/* Sama seperti css:12384: #d5a530 hanya 2,25:1 di atas kertas kartu #fffdf9 dan gagal
+   SC 1.4.11. Inti cincin digelapkan, halo emasnya dipertahankan. */
+.news-channel :focus-visible { outline: 3px solid #7a4b00; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(209, 164, 47, .35); }
+body.is-dark .news-channel :focus-visible { outline-color: #f0c55a; }
 body.is-dark .news-channel { --channel-ink: #fff4e8; --channel-muted: #d5c0b3; --channel-paper: #1d282f; --channel-rule: #4b5961; }
 body.is-dark .news-channel-tabs a { border-color: #b79955; color: #f5d884; background: #172128; }
 body.is-dark .news-channel-tabs a:is(:hover, :focus-visible, .is-active) { color: #172128; background: #f5d884; }
-body.is-dark .news-meta span, body.is-dark .read-more-link { color: #f5d884; }
-@media (max-width: 760px) { .news-channel { padding: 18px 16px 56px; } .news-channel-hero { min-height: 220px; margin-inline: -16px; } .news-channel-hero__overlay { padding: 22px 16px; } .news-channel-hero h1 { font-size: clamp(1.9rem, 9.6vw, 3rem); } .news-channel-hero__overlay > p:last-child { font-size: var(--step--1); } .news-listing--cards { grid-template-columns: 1fr; gap: 10px; } .news-card { grid-template-columns: 126px minmax(0, 1fr); grid-template-rows: auto; } .news-card-media { grid-row: 1; height: 100%; min-height: 112px; aspect-ratio: auto; } .news-card-body { padding: 13px; } .news-card-body p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; } .announcement-item { padding: 17px 0; } }
+body.is-dark .news-meta span { color: #f5d884; }
+@media (max-width: 760px) {
+  /* Kartu halaman melepas padding-nya persis seperti halaman artikel di css:12438:
+     daftar berita memakai 358px penuh dari layar 390px, bukan 284px. */
+  .content-primary:has(> .news-channel) { padding-inline: 0; }
+  .news-channel { padding: 18px 0 56px; }
+  /* Padding kanal sudah nol, jadi kop tidak perlu lagi ditarik keluar 16px. */
+  .news-channel-hero { margin-inline: 0; }
+  .news-channel-hero h1 { font-size: clamp(1.4rem, 6.2vw, 2rem); }
+  .news-channel-hero__overlay > p:last-child { font-size: var(--step--1); }
+  /* Satu kolom pada ponsel, dua kolom begitu lebarnya cukup: pada 700px satu kartu
+     setinggi 617px dengan foto 640x427 hanya memuat 1,5 kartu per layar. */
+  .news-listing--cards { grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 12px; }
+  /* Foto 126px di samping kolom teks 156px memecah judul jadi satu-dua kata per baris
+     dan merentang foto jadi bilah 126x448. Kartu ditumpuk: foto selebar kartu dengan
+     potongan dokumenter 3:2 di atas teks selebar kartu. */
+  .news-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; overflow: visible; }
+  .news-card-media { grid-row: 1; width: 100%; height: auto; min-height: 0; aspect-ratio: 3 / 2; }
+  /* Kartu tanpa foto tidak perlu menyumbang 236px maroon kosong sebelum judulnya;
+     pada layar sempit lambangnya cukup menjadi pita. */
+  .news-card-media--fallback:not(:has(img)) { aspect-ratio: 3 / 1; font-size: 1.5rem; }
+  .news-card-body { gap: 9px; padding: 14px 16px 16px; }
+  /* Judul dibatasi tiga baris oleh line-clamp, bukan lagi oleh `overflow: hidden` kartu
+     yang dulu memenggal "POSBAKUM" di tengah huruf. `anywhere` menjaga kata kapital
+     panjang tetap patah pada batas kolom, bukan tumpah keluar. */
+  /* Clamp harus dipasang pada <a>, bukan <h2>. `<h2>` adalah grid item di dalam
+     .news-card-body, dan peramban memblokifikasi `display:-webkit-box` milik grid item
+     menjadi `flow-root` - terukur langsung: computed display `flow-root`, clamp mati,
+     lalu `overflow:hidden` memenggal judul di tengah baris tanpa elipsis. Tautannya
+     bukan grid item, jadi di sana `-webkit-box` bertahan dan elipsisnya muncul. */
+  .news-card h2, .announcement-item h2 { font-size: 1.18rem; line-height: 1.3; overflow-wrap: anywhere; }
+  .news-card h2 a, .announcement-item h2 a { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+  .news-card-body p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .announcement-item { padding: 17px 0; }
+}
 @media (prefers-reduced-motion: reduce) { .news-channel *, .news-channel *::before, .news-channel *::after { scroll-behavior: auto; transition: none !important; animation: none !important; } }
 
 /* NEWS CHANNEL LISTING AND PAGINATION 2026-07-12 */
@@ -13154,6 +13197,41 @@ body.is-dark.is-home .module-card:has(.app-links) .app-links a {
 /* END HOMEPAGE SECTION RHYTHM 2026-07-11 */
 /* END MAKLUMAT COMPACT ROW 2026-07-11 */
 
+
+/* Halaman galat. Ia menyambut warga yang mengklik tautan lama dari WhatsApp, jadi yang
+   dibutuhkan bukan hiasan melainkan pengakuan yang jelas dan jalan keluar yang nyata.
+   Kop berlambang dipakai supaya pembaca langsung tahu ia masih di situs pengadilan yang
+   benar - bukan tersesat ke halaman asing. */
+.error-page { display: grid; place-items: center; min-height: 100vh; padding: clamp(24px, 6vw, 72px) 16px; background: var(--color-soft); }
+.error-page__inner { width: min(100%, 640px); }
+.error-page__masthead { display: flex; align-items: center; gap: 10px; margin: 0 0 clamp(20px, 4vw, 32px); padding-bottom: 12px; border-bottom: 2px solid var(--color-accent); color: var(--color-primary-deep); font-size: var(--step--2); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.error-page__masthead img { width: 31px; height: 40px; object-fit: contain; }
+.error-page__code { margin: 0; color: var(--color-primary); font-family: Fraunces, Georgia, serif; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 700; line-height: 1; letter-spacing: -.03em; }
+.error-page h1 { margin: 8px 0 0; color: var(--color-ink); font-family: Fraunces, Georgia, serif; font-size: clamp(1.5rem, 4vw, 2.1rem); font-weight: 650; line-height: 1.15; text-wrap: balance; }
+.error-page__lead { margin: 14px 0 0; max-width: 54ch; color: var(--color-muted); font-size: var(--step-0); line-height: 1.6; }
+.error-page__search { display: flex; flex-wrap: wrap; gap: 8px; margin: clamp(22px, 4vw, 30px) 0 0; }
+.error-page__search label { flex-basis: 100%; color: var(--color-ink); font-size: var(--step--1); font-weight: 700; }
+.error-page__search input { flex: 1 1 220px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--color-line); border-radius: 3px; background: var(--color-surface); color: var(--color-ink); font: inherit; }
+.error-page__search input:focus-visible, .error-page a:focus-visible, .error-page button:focus-visible { outline: 3px solid #7a4b00; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(209, 164, 47, .35); }
+.error-page__search button { min-height: 44px; padding: 10px 22px; border: 1px solid var(--color-primary); border-radius: 3px; background: var(--color-primary); color: #fff; font: inherit; font-weight: 750; cursor: pointer; }
+.error-page__search button:hover { background: var(--color-primary-dark); }
+.error-page h2 { margin: clamp(26px, 5vw, 36px) 0 12px; color: var(--color-ink); font-size: var(--step--1); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.error-page__routes { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.error-page__routes a { display: grid; gap: 2px; align-content: center; min-height: 44px; padding: 11px 15px; border: 1px solid var(--color-line); border-radius: 3px; background: var(--color-surface); color: var(--color-ink); text-decoration: none; transition: border-color 160ms cubic-bezier(.16, 1, .3, 1); }
+.error-page__routes a:hover { border-color: var(--color-primary); }
+.error-page__routes strong { font-weight: 750; }
+.error-page__routes span { color: var(--color-muted); font-size: var(--step--1); line-height: 1.45; }
+.error-page__help { margin: clamp(22px, 4vw, 30px) 0 0; padding-top: 16px; border-top: 1px solid var(--color-line); color: var(--color-muted); font-size: var(--step--1); line-height: 1.6; }
+.error-page__help a { color: var(--color-primary); }
+.error-page__debug { margin-top: 28px; overflow-x: auto; font-size: var(--step--2); }
+body.is-dark .error-page { background: #151c22; }
+body.is-dark .error-page__masthead { color: #f5e7d4; }
+body.is-dark .error-page__code { color: #f3c96b; }
+body.is-dark .error-page h1, body.is-dark .error-page__routes strong { color: #fff4e8; }
+body.is-dark .error-page__lead, body.is-dark .error-page__routes span, body.is-dark .error-page__help { color: #d5c0b3; }
+body.is-dark .error-page__routes a, body.is-dark .error-page__search input { border-color: #4b5961; background: #1d282f; color: #fff4e8; }
+body.is-dark .error-page__help a { color: #f3c96b; }
+
 /* AMPUH DIRECTORY 2026-07-13 */
 .ampuh-directory { width: min(100%, 1180px); margin-inline: auto; color: var(--color-ink); background: var(--color-surface); font-family: var(--font-body); }
 .ampuh-directory__header { position: relative; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, .72fr); min-height: 350px; overflow: clip; border-block: 1px solid var(--color-line); background: var(--color-soft); }
@@ -13691,7 +13769,6 @@ body.is-dark .hero-news-panel :is(.hero-item-title, .hero-item-body) {
     .mobile-menu-footer { position: static; }
     .main-menu li > a, .main-menu li > span { overflow-wrap: anywhere; }
   }
-  .read-more-link,
   .footer-link-section a,
   .footer-social .social-link,
   .footer-contact-item a { min-height: 44px; }
@@ -15180,7 +15257,6 @@ body.is-dark .instansi-updated.is-stale {
   .news-portal__hero-overlay > p,
   .news-portal__heading > p,
   .news-channel .section-kicker,
-  .read-more-link,
   .mobile-menu-group-label,
   .profile-status-badge,
   .ampuh-directory__kicker,
@@ -15191,3 +15267,70 @@ body.is-dark .instansi-updated.is-stale {
 ) {
   font-weight: 800;
 }
+
+/* KARTU SATU TAUTAN DAN JEJAK KUNJUNGAN 2026-08-02
+   Kartu daftar kini hanya menyisakan satu jangkar, yaitu judulnya. Lapisan
+   ::after membentangkan jangkar itu ke seluruh kartu sehingga foto dan
+   ringkasan tetap bisa ditekan, tetapi enam kartu hanya memakai enam
+   perhentian tab - bukan delapan belas - dan pembaca layar menyebut satu
+   judul satu kali. */
+.news-card { position: relative; }
+.news-card h2 a::after { content: ""; position: absolute; inset: 0; }
+/* Cincin fokus harus sebangun dengan daerah yang bisa ditekan. Kalau dibiarkan
+   melekat pada jangkarnya, cincin hanya melingkari kotak teks judul dan pecah
+   antarbaris; jadi cincinnya dipindahkan ke kartu, dengan geometri yang sama
+   seperti css:12590. */
+.news-card h2 a:focus-visible { outline: none; box-shadow: none; }
+.news-card:has(h2 a:focus-visible) { outline: 3px solid #7a4b00; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(209, 164, 47, .35); }
+body.is-dark .news-card:has(h2 a:focus-visible) { outline-color: #f0c55a; }
+/* Pada ponsel padding sisi kanal nol, jadi kartu menempel persis pada tepi
+   kotak klip kanal dan cincin 7px di luarnya terpotong kiri-kanan. Margin klip
+   memberi ruang cat tanpa memulihkan gulir mendatar: luapan visual tidak pernah
+   menumbuhkan bilah gulir, dan luapan tata letak tetap dipotong. */
+@media (max-width: 760px) { .news-channel { overflow-clip-margin: 10px; } }
+/* Seluruh kartu kini permukaan tekan, jadi tepinya ikut menanggapi kursor
+   seperti kartu berita terkait di ekor artikel. */
+.news-card:has(h2 a:hover) { border-color: #8b4f49; }
+body.is-dark .news-card:has(h2 a:hover) { border-color: #c8a45a; }
+.news-card h2 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Delapan puluh empat berita di empat belas halaman tanpa satu pun jejak
+   kunjungan: pembaca yang kembali dari sebuah berita tidak tahu mana yang
+   sudah dibukanya. Peramban hanya menghormati color, background-color,
+   border-color dan outline-color pada :visited, jadi jejaknya murni warna.
+   Ungu terung, bukan abu-abu, supaya terbaca "sudah dibaca" dan bukan "mati":
+   #642a72 = 9,77:1 di atas kertas kartu #fffdf9, #dcb8e6 = 9,13:1 di atas
+   kartu gelap #1a232b dan 9,56:1 di atas kartu terkait gelap #281b18. */
+.news-card h2 a:visited { color: #642a72; }
+.editorial-article__related-card:visited { color: #642a72; }
+body.is-dark .news-card h2 a:visited { color: #dcb8e6; }
+body.is-dark .editorial-article__related-card:visited { color: #dcb8e6; }
+
+/* INDEKS TAHUN ARSIP KANAL 2026-08-02
+   Delapan puluh empat berita di empat belas halaman: tanpa indeks tahun,
+   mencari berita 2023 berarti menekan "Berikutnya" sebelas kali. Satu baris
+   teks, bukan kartu dan bukan tombol - tab kanal di atasnya harus tetap yang
+   paling kuat. */
+.news-channel-tabs:has(+ .news-channel-archive) { margin-bottom: 10px; }
+.news-channel-archive { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; margin: 0 0 clamp(30px, 4.5vw, 48px); }
+.news-channel-archive__label { color: var(--channel-muted); font-size: var(--step--1); font-weight: 700; }
+.news-channel-archive ul { display: flex; flex-wrap: wrap; gap: 0 16px; margin: 0; padding: 0; list-style: none; }
+.news-channel-archive li { margin: 0; padding: 0; }
+.news-channel-archive li::marker { content: none; }
+/* Tinggi sentuh 44px penuh: ini tautan navigasi, bukan tautan di dalam kalimat,
+   jadi pengecualian SC 2.5.8 tidak berlaku. Padding, bukan tinggi tetap, supaya
+   sasarannya ikut tumbuh saat ukuran huruf peramban dinaikkan. Angka jumlah
+   dibuat inline-block agar garis bawah tahun tidak ikut menyeberang ke bawahnya
+   - garis dekorasi teks tidak merambat ke kotak inline atomik. */
+.news-channel-archive a { display: inline-block; min-height: 44px; padding-block: 12px; color: #681923; font-size: var(--step--1); font-weight: 700; line-height: 1.45; text-decoration: none; }
+.news-channel-archive a span { display: inline-block; margin-left: 7px; color: var(--channel-muted); font-size: var(--step--2); font-weight: 650; font-variant-numeric: tabular-nums; }
+.news-channel-archive a:hover { text-decoration: underline; text-underline-offset: 4px; }
+/* Tahun yang sedang tampil dibedakan oleh tiga hal sekaligus - bobot, warna
+   tinta penuh, dan garis emas di bawahnya - sehingga tidak bergantung pada
+   warna saja. Emas hanya menjadi garis: #9b6d16 = 4,57:1 di atas kertas putih,
+   jauh di atas 3:1 yang dituntut SC 1.4.11 untuk penanda bukan-teks. */
+.news-channel-archive a[aria-current="true"] { color: var(--channel-ink); font-weight: 800; text-decoration: underline; text-decoration-color: #9b6d16; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-skip-ink: none; }
+/* Tahun biasa di mode gelap tidak diwarnai di sini: aksen tautan gelap situs
+   (#f3c96b, 10,16:1) sudah berlaku dan harus tetap satu suara dengan sisa
+   kanal. Yang perlu dibalik hanya tahun yang sedang tampil. */
+body.is-dark .news-channel-archive a[aria-current="true"] { color: var(--channel-ink); text-decoration-color: #f0c55a; }

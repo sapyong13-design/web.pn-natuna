@@ -178,41 +178,46 @@ $schemaType = $channel === 'news' ? 'NewsArticle' : 'Article';
 
 $images = json_decode((string) $item->images, true) ?: [];
 $image = trim((string) ($images['image_fulltext'] ?? '')) ?: trim((string) ($images['image_intro'] ?? ''));
+// Media Manager menyimpan `foo.jpg#joomlaImage://local-images/foo.jpg?width=...`.
+// Fragmen itu tidak boleh ikut tercetak ke atribut src.
+$image = strtok($image, '#');
 $imageAlt = trim((string) ($images['image_fulltext_alt'] ?? '')) ?: trim((string) ($images['image_intro_alt'] ?? ''));
 $imageCaption = trim((string) ($images['image_fulltext_caption'] ?? '')) ?: trim((string) ($images['image_intro_caption'] ?? ''));
 $imageUrl = $image && !preg_match('#^(?:https?:)?//#i', $image) ? '/' . ltrim($image, '/') : $image;
 
 // Editorial photography: responsive candidates plus a caption derived from the article
 // itself, so a photo never stands on the page without saying where it comes from.
+// Aturan srcset-nya dibagi dengan kartu daftar lewat kelas milik plugin varian, supaya
+// hanya ada satu tempat yang tahu bagaimana nama varian dibentuk.
+$variantHelper = JPATH_SITE . '/plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php';
+if (is_file($variantHelper)) {
+    require_once $variantHelper;
+}
 $photoSrcset = static function (string $src): string {
-    // Konten warisan menyimpan `src="images/..."` tanpa garis miring awal, sementara
-    // hero dinormalkan di tempat lain - tanpa penyeragaman ini seluruh foto badan
-    // artikel lama tidak pernah lolos pemeriksaan dan kehilangan srcset-nya.
-    $path = '/' . ltrim(parse_url($src, PHP_URL_PATH) ?: $src, '/');
-    if (!str_starts_with($path, '/images/')) {
-        return '';
-    }
-    $base = preg_replace('/\.[a-z0-9]+$/i', '', $path);
-    $candidates = [];
-    foreach ([400, 800, 1200] as $width) {
-        if (is_file(JPATH_BASE . $base . '-' . $width . '.webp')) {
-            $candidates[] = $base . '-' . $width . '.webp ' . $width . 'w';
-        }
-    }
-    if (!$candidates) {
-        return '';
-    }
-    // Berkas asli hanya ditawarkan bila benar-benar lebih besar dari varian terbesar,
-    // supaya layar DPR 2 tetap terlayani tanpa memaksa DPR 1 mengunduhnya.
-    $size = @getimagesize(JPATH_BASE . $path);
-    if ($size && (int) $size[0] > 1200) {
-        $candidates[] = $path . ' ' . (int) $size[0] . 'w';
-    }
-    return implode(', ', $candidates);
+    return class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)
+        ? \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::srcset(JPATH_SITE, $src)
+        : '';
 };
 $photoSizes = '(max-width: 760px) 100vw, 900px';
-$photoCaption = 'Dokumentasi Pengadilan Negeri Natuna · ' . $publishedLabel;
+// Kapsi foto adalah keterangan fotonya, bukan cap lembaga yang diulang. Deskripsi yang
+// benar sudah ditulis redaksi di atribut `alt` - selama ini hanya dibacakan pembaca
+// layar, sementara pembaca awas menerima "Dokumentasi ... <tanggal terbit>" yang bahkan
+// bisa bertentangan dengan dateline artikelnya sendiri. Kredit lembaga tidak hilang: ia
+// sudah berdiri satu kali di kaki artikel.
+$photoCaption = static function (string $tag) use ($item): string {
+    $alt = preg_match('/alt="([^"]*)"/', $tag, $m) ? trim(html_entity_decode($m[1], ENT_QUOTES, 'UTF-8')) : '';
+    $judul = trim((string) $item->title);
+    if ($alt !== '' && mb_strlen($alt) > 12 && mb_strtolower($alt) !== mb_strtolower($judul)) {
+        return $alt;
+    }
+
+    return 'Dokumentasi Pengadilan Negeri Natuna';
+};
 $heroSrcset = $imageUrl ? $photoSrcset($imageUrl) : '';
+$heroCaption = $imageCaption
+    ?: ($imageAlt !== '' && mb_strlen($imageAlt) > 12 && mb_strtolower($imageAlt) !== mb_strtolower(trim((string) $item->title))
+        ? $imageAlt
+        : 'Dokumentasi Pengadilan Negeri Natuna');
 // Inline figures live in the article body (Joomla content), so the responsive
 // candidates and the fallback caption are attached at render time, not stored.
 $articleBody = preg_replace_callback(
@@ -232,27 +237,103 @@ $articleBody = preg_replace_callback(
             $figure[1]
         );
         if (!str_contains($inner, '<figcaption')) {
-            $inner .= '<figcaption>' . htmlspecialchars($photoCaption, ENT_QUOTES, 'UTF-8') . '</figcaption>';
+            $inner .= '<figcaption>' . htmlspecialchars($photoCaption($inner), ENT_QUOTES, 'UTF-8') . '</figcaption>';
         }
         return '<figure class="editorial-article__figure">' . $inner . '</figure>';
     },
     (string) $item->text
 );
 
+// Pada 75 dari 81 berita berhero, berkas foto yang sama dicetak sekali lagi di dalam
+// badan artikel - tanpa bingkai, tanpa kapsi, beberapa ratus piksel di bawah yang
+// pertama. Penyebabnya kebiasaan redaksi: satu foto diunggah ke kolom intro lalu
+// ditempel lagi ke badan tulisan. Pembacanya bertemu foto yang sama dua kali dan
+// mengira halamannya rusak. Salinan kedua dibuang di sini, bukan di database, supaya
+// artikel lama tidak perlu disunting satu per satu dan kebiasaan itu boleh berlanjut.
+$photoKey = static function (string $src): string {
+    $name = basename(strtok($src, '?') ?: $src);
+    $name = preg_replace('/-(?:400|800|1200)\.webp$/i', '', $name);
+
+    return mb_strtolower(preg_replace('/\.[a-z0-9]+$/i', '', $name));
+};
+if ($imageUrl !== '') {
+    $heroKey = $photoKey(strtok($imageUrl, '#') ?: $imageUrl);
+    $articleBody = preg_replace_callback(
+        '#<img\b[^>]*src="([^"]+)"[^>]*>#i',
+        static function (array $img) use ($photoKey, $heroKey): string {
+            return $photoKey(strtok($img[1], '#') ?: $img[1]) === $heroKey ? '' : $img[0];
+        },
+        $articleBody
+    );
+    // Pembungkus yang ditinggalkannya - `<p>`, `<figure>`, atau tautan pembesar - ikut
+    // dibuang supaya tidak menyisakan jeda kosong di tengah alur baca.
+    $articleBody = preg_replace(
+        [
+            '#<a\b[^>]*>\s*</a>#i',
+            '#<figure\b[^>]*>\s*(?:<figcaption\b[^>]*>.*?</figcaption>)?\s*</figure>#is',
+            '#<p\b[^>]*>(?:\s|&nbsp;|<br\s*/?>)*</p>#i',
+        ],
+        '',
+        $articleBody
+    );
+}
+
+// Paragraf pembuka kadang tersimpan di intro dan diulang lagi di badan tulisan, sehingga
+// Joomla mencetaknya dua kali - sekali dengan dateline, sekali polos. Yang kedua dibuang.
+$paragraphSeen = [];
+$articleBody = preg_replace_callback(
+    '#<p\b[^>]*>(.*?)</p>#is',
+    static function (array $p) use (&$paragraphSeen): string {
+        $text = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($p[1]), ENT_QUOTES, 'UTF-8')));
+        if (mb_strlen($text) < 60) {
+            return $p[0];
+        }
+        $key = mb_strtolower($text);
+        if (isset($paragraphSeen[$key])) {
+            return '';
+        }
+        $paragraphSeen[$key] = true;
+
+        return $p[0];
+    },
+    $articleBody
+);
+
 // Enam berita yang direstrukturisasi memakai bingkai editorial, tetapi puluhan berita
 // warisan menaruh fotonya sebagai `<img>` telanjang di badan artikel. Tanpa pass ini
 // mereka tidak pernah mendapat `srcset` sama sekali - foto 4032px seberat 1,5 MB
 // dikirim utuh ke ponsel. Yang sudah punya srcset dari pass bingkai dilewati.
+// Editor juga menuliskan fragmen `#joomlaImage://...` ke dalam tag; fragmen itu
+// dibuang dari `src` supaya tidak ikut tercetak ke halaman.
+// `width`/`height` ikut dipasang: tanpa keduanya peramban tidak tahu ruang yang harus
+// disediakan, sehingga paragraf yang sedang dibaca melompat turun setiap satu foto tiba
+// - persis kondisi pembaca di koneksi kepulauan yang jadi persona utama situs ini.
+$photoBox = static function (string $src): string {
+    if ($src === '' || preg_match('#^(?:https?:)?//#i', $src)) {
+        return '';
+    }
+    $size = @getimagesize(JPATH_BASE . '/' . ltrim($src, '/'));
+
+    return $size ? ' width="' . (int) $size[0] . '" height="' . (int) $size[1] . '"' : '';
+};
 $articleBody = preg_replace_callback(
     '#<img\b([^>]*?)src="([^"]+)"([^>]*)>#i',
-    static function (array $img) use ($photoSrcset, $photoSizes): string {
+    static function (array $img) use ($photoSrcset, $photoSizes, $photoBox): string {
+        $clean = strtok($img[2], '#');
+        $box = preg_match('/\swidth="/i', $img[0]) && preg_match('/\sheight="/i', $img[0]) ? '' : $photoBox($clean);
         if (str_contains($img[0], 'srcset=')) {
-            return $img[0];
+            $tag = $clean === $img[2]
+                ? $img[0]
+                : str_replace('src="' . $img[2] . '"', 'src="' . $clean . '"', $img[0]);
+
+            return $box === '' ? $tag : substr($tag, 0, -1) . $box . '>';
         }
-        $srcset = $photoSrcset($img[2]);
-        return $srcset === ''
-            ? $img[0]
-            : '<img' . $img[1] . 'src="' . $img[2] . '"' . $img[3] . ' srcset="' . $srcset . '" sizes="' . $photoSizes . '">';
+        $srcset = $photoSrcset($clean);
+        if ($srcset === '') {
+            return '<img' . $img[1] . 'src="' . $clean . '"' . $img[3] . $box . '>';
+        }
+
+        return '<img' . $img[1] . 'src="' . $clean . '"' . $img[3] . $box . ' srcset="' . $srcset . '" sizes="' . $photoSizes . '">';
     },
     $articleBody
 );
@@ -370,21 +451,42 @@ $serviceChannels = [
         'public' => false,
     ],
 ];
-// Kanal dideteksi dari teks polos artikel supaya risalah panggilan yang badannya
-// hanya berisi judul tebal dan satu pemindaian tetap menawarkan layanannya. Urutan
-// panelnya mengikuti urutan kemunculan, bukan urutan kamus di atas.
+// Kanal layanan hanya dipakai untuk menautkan penyebutan di dalam badan tulisan. Panel
+// "Untuk pencari keadilan" yang dulu berdiri di bawah artikel sudah dihapus: ia terbit
+// di setiap berita, mengulang tautan yang sudah ada di menu dan di badan tulisan, dan
+// menambah perancah pada ekor artikel yang memang sedang dirampingkan.
 $servicePlainText = strip_tags($articleBody);
-$serviceMatches = [];
-foreach ($serviceChannels as $channelKey => $serviceChannel) {
-    foreach ($serviceChannel['patterns'] as $servicePattern) {
-        if (preg_match($servicePattern, $servicePlainText, $hit, PREG_OFFSET_CAPTURE)) {
-            $serviceMatches[$channelKey] = $serviceChannel + ['at' => $hit[0][1]];
-            break;
+$serviceOccurrences = static function (array $patterns, string $text): array {
+    $occurrences = [];
+    foreach ($patterns as $pattern) {
+        if (preg_match_all($pattern, $text, $hits, PREG_OFFSET_CAPTURE)) {
+            foreach ($hits[0] as $hit) {
+                $start = $hit[1];
+                $end = $start + strlen($hit[0]);
+                $overlaps = false;
+                foreach ($occurrences as [$knownStart, $knownEnd]) {
+                    if ($start < $knownEnd && $end > $knownStart) {
+                        $overlaps = true;
+                        break;
+                    }
+                }
+                if (!$overlaps) {
+                    $occurrences[] = [$start, $end];
+                }
+            }
         }
     }
+    usort($occurrences, static fn(array $a, array $b): int => $a[0] <=> $b[0]);
+    return $occurrences;
+};
+$serviceInlineMatches = [];
+foreach ($serviceChannels as $channelKey => $serviceChannel) {
+    $bodyOccurrences = $serviceOccurrences($serviceChannel['patterns'], $servicePlainText);
+    if ($bodyOccurrences !== []) {
+        $serviceInlineMatches[$channelKey] = $serviceChannel + ['at' => $bodyOccurrences[0][0]];
+    }
 }
-uasort($serviceMatches, static fn(array $a, array $b): int => $a['at'] <=> $b['at']);
-$serviceMatches = array_slice($serviceMatches, 0, 3, true);
+uasort($serviceInlineMatches, static fn(array $a, array $b): int => $a['at'] <=> $b['at']);
 
 // Penautannya lebih pemilih daripada deteksinya: satu tautan per simpul teks, dan
 // tidak pernah di dalam judul, teks tebal, keterangan foto, atau tautan yang sudah
@@ -407,7 +509,7 @@ foreach ($bodySegments as $segmentIndex => $segment) {
     if ($serviceSkipDepth > 0) {
         continue;
     }
-    foreach ($serviceMatches as $channelKey => $serviceChannel) {
+    foreach ($serviceInlineMatches as $channelKey => $serviceChannel) {
         if (isset($serviceLinked[$channelKey])) {
             continue;
         }
@@ -427,11 +529,15 @@ foreach ($bodySegments as $segmentIndex => $segment) {
     }
 }
 $articleBody = implode('', $bodySegments);
-$servicePanel = array_filter($serviceMatches, static fn(array $serviceChannel): bool => $serviceChannel['public']);
 
-// Related items: kandidat dari kategori yang sama dalam satu kueri terbatas, lalu
-// diperingkat di PHP berdasarkan kata yang benar-benar dibagi judulnya. Tanpa ini
-// kuerinya hanya "tiga terbaru", sehingga artikel lama selalu menampilkan trio yang sama.
+// Berita terkait. Versi sebelumnya mengambil 24 artikel terbaru lalu memeringkatnya
+// dengan kata yang dibagi judul - tetapi hampir tidak ada judul peradilan yang berbagi
+// kata, sehingga pemecah serinya ("terbaru dulu") yang selalu menang. Akibatnya di
+// seluruh 84 artikel hanya **17 artikel** yang pernah muncul sebagai terkait, satu di
+// antaranya pada 54 halaman - pembaca merasa membaca trio yang sama berulang kali.
+// Sekarang: kolamnya seluruh kanal, dan bila tidak ada kaitan kata yang sungguhan,
+// yang ditawarkan adalah tetangga kronologisnya - berita tepat sebelum dan sesudahnya.
+// Itu kaitan yang benar-benar ada, berbeda untuk setiap artikel, dan judulnya jujur.
 $levels = array_map('intval', $user->getAuthorisedViewLevels());
 $relatedQuery = $db->getQuery(true)
     ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.language', 'a.publish_up', 'a.created', 'a.images']))
@@ -449,7 +555,7 @@ $relatedQuery = $db->getQuery(true)
     ->order('CASE WHEN ' . $db->quoteName('a.publish_up') . ' > ' . $db->quote('2000-01-02 00:00:00') . ' THEN ' . $db->quoteName('a.publish_up') . ' ELSE ' . $db->quoteName('a.created') . ' END DESC');
 $relatedLanguage = $item->language === '*' ? $app->getLanguage()->getTag() : $item->language;
 $relatedQuery->whereIn($db->quoteName('a.language'), ['*', $relatedLanguage], Joomla\Database\ParameterType::STRING);
-$relatedPool = $db->setQuery($relatedQuery, 0, 24)->loadObjectList();
+$relatedPool = $db->setQuery($relatedQuery)->loadObjectList();
 // Kata yang muncul di hampir semua judul peradilan tidak membedakan apa pun.
 $relatedStopwords = array_flip([
     'pengadilan', 'negeri', 'natuna', 'kelas', 'yang', 'dari', 'dengan', 'untuk', 'pada', 'dalam',
@@ -461,14 +567,71 @@ $relatedKeywords = static function (string $title) use ($relatedStopwords): arra
     return array_flip(array_filter($words, static fn(string $word): bool => mb_strlen($word) >= 4 && !isset($relatedStopwords[$word])));
 };
 $currentKeywords = $relatedKeywords((string) $item->title);
-$relatedRanked = [];
-foreach ($relatedPool as $index => $candidate) {
-    $shared = count(array_intersect_key($currentKeywords, $relatedKeywords((string) $candidate->title)));
-    // Skor lalu urutan kueri (terbaru dulu) sebagai pemecah seri.
-    $relatedRanked[] = ['score' => $shared, 'order' => $index, 'item' => $candidate];
+// Kata dibobot menurut kelangkaannya di kanal ini. "Kegiatan" muncul di belasan judul
+// dan tidak membuktikan apa-apa; "Posbakum" atau "Pancasila" muncul di segelintir judul
+// dan hampir selalu menandai rangkaian peristiwa yang sama. Tanpa bobot ini satu kata
+// umum yang kebetulan sama sudah cukup membuat dua berita asing diklaim berkaitan.
+$documentFrequency = [];
+foreach ($relatedPool as $candidate) {
+    foreach ($relatedKeywords((string) $candidate->title) as $word => $ignored) {
+        $documentFrequency[$word] = ($documentFrequency[$word] ?? 0) + 1;
+    }
 }
-usort($relatedRanked, static fn(array $a, array $b): int => [$b['score'], $a['order']] <=> [$a['score'], $b['order']]);
-$related = array_map(static fn(array $row): object => $row['item'], array_slice($relatedRanked, 0, 3));
+$relatedScored = [];
+foreach ($relatedPool as $index => $candidate) {
+    $sharedWords = array_intersect_key($currentKeywords, $relatedKeywords((string) $candidate->title));
+    if ($sharedWords === []) {
+        continue;
+    }
+    $weight = 0.0;
+    foreach ($sharedWords as $word => $ignored) {
+        $weight += 1 / max(1, $documentFrequency[$word] ?? 1);
+    }
+    // Kaitan diakui bila ada satu kata yang benar-benar khas, atau dua kata yang sama.
+    if ($weight >= 0.5 || count($sharedWords) >= 2) {
+        $relatedScored[] = ['score' => $weight, 'order' => $index, 'item' => $candidate];
+    }
+}
+usort($relatedScored, static fn(array $a, array $b): int => [$b['score'], $a['order']] <=> [$a['score'], $b['order']]);
+// Satu judul tidak bisa jujur menggambarkan daftar campuran, jadi daftarnya dibuat
+// seragam: hanya kaitan yang lolos ambang di atas yang boleh berdiri di bawah judul
+// "Berita terkait" - satu kartu pun tidak apa-apa. Bila tidak ada satu pun, skornya
+// diabaikan sepenuhnya dan yang ditawarkan murni tetangga kronologis, dengan judul
+// yang mengatakan persis itu.
+$related = array_map(static fn(array $row): object => $row['item'], array_slice($relatedScored, 0, 3));
+$hasGenuineRelation = $related !== [];
+// Bila tidak ada kaitan sungguhan, seluruh daftarnya diisi tetangga kronologis - bukan
+// dicampur, supaya judulnya tetap benar. Kolam sudah terurut terbaru-dulu, jadi posisi
+// artikel ini di dalamnya ditemukan lewat tanggal efektifnya, lalu diambil bergantian
+// satu yang lebih baru dan satu yang lebih lama - melebar sampai kuotanya penuh.
+if (!$hasGenuineRelation) {
+    $effectiveDate = static function (object $row) use ($db): string {
+        return !empty($row->publish_up) && $row->publish_up !== $db->getNullDate() && $row->publish_up > '2000-01-02 00:00:00'
+            ? (string) $row->publish_up
+            : (string) $row->created;
+    };
+    $currentDate = (string) $publishedRaw;
+    $position = 0;
+    foreach ($relatedPool as $index => $candidate) {
+        if ($effectiveDate($candidate) > $currentDate) {
+            $position = $index + 1;
+        }
+    }
+    $taken = array_flip(array_map(static fn(object $row): int => (int) $row->id, $related));
+    for ($step = 1; $step <= count($relatedPool) && count($related) < 3; $step++) {
+        foreach ([$position - $step, $position + $step - 1] as $neighbour) {
+            if (!isset($relatedPool[$neighbour]) || count($related) >= 3) {
+                continue;
+            }
+            $candidate = $relatedPool[$neighbour];
+            if (isset($taken[(int) $candidate->id])) {
+                continue;
+            }
+            $taken[(int) $candidate->id] = true;
+            $related[] = $candidate;
+        }
+    }
+}
 $currentUrl = Uri::getInstance()->toString(['scheme', 'host', 'port', 'path', 'query']);
 // Pembaca yang datang dari halaman 5 daftar berita harus kembali ke halaman 5.
 // Rujukan divalidasi ke host sendiri dan ke jalur kanal ini sebelum dipakai.
@@ -508,7 +671,7 @@ if ($referrer !== '') {
   <?php if ($channel === 'news' && $image) : ?>
     <figure class="editorial-article__hero" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
       <img src="<?php echo $this->escape($imageUrl); ?>"<?php echo $heroSrcset ? ' srcset="' . $this->escape($heroSrcset) . '" sizes="' . $this->escape($photoSizes) . '"' : ''; ?> alt="<?php echo $this->escape($imageAlt); ?>" width="1200" height="800" fetchpriority="high" itemprop="contentUrl">
-      <figcaption><?php echo $this->escape($imageCaption ?: $photoCaption); ?></figcaption>
+      <figcaption><?php echo $this->escape($heroCaption); ?></figcaption>
     </figure>
   <?php elseif ($channel === 'announcement' && $image) : ?>
     <figure class="editorial-article__hero editorial-article__hero--document"><img src="<?php echo $this->escape($imageUrl); ?>" alt="<?php echo $this->escape($imageAlt); ?>" width="1200" height="675"><?php if ($imageCaption) : ?><figcaption><?php echo $this->escape($imageCaption); ?></figcaption><?php endif; ?></figure>
@@ -541,18 +704,6 @@ if ($referrer !== '') {
     <?php endif; ?>
     <div class="editorial-article__body" itemprop="articleBody"><?php echo $articleBody; ?></div>
     </div>
-    <?php if ($servicePanel) : ?>
-      <aside class="editorial-article__service" aria-labelledby="service-heading">
-        <h2 id="service-heading">Untuk pencari keadilan</h2>
-        <p class="editorial-article__service-lead">Layanan resmi Pengadilan Negeri Natuna yang berkaitan dengan <?php echo $channel === 'news' ? 'berita' : 'pengumuman'; ?> ini.</p>
-        <ul>
-          <?php foreach ($servicePanel as $serviceChannel) : ?>
-            <li><a href="<?php echo $this->escape($serviceChannel['route']); ?>"><strong><?php echo $this->escape($serviceChannel['label']); ?></strong><span><?php echo $this->escape($serviceChannel['note']); ?></span></a></li>
-          <?php endforeach; ?>
-        </ul>
-        <p class="editorial-article__service-contact">Masih perlu bertanya? <a href="tel:07733211203">0773-3211203</a> · <a href="https://wa.me/6281261256661" target="_blank" rel="noopener noreferrer">WhatsApp layanan</a> · <a href="/kontak">jam layanan dan alamat kantor</a></p>
-      </aside>
-    <?php endif; ?>
     <?php if ($params->get('show_tags', 1) && !empty($item->tags->itemTags)) : $item->tagLayout = new FileLayout('joomla.content.tags'); echo $item->tagLayout->render($item->tags->itemTags); endif; ?>
     <?php if (!empty($item->pagination) && $item->paginationposition && !$item->paginationrelative) echo $item->pagination; ?>
     <?php if ((int) $params->get('urls_position', 0) === 1) echo $this->loadTemplate('links'); ?>
@@ -568,22 +719,27 @@ if ($referrer !== '') {
   <?php echo $item->event->afterDisplayContent; ?>
 
   <footer class="editorial-article__footer">
-    <div class="editorial-article__publication"><strong>Diterbitkan oleh Pengadilan Negeri Natuna</strong><span><?php echo $publishedLabel; ?><?php echo $isMateriallyModified ? ' · Diperbarui ' . $modifiedLabel : ''; ?></span></div>
+    <?php // Kop berlambang di atas artikel sudah menyebut lembaganya dan baris meta sudah
+          // menyebut tanggal terbitnya; mengulangnya di sini hanya menambah panjang ekor.
+          // Yang tersisa cuma fakta yang belum pernah dikatakan: tanggal pembaruan. ?>
+    <?php if ($isMateriallyModified) : ?>
+      <div class="editorial-article__publication"><span>Diperbarui <?php echo $modifiedLabel; ?></span></div>
+    <?php endif; ?>
     <div class="editorial-article__share" data-editorial-share data-title="<?php echo $this->escape($item->title); ?>" data-url="<?php echo $this->escape($currentUrl); ?>">
       <span>Bagikan</span>
       <button type="button" data-share-native>Bagikan artikel</button>
-      <a href="https://wa.me/?text=<?php echo rawurlencode($item->title . ' ' . $currentUrl); ?>" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <a href="https://wa.me/?text=<?php echo rawurlencode($item->title . ' ' . $currentUrl); ?>" target="_blank" rel="noopener noreferrer">Kirim lewat WhatsApp</a>
       <button type="button" data-share-copy>Salin tautan</button>
       <span class="editorial-article__share-status" data-share-status aria-live="polite"></span>
     </div>
   </footer>
 
   <?php if ($related) : ?>
-  <section class="editorial-article__related" aria-labelledby="related-heading"><h2 id="related-heading"><?php echo $channel === 'news' ? 'Berita terkait' : 'Pengumuman lainnya'; ?></h2><div class="editorial-article__related-grid">
+  <section class="editorial-article__related" aria-labelledby="related-heading"><h2 id="related-heading"><?php echo $hasGenuineRelation ? ($channel === 'news' ? 'Berita terkait' : 'Pengumuman terkait') : ($channel === 'news' ? 'Berita di sekitar tanggal ini' : 'Pengumuman di sekitar tanggal ini'); ?></h2><div class="editorial-article__related-grid">
     <?php foreach ($related as $relatedItem) : $relatedImages = json_decode((string) $relatedItem->images, true) ?: []; $relatedImage = trim((string) ($relatedImages['image_intro'] ?? '')) ?: trim((string) ($relatedImages['image_fulltext'] ?? '')); $relatedImageUrl = $relatedImage && !preg_match('#^(?:https?:)?//#i', $relatedImage) ? '/' . ltrim($relatedImage, '/') : $relatedImage; $relatedDateRaw = !empty($relatedItem->publish_up) && $relatedItem->publish_up > '2000-01-02 00:00:00' ? $relatedItem->publish_up : $relatedItem->created; $relatedDate = Factory::getDate($relatedDateRaw); ?>
       <a class="editorial-article__related-card" href="<?php echo Route::_(RouteHelper::getArticleRoute($relatedItem->id . ':' . $relatedItem->alias, $relatedItem->catid, $relatedItem->language)); ?>">
         <?php if ($relatedImage) : $relatedSrcset = $photoSrcset($relatedImageUrl); ?><img src="<?php echo $this->escape($relatedImageUrl); ?>"<?php echo $relatedSrcset ? ' srcset="' . $this->escape($relatedSrcset) . '" sizes="(max-width: 760px) 128px, 320px"' : ''; ?> alt="" width="480" height="270" loading="lazy" decoding="async"><?php elseif ($channel === 'announcement') : ?><img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="" width="480" height="270" loading="lazy" decoding="async"><?php else : ?><span class="editorial-article__related-fallback" aria-hidden="true">PN</span><?php endif; ?>
-        <time datetime="<?php echo $relatedDate->format(DATE_ATOM); ?>"><?php echo $formatIdDate($relatedDate); ?></time><strong><?php echo $this->escape($relatedItem->title); ?></strong>
+        <time datetime="<?php echo $relatedDate->format(DATE_ATOM); ?>"><?php echo $formatIdDate($relatedDate); ?></time><strong><span><?php echo $this->escape($relatedItem->title); ?></span></strong>
       </a>
     <?php endforeach; ?>
   </div></section>

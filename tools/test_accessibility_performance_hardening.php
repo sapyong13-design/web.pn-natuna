@@ -225,7 +225,9 @@ $expect((bool) preg_match('/@media \(min-width:\s*901px\).*?\.hero-welcome-copy 
 // satu sel supaya lengketnya habis tepat di ujung badan.
 $articleTemplate = file_get_contents($root . '/templates/pn_natuna_2026/html/com_content/article/default.php');
 $readingStart = strpos($articleTemplate, '<div class="editorial-article__reading">');
-$readingEnd = strpos($articleTemplate, '<?php if ($servicePanel)');
+// Penanda akhirnya dulu `<?php if ($servicePanel)`; panel itu sudah dihapus, jadi
+// batasnya kini baris tag yang selalu menutup badan artikel.
+$readingEnd = strpos($articleTemplate, "<?php if (\$params->get('show_tags'");
 $readingBlock = $readingStart === false || $readingEnd === false || $readingEnd < $readingStart
     ? ''
     : substr($articleTemplate, $readingStart, $readingEnd - $readingStart);
