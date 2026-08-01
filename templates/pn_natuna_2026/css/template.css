@@ -12276,7 +12276,14 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 }
 
 /* Editorial article details: isolated from category listings and core fallback. */
-.editorial-article { --editorial-ink: #271815; --editorial-muted: #715f58; --editorial-paper: #fffdf9; --editorial-rule: #dccdbd; --editorial-measure: clamp(640px, 54vw, 760px); --editorial-wide: 860px; width: min(100%, 1120px); min-width: 0; margin-inline: auto; padding: clamp(32px, 6vw, 88px) clamp(16px, 4vw, 52px) 72px; color: var(--editorial-ink); overflow-wrap: break-word; }
+/* `--editorial-wide` dulu dipatok 860px tetap sementara `--editorial-measure` cair
+   (clamp 640-760px). Dua perilaku berbeda pada satu halaman: selisih foto terhadap
+   kolom teks berayun dari 10px per sisi di 768 sampai 110px di 1024, lalu menyusut
+   lagi jadi 50px di 1440 - cukup besar untuk terlihat, terlalu kecil dan terlalu
+   berubah-ubah untuk terbaca sebagai keputusan. Kini foto, blok berita terkait, kop,
+   judul, meta, dan badan berbagi satu tepi di setiap lebar layar. Bleed penuh di
+   ponsel tetap dipertahankan - di sana selisihnya mutlak, jadi jelas disengaja. */
+.editorial-article { --editorial-ink: #271815; --editorial-muted: #715f58; --editorial-paper: #fffdf9; --editorial-rule: #dccdbd; --editorial-measure: clamp(640px, 54vw, 760px); --editorial-wide: var(--editorial-measure); width: min(100%, 1120px); min-width: 0; margin-inline: auto; padding: clamp(32px, 6vw, 88px) clamp(16px, 4vw, 52px) 72px; color: var(--editorial-ink); overflow-wrap: break-word; }
 .editorial-article__header { width: min(100%, var(--editorial-measure)); margin-inline: auto; text-align: start; }
 .editorial-article__back, .editorial-article__return { display: inline-flex; align-items: center; min-height: 44px; color: #731d26; font-weight: 750; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 /* Judul, kop, dan meta harus mengalahkan `.content-primary h1/p` (0-1-1) yang
