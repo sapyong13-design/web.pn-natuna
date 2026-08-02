@@ -433,6 +433,76 @@ Semua harus HTTP `200`. Larangan tetap: jangan `--full-staging`, `--reset-databa
 
 ---
 
+## Deploy Staging Commit `2043f49` (2 Agu 2026)
+
+Ikuti seluruh langkah **Deploy Staging** di atas, dengan tiga tambahan yang khusus untuk batch ini. Target tetap hanya `https://new.pn-natuna.go.id`.
+
+### Yang berubah di batch ini
+
+Perombakan permukaan berita (kop berlambang, indeks arsip tahun, kartu satu tautan, judul rata dengan foto), halaman galat `error.php` yang baru, dan **perbaikan pencarian situs yang selama ini mati**. Empat migrasi baru: `20260901`, `20260902`, `20260903`, `20260904`.
+
+### Tambahan 1 — berkas templat baru wajib ikut tersalin
+
+`git pull` pada private checkout tidak memperbarui webroot. Selain `template.css`, `js/template.js`, dan `html/com_content/article/default.php` yang sudah disebut prosedur lama, batch ini menambahkan berkas yang **belum pernah ada di webroot**:
+
+```bash
+for f in templates/pn_natuna_2026/error.php \
+         templates/pn_natuna_2026/html/com_finder/search/default.php \
+         templates/pn_natuna_2026/html/com_finder/search/default_form.php \
+         templates/pn_natuna_2026/html/com_finder/search/default_results.php \
+         templates/pn_natuna_2026/html/com_finder/search/default_result.php \
+         templates/pn_natuna_2026/html/com_content/category/blog.php \
+         templates/pn_natuna_2026/html/com_content/category/blog_item.php \
+         templates/pn_natuna_2026/templateDetails.xml; do
+  cmp "$PN_NATUNA_SOURCE_ROOT/$f" "$PN_NATUNA_JPATH_ROOT/$f" >/dev/null 2>&1 && echo "OK   $f" || echo "BEDA $f"
+done
+```
+
+Setiap baris `BEDA` wajib disalin dari private checkout ke webroot sebelum cache dibersihkan.
+
+### Tambahan 2 — indeks Smart Search wajib dibangun di staging
+
+Isi indeks pencarian **tidak ikut Git**; ia hidup di basis data masing-masing lingkungan. Tanpa langkah ini rute `/cari` berdiri tetapi tidak pernah menemukan apa pun.
+
+```bash
+cd "$PN_NATUNA_JPATH_ROOT"
+"$PHP_BIN" -d memory_limit=1024M cli/joomla.php finder:index
+```
+
+Verifikasi jumlahnya wajar dibanding jumlah artikel terbit:
+
+```bash
+"$MYSQL_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" -N -B "$DB_NAME" \
+  -e "SELECT (SELECT COUNT(*) FROM pnn_finder_links) AS indexed, (SELECT COUNT(*) FROM pnn_content WHERE state=1) AS published;"
+```
+
+`indexed` harus mendekati atau melebihi `published`. Bila hanya belasan, indeksnya gagal - jangan lanjut.
+
+### Tambahan 3 — smoke test khusus batch ini
+
+```bash
+printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' 'https://new.pn-natuna.go.id/cari?q=posbakum')" '/cari?q=posbakum'
+printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' 'https://new.pn-natuna.go.id/berita/legacy-pengumuman-seleksi-posbakum-tahun-2026')" 'redirect duplikat (harus 301)'
+printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' 'https://new.pn-natuna.go.id/berita/halaman-yang-tidak-ada')" 'halaman galat (harus 404)'
+curl -s 'https://new.pn-natuna.go.id/cari?q=posbakum' | grep -c 'hasil untuk'
+curl -s 'https://new.pn-natuna.go.id/berita/halaman-yang-tidak-ada' | grep -c 'Halaman tidak ditemukan'
+```
+
+Harapan: `/cari` **200**, tautan duplikat **301**, halaman tidak dikenal **404**, dan kedua `grep -c` mengembalikan **1**. Bila halaman galat masih berbahasa Inggris, `error.php` belum tersalin ke webroot.
+
+### Wajib diperiksa sebelum mulai
+
+```bash
+cd "$PN_NATUNA_SOURCE_ROOT"
+git fetch origin continue-joomla-rebuild-polish
+git rev-parse --short HEAD
+git rev-parse --short origin/continue-joomla-rebuild-polish
+git status --short
+```
+
+Pohon kerja wajib bersih dan HEAD wajib sama dengan `origin/continue-joomla-rebuild-polish` sesudah pull. Larangan lama tetap berlaku: jangan `--reapply`, `--full-staging`, `--reset-database`, atau mengarah ke document root domain utama.
+
+
 ## Resume Deployment Batch `32b7274` / `45423b0`
 
 Status staging terakhir pada 21 Juli 2026:
