@@ -10,6 +10,12 @@ Options -Indexes
 </IfModule>
 <IfModule mod_headers.c>
 	Header always set X-Content-Type-Options "nosniff"
+	Header always set Referrer-Policy "strict-origin-when-cross-origin"
+	Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+	Header always unset X-Powered-By
+	## Mulai singkat. Naikkan bertahap hanya setelah semua hostname/subdomain HTTPS
+	## dan rollback HSTS sudah diuji; jangan tambah includeSubDomains/preload dulu.
+	Header always set Strict-Transport-Security "max-age=300" env=HTTPS
 	Header always set X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING
 </IfModule>
 <FilesMatch "\.svg$">
@@ -87,6 +93,11 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
+	## Paksa HTTPS sebelum Joomla membuat sesi. Kondisi X-Forwarded-Proto mencegah
+	## redirect-loop ketika TLS berakhir di Cloudflare/LiteSpeed reverse proxy.
+	RewriteCond %{HTTPS} !=on
+	RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+	RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
 	RewriteRule "(?:^|/)(?:\.git|\.svn|database|docs|tools)(?:/|$)" - [F,END,NC]
 	RewriteCond %{QUERY_STRING} base64_encode[^(]*\([^)]*\) [OR]
 	RewriteCond %{QUERY_STRING} (<|%3C)([^s]*s)+cript.*(>|%3E) [NC,OR]

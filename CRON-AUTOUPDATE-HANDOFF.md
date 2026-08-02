@@ -575,6 +575,32 @@ Penghitung kunjungan di kaki situs sempat dibuat lalu **dibalik** atas permintaa
 
 Lewati bila `20260907` tidak pernah tercatat di staging — kondisi normal, karena batch ini belum pernah turun.
 
+## Hardening eksternal menuju baseline 8/10
+
+Audit aktif-terbatas 2 Agu 2026 menemukan `new.pn-natuna.go.id` masih melayani HTTP **200**, membocorkan `X-Powered-By: PHP/8.4.23`, cookie Joomla tidak memperlihatkan `SameSite`, dan `/administrator/` terbuka langsung. Commit hardening berikutnya menutup bagian yang aman dikendalikan repository: redirect HTTPS yang proxy-aware, HSTS awal 300 detik, Permissions-Policy, penghapusan header versi PHP, dan kontrak agar `.htaccess`/`htaccess.txt` tidak menyimpang. CSP belum dipaksakan: YouTube, Instagram, Maps, dan Joomla admin harus diinvetarisasi dalam Report-Only dahulu.
+
+Setelah deploy code normal, lakukan empat kontrol manual cPanel:
+
+1. **MultiPHP INI Editor** untuk domain staging: `expose_php = Off`; jangan mengandalkan `Header unset` saja karena host dapat menambahkan header setelah aturan `.htaccess`.
+2. **Joomla Global Configuration**: Force HTTPS = Entire Site. Redirect `.htaccess` tetap pertahanan pertama agar Joomla tidak membuat sesi HTTP.
+3. **cPanel Directory Privacy** pada `/home/pnnatuna/new.pn-natuna.go.id/administrator`; buat kredensial outer gate berbeda dari akun Joomla. Uji login, MFA, Media Manager/AJAX, logout, dan jalur recovery sebelum menutup sesi operator yang masih aktif.
+4. **Cookie SameSite**: gunakan opsi Joomla/provider yang didukung untuk `SameSite=Lax`; jangan menyunting core Joomla. Verifikasi lewat `Set-Cookie`, bukan hanya nilai panel.
+
+Verifikasi dari Terminal cPanel:
+
+```bash
+echo 'HTTP harus 301 ke HTTPS:'
+curl -sI http://new.pn-natuna.go.id/ | grep -iE 'HTTP/|Location:'
+echo 'Header HTTPS:'
+curl -sI https://new.pn-natuna.go.id/ | grep -iE 'HTTP/|Strict-Transport|Permissions-Policy|X-Content-Type|X-Powered-By|X-Robots-Tag'
+echo 'Admin harus meminta outer gate (401) sebelum Joomla:'
+curl -sI https://new.pn-natuna.go.id/administrator/ | grep -iE 'HTTP/|WWW-Authenticate:'
+echo 'Cookie harus Secure, HttpOnly, SameSite=Lax:'
+curl -sI https://new.pn-natuna.go.id/ | grep -i '^set-cookie:'
+```
+
+Harapan: HTTP `301`; HTTPS memuat HSTS `max-age=300`, Permissions-Policy, nosniff, dan noindex staging; **tidak ada** X-Powered-By; admin `401` + `WWW-Authenticate`; cookie memuat `Secure`, `HttpOnly`, dan `SameSite=Lax`. Jangan naikkan HSTS atau menambah `includeSubDomains`/`preload` sebelum seluruh subdomain dan rollback terbukti.
+
 ## Resume Deployment Batch `32b7274` / `45423b0`
 
 Status staging terakhir pada 21 Juli 2026:

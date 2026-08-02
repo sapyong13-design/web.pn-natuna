@@ -30,6 +30,12 @@ for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     assert "<IfModule mod_setenvif.c>" in htaccess_source
     assert "SetEnvIf Host ^new\\.pn-natuna\\.go\\.id$ STAGING" in htaccess_source
     assert 'X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING' in htaccess_source
+    assert 'Strict-Transport-Security "max-age=300" env=HTTPS' in htaccess_source
+    assert 'Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"' in htaccess_source
+    assert "Header always unset X-Powered-By" in htaccess_source
+    assert "RewriteCond %{HTTPS} !=on" in htaccess_source
+    assert "RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]" in htaccess_source
+    assert "RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]" in htaccess_source
 config_values = MODULE.read_joomla_database_config("""<?php
 public $user = 'stage_user';
 public $password = 'ignored-here';
