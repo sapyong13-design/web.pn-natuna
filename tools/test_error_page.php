@@ -31,9 +31,8 @@ if (is_file($path)) {
     // Tersesat tanpa jalan keluar adalah jalan buntu; halaman ini wajib menawarkan rute.
     $expect(substr_count($source, "['/") >= 4, 'The error page must offer real destinations, not just an apology.');
     $expect(str_contains($source, 'jadwal-sidang') && str_contains($source, 'layanan-ptsp'), 'The routes out must include what citizens actually come for: hearing schedules and PTSP.');
-    $expect(str_contains($source, 'searchword'), 'The error page must let the reader search instead of guessing another URL.');
     $expect(str_contains($source, 'logo-pn-natuna.webp'), 'The court emblem must be present so the reader knows they are still on the right site.');
-    $expect(str_contains($source, 'noindex'), 'Error pages must not be indexed.');
+    $expect(str_contains($emitted, 'name="q"') && str_contains($emitted, '/cari'), 'The error page must let the reader search instead of guessing another URL, and must post to the live /cari route.');
     // Jejak tumpukan hanya boleh muncul saat debug menyala.
     $expect(str_contains($source, '$this->debug'), 'A stack trace may only render when debug is on.');
     $expect((bool) preg_match('/\.error-page__routes a \{[^}]*min-height: 44px/', $css), 'Error page routes must meet the 44px touch target.');

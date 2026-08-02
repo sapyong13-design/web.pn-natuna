@@ -13247,6 +13247,56 @@ body.is-dark .error-page__lead, body.is-dark .error-page__routes span, body.is-d
 body.is-dark .error-page__routes a, body.is-dark .error-page__search input { border-color: #4b5961; background: #1d282f; color: #fff4e8; }
 body.is-dark .error-page__help a { color: #f3c96b; }
 
+/* Halaman hasil pencarian. Ia memakai ukuran kolom baca yang sama dengan artikel -
+   hasil pencarian adalah teks yang dibaca, bukan tabel data, dan 1.255px penuh membuat
+   tiap cuplikan terentang jauh melewati batas nyaman. Sorotan kata kunci memakai emas
+   lembut milik situs, bukan kuning bawaan peramban. Aturan generik `.content-primary`
+   yang merata-kanan-kirikan paragraf juga dilepas di sini, sama seperti artikel dan
+   halaman kanal: Chrome tidak punya kamus pemenggalan Indonesia, sehingga justify
+   melebarkan spasi menjadi sungai putih. */
+.site-search { width: min(100%, var(--editorial-measure, 760px)); margin-inline: auto; padding-block: clamp(8px, 2vw, 20px); }
+.site-search :is(p, li) { text-align: start; hyphens: manual; }
+.site-search__header h1 { margin: 0; color: var(--color-primary-deep); font-family: Fraunces, Georgia, serif; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 700; line-height: 1.1; letter-spacing: -.02em; }
+.site-search__lead { margin: 10px 0 0; color: var(--color-muted); font-size: var(--step--1); line-height: 1.6; }
+.site-search__form { margin: clamp(20px, 3vw, 28px) 0 0; }
+.site-search__form label { display: block; margin-bottom: 8px; color: var(--color-ink); font-size: var(--step--1); font-weight: 700; }
+.site-search__field { display: flex; flex-wrap: wrap; gap: 8px; }
+.site-search__field input { flex: 1 1 240px; min-width: 0; min-height: 44px; padding: 10px 14px; border: 1px solid var(--color-line); border-radius: 3px; background: var(--color-surface); color: var(--color-ink); font: inherit; }
+.site-search__field button { min-height: 44px; padding: 10px 24px; border: 1px solid var(--color-primary); border-radius: 3px; background: var(--color-primary); color: #fff; font: inherit; font-weight: 750; cursor: pointer; }
+.site-search__field button:hover { background: var(--color-primary-dark); }
+.site-search :focus-visible { outline: 3px solid #7a4b00; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(209, 164, 47, .35); }
+.site-search__count { margin: clamp(22px, 4vw, 32px) 0 0; padding-bottom: 14px; border-bottom: 2px solid var(--color-accent); color: var(--color-muted); font-size: var(--step--1); }
+.site-search__count strong { color: var(--color-ink); font-size: var(--step-0); }
+.site-search__list { margin: 0; padding: 0; list-style: none; }
+/* Judul dan cuplikan berasal dari isi apa adanya, termasuk kata sambung tanpa spasi
+   hasil impor lama seperti "Layanan HukumPosbakum". Tanpa pemutus, satu kata sepanjang
+   itu melebarkan halaman 17px di layar 390 dan memunculkan gulir mendatar. */
+.site-search__item { min-width: 0; padding: clamp(18px, 3vw, 24px) 0; border-bottom: 1px solid var(--color-line); overflow-wrap: anywhere; }
+.site-search__item-title { margin: 0; font-family: Fraunces, Georgia, serif; font-size: clamp(1.15rem, 1.6vw, 1.35rem); line-height: 1.25; overflow-wrap: anywhere; }
+.site-search__item-title a { color: var(--color-primary); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.site-search__item-title a:visited { color: #642a72; }
+.site-search__item-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; color: var(--color-muted); font-size: var(--step--2); text-transform: uppercase; letter-spacing: .07em; }
+.site-search__item-text { margin: 10px 0 0; color: var(--color-ink); font-size: var(--step--1); line-height: 1.62; }
+.site-search__item mark, .site-search mark, .site-search .highlight { padding: 0 2px; border-radius: 2px; background: var(--color-accent-soft); color: inherit; font-weight: 650; }
+.site-search__empty { margin-top: clamp(22px, 4vw, 32px); padding-top: 20px; border-top: 2px solid var(--color-accent); }
+.site-search__empty h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: clamp(1.2rem, 2vw, 1.5rem); line-height: 1.25; }
+.site-search__empty p { margin: 10px 0 14px; color: var(--color-muted); font-size: var(--step--1); line-height: 1.6; }
+.site-search__suggestions { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.site-search__suggestions a { display: flex; align-items: center; min-height: 44px; padding: 10px 15px; border: 1px solid var(--color-line); border-radius: 3px; color: var(--color-ink); text-decoration: none; }
+.site-search__suggestions a:hover { border-color: var(--color-primary); }
+.site-search__pagination { margin-top: clamp(24px, 4vw, 34px); }
+.site-search__pagination ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.site-search__pagination a, .site-search__pagination span { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 12px; border: 1px solid var(--color-line); border-radius: 3px; color: var(--color-ink); text-decoration: none; }
+.site-search__pagination a:hover { border-color: var(--color-primary); }
+body.is-dark .site-search__header h1 { color: #fff4e8; }
+body.is-dark .site-search__lead, body.is-dark .site-search__item-meta, body.is-dark .site-search__count, body.is-dark .site-search__empty p { color: #d5c0b3; }
+body.is-dark .site-search__item-title a { color: #f3c96b; }
+body.is-dark .site-search__item-title a:visited { color: #dcb8e6; }
+body.is-dark .site-search__item-text, body.is-dark .site-search__count strong, body.is-dark .site-search__empty h2 { color: #edf2f7; }
+body.is-dark .site-search__field input, body.is-dark .site-search__suggestions a { border-color: #4b5961; background: #1d282f; color: #fff4e8; }
+body.is-dark .site-search__item, body.is-dark .site-search__pagination a, body.is-dark .site-search__pagination span { border-color: #3c4a52; }
+body.is-dark .site-search__item mark, body.is-dark .site-search mark { background: #5a4415; color: #ffeec4; }
+
 /* AMPUH DIRECTORY 2026-07-13 */
 .ampuh-directory { width: min(100%, 1180px); margin-inline: auto; color: var(--color-ink); background: var(--color-surface); font-family: var(--font-body); }
 .ampuh-directory__header { position: relative; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, .72fr); min-height: 350px; overflow: clip; border-block: 1px solid var(--color-line); background: var(--color-soft); }

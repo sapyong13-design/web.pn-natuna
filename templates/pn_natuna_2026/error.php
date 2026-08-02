@@ -70,9 +70,9 @@ $routes = [
             <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
             <p class="error-page__lead"><?php echo htmlspecialchars($lead, ENT_QUOTES, 'UTF-8'); ?></p>
 
-            <form class="error-page__search" action="<?php echo $baseUrl; ?>/component/search/" method="get" role="search">
+            <form class="error-page__search" action="<?php echo $baseUrl; ?>/cari" method="get" role="search">
                 <label for="error-search">Cari informasi di situs ini</label>
-                <input id="error-search" name="searchword" type="search" placeholder="Contoh: jadwal sidang, biaya perkara, posbakum" enterkeyhint="search">
+                <input id="error-search" name="q" type="search" placeholder="Contoh: jadwal sidang, biaya perkara, posbakum" enterkeyhint="search">
                 <button type="submit">Cari</button>
             </form>
 

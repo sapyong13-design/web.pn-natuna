@@ -349,9 +349,13 @@ if (trim((string) $this->getDescription()) === '') {
         <strong id="search-overlay-title">Cari Informasi PN Natuna</strong>
         <button class="search-overlay-close" type="button">Tutup</button>
       </div>
-      <form action="/component/search/" method="get">
+      <?php // `com_search` dihapus Joomla sejak versi 4, jadi `/component/search/` selalu
+            // 404 - kotak pencarian di seluruh situs menuju halaman yang tidak ada.
+            // Penggantinya `com_finder`, dengan rute `/cari` yang didaftarkan migrasi
+            // 20260902 di menu tersembunyi dan parameter kueri bernama `q`. ?>
+      <form action="/cari" method="get" role="search">
         <label for="site-search-query">Kata kunci pencarian</label>
-        <input id="site-search-query" name="searchword" type="search" autocomplete="off" enterkeyhint="search" placeholder="Contoh: biaya perkara, jadwal sidang, posbakum…">
+        <input id="site-search-query" name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="Contoh: biaya perkara, jadwal sidang, posbakum…">
         <button type="submit">Cari</button>
       </form>
     </div>
