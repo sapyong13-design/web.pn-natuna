@@ -1,0 +1,1 @@
+{"nodes": [{"id": "c_tmp_web_pn_natuna_libraries_vendor_web_auth_metadata_service_src_event_webauthnevent_php", "label": "WebauthnEvent.php", "file_type": "code", "source_file": "libraries/vendor/web-auth/metadata-service/src/Event/WebauthnEvent.php", "source_location": "L1"}], "edges": [], "raw_calls": []}

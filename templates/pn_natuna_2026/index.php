@@ -196,6 +196,18 @@ if (trim((string) $this->getDescription()) === '') {
       <div class="system-message-slot">
         <jdoc:include type="message" />
       </div>
+      <?php // Kotak pencarian tidak lagi berada di dalam `<aside>`. Di ponsel rel
+            // samping menumpuk sesudah seluruh isi utama dan berubah menjadi
+            // korsel gulir mendatar, sehingga kartu pencarian mendarat di 91%
+            // tinggi halaman - praktis tidak pernah ditemukan. Sebagai anak
+            // langsung `.home-juknis-layout` ia berdiri tepat di bawah pesan
+            // sistem: paling awal di ponsel, sementara di layar lebar CSS
+            // menempatkannya kembali di puncak kolom rel. Modul tetap satu,
+            // urutan rel (layanan, role model, survei, DIPA) tidak berubah, dan
+            // `aria-label` pada `<aside>` tetap menaungi isi rel yang sebenarnya. ?>
+      <div class="home-search-slot">
+        <jdoc:include type="modules" name="home-search" style="card" />
+      </div>
       <div class="home-juknis-main">
         <jdoc:include type="modules" name="home-alerts" style="card" />
         <jdoc:include type="modules" name="home-today" style="card" />
@@ -233,7 +245,6 @@ if (trim((string) $this->getDescription()) === '') {
       </div>
       <aside class="home-juknis-sidebar" aria-label="Informasi pendukung">
         <div class="mobile-rail-status" data-sidebar-rail-status><span class="mobile-rail-hint">Geser untuk melihat lainnya</span><output>1 dari 1</output></div>
-        <jdoc:include type="modules" name="home-search" style="card" />
         <jdoc:include type="modules" name="home-service-info" style="card" />
         <jdoc:include type="modules" name="home-role-model" style="card" />
         <jdoc:include type="modules" name="home-survey" style="card" />

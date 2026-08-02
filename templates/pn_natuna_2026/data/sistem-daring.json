@@ -1,0 +1,54 @@
+{
+  "_catatan": "Sistem resmi di luar situs ini. Pencarian situs hanya mengindeks artikel, sehingga tujuh sistem berikut tidak akan pernah muncul di hasil - padahal justru ke sanalah warga perlu diantar untuk jadwal sidang, penelusuran perkara, pengaduan, dan salinan putusan. Berkas ini dikurasi manual: setiap URL wajib diuji hidup, dan kata kunci pemicunya sengaja sempit supaya blok ini tidak menutupi hasil pencarian yang sudah tepat. Diuji 2 Agu 2026: ketujuhnya balas HTTP 200.",
+  "sistem": [
+    {
+      "id": "sipp-jadwal",
+      "nama": "Jadwal sidang SIPP",
+      "url": "https://sipp.pn-natuna.go.id/list_jadwal_sidang",
+      "keterangan": "Jadwal sidang resmi dan terkini Pengadilan Negeri Natuna, langsung dari sistem perkara.",
+      "kataKunci": ["jadwal sidang", "jadwal persidangan", "sidang hari ini", "jadwal"]
+    },
+    {
+      "id": "sipp-perkara",
+      "nama": "Penelusuran perkara SIPP",
+      "url": "https://sipp.pn-natuna.go.id/",
+      "keterangan": "Menelusuri perkara berdasarkan nomor perkara atau nama pihak.",
+      "kataKunci": ["penelusuran perkara", "cari perkara", "nomor perkara", "sipp", "status perkara"]
+    },
+    {
+      "id": "ecourt",
+      "nama": "e-Court Mahkamah Agung",
+      "url": "https://ecourt.mahkamahagung.go.id/",
+      "keterangan": "Pendaftaran perkara daring, pembayaran panjar, dan persidangan elektronik.",
+      "kataKunci": ["e-court", "ecourt", "pendaftaran perkara", "gugatan online", "gugatan daring"]
+    },
+    {
+      "id": "eberpadu",
+      "nama": "e-Berpadu",
+      "url": "https://eberpadu.mahkamahagung.go.id/",
+      "keterangan": "Layanan terpadu perkara pidana: penahanan, izin besuk, dan permohonan lain.",
+      "kataKunci": ["e-berpadu", "eberpadu", "izin besuk", "penahanan"]
+    },
+    {
+      "id": "siwas",
+      "nama": "SIWAS Mahkamah Agung",
+      "url": "https://siwas.mahkamahagung.go.id/",
+      "keterangan": "Menyampaikan pengaduan atas perilaku aparat peradilan langsung ke Badan Pengawasan.",
+      "kataKunci": ["siwas", "pengaduan", "lapor", "whistleblowing", "pelaporan"]
+    },
+    {
+      "id": "direktori-putusan",
+      "nama": "Direktori Putusan Mahkamah Agung",
+      "url": "https://putusan3.mahkamahagung.go.id/",
+      "keterangan": "Mencari dan mengunduh salinan putusan yang telah dipublikasikan.",
+      "kataKunci": ["direktori putusan", "salinan putusan", "putusan", "unduh putusan"]
+    },
+    {
+      "id": "eksekusi-badilum",
+      "nama": "Informasi Eksekusi Badilum",
+      "url": "https://eksekusi.badilum.mahkamahagung.go.id/",
+      "keterangan": "Data permohonan dan pelaksanaan eksekusi pada lingkungan peradilan umum.",
+      "kataKunci": ["eksekusi", "permohonan eksekusi", "lelang eksekusi"]
+    }
+  ]
+}

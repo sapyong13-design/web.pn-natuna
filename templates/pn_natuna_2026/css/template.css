@@ -13297,6 +13297,23 @@ body.is-dark .site-search__field input, body.is-dark .site-search__suggestions a
 body.is-dark .site-search__item, body.is-dark .site-search__pagination a, body.is-dark .site-search__pagination span { border-color: #3c4a52; }
 body.is-dark .site-search__item mark, body.is-dark .site-search mark { background: #5a4415; color: #ffeec4; }
 
+
+/* Rute perkara: penunjuk ke layanan otoritatif, bukan klaim hasil penelusuran. */
+.site-search__case-route { min-width: 0; margin-top: clamp(22px, 4vw, 32px); padding: clamp(18px, 3vw, 24px); border: 1px solid var(--color-line); border-top: 3px solid var(--color-accent); background: var(--color-soft); overflow-wrap: anywhere; }
+.site-search__case-route-kicker { margin: 0; color: var(--color-muted); font-size: var(--step--2); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.site-search__case-route h2 { margin: 6px 0 0; color: var(--color-primary-deep); font-family: Fraunces, Georgia, serif; font-size: clamp(1.2rem, 2vw, 1.5rem); line-height: 1.25; }
+.site-search__case-route > p:not(.site-search__case-route-kicker) { margin: 10px 0 0; color: var(--color-ink); font-size: var(--step--1); line-height: 1.6; }
+.site-search__case-route-links { display: grid; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.site-search__case-route-links a { display: flex; align-items: center; min-height: 44px; padding: 10px 14px; border: 1px solid var(--color-line); border-radius: 3px; color: var(--color-primary); background: var(--color-surface); font-weight: 700; line-height: 1.35; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.site-search__case-route-links li > p { margin: 6px 0 0; color: var(--color-muted); font-size: var(--step--2); line-height: 1.5; }
+.site-search__case-route-links a:hover { border-color: var(--color-primary); }
+.site-search__case-route-secondary { font-size: var(--step--2) !important; }
+.site-search__case-route-secondary a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-primary); font-weight: 700; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+body.is-dark .site-search__case-route h2, body.is-dark .site-search__case-route > p:not(.site-search__case-route-kicker) { color: #edf2f7; }
+body.is-dark .site-search__case-route-links li > p { color: #d5c0b3; }
+body.is-dark .site-search__case-route-kicker { color: #d5c0b3; }
+body.is-dark .site-search__case-route-links a { border-color: #4b5961; color: #fff4e8; background: #172027; }
+body.is-dark .site-search__case-route-secondary a { color: #fff4e8; }
 /* AMPUH DIRECTORY 2026-07-13 */
 .ampuh-directory { width: min(100%, 1180px); margin-inline: auto; color: var(--color-ink); background: var(--color-surface); font-family: var(--font-body); }
 .ampuh-directory__header { position: relative; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, .72fr); min-height: 350px; overflow: clip; border-block: 1px solid var(--color-line); background: var(--color-soft); }
@@ -15399,3 +15416,162 @@ body.is-dark .editorial-article__related-card:visited { color: #dcb8e6; }
    (#f3c96b, 10,16:1) sudah berlaku dan harus tetap satu suara dengan sisa
    kanal. Yang perlu dibalik hanya tahun yang sedang tampil. */
 body.is-dark .news-channel-archive a[aria-current="true"] { color: var(--channel-ink); text-decoration-color: #f0c55a; }
+
+/* === KOTAK PENCARIAN BERANDA 2026-08-02 ===================================
+   Kartu pencarian keluar dari `<aside class="home-juknis-sidebar">` dan kini
+   menjadi anak langsung `.home-juknis-layout` (lihat templates/.../index.php).
+   Alasannya soal jangkauan, bukan gaya: di ponsel rel samping ditumpuk sesudah
+   seluruh isi utama lalu diubah menjadi korsel gulir mendatar, sehingga kartu
+   pencarian berdiri di 8.872px dari halaman setinggi 9.763px - 91% ke bawah,
+   praktis tidak pernah ditemukan. Sebuah medan isian juga bukan penghuni yang
+   aman di dalam korsel scroll-snap mendatar.
+
+   Urutan DOM sekarang menaruhnya paling awal - itulah yang dipakai ponsel,
+   tablet, pembaca layar, dan urutan Tab - sementara pada layar lebar penempatan
+   grid di bawah mengembalikannya ke puncak kolom rel, persis di posisi lamanya.
+   Modul tetap satu, urutan rel (layanan, role model, survei, DIPA) utuh, dan
+   `aria-label` `<aside>` tetap menaungi isi rel yang sebenarnya. */
+
+.home-search-slot {
+  min-width: 0;
+}
+
+/* Modul bisa saja tidak diterbitkan; jangan sisakan baris grid dan jarak kosong. */
+.home-search-slot:not(:has(*)) {
+  display: none;
+}
+
+/* Kartu ini dulu anak rel, jadi ia membawa sendiri perlakuan kartu rel
+   (bandingkan `body.is-home .home-juknis-sidebar > .module-card`). Seluruhnya
+   memakai token `--home-*` yang sudah punya nilai mode gelap. */
+body.is-home .home-search-slot > .module-card {
+  margin-bottom: 0;
+  border: 1px solid var(--home-rule);
+  border-radius: var(--home-radius-card);
+  padding: 16px 18px;
+  background: var(--home-paper);
+  box-shadow: var(--home-shadow-interactive);
+}
+
+body.is-home .home-search-slot h2 {
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+
+/* Sembilan kicker identik di rel lama tidak menolong siapa pun; kartu ini
+   mengikuti keputusan yang sama seperti sesama kartu rel. */
+body.is-home .home-search-slot .section-kicker {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  body.is-home .home-search-slot > .module-card {
+    box-shadow: none;
+  }
+}
+
+/* >=1181px adalah satu-satunya rentang dengan tata letak dua kolom; di bawah itu
+   `.home-juknis-layout` sudah runtuh menjadi satu kolom (css:4137) dan urutan
+   DOM saja sudah benar. Baris ketiga `1fr` menyerap sisa tinggi kolom utama:
+   tanpa itu kolom utama yang membentang dua baris akan membagi kelebihan
+   tingginya rata ke baris 2 dan 3, dan lubang setinggi ribuan piksel muncul di
+   antara kartu pencarian dan kartu Jam Layanan di bawahnya. */
+@media (min-width: 1181px) {
+  .home-juknis-layout {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .home-juknis-layout > .system-message-slot {
+    grid-row: 1;
+  }
+
+  .home-juknis-layout > .home-search-slot {
+    grid-row: 2;
+    grid-column: 2;
+    align-self: start;
+  }
+
+  .home-juknis-layout > .home-juknis-main {
+    grid-row: 2 / span 2;
+    grid-column: 1;
+  }
+
+  .home-juknis-layout > .home-juknis-sidebar {
+    grid-row: 3;
+    grid-column: 2;
+  }
+}
+
+/* Formulirnya sendiri. `.search-box` hanya dipakai modul 807, tetapi aturan di
+   bawah tetap dilingkupi `.home-search-slot` supaya tidak ada efek samping.
+   Aturan lama (css:3278) mematok `background: #ffffff` - di mode gelap itu
+   kotak putih menyilaukan di atas kertas kartu #172027. Token `--color-surface`
+   dan `--color-ink` sudah punya pasangan gelapnya. */
+.home-search-slot .search-box {
+  gap: 8px;
+}
+
+.home-search-slot .search-box input {
+  min-height: 44px;
+  border: 1px solid var(--home-field-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+/* Halo emas ditulis di sini dan di aturan `:focus-visible` di bawah dengan nilai
+   yang sama persis. Keduanya cocok bersamaan pada medan teks dan specificity-nya
+   seri, jadi menyamakan nilainya menghapus perlombaan kaskade dengan
+   `box-shadow` bawaan `.search-box input:focus` (css:3295) alih-alih
+   mengandalkan urutan sumber. Latar isian sengaja tidak diubah saat fokus: di
+   mode gelap itu memunculkan kilatan putih. */
+.home-search-slot .search-box input:focus {
+  border-color: var(--home-field-line);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 5px rgba(209, 164, 47, .35);
+}
+
+.home-search-slot .search-box input::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+/* Tinggi sentuh 44px penuh: tombol kirim, bukan tautan di dalam kalimat, jadi
+   pengecualian SC 2.5.8 tidak berlaku. Garis 1px transparan menjaga geometri
+   tetap sama saat mode gelap menyalakan garis emasnya. */
+.home-search-slot .search-box button {
+  min-height: 44px;
+  border: 1px solid transparent;
+  padding: 10px 20px;
+}
+
+/* Cincin fokus situs: inti gelap 3px + halo emas, sama seperti .site-search
+   (css:13267), karena emas murni di atas kertas terang hanya 2,3:1. */
+.home-search-slot .search-box :is(input, button):focus-visible {
+  outline: 3px solid #7a4b00;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(209, 164, 47, .35);
+}
+
+/* Garis medan isian. Bawaan `--color-line` (#d9e0e7) hanya 1,31:1 di atas
+   kertas kartu #fffdf9 - batas komponennya praktis tidak terlihat, jauh di
+   bawah 3:1 SC 1.4.11. #8a7b74 = 4,00:1 di atas kertas dan 4,07:1 di atas isian
+   putih; #7d8b95 = 4,71:1 di atas kertas gelap dan 4,91:1 di atas isian gelap. */
+body.is-home {
+  --home-field-line: #8a7b74;
+}
+
+body.is-dark.is-home {
+  --home-field-line: #7d8b95;
+}
+
+/* Isian maroon #8f1f0b hanya 1,86:1 di atas kertas kartu gelap: bentuk tombolnya
+   hilang walau labelnya kontras 8,87:1. Emas dipakai persis sebagai garis, bukan
+   teks - #c8a45a = 7,01:1 di atas kertas gelap dan 3,76:1 di atas isian maroon. */
+body.is-dark .home-search-slot .search-box button {
+  border-color: #c8a45a;
+}
+
+body.is-dark .home-search-slot .search-box :is(input, button):focus-visible {
+  outline-color: #f0c55a;
+}
+/* === AKHIR KOTAK PENCARIAN BERANDA ======================================== */
