@@ -9608,25 +9608,62 @@ a.instagram-follow-standalone {
   border-top: 1px dashed var(--color-line);
 }
 
-/* --- Footer stats strip --- */
+/* --- Footer stats strip ---
+   Penghitung kunjungan. Ia provenans, bukan layanan: sekelas baris hak cipta, jadi
+   ukurannya kecil dan warnanya menahan diri. Angkanya `tabular-nums` supaya tidak
+   bergoyang saat animasi hitung-naik berjalan. Aturan lama di sini menargetkan markup
+   percobaan terdahulu (`svg` + `strong`) yang tidak pernah dipakai. */
 .footer-stats {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  padding: 10px var(--page-padding) 0;
-  color: rgba(255, 255, 255, 0.55);
+  grid-column: 1 / -1;
+  padding: 14px var(--page-padding) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.62);
   font-size: var(--step--2);
 }
 
-.footer-stats svg {
-  opacity: 0.7;
+.footer-stats__label {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
-.footer-stats strong {
-  color: rgba(255, 255, 255, 0.85);
+.footer-stats dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  margin: 0;
+}
+
+.footer-stats dl > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.footer-stats dt {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.footer-stats dd {
+  margin: 0;
+}
+
+.footer-stats .stats-num {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: var(--step-0);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* 0,45 alpha mendarat tepat di 4,50:1 - lulus tanpa margin sama sekali pada teks 12px.
+   0,54 memberi 5,9:1. */
+.footer-stats__note {
+  margin: 8px 0 0;
+  max-width: 68ch;
+  color: rgba(255, 255, 255, 0.54);
+  line-height: 1.5;
 }
 
 /* --- Quick links: clamp deskripsi --- */
