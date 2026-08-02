@@ -298,13 +298,6 @@ if (trim((string) $this->getDescription()) === '') {
     <div class="footer-social">
       <jdoc:include type="modules" name="footer-social" style="none" />
     </div>
-    <?php // Penghitung kunjungan berdiri di kaki, bukan di rel beranda: ia provenans -
-          // sekelas baris hak cipta dan alamat - bukan layanan, jadi ia tidak boleh ikut
-          // berebut perhatian dengan kartu yang benar-benar menolong warga. Di kaki ia
-          // juga tampil di seluruh halaman, bukan hanya beranda. ?>
-    <?php if (function_exists('pn_natuna_render_visitor_stats')) : ?>
-      <?php pn_natuna_render_visitor_stats(); ?>
-    <?php endif; ?>
     <div class="footer-bottom">
       <jdoc:include type="modules" name="footer-bottom" style="none" />
     </div>
