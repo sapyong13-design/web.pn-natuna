@@ -503,6 +503,78 @@ git status --short
 Pohon kerja wajib bersih dan HEAD wajib sama dengan `origin/continue-joomla-rebuild-polish` sesudah pull. Larangan lama tetap berlaku: jangan `--reapply`, `--full-staging`, `--reset-database`, atau mengarah ke document root domain utama.
 
 
+## Deploy Staging Commit `3587f711` (2 Agu 2026) — batch aktif
+
+Ini target deploy sekarang. Ikuti **Deploy Staging Commit `149f88e`** sebagai prosedur induk, lalu **seluruh tambahan `2043f49`**, lalu tambahan di bawah ini.
+
+### Kenapa dua batch sekaligus
+
+`2043f49` **belum pernah turun ke staging**. Diperiksa 2 Agu 2026: `https://new.pn-natuna.go.id/cari?q=posbakum` membalas **404** dan kotak pencarian beranda masih menembak `com_search`. Jadi staging melompati dua batch, dan **enam migrasi** ikut sekaligus: `20260901`–`20260904` dari batch lalu, `20260905`–`20260906` dari batch ini. Jalankan `apply-db-migrations.py` sekali; ia memutar semuanya berurutan.
+
+### Yang berubah di batch ini
+
+Pencarian situs diarahkan ke tujuan yang benar-benar dicari warga: blok **Sistem resmi** (SIPP, e-Court, e-Berpadu, SIWAS, Direktori Putusan, Eksekusi Badilum) dan **kartu jalur perkara** untuk kueri berbentuk nomor perkara; kotak pencarian beranda yang mati diperbaiki lewat migrasi; letaknya di ponsel dipindah dari 91% ke 13% tinggi halaman; dan pencatatan statistik pencarian dinyalakan.
+
+### Tambahan 1 — dua berkas templat baru
+
+`deploy-cpanel.py` memakai `mirror_code_dir`, jadi berkas baru ikut tersalin sendiri dan tidak perlu disalin manual. Yang wajib hanya **memastikan** keduanya mendarat — `sistem-daring.json` adalah tipe berkas pertama di `templates/.../data/`, dan bila ia tidak ada, blok Sistem resmi mati diam-diam tanpa galat:
+
+```bash
+for f in templates/pn_natuna_2026/data/sistem-daring.json \
+         templates/pn_natuna_2026/html/com_finder/search/default_caseroute.php; do
+  cmp "$PN_NATUNA_SOURCE_ROOT/$f" "$PN_NATUNA_JPATH_ROOT/$f" >/dev/null 2>&1 && echo "OK   $f" || echo "BEDA $f"
+done
+```
+
+### Tambahan 2 — `finder:index` tetap wajib
+
+Sama seperti batch lalu dan bukan pengulangan sia-sia: isi indeks hidup di basis data tiap lingkungan dan **tidak ikut Git**. Tanpa ini `/cari` berdiri tetapi kosong, dan blok Sistem resmi tidak punya hasil untuk didampingi.
+
+```bash
+cd "$PN_NATUNA_JPATH_ROOT"
+"$PHP_BIN" -d memory_limit=1024M cli/joomla.php finder:index
+```
+
+### Tambahan 3 — smoke test khusus batch ini
+
+```bash
+S='https://new.pn-natuna.go.id'
+printf '%s /cari?q=posbakum\n'      "$(curl -s -o /dev/null -w '%{http_code}' "$S/cari?q=posbakum")"
+echo "hasil posbakum : $(curl -s "$S/cari?q=posbakum" | grep -c 'site-search__item')"
+echo "blok sistem    : $(curl -s "$S/cari?q=salinan+putusan" | grep -c 'site-search__case-route')"
+echo "kartu perkara  : $(curl -s "$S/cari?q=12/Pdt.G/2026/PN+Ntn" | grep -c 'site-search__case-route')"
+echo "blok TIDAK muncul di kueri informasional (harus 0):"
+for q in biaya+perkara ptsp mediasi prodeo kontak zona+integritas posbakum; do
+  printf '  %s %s\n' "$(curl -s "$S/cari?q=$q" | grep -c 'site-search__case-route')" "$q"
+done
+echo "kotak beranda  : $(curl -s "$S/" | grep -c 'com_search')  (harus 0)"
+```
+
+Harapan: `/cari` **200**, `posbakum` mengembalikan hasil (>0), `salinan putusan` dan nomor perkara memunculkan blok (masing-masing >0), ketujuh kueri informasional **0** — kalau ada yang bukan 0, blok menutupi hasil yang sudah tepat — dan `com_search` **0** di beranda. Bila `com_search` masih 1, migrasi `20260906` belum jalan atau cache belum dibersihkan.
+
+### Tambahan 4 — statistik pencarian
+
+Migrasi `20260905` menyalakan `gather_search_statistics`. Verifikasi setelah beberapa kueri smoke test di atas:
+
+```bash
+"$MYSQL_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" -N -B "$DB_NAME" \
+  -e "SELECT COUNT(*) FROM pnn_finder_logging;"
+```
+
+Harus lebih dari `0`. Isinya tidak boleh ditampilkan di situs publik: istilah pencarian di pengadilan bisa memuat nama pihak dan nomor perkara. Bacanya lewat SQL langsung, dan pandangan paling berguna adalah `WHERE results = 0` — daftar persis apa yang dicari warga dan tidak ditemukan situs.
+
+### Yang TIDAK ada di batch ini
+
+Penghitung kunjungan di kaki situs sempat dibuat lalu **dibalik** atas permintaan pemilik (`2c04a1b2` lalu `3587f711`). Migrasi `20260907` ikut hilang. Bila staging pernah terlanjur menerimanya, kolomnya dibuang dan catatan ledger-nya dihapus:
+
+```bash
+"$MYSQL_BIN" --defaults-extra-file="$MYSQL_DEFAULTS_FILE" "$DB_NAME" -e "
+  ALTER TABLE pnn_visitor_totals DROP COLUMN counting_since;
+  DELETE FROM pnn_project_migrations WHERE name LIKE '20260907%';"
+```
+
+Lewati bila `20260907` tidak pernah tercatat di staging — kondisi normal, karena batch ini belum pernah turun.
+
 ## Resume Deployment Batch `32b7274` / `45423b0`
 
 Status staging terakhir pada 21 Juli 2026:
