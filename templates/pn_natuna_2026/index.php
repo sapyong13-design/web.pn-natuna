@@ -55,9 +55,9 @@ if (trim((string) $this->getDescription()) === '') {
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/brand/favicon-32.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="/images/brand/favicon-512.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/brand/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/brand/favicon-32.png?v=20260804" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/images/brand/favicon-512.png?v=20260804" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/brand/apple-touch-icon.png?v=20260804" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -118,6 +118,7 @@ if (trim((string) $this->getDescription()) === '') {
           'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
       $clockDate = $clockDays[(int) $clockNow->format('w')] . ', ' . $clockNow->format('j')
           . ' ' . $clockMonths[(int) $clockNow->format('n')] . ' ' . $clockNow->format('Y');
+      $isAugustCommemoration = (int) $clockNow->format('n') === 8;
       ?>
       <div class="topbar-clock" aria-label="Tanggal dan waktu saat ini">
         <span id="live-clock-date"><?php echo htmlspecialchars($clockDate, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -126,6 +127,23 @@ if (trim((string) $this->getDescription()) === '') {
     </div>
     <div class="header-brand">
       <jdoc:include type="modules" name="header-brand" style="none" />
+      <?php if ($isAugustCommemoration) : ?>
+        <aside class="august-lockup" aria-label="Peringatan Hari Ulang Tahun Republik Indonesia dan Mahkamah Agung Republik Indonesia">
+          <svg class="august-lockup__flag" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+            <path class="august-lockup__flag-red" d="M0,22 C42,2 76,38 120,18 C164,-2 202,36 246,16 C278,2 300,8 320,18 L320,47 C286,31 266,58 224,43 C182,28 148,57 105,42 C63,27 30,51 0,40 Z">
+              <animate attributeName="d" dur="6s" repeatCount="indefinite" values="M0,22 C42,2 76,38 120,18 C164,-2 202,36 246,16 C278,2 300,8 320,18 L320,47 C286,31 266,58 224,43 C182,28 148,57 105,42 C63,27 30,51 0,40 Z;M0,12 C38,32 77,-2 119,20 C161,42 202,5 244,25 C276,40 300,32 320,18 L320,48 C286,64 264,34 224,52 C183,70 147,34 105,54 C63,74 29,38 0,50 Z;M0,22 C42,2 76,38 120,18 C164,-2 202,36 246,16 C278,2 300,8 320,18 L320,47 C286,31 266,58 224,43 C182,28 148,57 105,42 C63,27 30,51 0,40 Z" />
+            </path>
+            <path class="august-lockup__flag-white" d="M0,40 C30,51 63,27 105,42 C148,57 182,28 224,43 C266,58 286,31 320,47 L320,76 C280,60 257,89 215,72 C173,55 138,86 96,69 C55,52 25,78 0,66 Z">
+              <animate attributeName="d" dur="6s" repeatCount="indefinite" values="M0,40 C30,51 63,27 105,42 C148,57 182,28 224,43 C266,58 286,31 320,47 L320,76 C280,60 257,89 215,72 C173,55 138,86 96,69 C55,52 25,78 0,66 Z;M0,50 C29,38 63,74 105,54 C147,34 183,70 224,52 C264,34 286,64 320,48 L320,77 C282,93 255,62 214,80 C172,98 137,62 95,82 C53,102 24,67 0,78 Z;M0,40 C30,51 63,27 105,42 C148,57 182,28 224,43 C266,58 286,31 320,47 L320,76 C280,60 257,89 215,72 C173,55 138,86 96,69 C55,52 25,78 0,66 Z" />
+            </path>
+          </svg>
+          <span class="august-lockup__marks">
+            <span class="august-lockup__mark august-lockup__mark--ri"><img src="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ri-2026-header.webp" alt="Hari Ulang Tahun ke-81 Republik Indonesia" width="640" height="389" decoding="async"></span>
+            <span class="august-lockup__divider" aria-hidden="true"></span>
+            <span class="august-lockup__mark august-lockup__mark--ma"><img src="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ma-ri-2026-header.webp" alt="Hari Ulang Tahun ke-81 Mahkamah Agung Republik Indonesia" width="760" height="330" decoding="async"></span>
+          </span>
+        </aside>
+      <?php endif; ?>
       <jdoc:include type="modules" name="header-badges" style="none" />
     </div>
     <nav class="main-menu" aria-label="Navigasi utama">

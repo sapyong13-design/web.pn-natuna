@@ -90,7 +90,6 @@ $expect(str_contains($brandOverride, "\$tag = \$active && \$active->home ? 'h1' 
 $expect(str_contains($brandOverride, 'class="brand-title"'), 'Brand module needs a stable class independent of heading tag.');
 $expect(str_contains($css, '.brand-lockup .brand-title'), 'Brand title styling must not depend on an h1 element.');
 $expect((bool) preg_match('/\.news-portal__news-card > a\s*\{[^}]*min-height:\s*179px;/s', $css), 'Mobile news cards need a consistent minimum height.');
-$expect((bool) preg_match('/\.news-portal__trust > a\s*\{[^}]*justify-self:\s*stretch;[^}]*width:\s*100%;/s', $css), 'Mobile trust action must fill its stacked panel.');
 $expect(str_contains($css, '.brand-lockup p:not(.brand-title)'), 'Mobile header must hide the address without hiding contextual brand title paragraphs.');
 $spotlightMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260819_redesign_change_agent_role_model_spotlights.sql');
 $expect(substr_count($spotlightMigration, 'class="zi-spotlight ') === 2, 'Agen Perubahan and Role Model must each receive one editorial spotlight.');

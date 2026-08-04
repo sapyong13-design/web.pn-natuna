@@ -78,8 +78,6 @@ if ((int) $item->id === 53) {
       <section class="news-portal__section news-portal__section--announcements" aria-labelledby="portal-announcement-title"><header class="news-portal__heading"><div><p>Pengumuman</p><h2 id="portal-announcement-title">Pemberitahuan resmi</h2></div><a href="<?php echo Route::_('/pengumuman'); ?>">Semua pengumuman</a></header>
         <ol class="news-portal__announcements"><?php foreach ($portalAnnouncements as $portalItem) : [$portalDateTime, $portalDate] = $formatPortalDate((string) $portalItem->publish_up, (string) $portalItem->created); ?><li><a href="<?php echo Route::_(RouteHelper::getArticleRoute($portalItem->id . ':' . $portalItem->alias, $portalItem->catid, $portalItem->language)); ?>"><time datetime="<?php echo $portalDateTime; ?>"><?php echo $portalDate; ?></time><span><?php echo $this->escape($portalItem->title); ?></span></a></li><?php endforeach; ?></ol>
       </section>
-      <aside class="news-portal__trust" aria-label="Informasi resmi dan kontak"><div><strong>Periksa sebelum membagikan</strong><span>Waspadai informasi yang mengatasnamakan PN Natuna. Pastikan sumbernya kanal resmi.</span></div><a href="<?php echo Route::_('/kontak'); ?>">Konfirmasi ke PN Natuna</a></aside>
-      <nav class="news-portal__social" aria-label="Media sosial resmi"><a href="https://www.instagram.com/pn.natuna/" target="_blank" rel="noopener noreferrer">Instagram</a><a href="https://www.facebook.com/pengadilannegerinatuna" target="_blank" rel="noopener noreferrer">Facebook</a><a href="https://www.youtube.com/@PengadilanNegeriNatuna" target="_blank" rel="noopener noreferrer">YouTube</a></nav>
     </section>
     <?php
     return;
@@ -130,8 +128,11 @@ $profileUnitPaths = str_starts_with($profilePath, '/profil-pengadilan/profil-kep
     ? $profileRegistryPaths
     : (str_starts_with($profilePath, '/profil-pengadilan/profil-kesekretariatan') ? $profileSecretariatPaths : []);
 $showProfileUnits = $profileUnitPaths !== [];
+$profileUnitLabel = str_starts_with($profilePath, '/profil-pengadilan/profil-kepaniteraan')
+    ? 'Unit Kepaniteraan'
+    : 'Bagian Kesekretariatan';
 if ($channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath])) {
-    ?><nav class="svc-subnav" aria-label="Navigasi Tentang Pengadilan"><a href="/profil-pengadilan">Ringkasan</a><?php foreach ($profilePages as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?><?php if ($showProfileUnits) : ?><?php foreach ($profileUnitPaths as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?><?php endif; ?></nav><?php
+    ?><nav class="svc-subnav" aria-label="Navigasi Tentang Pengadilan"><a href="/profil-pengadilan">Ringkasan</a><?php foreach ($profilePages as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?></nav><?php if ($showProfileUnits) : ?><nav class="svc-subnav svc-subnav--unit" aria-label="<?php echo $this->escape($profileUnitLabel); ?>"><span class="svc-subnav__label"><?php echo $this->escape($profileUnitLabel); ?></span><?php foreach ($profileUnitPaths as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?></nav><?php endif;
 }
 $isProfileRoute = $channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath]);
 if ($isProfileRoute) {

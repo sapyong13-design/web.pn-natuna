@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroNewsTabs();
   setupHeroServiceStatus();
   setupMaklumatLightbox();
+  setupApparatusDossier();
   setupStickyNav();
   setupInstansiTabs();
   setupDipaPeriods();
@@ -985,6 +986,11 @@ function setupVoiceReader() {
   let enabled = storageGet('pnNatunaVoiceReader') !== '0';
   let lastText = '';
   let hoverTimer = null;
+  const welcomeText = 'Selamat datang di Pengadilan Negeri Natuna Kelas II.';
+  let welcomePending = enabled;
+  let welcomeSpoken = false;
+  let welcomeInFlight = false;
+  let interactionFallbackBound = false;
 
   const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
 
@@ -1013,19 +1019,22 @@ function setupVoiceReader() {
   const isIndonesianVoice = (voice) => {
     const lang = (voice?.lang || '').replace('_', '-');
     const identity = voiceIdentity(voice);
-    const hasNamedMicrosoftVoice = /microsoft\s+(?:gadis|andika)\b/i.test(identity) || /indonesian\s*\(indonesia\)/i.test(identity);
+    const hasNamedMicrosoftVoice = /\b(?:gadis|andika)\b/i.test(identity) || /indonesian\s*\(indonesia\)/i.test(identity);
     if (/\bundefined\b/i.test(voice?.name || '') && !hasNamedMicrosoftVoice) return false;
-    return hasNamedMicrosoftVoice || /^id(?:-|$)/i.test(lang) || /(?:bahasa\s+indonesia|\bindonesia\b)/i.test(identity);
+    return hasNamedMicrosoftVoice || /^id(?:-|$)/i.test(lang) || /(?:bahasa\s+indonesia|indonesian|\bindonesia\b)/i.test(identity);
   };
 
   const chooseVoice = () => {
     if (!voices.length) return null;
     const indonesian = voices.filter(isIndonesianVoice);
-    return indonesian.find((voice) => /microsoft\s+(?:gadis|andika)\b/i.test(voiceIdentity(voice)) && !voice.localService) ||
+    const savedVoiceKey = storageGet('pnNatunaVoiceName');
+    return indonesian.find((voice) => savedVoiceKey && voiceKey(voice) === savedVoiceKey) ||
+      indonesian.find((voice) => /\bgadis\b/i.test(voiceIdentity(voice)) && !voice.localService) ||
+      indonesian.find((voice) => /\bandika\b/i.test(voiceIdentity(voice)) && !voice.localService) ||
       indonesian.find((voice) => /microsoft/i.test(voiceIdentity(voice)) && /indonesian\s*\(indonesia\)/i.test(voiceIdentity(voice)) && !voice.localService) ||
       indonesian.find((voice) => /^id-ID$/i.test((voice.lang || '').replace('_', '-')) && !voice.localService) ||
       indonesian.find((voice) => !voice.localService) ||
-      indonesian.find((voice) => /microsoft\s+(?:gadis|andika)\b/i.test(voiceIdentity(voice))) ||
+      indonesian.find((voice) => /\b(?:gadis|andika)\b/i.test(voiceIdentity(voice))) ||
       indonesian.find((voice) => voice.localService) ||
       indonesian[0] ||
       null;
@@ -1035,7 +1044,7 @@ function setupVoiceReader() {
   const voiceLabel = (voice) => {
     const locale = (voice?.lang || 'id-ID').replace('_', '-');
     const candidates = [voice?.name, voice?.voiceURI].map((value) => (value || '').trim());
-    const validName = candidates.find((value) => /microsoft\s+(?:gadis|andika)\b/i.test(value)) ||
+    const validName = candidates.find((value) => /\b(?:gadis|andika)\b/i.test(value)) ||
       candidates.find((value) => value && !/\bundefined\b/i.test(value)) ||
       'Suara Bahasa Indonesia';
     return `${validName} · ${voice?.localService ? 'Perangkat' : 'Online'} (${locale})`;
@@ -1070,11 +1079,12 @@ function setupVoiceReader() {
     voices = synth.getVoices ? synth.getVoices() : [];
     selectedVoice = chooseVoice();
     renderVoiceOptions();
+    if (welcomePending && selectedVoice) announceWelcome();
   };
 
-  const speakText = (text) => {
+  const speakText = (text, options = {}) => {
     const clean = normalize(text);
-    if (!enabled || !clean || clean === lastText) return;
+    if (!enabled || !clean || (!options.force && clean === lastText)) return false;
     loadVoices();
     lastText = clean;
     synth.cancel();
@@ -1084,8 +1094,31 @@ function setupVoiceReader() {
     utterance.rate = 0.94;
     utterance.pitch = 1;
     utterance.volume = 1;
+    if (typeof options.onStart === 'function') utterance.addEventListener('start', options.onStart, { once: true });
+    if (typeof options.onError === 'function') utterance.addEventListener('error', options.onError, { once: true });
     synth.speak(utterance);
+    return true;
   };
+
+  function announceWelcome() {
+    if (!enabled || welcomeSpoken || welcomeInFlight) return;
+    welcomePending = false;
+    welcomeInFlight = true;
+    speakText(welcomeText, {
+      force: true,
+      onStart: () => { welcomeInFlight = false; welcomeSpoken = true; },
+      onError: () => { welcomeInFlight = false; welcomePending = true; lastText = ''; bindInteractionFallback(); }
+    });
+  }
+
+  function bindInteractionFallback() {
+    if (interactionFallbackBound || welcomeSpoken || !enabled) return;
+    interactionFallbackBound = true;
+    document.addEventListener('pointerdown', () => {
+      interactionFallbackBound = false;
+      if (!welcomeSpoken && enabled) announceWelcome();
+    }, { once: true, capture: true });
+  }
 
   const disableVoiceSession = () => {
     enabled = false;
@@ -1094,6 +1127,9 @@ function setupVoiceReader() {
     button.textContent = 'Suara Mati';
     synth.cancel();
     lastText = '';
+    welcomePending = false;
+    welcomeSpoken = false;
+    welcomeInFlight = false;
   };
 
   const setEnabled = (active, announce) => {
@@ -1107,7 +1143,7 @@ function setupVoiceReader() {
     button.setAttribute('aria-pressed', 'true');
     button.textContent = 'Suara Aktif';
     storageSet('pnNatunaVoiceReader', '1');
-    if (announce) speakText('Selamat datang di Pengadilan Negeri Natuna Kelas II.');
+    if (announce) { welcomePending = true; welcomeSpoken = false; welcomeInFlight = false; announceWelcome(); }
   };
 
   document.addEventListener('pnNatunaVoiceReset', disableVoiceSession);
@@ -1116,6 +1152,7 @@ function setupVoiceReader() {
 
   select?.addEventListener('change', (event) => {
     selectedVoice = voices.find((voice) => voiceKey(voice) === event.currentTarget.value && isIndonesianVoice(voice)) || chooseVoice();
+    if (selectedVoice) storageSet('pnNatunaVoiceName', voiceKey(selectedVoice));
     lastText = '';
     if (enabled) speakText('Pilihan suara bahasa Indonesia diperbarui.');
   });
@@ -1140,7 +1177,11 @@ function setupVoiceReader() {
   setEnabled(enabled, false);
 
   if (enabled) {
-    window.setTimeout(loadVoices, 600);
+    window.setTimeout(() => {
+      loadVoices();
+      if (!welcomeSpoken) announceWelcome();
+      window.setTimeout(() => { if (!welcomeSpoken) bindInteractionFallback(); }, 900);
+    }, voices.length ? 120 : 600);
   }
 }
 
@@ -1738,6 +1779,134 @@ function setupMaklumatLightbox() {
   };
 
   triggers.forEach((trigger) => trigger.addEventListener('click', () => open(trigger)));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      close();
+    }
+  });
+}
+
+/**
+ * Kartu aparatur dapat dibuka menjadi kartu detail pegawai dengan foto lebih
+ * besar. Isi dialog dibangun dari markup kartu yang sudah tayang, sehingga data
+ * NIP, pangkat/golongan, jabatan, dan pendidikan tidak pernah digandakan di DB.
+ */
+function setupApparatusDossier() {
+  const cards = Array.from(document.querySelectorAll('.apparatus-editorial .roster-card, .apparatus-editorial .roster-featured'));
+  if (!cards.length) {
+    return;
+  }
+
+  const zoomIcon = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path><path d="M11 8v6M8 11h6"></path></svg>';
+  let overlay = null;
+  let lastFocus = null;
+
+  const close = () => {
+    if (!overlay || overlay.hidden) {
+      return;
+    }
+    overlay.hidden = true;
+    document.body.classList.remove('dossier-lightbox-open');
+    lastFocus?.focus();
+  };
+
+  const build = () => {
+    overlay = document.createElement('div');
+    overlay.className = 'dossier-lightbox';
+    overlay.hidden = true;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'dossier-name');
+    overlay.innerHTML = '<button type="button" class="dossier-close" aria-label="Tutup kartu pegawai"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><div class="dossier-card"><figure><img alt=""></figure><div class="dossier-body"><h2 id="dossier-name"></h2><ul class="dossier-roles"></ul><dl class="dossier-meta"></dl></div></div>';
+    overlay.querySelector('.dossier-close').addEventListener('click', close);
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) {
+        close();
+      }
+    });
+    document.body.appendChild(overlay);
+  };
+
+  const open = (card) => {
+    if (!overlay) {
+      build();
+    }
+    const photo = card.querySelector('img');
+    const name = card.querySelector('.roster-name, .roster-featured-name');
+    const image = overlay.querySelector('.dossier-card img');
+    image.src = photo?.currentSrc || photo?.src || '';
+    image.alt = photo?.alt || name?.textContent.trim() || '';
+    overlay.querySelector('#dossier-name').textContent = name?.textContent.trim() || '';
+
+    const figure = overlay.querySelector('.dossier-card figure');
+    figure.querySelector('.dossier-degree')?.remove();
+    const degree = card.querySelector('.roster-degree')?.textContent.trim();
+    if (degree) {
+      const badge = document.createElement('span');
+      badge.className = 'dossier-degree';
+      badge.textContent = degree;
+      figure.appendChild(badge);
+    }
+
+    const roles = overlay.querySelector('.dossier-roles');
+    roles.textContent = '';
+    card.querySelectorAll('.roster-eyebrow, .roster-role').forEach((role) => {
+      const item = document.createElement('li');
+      item.textContent = role.textContent.trim();
+      if (role.classList.contains('roster-role-status')) {
+        item.className = 'dossier-role-status';
+      }
+      roles.appendChild(item);
+    });
+
+    const meta = overlay.querySelector('.dossier-meta');
+    meta.textContent = '';
+    card.querySelectorAll('.roster-meta > div').forEach((row) => {
+      const label = row.querySelector('dt')?.textContent.trim();
+      const value = row.querySelector('dd')?.textContent.trim();
+      if (!label || !value) {
+        return;
+      }
+      const group = document.createElement('div');
+      const term = document.createElement('dt');
+      term.textContent = label;
+      const detail = document.createElement('dd');
+      detail.textContent = value;
+      group.append(term, detail);
+      meta.appendChild(group);
+    });
+    meta.hidden = !meta.children.length;
+
+    overlay.hidden = false;
+    document.body.classList.add('dossier-lightbox-open');
+    lastFocus = card;
+    overlay.querySelector('.dossier-close').focus();
+  };
+
+  cards.forEach((card) => {
+    const name = card.querySelector('.roster-name, .roster-featured-name')?.textContent.trim() || 'pegawai';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Lihat kartu pegawai ${name}`);
+
+    const host = card.querySelector('.roster-photo, .roster-featured-photo');
+    if (host && !host.querySelector('.roster-open-hint')) {
+      const hint = document.createElement('span');
+      hint.className = 'roster-open-hint';
+      hint.setAttribute('aria-hidden', 'true');
+      hint.innerHTML = zoomIcon;
+      host.appendChild(hint);
+    }
+
+    card.addEventListener('click', () => open(card));
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault();
+        open(card);
+      }
+    });
+  });
+
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       close();
