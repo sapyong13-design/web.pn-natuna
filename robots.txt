@@ -27,3 +27,5 @@ Disallow: /logs/
 Disallow: /modules/
 Disallow: /plugins/
 Disallow: /tmp/
+
+Sitemap: https://pn-natuna.go.id/sitemap.xml

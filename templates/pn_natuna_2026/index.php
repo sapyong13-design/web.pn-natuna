@@ -38,6 +38,12 @@ $siteUrl = rtrim(Joomla\CMS\Uri\Uri::root(), '/');
 if (trim((string) $this->getDescription()) === '') {
     $this->setDescription('Website resmi Pengadilan Negeri Natuna Kelas II — informasi layanan PTSP, jadwal sidang, perkara, berita, dan transparansi peradilan di Kabupaten Natuna, Kepulauan Riau.');
 }
+
+$canonicalPath = Joomla\CMS\Uri\Uri::getInstance()->getPath();
+$canonicalPath = preg_replace('#^/index\.php(?:/|$)#', '/', $canonicalPath) ?: '/';
+$canonicalPath = '/' . ltrim($canonicalPath, '/');
+$canonicalUrl = $siteUrl . ($canonicalPath === '/' ? '/' : rtrim($canonicalPath, '/'));
+$this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canonical');
 ?>
 <!doctype html>
 <html lang="id-ID" dir="<?php echo $this->direction; ?>">
@@ -50,7 +56,7 @@ if (trim((string) $this->getDescription()) === '') {
   <meta property="og:type" content="website">
   <meta property="og:title" content="<?php echo htmlspecialchars($this->getTitle() ?: 'Pengadilan Negeri Natuna Kelas II', ENT_QUOTES, 'UTF-8'); ?>">
   <meta property="og:description" content="<?php echo htmlspecialchars($this->getDescription(), ENT_QUOTES, 'UTF-8'); ?>">
-  <meta property="og:url" content="<?php echo htmlspecialchars(Joomla\CMS\Uri\Uri::current(), ENT_QUOTES, 'UTF-8'); ?>">
+  <meta property="og:url" content="<?php echo htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'); ?>">
   <meta property="og:image" content="<?php echo $siteUrl; ?>/images/brand/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">

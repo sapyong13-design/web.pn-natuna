@@ -32,6 +32,9 @@ sync_tree() {
 }
 
 sync_tree "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026"
+cp "$PN_NATUNA_SOURCE_ROOT/robots.txt" "$PN_NATUNA_JPATH_ROOT/robots.txt"
+cp "$PN_NATUNA_SOURCE_ROOT/.htaccess" "$PN_NATUNA_JPATH_ROOT/.htaccess"
+printf '%s aturan crawl dan redirect tersinkron\n' "$(date -u +%FT%TZ)"
 printf '%s aset template tersinkron\n' "$(date -u +%FT%TZ)"
 
 run() {
@@ -52,4 +55,5 @@ run youtube "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-youtube.php
 run sipp "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-sipp.php" || status=1
 run survei "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-survey.py" || status=1
 run dipa "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-dipa.py" || status=1
+run sitemap "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/generate-sitemap.php" || status=1
 exit "$status"

@@ -17,6 +17,8 @@ Options -Indexes
 	## dan rollback HSTS sudah diuji; jangan tambah includeSubDomains/preload dulu.
 	Header always set Strict-Transport-Security "max-age=300" env=HTTPS
 	Header always set X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING
+	## Tahap observasi: tidak memblokir resource. Tinjau violation sebelum enforce.
+	Header always set Content-Security-Policy-Report-Only "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.instagram.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://www.instagram.com; connect-src 'self' https://www.instagram.com; upgrade-insecure-requests"
 </IfModule>
 <FilesMatch "\.svg$">
 	<IfModule mod_headers.c>
@@ -98,7 +100,22 @@ Options -Indexes
 	RewriteCond %{HTTPS} !=on
 	RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
 	RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
+	## Pindahkan sinyal indeks Joomla lama ke route rebuild. Aturan eksplisit
+	## mendahului fallback bahasa agar URL bernilai tinggi tidak berakhir 404.
+	RewriteRule ^index\.php/en/?$ / [R=301,L,NE]
+	RewriteRule ^index\.php/en/(?:about|tentang-pengadilan)/?$ /profil-pengadilan [R=301,L,NE,NC]
+	RewriteRule ^index\.php/en/hubungi-kami/?$ /kontak [R=301,L,NE,NC]
+	RewriteRule ^index\.php/en/berita/(?:artikel|berita-terkini|photo-gallery)/?$ /berita-dan-pengumuman/berita [R=301,L,NE,NC]
+	RewriteRule ^index\.php/en/layanan-publik/pengumuman/?$ /berita-dan-pengumuman/pengumuman [R=301,L,NE,NC]
+	RewriteRule ^index\.php/en/layanan-publik/laporan/sakip/?$ /transparansi/sakip [R=301,L,NE,NC]
+	RewriteRule ^index\.php/en/layanan-publik/laporan/lhkpn/?$ /transparansi/lhkpn [R=301,L,NE,NC]
+	RewriteRule ^index\.php/en/(.*)$ /$1 [R=301,L,NE,NC]
+	RewriteRule ^index\.php/?$ / [R=301,L,NE]
 	RewriteRule "(?:^|/)(?:\.git|\.svn|database|docs|tools)(?:/|$)" - [F,END,NC]
+	## Situs tidak memakai Joomla Web Services. Tutup API di origin; edge wajib sama.
+	RewriteRule ^api(?:/|$) - [F,END,NC]
+	## Direktori upload/cache boleh ditulis, tetapi tidak boleh mengeksekusi PHP.
+	RewriteRule ^(?:images|files|cache|tmp)/.*\.(?:php[0-9]?|phtml|phar)$ - [F,END,NC]
 	RewriteCond %{QUERY_STRING} base64_encode[^(]*\([^)]*\) [OR]
 	RewriteCond %{QUERY_STRING} (<|%3C)([^s]*s)+cript.*(>|%3E) [NC,OR]
 	RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
