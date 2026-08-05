@@ -25,17 +25,24 @@ assert MODULE.CODE_OWNED_DIRS == MODULE.PACKAGE_ALLOW_DIRS - MODULE.CONTENT_OWNE
 assert MODULE.CONTENT_OWNED_DIRS == {"images", "files", "media"}
 assert "configuration.php" not in MODULE.PACKAGE_ALLOW_ROOT_FILES
 assert {"cache", "logs", "tmp", "database", "docs", "tools"}.isdisjoint(MODULE.PACKAGE_ALLOW_DIRS)
+assert MODULE._builder.allowed(__import__('pathlib').PurePosixPath('libraries/vendor/joomla/database/src/DatabaseAwareTrait.php'))
+assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath('database/migrations/secret.sql'))
 for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     htaccess_source = htaccess.read_text(encoding="utf-8")
     assert "<IfModule mod_setenvif.c>" in htaccess_source
     assert "SetEnvIf Host ^new\\.pn-natuna\\.go\\.id$ STAGING" in htaccess_source
     assert 'X-Robots-Tag "noindex, nofollow, noarchive" env=STAGING' in htaccess_source
-    assert 'Strict-Transport-Security "max-age=300" env=HTTPS' in htaccess_source
+    assert 'Strict-Transport-Security "max-age=604800" env=HTTPS' in htaccess_source
     assert 'Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"' in htaccess_source
     assert "Header always unset X-Powered-By" in htaccess_source
     assert "RewriteCond %{HTTPS} !=on" in htaccess_source
     assert "RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]" in htaccess_source
     assert "RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]" in htaccess_source
+    assert 'Content-Security-Policy "default-src \'self\'' in htaccess_source
+    assert "Content-Security-Policy-Report-Only" not in htaccess_source
+    assert "https://www.youtube-nocookie.com" in htaccess_source
+    assert "RewriteRule ^api(?:/|$) - [F,END,NC]" in htaccess_source
+    assert "RewriteRule ^(?:images|files|cache|tmp)/.*\\.(?:php[0-9]?|phtml|phar)$ - [F,END,NC]" in htaccess_source
 config_values = MODULE.read_joomla_database_config("""<?php
 public $user = 'stage_user';
 public $password = 'ignored-here';

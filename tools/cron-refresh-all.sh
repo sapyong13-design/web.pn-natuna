@@ -32,6 +32,7 @@ sync_tree() {
 }
 
 sync_tree "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026"
+sync_tree "$PN_NATUNA_SOURCE_ROOT/plugins/system/loginthrottle" "$PN_NATUNA_JPATH_ROOT/plugins/system/loginthrottle"
 cp "$PN_NATUNA_SOURCE_ROOT/robots.txt" "$PN_NATUNA_JPATH_ROOT/robots.txt"
 cp "$PN_NATUNA_SOURCE_ROOT/.htaccess" "$PN_NATUNA_JPATH_ROOT/.htaccess"
 printf '%s aturan crawl dan redirect tersinkron\n' "$(date -u +%FT%TZ)"
@@ -56,4 +57,5 @@ run sipp "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-sipp.php" || s
 run survei "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-survey.py" || status=1
 run dipa "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-dipa.py" || status=1
 run sitemap "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/generate-sitemap.php" || status=1
+run migrations "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/apply-db-migrations.py" --mysql "$MYSQL_BIN" --mysql-defaults-file "$MYSQL_DEFAULTS_FILE" --database "$DB_NAME" || status=1
 exit "$status"
