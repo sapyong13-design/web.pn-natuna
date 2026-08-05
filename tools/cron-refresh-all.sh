@@ -32,7 +32,6 @@ sync_tree() {
 }
 
 sync_tree "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026"
-sync_tree "$PN_NATUNA_SOURCE_ROOT/plugins/system/loginthrottle" "$PN_NATUNA_JPATH_ROOT/plugins/system/loginthrottle"
 cp "$PN_NATUNA_SOURCE_ROOT/robots.txt" "$PN_NATUNA_JPATH_ROOT/robots.txt"
 cp "$PN_NATUNA_SOURCE_ROOT/.htaccess" "$PN_NATUNA_JPATH_ROOT/.htaccess"
 printf '%s aturan crawl dan redirect tersinkron\n' "$(date -u +%FT%TZ)"
@@ -51,6 +50,7 @@ run() {
 }
 
 status=0
+run login-guard "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/install-admin-login-guard.php" || status=1
 run instansi "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/cron-refresh-instansi.php" || status=1
 run youtube "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-youtube.php" || status=1
 run sipp "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-sipp.php" || status=1
