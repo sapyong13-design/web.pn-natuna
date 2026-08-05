@@ -16,6 +16,24 @@ export PN_NATUNA_YOUTUBE_LOG_FILE="$PN_NATUNA_PRIVATE_ROOT/logs/youtube-refresh.
 
 mkdir -p "$PN_NATUNA_JPATH_ROOT/cache" "$PN_NATUNA_JPATH_ROOT/images/surveys" "$PN_NATUNA_PRIVATE_ROOT/logs"
 
+# Synchronize tracked presentation assets after the operator updates the private
+# checkout. Never copy configuration.php, runtime cache, uploads, or nested apps.
+case "$PN_NATUNA_JPATH_ROOT" in
+    */public_html) ;;
+    *) printf 'ERROR: production refresh target must be public_html: %s\n' "$PN_NATUNA_JPATH_ROOT" >&2; exit 77 ;;
+esac
+
+sync_tree() {
+    source=$1
+    target=$2
+    test -d "$source" || { printf 'ERROR: source directory missing: %s\n' "$source" >&2; return 2; }
+    mkdir -p "$target"
+    cp -R "$source/." "$target/"
+}
+
+sync_tree "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026"
+printf '%s aset template tersinkron\n' "$(date -u +%FT%TZ)"
+
 run() {
     name=$1
     shift
