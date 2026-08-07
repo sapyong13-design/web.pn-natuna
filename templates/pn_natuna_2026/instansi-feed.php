@@ -254,7 +254,12 @@ function pn_natuna_instansi_item_date(string $text): string
     if (preg_match('/\b(20\d{2})[-\/](\d{1,2})[-\/](\d{1,2})\b/u', $text, $match)) {
         return sprintf('%02d/%02d', (int) $match[3], (int) $match[2]);
     }
-    return 'Baru';
+    $timestamp = strtotime(trim($text));
+    if ($timestamp !== false) {
+        $monthNames = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        return (int) date('j', $timestamp) . ' ' . $monthNames[(int) date('n', $timestamp)];
+    }
+    return '';
 }
 
 function pn_natuna_instansi_full_title(DOMElement $anchor, string $href): string
@@ -516,7 +521,9 @@ function pn_natuna_instansi_render_list(array $items): void
     echo '<ul class="instansi-compact-list">';
     foreach (array_slice($items, 0, 5) as $item) {
         echo '<li><a href="' . htmlspecialchars($item['url'], ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener">';
-        echo '<time class="list-date">' . htmlspecialchars($item['date'], ENT_QUOTES, 'UTF-8') . '</time>';
+        if (trim((string) ($item['date'] ?? '')) !== '') {
+            echo '<time class="list-date">' . htmlspecialchars($item['date'], ENT_QUOTES, 'UTF-8') . '</time>';
+        }
         echo '<span>' . htmlspecialchars($item['title'], ENT_QUOTES, 'UTF-8') . '</span>';
         echo '</a></li>';
     }

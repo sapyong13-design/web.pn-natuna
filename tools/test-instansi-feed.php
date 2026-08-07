@@ -38,6 +38,8 @@ $rss = '<?xml version="1.0"?><rss><channel><item><title>Berita Badilum terbaru y
 $rssItems = pn_natuna_instansi_parse_rss($rss, 'badilum.mahkamahagung.go.id');
 assertSameValue(['Berita Badilum terbaru yang valid'], array_column($rssItems, 'title'), 'Badilum RSS must accept only valid official-host items.');
 assertSameValue('21 Jul', $rssItems[0]['date'] ?? null, 'Badilum RSS must preserve publication date.');
+assertSameValue('7 Agu', pn_natuna_instansi_item_date('Fri, 7 Aug 2026 09:00:00 +0700'), 'RFC feed dates must render as short Indonesian dates, never Baru.');
+assertSameValue('', pn_natuna_instansi_item_date(''), 'Missing source dates must stay empty rather than inventing a Baru label.');
 
 $mirror = '<div class="item"><h2><a href="https://www.mahkamahagung.go.id/id/berita/7351/judul-resmi-ma-yang-cukup-panjang">Judul resmi Mahkamah Agung yang cukup panjang</a></h2><p><small>Posted on 20 July 2026 | 8:30 am</small></p></div><div class="item"><h2><a href="https://example.com/id/berita/9/palsu">Artikel asing yang harus ditolak oleh parser mirror</a></h2><small>Posted on 21 July 2026 | 8:30 am</small></div>';
 $mirrorItems = pn_natuna_instansi_parse_ma_mirror($mirror, 'berita');
