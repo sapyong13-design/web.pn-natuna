@@ -1068,10 +1068,10 @@ function setupVoiceReader() {
     selectWrap.hidden = select.options.length === 0;
     const hasIndonesian = voices.some(isIndonesianVoice);
     if (note) {
-      note.hidden = hasIndonesian || !voices.length;
+      note.hidden = hasIndonesian;
       note.textContent = hasIndonesian
         ? ''
-        : 'Suara Bahasa Indonesia belum tersedia. Di Microsoft Edge/Windows, buka Settings > Time & language > Speech > Manage voices, lalu tambahkan Indonesian (Indonesia).';
+        : 'Suara Bahasa Indonesia belum tersedia di browser atau perangkat ini. Pasang suara Indonesia pada pengaturan bahasa perangkat, lalu buka ulang halaman.';
     }
   };
 
@@ -1079,6 +1079,7 @@ function setupVoiceReader() {
     voices = synth.getVoices ? synth.getVoices() : [];
     selectedVoice = chooseVoice();
     renderVoiceOptions();
+    if (enabled) button.textContent = selectedVoice ? 'Suara Aktif' : 'Menunggu Suara Indonesia';
     if (welcomePending && selectedVoice) announceWelcome();
   };
 
@@ -1086,10 +1087,11 @@ function setupVoiceReader() {
     const clean = normalize(text);
     if (!enabled || !clean || (!options.force && clean === lastText)) return false;
     loadVoices();
+    if (!selectedVoice || !isIndonesianVoice(selectedVoice)) return false;
     lastText = clean;
     synth.cancel();
     const utterance = new SpeechSynthesisUtterance(clean);
-    if (selectedVoice) utterance.voice = selectedVoice;
+    utterance.voice = selectedVoice;
     utterance.lang = 'id-ID';
     utterance.rate = 0.94;
     utterance.pitch = 1;
@@ -1102,13 +1104,14 @@ function setupVoiceReader() {
 
   function announceWelcome() {
     if (!enabled || welcomeSpoken || welcomeInFlight) return;
-    welcomePending = false;
+    welcomePending = true;
     welcomeInFlight = true;
-    speakText(welcomeText, {
+    const started = speakText(welcomeText, {
       force: true,
-      onStart: () => { welcomeInFlight = false; welcomeSpoken = true; },
+      onStart: () => { welcomeInFlight = false; welcomePending = false; welcomeSpoken = true; },
       onError: () => { welcomeInFlight = false; welcomePending = true; lastText = ''; bindInteractionFallback(); }
     });
+    if (!started) welcomeInFlight = false;
   }
 
   function bindInteractionFallback() {
@@ -1141,7 +1144,8 @@ function setupVoiceReader() {
     enabled = true;
     button.classList.add('is-active');
     button.setAttribute('aria-pressed', 'true');
-    button.textContent = 'Suara Aktif';
+    loadVoices();
+    button.textContent = selectedVoice ? 'Suara Aktif' : 'Menunggu Suara Indonesia';
     storageSet('pnNatunaVoiceReader', '1');
     if (announce) { welcomePending = true; welcomeSpoken = false; welcomeInFlight = false; announceWelcome(); }
   };

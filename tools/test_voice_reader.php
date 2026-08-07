@@ -13,6 +13,9 @@ $expect(str_contains($source, "storageGet('pnNatunaVoiceName')"), 'Saved Indones
 $expect(str_contains($source, "storageSet('pnNatunaVoiceName', voiceKey(selectedVoice))"), 'Selected Indonesian voice must persist.');
 $expect(str_contains($source, '(?:gadis|andika)') && str_contains($source, 'voiceIdentity(voice)'), 'Edge voice identity must accept Gadis or Andika from name or voiceURI.');
 $expect(str_contains($source, "utterance.lang = 'id-ID'"), 'Every utterance must use id-ID locale.');
+$expect(str_contains($source, 'if (!selectedVoice || !isIndonesianVoice(selectedVoice)) return false;'), 'Reader must stay silent instead of falling back to the browser default English voice.');
+$expect(str_contains($source, 'utterance.voice = selectedVoice;'), 'Every utterance must bind an explicitly selected Indonesian voice.');
+$expect(str_contains($source, "'Menunggu Suara Indonesia'"), 'Firefox and Safari must expose an honest waiting state while Indonesian voices load.');
 $expect(str_contains($source, 'bindInteractionFallback'), 'Autoplay-blocked speech needs a first-interaction fallback.');
 $expect(str_contains($source, 'if (!welcomeSpoken) announceWelcome();'), 'Enabled startup must announce the welcome.');
 
