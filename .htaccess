@@ -102,6 +102,12 @@ Options -Indexes
 	## Pindahkan sinyal indeks Joomla lama ke route rebuild. Aturan eksplisit
 	## mendahului fallback bahasa agar URL bernilai tinggi tidak berakhir 404.
 	RewriteRule ^index\.php/en/?$ / [R=301,L,NE]
+  RewriteRule ^index\.php/en/about/profil-hakim-dan-pegawai/profil-hakim/?$ /profil-pengadilan/profil-hakim [R=301,L,NE,NC]
+  RewriteRule ^index\.php/en/about/profil-hakim-dan-pegawai/?$ /profil-pengadilan [R=301,L,NE,NC]
+  RewriteRule ^index\.php/en/hubungi-kami/alamat/?$ /kontak [R=301,L,NE,NC]
+  RewriteRule ^about/profil-hakim-dan-pegawai/profil-hakim/?$ /profil-pengadilan/profil-hakim [R=301,L,NE,NC]
+  RewriteRule ^about/profil-hakim-dan-pegawai/?$ /profil-pengadilan [R=301,L,NE,NC]
+  RewriteRule ^hubungi-kami/alamat/?$ /kontak [R=301,L,NE,NC]
 	RewriteRule ^index\.php/en/(?:about|tentang-pengadilan)/?$ /profil-pengadilan [R=301,L,NE,NC]
 	RewriteRule ^index\.php/en/hubungi-kami/?$ /kontak [R=301,L,NE,NC]
 	RewriteRule ^index\.php/en/berita/(?:artikel|berita-terkini|photo-gallery)/?$ /berita-dan-pengumuman/berita [R=301,L,NE,NC]
