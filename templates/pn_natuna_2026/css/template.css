@@ -8896,6 +8896,7 @@ body.is-dark .module-card.facility-band {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, transparent 35%, rgba(47, 20, 14, 0.88));
+  pointer-events: none;
 }
 
 .youtube-showcase-play {
@@ -8911,6 +8912,8 @@ body.is-dark .module-card.facility-band {
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  z-index: 2;
+  touch-action: manipulation;
 }
 
 .youtube-showcase-player__copy {
@@ -8922,6 +8925,7 @@ body.is-dark .module-card.facility-band {
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
+  pointer-events: none;
 }
 
 .youtube-showcase-player__copy strong {
@@ -8937,6 +8941,7 @@ body.is-dark .module-card.facility-band {
   color: var(--color-accent-soft);
   font-size: var(--step--2);
   font-weight: 800;
+  pointer-events: auto;
 }
 
 body.is-dark .youtube-showcase-player__copy strong,

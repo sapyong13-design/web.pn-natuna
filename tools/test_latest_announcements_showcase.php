@@ -99,6 +99,9 @@ $expect(str_contains($css, 'grid-auto-columns: minmax(190px, calc((100% - 16px) 
 $expect(str_contains($css, 'order: -1'), 'Mobile layout must place video before announcement.');
 $expect(str_contains($css, 'object-position: center top'), 'Announcement document preview must prioritize the document header.');
 $expect((bool) preg_match('/@media \(min-width:\s*1181px\)\s*\{.*?\.announcement-showcase__grid\s*\{[^}]*align-items:\s*stretch;[^}]*\}.*?\.announcement-feature\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto;[^}]*\}.*?\.announcement-feature__media\s*\{[^}]*aspect-ratio:\s*auto;[^}]*\}/s', $css), 'Desktop cards must share height by growing the document media area.');
+$expect(str_contains($css, '.youtube-showcase-player__copy {') && str_contains($css, 'pointer-events: none;'), 'Player copy overlay must not intercept mobile taps.');
+$expect(str_contains($css, '.youtube-showcase-player__copy a {') && str_contains($css, 'pointer-events: auto;'), 'YouTube fallback link must remain independently tappable.');
+$expect(str_contains($css, 'touch-action: manipulation;'), 'Play button must declare direct touch manipulation.');
 $expect(str_contains($source, 'pn_natuna_hero_latest_articles(13, 1)'), 'Renderer default must request one category 13 article.');
 $expect(str_contains($index, "'/youtube-feed.php'"), 'Template bootstrap must include youtube-feed.php.');
 if ($failures) {
