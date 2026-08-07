@@ -87,19 +87,25 @@ function pn_natuna_hero_article_image(object $article): string
     $fallback = (int) ($article->catid ?? 0) === 13
         ? '/images/brand/pengumuman-resmi-pn-natuna.webp'
         : '/images/sejarah/sejarah-pn-natuna.jpg';
-    if (empty($article->images)) {
+    $decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
+    $img = trim((string) ($decoded['image_intro'] ?? '')) ?: trim((string) ($decoded['image_fulltext'] ?? ''));
+    if ($img === '') {
+        $helper = JPATH_SITE . '/plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php';
+        if (is_file($helper)) {
+            require_once $helper;
+        }
+        if (class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
+            $img = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage(
+                (string) ($article->introtext ?? ''),
+                (string) ($article->fulltext ?? '')
+            );
+        }
+    }
+    if ($img === '') {
         return $fallback;
     }
-    $decoded = json_decode((string) $article->images, true);
-    $img = $decoded['image_intro'] ?? '';
-    if ($img === '') {
-        $img = $decoded['image_fulltext'] ?? '';
-    }
-    if ($img === '') {
-        return $fallback;
-    }
-    $img = explode('#', $img)[0];
-    return '/' . ltrim($img, '/');
+
+    return '/' . ltrim(explode('#', $img)[0], '/');
 }
 
 function pn_natuna_announcement_image(object $article): string

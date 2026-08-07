@@ -27,6 +27,10 @@ if (require __DIR__ . '/transparency-family.php') {
     return;
 }
 // Article 53 is the curated Berita dan Pengumuman portal, not an editorial detail page.
+$variantHelper = JPATH_SITE . '/plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php';
+if (is_file($variantHelper)) {
+    require_once $variantHelper;
+}
 if ((int) $item->id === 53) {
     $nowSql = Factory::getDate()->format('Y-m-d H:i:s');
     $levels = array_map('intval', $this->getCurrentUser()->getAuthorisedViewLevels());
@@ -56,9 +60,12 @@ if ((int) $item->id === 53) {
         $date = Factory::getDate($raw);
         return [$date->format(DATE_ATOM), (int) $date->format('j') . ' ' . $months[(int) $date->format('n')] . ' ' . $date->format('Y')];
     };
-    $portalImage = static function (string $images): string {
+    $portalImage = static function (string $images, string $introtext = '', string $fulltext = ''): string {
         $decoded = json_decode($images, true) ?: [];
         $image = trim((string) ($decoded['image_fulltext'] ?? '')) ?: trim((string) ($decoded['image_intro'] ?? ''));
+        if ($image === '' && class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
+            $image = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage($introtext, $fulltext);
+        }
         return $image !== '' && !preg_match('#^(?:https?:)?//#i', $image) ? '/' . ltrim($image, '/') : $image;
     };
     ?>
@@ -70,7 +77,7 @@ if ((int) $item->id === 53) {
       <nav class="news-portal__channels" aria-label="Kanal informasi"><a href="<?php echo Route::_('/berita'); ?>" aria-label="Buka semua berita">Berita</a><a href="<?php echo Route::_('/pengumuman'); ?>" aria-label="Buka semua pengumuman">Pengumuman</a></nav>
       <section class="news-portal__section" aria-labelledby="portal-news-title"><header class="news-portal__heading"><div><p>Berita</p><h2 id="portal-news-title">Kabar dari pengadilan</h2></div><a href="<?php echo Route::_('/berita'); ?>">Semua berita</a></header>
         <div class="news-portal__news-grid">
-        <?php foreach ($portalNews as $portalItem) : $portalItemImage = $portalImage((string) $portalItem->images); [$portalDateTime, $portalDate] = $formatPortalDate((string) $portalItem->publish_up, (string) $portalItem->created); ?>
+        <?php foreach ($portalNews as $portalItem) : $portalItemImage = $portalImage((string) $portalItem->images, (string) $portalItem->introtext, (string) $portalItem->fulltext); [$portalDateTime, $portalDate] = $formatPortalDate((string) $portalItem->publish_up, (string) $portalItem->created); ?>
           <article class="news-portal__news-card"><a href="<?php echo Route::_(RouteHelper::getArticleRoute($portalItem->id . ':' . $portalItem->alias, $portalItem->catid, $portalItem->language)); ?>"><span class="news-portal__news-image"><?php if ($portalItemImage) : ?><img src="<?php echo $this->escape($portalItemImage); ?>" alt="" width="640" height="400" loading="lazy" decoding="async"><?php else : ?><span aria-hidden="true">PN</span><?php endif; ?></span><span class="news-portal__news-copy"><time datetime="<?php echo $portalDateTime; ?>"><?php echo $portalDate; ?></time><strong><?php echo $this->escape($portalItem->title); ?></strong></span></a></article>
         <?php endforeach; ?>
         </div>
@@ -179,6 +186,13 @@ $schemaType = $channel === 'news' ? 'NewsArticle' : 'Article';
 
 $images = json_decode((string) $item->images, true) ?: [];
 $image = trim((string) ($images['image_fulltext'] ?? '')) ?: trim((string) ($images['image_intro'] ?? ''));
+if ($image === '' && class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
+    $image = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage(
+        (string) ($item->introtext ?? ''),
+        (string) ($item->fulltext ?? ''),
+        (string) ($item->text ?? '')
+    );
+}
 // Media Manager menyimpan `foo.jpg#joomlaImage://local-images/foo.jpg?width=...`.
 // Fragmen itu tidak boleh ikut tercetak ke atribut src.
 $image = strtok($image, '#');
@@ -189,11 +203,6 @@ $imageUrl = $image && !preg_match('#^(?:https?:)?//#i', $image) ? '/' . ltrim($i
 // Editorial photography: responsive candidates plus a caption derived from the article
 // itself, so a photo never stands on the page without saying where it comes from.
 // Aturan srcset-nya dibagi dengan kartu daftar lewat kelas milik plugin varian, supaya
-// hanya ada satu tempat yang tahu bagaimana nama varian dibentuk.
-$variantHelper = JPATH_SITE . '/plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php';
-if (is_file($variantHelper)) {
-    require_once $variantHelper;
-}
 $photoSrcset = static function (string $src): string {
     return class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)
         ? \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::srcset(JPATH_SITE, $src)

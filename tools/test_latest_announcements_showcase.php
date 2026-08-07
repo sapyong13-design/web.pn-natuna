@@ -78,6 +78,13 @@ if (function_exists('pn_natuna_render_latest_announcements')) {
     $expect(pn_natuna_announcement_image($fixtures[0]) === '/images/full-901.webp', 'Showcase image must prefer fulltext.');
     $expect(pn_natuna_announcement_image($fixtures[1]) === '/images/intro-902.webp', 'Showcase image must fall back to intro.');
     $expect(pn_natuna_hero_article_image($fixtures[0]) === '/images/intro-901.webp', 'Hero image precedence must remain intro-first.');
+    $bodyOnly = (object) [
+        'catid' => 12,
+        'images' => '{}',
+        'introtext' => '<p><img src="images/berita/foto-pertama.jpg" alt=""></p>',
+        'fulltext' => '',
+    ];
+    $expect(pn_natuna_hero_article_image($bodyOnly) === '/images/berita/foto-pertama.jpg', 'Hero must fall back to the first body image when Joomla image fields are empty.');
 }
 
 $source = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/hero-slider.php');

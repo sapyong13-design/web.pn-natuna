@@ -4157,7 +4157,7 @@ body.is-dark .instagram-profile span {
 }
 
 
-@media (min-width: 761px) {
+@media (min-width: 1101px) {
   .main-menu { padding-inline: clamp(16px, 2.5vw, 48px); }
   .main-menu-list,
   .main-menu ul { min-width: 0; }
@@ -4209,7 +4209,7 @@ body.is-dark .instagram-profile span {
   flex: 0 0 auto;
   margin-left: 10px;
 }
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   :root {
     --nav-drawer-bg: #fffaf2;
     --nav-drawer-surface: #fffdf8;
@@ -4233,7 +4233,7 @@ body.is-dark .instagram-profile span {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   .menu-toggle { display: block; min-width: 48px; min-height: 48px; color: var(--color-primary); background: #f8ede3; touch-action: manipulation; }
   .main-menu { align-items: flex-start; justify-content: flex-start; flex-direction: column; padding-block: 12px; }
   .main-menu-list {
@@ -4401,7 +4401,7 @@ body.is-dark .instagram-profile span {
   .main-menu-list .mobile-menu-footer .dark-toggle-copy { display: inline-flex; align-items: baseline; }
 }
 
-@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 1100px) and (prefers-reduced-motion: reduce) {
   .main-menu-list, .submenu-toggle::before { transition: none; }
 }
 
@@ -4414,7 +4414,7 @@ body.is-dark .instagram-profile span {
   .mobile-menu-contact { padding-inline: 5px; font-size: var(--step--3); }
 }
 
-@media (max-width: 760px) and (max-height: 500px) {
+@media (max-width: 1100px) and (max-height: 500px) {
   .mobile-menu-heading { min-height: 56px; padding-block: calc(5px + env(safe-area-inset-top)) 5px; }
   .mobile-menu-brand small { display: none; }
   .mobile-menu-actions { display: none; }
@@ -12334,6 +12334,29 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
+@media (min-width: 761px) and (max-width: 1100px) {
+  .site-header { position: relative; }
+  .main-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    z-index: 60;
+    width: 68px;
+    height: 63px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    padding: 0 8px;
+    background: transparent;
+    box-shadow: none;
+  }
+  .menu-toggle { display: grid; width: 48px; min-width: 48px; height: 48px; min-height: 48px; place-items: center; align-content: center; gap: 1px; border-radius: 12px; padding: 4px; color: var(--color-primary); background: #f8ede3; font-size: var(--step--3); font-weight: 800; line-height: 1; }
+  .menu-toggle__icon { display: block; width: 20px; height: 20px; }
+  .main-menu .menu-toggle > span { display: block; min-width: 0; min-height: 0; padding: 0; color: inherit; font: inherit; line-height: 1; }
+  .main-menu .menu-toggle > svg { position: static; margin: 0; transform: none; }
+  body.nav-stuck .main-menu { position: fixed; top: 0; right: 0; left: auto; width: 64px; height: 60px; background: var(--mobile-surface-raised, #fffdf8); box-shadow: none; animation: none; }
+}
+
 @media (min-width: 761px) {
   .mobile-quick-actions {
     display: none;
@@ -12978,7 +13001,7 @@ body.is-dark .section-desc {
 
 /* #2 Navigasi aktif berbasis rute (desktop, tanpa JS): mod_menu memberi
    li.current (persis) dan li.active (jejak rute) — keduanya digarisbawahi emas. */
-@media (min-width: 761px) {
+@media (min-width: 1101px) {
   .main-menu .mod-menu > li.active > a,
   .main-menu .mod-menu > li.current > a {
     color: #ffe9b8;
@@ -13778,7 +13801,7 @@ body.is-dark .hero-news-panel .hero-tab-list time {
 body.is-dark .hero-news-panel :is(.hero-item-title, .hero-item-body) {
   color: var(--color-ink);
 }
-@media (min-width: 761px) {
+@media (min-width: 1101px) {
   .main-menu li > ul {
     display: none;
   }
@@ -14345,7 +14368,7 @@ body.is-home .maklumat-compact-doc h3 {
 
 
 /* TRANSPARENCY SUBMENU HIERARCHY 2026-07-18 */
-@media (min-width: 761px) {
+@media (min-width: 1101px) {
   .main-menu > .main-menu-list .mobile-menu-scroll > ul > li > ul {
     width: 280px;
   }
@@ -15658,8 +15681,8 @@ body.is-dark .content-primary .svc-document-preview { background: #202a30; }
 .header-brand:has(.august-lockup) > .custom:first-child { flex: 1 1 auto; min-width: 0; }
 .header-brand:has(.august-lockup) .brand-lockup { min-width: 0; }
 .header-brand:has(.august-lockup) .brand-mark { width: 88px; height: 88px; }
-.header-brand:has(.august-lockup) .brand-lockup .brand-title { font-size: clamp(1.8rem, 3.25vw, 2.7rem); white-space: nowrap; }
-.header-brand:has(.august-lockup) .brand-lockup p:not(.brand-title) { font-size: clamp(.82rem, 1vw, .96rem); white-space: nowrap; }
+.header-brand:has(.august-lockup) .brand-lockup .brand-title { max-width: 100%; font-size: clamp(1.55rem, 2.75vw, 2.7rem); white-space: normal; text-wrap: balance; }
+.header-brand:has(.august-lockup) .brand-lockup p:not(.brand-title) { max-width: 100%; font-size: clamp(.78rem, .9vw, .96rem); white-space: normal; }
 
 .august-lockup {
   position: relative;
@@ -15671,7 +15694,7 @@ body.is-dark .content-primary .svc-document-preview { background: #202a30; }
   max-width: 286px;
   align-self: stretch;
   align-content: center;
-  border-inline: 1px solid rgba(143, 31, 11, .16);
+  border-inline: 0;
   padding-inline: clamp(12px, 1.4vw, 20px);
 }
 .august-lockup::before { content: ""; position: absolute; inset: 13% 8%; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse, rgba(208, 29, 31, .08), transparent 70%); }
@@ -15688,21 +15711,27 @@ body.is-dark .content-primary .svc-document-preview { background: #202a30; }
 }
 .august-lockup__flag-red { fill: #d71920; }
 .august-lockup__flag-white { fill: #fff; }
-.august-lockup__marks { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(72px, .9fr) 1px minmax(102px, 1.25fr); gap: 8px; height: 62px; align-items: center; }
+.august-lockup__marks { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(72px, .9fr) minmax(102px, 1.25fr); gap: 10px; height: 62px; align-items: center; }
 .august-lockup__mark { display: flex; min-width: 0; height: 52px; align-items: center; justify-content: center; overflow: visible; }
 .august-lockup__mark img { display: block; width: auto; max-width: 100%; object-fit: contain; object-position: center; }
 .august-lockup__mark--ri img { height: 46px; }
 .august-lockup__mark--ma img { height: 42px; }
-.august-lockup__divider { width: 1px; height: 36px; background: linear-gradient(transparent, rgba(143, 31, 11, .35), transparent); }
+.august-lockup__divider { display: none; }
 body.is-dark .august-lockup { border-color: rgba(243, 201, 107, .2); }
 body.is-dark .august-lockup__edition { color: #f3c96b; }
 body.is-dark .august-lockup__divider { background: linear-gradient(transparent, rgba(243, 201, 107, .4), transparent); }
 
+@media (max-width: 1500px) and (min-width: 1261px) {
+  .header-brand:has(.august-lockup) .court-brand-badges.header-brand-lockup { display: none !important; }
+  .header-brand:has(.august-lockup) > .custom:first-child { flex: 1 1 0; }
+  .header-brand:has(.august-lockup) .brand-lockup .brand-title { font-size: clamp(1.75rem, 3vw, 2.35rem); }
+  .august-lockup { flex-basis: 260px; }
+}
+
 @media (max-width: 1260px) and (min-width: 901px) {
   .header-brand:has(.august-lockup) { gap: 16px; }
   .header-brand:has(.august-lockup) .brand-lockup .brand-title { font-size: clamp(1.65rem, 3vw, 2.15rem); }
-  .august-lockup { flex-basis: 210px; min-width: 184px; padding-inline: 8px; }
-  .august-lockup__marks { grid-template-columns: minmax(62px, .9fr) 1px minmax(88px, 1.25fr); gap: 6px; }
+  .august-lockup__marks { grid-template-columns: minmax(62px, .9fr) minmax(88px, 1.25fr); gap: 8px; }
   .court-brand-badges.header-brand-lockup { display: none; }
 }
 
@@ -15715,6 +15744,7 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
   .header-brand:has(.august-lockup) .brand-lockup .brand-title { font-size: 0; line-height: 1; white-space: normal; }
   .header-brand:has(.august-lockup) .brand-lockup p:not(.brand-title) { display: none; }
   .header-brand:has(.august-lockup) > .august-lockup { position: absolute; inset: 10px 68px 10px auto; display: block !important; width: 70px; min-width: 70px; max-width: 70px; height: 48px; margin: 0; overflow: hidden; border: 0; padding: 0; transform: none; }
+  .header-brand:has(.august-lockup) .court-brand-badges.header-brand-lockup { display: none !important; }
   .august-lockup::before, .august-lockup__divider { display: none; }
   .august-lockup__flag { inset: 7px 2px; width: calc(100% - 4px); height: calc(100% - 14px); opacity: .24; }
   .august-lockup__marks { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 3px; width: 100%; height: 100%; align-items: center; }
@@ -15723,6 +15753,12 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
   .august-lockup__mark--ma { display: flex; }
   .august-lockup__mark--ma img { width: auto; max-width: 100%; height: 26px; }
 }
+@media (max-width: 360px) {
+  .header-brand:has(.august-lockup) { padding-right: 138px; }
+  .header-brand:has(.august-lockup) .brand-lockup .brand-title::before { font-size: .78rem; white-space: normal; }
+  .header-brand:has(.august-lockup) .brand-lockup .brand-title::after { font-size: .68rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .august-lockup__flag animate { display: none; }
 }
@@ -15858,9 +15894,8 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
 
 .apparatus-editorial .roster-featured .roster-meta {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-  gap: 12px 20px;
-  max-width: none;
+  grid-template-columns: 1fr;
+  gap: 8px;
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid rgba(243, 201, 107, 0.34);
@@ -15869,11 +15904,12 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
 
 .apparatus-editorial .roster-featured .roster-meta > div {
   display: grid;
-  gap: 2px;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: baseline;
   border: 0;
   padding: 0;
 }
-
 .apparatus-editorial .roster-featured .roster-meta dt {
   color: #e9c987;
 }
@@ -15884,7 +15920,7 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
 }
 
 .apparatus-editorial .roster-grid {
-  grid-template-columns: repeat(auto-fit, minmax(392px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
   gap: clamp(16px, 2vw, 24px);
 }
 
@@ -16089,26 +16125,34 @@ body.is-dark .dossier-roles li:not(.dossier-role-status) ~ li:not(.dossier-role-
   font-variant-numeric: tabular-nums;
 }
 
+/* NIP selalu satu identitas utuh dan memakai garis kolom yang sama dengan
+   Pangkat/Gol. pada seluruh dossier aparatur. */
+.apparatus-editorial .roster-meta > div:first-child dd {
+  min-width: 0;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  font-size: clamp(0.68rem, 0.72vw, 0.79rem);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
 .apparatus-directory .roster-section-staff .roster-grid {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
 }
 
 .apparatus-directory .roster-section-staff .roster-card {
   grid-template-columns: 104px minmax(0, 1fr);
 }
 
-.apparatus-directory .roster-section-staff .roster-meta > div {
-  grid-template-columns: 1fr;
-  gap: 1px;
+.apparatus-directory .roster-section-staff .roster-meta > div,
+.apparatus-unit .roster-section-staff .roster-meta > div {
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 4px 10px;
 }
 
 .apparatus-unit .roster-section-staff .roster-card {
   grid-template-columns: 104px minmax(0, 1fr);
-}
-
-.apparatus-unit .roster-section-staff .roster-meta > div {
-  grid-template-columns: 1fr;
-  gap: 1px;
 }
 
 .apparatus-unit {
@@ -16234,8 +16278,8 @@ body.is-dark .apparatus-editorial .roster-role-row .roster-role ~ .roster-role {
   }
 
   .apparatus-editorial .roster-featured .roster-meta {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px 14px;
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .apparatus-editorial .roster-grid,
@@ -16281,6 +16325,7 @@ body.is-dark .apparatus-editorial .roster-role-row .roster-role ~ .roster-role {
     padding: 13px;
   }
 
+
   .apparatus-editorial .roster-name {
     font-size: 0.98rem;
   }
@@ -16295,6 +16340,27 @@ body.is-dark .apparatus-editorial .roster-role-row .roster-role ~ .roster-role {
     padding: 0;
   }
 }
+@media (max-width: 430px) {
+  .apparatus-editorial .roster-card,
+  .apparatus-directory .roster-section-staff .roster-card,
+  .apparatus-unit .roster-section-staff .roster-card {
+    grid-template-columns: 1fr;
+  }
+  .apparatus-editorial .roster-card .roster-photo,
+  .apparatus-directory .roster-section-staff .roster-card .roster-photo,
+  .apparatus-unit .roster-section-staff .roster-card .roster-photo {
+    width: 118px;
+  }
+  .apparatus-editorial .roster-meta > div:first-child dd {
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .apparatus-editorial .roster-featured .roster-meta > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
 
 .apparatus-editorial .roster-open-hint {
   position: absolute;
@@ -16302,6 +16368,7 @@ body.is-dark .apparatus-editorial .roster-role-row .roster-role ~ .roster-role {
   top: 6px;
   display: grid;
   place-items: center;
+
   width: 26px;
   height: 26px;
   border-radius: 8px;
@@ -16309,6 +16376,12 @@ body.is-dark .apparatus-editorial .roster-role-row .roster-role ~ .roster-role {
   color: #f6d489;
   opacity: 0;
   transition: opacity 0.18s ease;
+}
+@media (max-width: 360px) {
+  .apparatus-editorial .roster-featured .roster-meta > div {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap-inline: 8px;
+  }
 }
 
 .apparatus-editorial .roster-card:hover .roster-open-hint,

@@ -55,6 +55,15 @@ $expect(is_file($pluginDir . '/services/provider.php'), 'Plugin service provider
 $expect(is_file($pluginDir . '/src/Extension/PnnatunaImageVariants.php'), 'Plugin extension class is missing.');
 $expect(is_file($pluginDir . '/src/Helper/VariantMaker.php'), 'Shared variant maker is missing.');
 $expect(PluginHelper::isEnabled('content', 'pnnatunaimagevariants'), 'Plugin must be registered and enabled; run python tools/apply-db-migrations.py.');
+PluginHelper::importPlugin('content', 'pnnatunaimagevariants');
+$expect(
+    \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage('<p>Awal</p><img src="images/berita/foto-utama.jpg#joomlaImage://local-images/foto-utama.jpg" alt="">') === '/images/berita/foto-utama.jpg',
+    'First body image must become the automatic primary-image fallback.'
+);
+$expect(
+    \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage('<img src="https://example.com/external.jpg" alt="">') === '',
+    'External body images must not become local primary-image fallbacks.'
+);
 
 // Foto uji ditaruh di dalam /images/ karena hanya jalur itu yang dilayani templat.
 $fixtureDir = $root . '/images/_variant-selftest';
@@ -83,7 +92,6 @@ $item = (object) [
 ];
 
 // Hanya plugin ini yang dimuat: indexer Finder tidak perlu ikut memproses artikel tiruan.
-PluginHelper::importPlugin('content', 'pnnatunaimagevariants');
 $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onContentAfterSave', [
     'context' => 'com_content.article',
     'subject' => $item,

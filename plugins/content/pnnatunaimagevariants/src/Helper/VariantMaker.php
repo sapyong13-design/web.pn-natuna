@@ -94,6 +94,40 @@ final class VariantMaker
         return array_keys($paths);
     }
 
+    /** Mengubah nilai memory_limit PHP menjadi byte untuk pemeriksaan kapasitas GD. */
+    public static function memoryLimitBytes(string $limit): int
+    {
+        $limit = trim($limit);
+        if ($limit === '' || $limit === '-1') {
+            return PHP_INT_MAX;
+        }
+        $bytes = (int) $limit;
+        $unit = strtolower(substr($limit, -1));
+
+        return $bytes * match ($unit) {
+            'g' => 1073741824,
+            'm' => 1048576,
+            'k' => 1024,
+            default => 1,
+        };
+    }
+
+    /** Mengambil foto lokal pertama dari badan artikel sebagai fallback gambar utama. */
+    public static function firstImage(string ...$html): string
+    {
+        if (!preg_match('#<img[^>]+src=["\']([^"\']+)["\']#i', implode('', $html), $found)) {
+            return '';
+        }
+        $candidate = trim(strtok((string) $found[1], '#'));
+        $path = parse_url($candidate, PHP_URL_PATH);
+        if (!\is_string($path) || $path === '') {
+            return '';
+        }
+        $path = '/' . ltrim($path, '/');
+
+        return str_starts_with($path, '/images/') ? $path : '';
+    }
+
     /**
      * Memastikan bitmap sumber muat di sisa memori proses. GD memegang foto sebagai
      * truecolor 4 byte per piksel: kamera 24MP butuh 92 MB sebelum kanvas resample
@@ -103,19 +137,13 @@ final class VariantMaker
      */
     public static function fits(int $width, int $height): bool
     {
-        $limit = trim((string) ini_get('memory_limit'));
-        if ($limit === '' || $limit === '-1') {
+        $bytes = self::memoryLimitBytes((string) ini_get('memory_limit'));
+        if ($bytes === PHP_INT_MAX) {
             return true;
         }
-        $bytes = (int) $limit;
-        $unit = strtolower(substr($limit, -1));
-        $bytes *= match ($unit) {
-            'g' => 1073741824,
-            'm' => 1048576,
-            'k' => 1024,
-            default => 1,
-        };
-        $needed = (int) ($width * $height * 4 * 2.1);
+        // Decoder JPEG/PNG, bitmap sumber, rotasi EXIF, dan kanvas resample dapat
+        // hidup bersamaan. Faktor konservatif mencegah fatal OOM yang tak tertangkap.
+        $needed = (int) ($width * $height * 4 * 2.5);
 
         return $needed < ($bytes - memory_get_usage(true));
     }

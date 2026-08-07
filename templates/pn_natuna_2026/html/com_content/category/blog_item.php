@@ -40,6 +40,12 @@ $canEdit = $params->get('access-edit');
 $link = Route::_(RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language));
 $images = json_decode($item->images ?? '{}');
 $image = trim((string) ($images->image_fulltext ?? '')) ?: trim((string) ($images->image_intro ?? ''));
+if ($image === '' && class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
+    $image = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage(
+        (string) ($item->introtext ?? ''),
+        (string) ($item->fulltext ?? '')
+    );
+}
 // Media Manager menyimpan `foo.jpg#joomlaImage://local-images/foo.jpg?width=...`;
 // fragmen itu tidak boleh ikut tercetak ke atribut src kartu.
 $image = strtok($image, '#');

@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenuFilter();
   setupMobileRailStatus();
   setupTransparencyArchives();
-  const mobileQuery = window.matchMedia('(max-width: 760px)');
+  const mobileQuery = window.matchMedia('(max-width: 1100px)');
 
   if (!toggle || !menu) {
     setupAccessibilityTools();

@@ -53,16 +53,27 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
         $made = 0;
         $failed = 0;
         $tooBig = 0;
-        foreach ($paths as $path) {
-            try {
-                $tally = VariantMaker::build(JPATH_ROOT, $path);
-            } catch (\Throwable $error) {
-                $failed++;
-                continue;
+        $originalMemoryLimit = (string) ini_get('memory_limit');
+        $raisedMemoryLimit = false;
+        if (VariantMaker::memoryLimitBytes($originalMemoryLimit) < 536870912) {
+            $raisedMemoryLimit = ini_set('memory_limit', '512M') !== false;
+        }
+        try {
+            foreach ($paths as $path) {
+                try {
+                    $tally = VariantMaker::build(JPATH_ROOT, $path);
+                } catch (\Throwable $error) {
+                    $failed++;
+                    continue;
+                }
+                $made += $tally['made'];
+                $failed += $tally['failed'];
+                $tooBig += $tally['tooBig'];
             }
-            $made += $tally['made'];
-            $failed += $tally['failed'];
-            $tooBig += $tally['tooBig'];
+        } finally {
+            if ($raisedMemoryLimit) {
+                ini_set('memory_limit', $originalMemoryLimit);
+            }
         }
 
         if ($made > 0) {
@@ -74,9 +85,8 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
         if ($tooBig > 0) {
             $this->getApplication()->enqueueMessage(
                 sprintf(
-                    '%d foto terlalu besar untuk diproses dengan batas memori server (%s). Artikel tetap tersimpan; jalankan php -d memory_limit=1024M tools/make-image-variants.php untuk menyelesaikannya.',
-                    $tooBig,
-                    (string) ini_get('memory_limit')
+                    '%d foto melampaui kapasitas pemrosesan gambar otomatis. Artikel tetap tersimpan; perkecil dimensi foto lalu simpan kembali.',
+                    $tooBig
                 ),
                 'warning'
             );
