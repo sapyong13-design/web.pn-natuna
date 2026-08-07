@@ -15764,6 +15764,63 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
   .header-brand:has(.august-lockup) .brand-lockup .brand-title::after { font-size: .68rem; }
 }
 
+/* Mobile hero and August lockup: preserve source imagery and stable controls. */
+@media (max-width: 760px) {
+  .header-brand:has(.august-lockup) {
+    padding-right: 154px;
+  }
+
+  .header-brand:has(.august-lockup) > .august-lockup {
+    right: 64px;
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+  }
+
+  .hero.home-slider {
+    padding-top: 12px;
+  }
+
+  .hero-cinema .hero-slides,
+  .hero-cinema .hero-slide {
+    min-height: 430px;
+  }
+
+  .hero-cinema .hero-backdrop-image > img {
+    object-fit: contain;
+    object-position: center top;
+  }
+
+  .hero-cinema .hero-backdrop-image {
+    background: #2f140e;
+  }
+
+  .home-slider .hero-slider-controls {
+    width: max-content;
+    max-width: calc(100% - 32px);
+    flex-wrap: nowrap;
+  }
+
+  .home-slider .hero-slider-count {
+    flex: 0 0 auto;
+    min-width: 48px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .header-brand:has(.august-lockup) {
+    padding-right: 146px;
+  }
+
+  .header-brand:has(.august-lockup) > .august-lockup {
+    right: 62px;
+    width: 68px;
+    min-width: 68px;
+    max-width: 68px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .august-lockup__flag animate { display: none; }
 }
