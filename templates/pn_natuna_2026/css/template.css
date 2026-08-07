@@ -15819,6 +15819,18 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
   .hero-cinema:has(.hero-slide-welcome.is-active) .hero-backdrop::after {
     background: linear-gradient(180deg, transparent 48%, rgba(19, 10, 8, 0.34) 100%);
   }
+
+  .hero-cinema:has(.hero-slide-welcome.is-active) .hero-welcome-copy::before {
+    background: rgba(41, 19, 15, 0.72);
+  }
+
+  .hero-cinema:has(.hero-slide-welcome.is-active) .hero-backdrop-image > img {
+    object-fit: cover;
+    object-position: 50% 68%;
+    animation: none;
+    transform: scale(1.08);
+    transform-origin: center 68%;
+  }
 }
 
 @media (max-width: 360px) {
