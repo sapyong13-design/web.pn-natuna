@@ -15824,12 +15824,12 @@ body.is-dark .august-lockup__divider { background: linear-gradient(transparent, 
     background: rgba(41, 19, 15, 0.72);
   }
 
-  .hero-cinema:has(.hero-slide-welcome.is-active) .hero-backdrop-image > img {
+  .hero-cinema .hero-backdrop-image > img {
     object-fit: cover;
-    object-position: 50% 68%;
+    object-position: 58% 68%;
     animation: none;
     transform: scale(1.08);
-    transform-origin: center 68%;
+    transform-origin: 58% 68%;
   }
 }
 
