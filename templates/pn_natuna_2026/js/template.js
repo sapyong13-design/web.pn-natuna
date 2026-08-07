@@ -1980,7 +1980,10 @@ function setupYouTubeShowcase() {
       if (status) status.textContent = `Memutar video: ${selected.title}`;
     };
     items.forEach((item) => item.addEventListener('click', () => setActive(item)));
-    play.addEventListener('click', playVideo);
+    player.addEventListener('click', (event) => {
+      if (event.target.closest('[data-youtube-fallback]')) return;
+      playVideo();
+    });
     setActive(active);
   });
 }

@@ -90,6 +90,7 @@ if (function_exists('pn_natuna_render_latest_announcements')) {
 $source = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/hero-slider.php');
 $index = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/index.php');
 $css = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/css/template.css');
+$js = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/js/template.js');
 $expect(str_contains($css, 'grid-template-columns: minmax(0, 45fr) minmax(0, 55fr)'), 'Desktop showcase grid must use a 45:55 composition.');
 $expect(str_contains($css, '@media (max-width: 1180px)'), 'Tablet stack breakpoint is missing.');
 $expect(str_contains($css, 'scroll-snap-type: x mandatory'), 'Mobile rail snap is missing.');
@@ -102,6 +103,7 @@ $expect((bool) preg_match('/@media \(min-width:\s*1181px\)\s*\{.*?\.announcement
 $expect(str_contains($css, '.youtube-showcase-player__copy {') && str_contains($css, 'pointer-events: none;'), 'Player copy overlay must not intercept mobile taps.');
 $expect(str_contains($css, '.youtube-showcase-player__copy a {') && str_contains($css, 'pointer-events: auto;'), 'YouTube fallback link must remain independently tappable.');
 $expect(str_contains($css, 'touch-action: manipulation;'), 'Play button must declare direct touch manipulation.');
+$expect(str_contains($js, "player.addEventListener('click'"), 'Entire video poster must delegate taps to playback on real mobile browsers.');
 $expect(str_contains($source, 'pn_natuna_hero_latest_articles(13, 1)'), 'Renderer default must request one category 13 article.');
 $expect(str_contains($index, "'/youtube-feed.php'"), 'Template bootstrap must include youtube-feed.php.');
 if ($failures) {
