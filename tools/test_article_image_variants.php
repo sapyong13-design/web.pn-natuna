@@ -96,6 +96,17 @@ foreach ($recentCanonicalPhotos as $legacyPath => $canonicalPath) {
     }
 }
 
+$encodedRepair = (string) file_get_contents($root . '/database/migrations/20260810_repair_encoded_recent_news_image_paths.sql');
+$encodedCanonicalPhotos = [
+    'images/WhatsApp%20Image%202026-07-31%20at%2008.17.57.jpeg' => 'images/berita/2026/bola-voli-hut-81-ri-ma-1.webp',
+    'images/IMG_3729%201.jpg' => 'images/berita/2026/mobile-legends-hut-81-ri-ma-1.webp',
+    'images/IMG_3738%201.jpg' => 'images/berita/2026/mobile-legends-hut-81-ri-ma-3.webp',
+];
+foreach ($encodedCanonicalPhotos as $legacyPath => $canonicalPath) {
+    $expect(str_contains($encodedRepair, "'{$legacyPath}'")
+        && str_contains($encodedRepair, "'{$canonicalPath}'"), "Encoded image migration omits {$legacyPath} -> {$canonicalPath}.");
+}
+
 $result = $db->query(
     "SELECT a.alias, a.images, a.introtext, a.`fulltext` FROM {$config->dbprefix}content a"
     . " INNER JOIN {$config->dbprefix}categories c ON c.id = a.catid"
