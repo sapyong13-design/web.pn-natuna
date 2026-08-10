@@ -37,7 +37,7 @@ if ((int) $item->id === 53) {
     $language = $app->getLanguage()->getTag();
     $portalItems = static function (int $categoryId, int $limit, string $parameter) use ($db, $levels, $language, $nowSql): array {
         $query = $db->getQuery(true)
-            ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.language', 'a.publish_up', 'a.created', 'a.images']))
+            ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.language', 'a.publish_up', 'a.created', 'a.images', 'a.introtext', 'a.fulltext']))
             ->from($db->quoteName('#__content', 'a'))
             ->where($db->quoteName('a.catid') . ' = :' . $parameter)
             ->where($db->quoteName('a.state') . ' = 1')

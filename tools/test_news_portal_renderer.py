@@ -26,6 +26,7 @@ for requirement in [
     "portalAnnouncements = $portalItems(13, 5, 'portalAnnouncementCategory')",
     "NOT LIKE ' . $db->quote('berita-dan-pengumuman%')",
     "trim((string) ($decoded['image_fulltext'] ?? '')) ?: trim((string) ($decoded['image_intro'] ?? ''))",
+    "'a.images', 'a.introtext', 'a.fulltext'",
     "publishUp > '2000-01-02 00:00:00' ? $publishUp : $created",
     "/images/hero/gedung-pn-natuna-2026.webp",
     "news-portal__news-card",
