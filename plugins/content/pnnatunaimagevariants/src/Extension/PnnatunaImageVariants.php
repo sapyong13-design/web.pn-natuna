@@ -50,6 +50,24 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
             return;
         }
 
+        $uncanonical = array_values(array_filter(
+            $paths,
+            static fn(string $path): bool => !VariantMaker::hasCanonicalArticleName($path)
+        ));
+        if ($uncanonical) {
+            $examples = implode(', ', array_map(
+                static fn(string $path): string => basename(rawurldecode((string) parse_url($path, PHP_URL_PATH))),
+                array_slice($uncanonical, 0, 3)
+            ));
+            $this->getApplication()->enqueueMessage(
+                sprintf(
+                    'Nama foto belum kanonis: %s. Gunakan slug singkat sesuai judul, folder images/berita/tahun, dan nomor urut sebelum menerbitkan.',
+                    $examples
+                ),
+                'warning'
+            );
+        }
+
         $made = 0;
         $failed = 0;
         $tooBig = 0;

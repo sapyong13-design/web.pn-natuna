@@ -85,6 +85,8 @@ $expect($inlineEligible(1), 'One body mention must remain eligible for an inline
 $expect((bool) preg_match('/\.editorial-article :is\(p, li\) \{[^}]*text-align: start/', $css), 'Article navigation and list items must stay left aligned, including the table-of-contents rail.');
 $expect((bool) preg_match('/\.editorial-article--news \.editorial-article__body p \{[^}]*text-align: justify;[^}]*text-align-last: start;[^}]*hyphens: auto;[^}]*overflow-wrap: break-word;/', $css), 'News body paragraphs must use resilient justified alignment.');
 $expect((bool) preg_match('/@media \(max-width: 480px\) \{[^}]*\.editorial-article--news \.editorial-article__body \{ font-size: 1rem; \}[^}]*\.editorial-article--news \.editorial-article__body p \{ text-wrap: wrap; \}/s', $css), 'Narrow news columns must tighten wrapping enough to avoid extreme justified word spacing.');
+$expect((bool) preg_match('/\.content-primary p:has\\(> img:only-child\\) \{[^}]*box-sizing: border-box;[^}]*width: fit-content;[^}]*max-width: 100%;[^}]*overflow: hidden;[^}]*padding: 0;/s', $css), 'An image-only paragraph frame must hug the rendered photo instead of changing its aspect ratio with inner padding.');
+$expect(str_contains($css, '.content-primary p:has(> img:only-child) > img'), 'A framed body image must have a direct-child rule that removes the competing inner radius.');
 // Bekas panel tidak boleh meninggalkan gaya menganggur di lembar gaya.
 $expect(!str_contains($css, '.editorial-article__service-lead'), 'Panel styling must be removed with the panel, not left behind.');
 

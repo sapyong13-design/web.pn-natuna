@@ -27,6 +27,10 @@ assert "configuration.php" not in MODULE.PACKAGE_ALLOW_ROOT_FILES
 assert {"cache", "logs", "tmp", "database", "docs", "tools"}.isdisjoint(MODULE.PACKAGE_ALLOW_DIRS)
 assert MODULE._builder.allowed(__import__('pathlib').PurePosixPath('libraries/vendor/joomla/database/src/DatabaseAwareTrait.php'))
 assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath('database/migrations/secret.sql'))
+assert MODULE._builder.allowed(__import__('pathlib').PurePosixPath('administrator/components/com_cache/src/View/Cache/HtmlView.php'))
+assert MODULE._builder.allowed(__import__('pathlib').PurePosixPath('media/templates/site/cassiopeia/scss/tools/_tools.scss'))
+assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath('administrator/cache/autoload_psr4.php'))
+assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath('administrator/logs/joomla_update.php'))
 for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     htaccess_source = htaccess.read_text(encoding="utf-8")
     assert "<IfModule mod_setenvif.c>" in htaccess_source
@@ -43,6 +47,19 @@ for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     assert "https://www.youtube-nocookie.com" in htaccess_source
     assert "RewriteRule ^api(?:/|$) - [F,END,NC]" in htaccess_source
     assert "RewriteRule ^(?:images|files|cache|tmp)/.*\\.(?:php[0-9]?|phtml|phar)$ - [F,END,NC]" in htaccess_source
+    for canonical_image in (
+        "images/berita/2026/alih-tugas-cania-kirana-1",
+        "images/berita/2026/alih-tugas-cania-kirana-2",
+        "images/berita/2026/bola-voli-hut-81-ri-ma-1",
+        "images/berita/2026/bola-voli-hut-81-ri-ma-2",
+        "images/berita/2026/bola-voli-hut-81-ri-ma-3",
+        "images/berita/2026/mobile-legends-hut-81-ri-ma-1",
+        "images/berita/2026/mobile-legends-hut-81-ri-ma-2",
+        "images/berita/2026/mobile-legends-hut-81-ri-ma-3",
+    ):
+        assert canonical_image in htaccess_source
+    assert "IMG_3701" in htaccess_source
+    assert r"WhatsApp\x20Image\x202026-07-31" in htaccess_source
 config_values = MODULE.read_joomla_database_config("""<?php
 public $user = 'stage_user';
 public $password = 'ignored-here';

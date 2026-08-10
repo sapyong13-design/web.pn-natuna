@@ -56,6 +56,25 @@ final class VariantMaker
     }
 
     /**
+     * Nama publik foto berita harus stabil, mudah dibaca, dan tidak membocorkan nama
+     * kamera/WhatsApp. Urutan angka membedakan beberapa foto dari momen yang sama.
+     */
+    public static function hasCanonicalArticleName(string $src): bool
+    {
+        $path = parse_url($src, PHP_URL_PATH);
+        if (!\is_string($path) || $path === '') {
+            return false;
+        }
+
+        $path = rawurldecode('/' . ltrim($path, '/'));
+
+        return preg_match(
+            '#^/images/berita/[0-9]{4}/[a-z0-9]+(?:-[a-z0-9]+)+-[0-9]+\.(?:jpe?g|png|webp)$#',
+            $path
+        ) === 1;
+    }
+
+    /**
      * Mengumpulkan jalur foto lokal dari satu artikel: hero pada JSON images dan
      * setiap `<img>` di badan. Jalur relatif warisan (`images/...`) diseragamkan
      * karena templat mencarinya sebagai `/images/...`.

@@ -1,6 +1,8 @@
 <?php
 /** Kontrak varian foto: setiap foto artikel Berita/Pengumuman siap dikirim ke ponsel. */
 require_once __DIR__ . '/../configuration.php';
+\defined('PN_NATUNA_VARIANT_CLI') or \define('PN_NATUNA_VARIANT_CLI', 1);
+require_once __DIR__ . '/../plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php';
 
 const VARIANT_WIDTHS = [400, 800, 1200];
 
@@ -45,7 +47,15 @@ $expect(str_contains($card, "\$image = strtok(\$image, '#');"), 'Listing cards m
 // yang tidak bisa ditangkap, jadi penyimpanan artikel akan mati dengan 500.
 $expect(str_contains($helper, 'public static function fits('), 'Variant maker must refuse photos that do not fit in the remaining memory.');
 $expect(str_contains($helper, "\$tally['tooBig']++"), 'Photos skipped for memory must be reported, not silently dropped.');
-$expect(str_contains((string) file_get_contents($root . '/plugins/content/pnnatunaimagevariants/src/Extension/PnnatunaImageVariants.php'), 'memory_limit'), 'The editor must be told which photos were skipped and how to finish them.');
+$plugin = (string) file_get_contents($root . '/plugins/content/pnnatunaimagevariants/src/Extension/PnnatunaImageVariants.php');
+$expect(str_contains($plugin, 'memory_limit'), 'The editor must be told which photos were skipped and how to finish them.');
+$expect(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::hasCanonicalArticleName(
+    '/images/berita/2026/mobile-legends-hut-81-ri-ma-2.webp'
+), 'A concise article slug with year and sequence must be accepted as canonical.');
+$expect(!\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::hasCanonicalArticleName(
+    '/images/IMG_3701.jpg'
+), 'A camera filename must never be accepted as a canonical public article image URL.');
+$expect(str_contains($plugin, 'Nama foto belum kanonis:'), 'Editors must receive an actionable warning when an article still references upload-generated filenames.');
 // Tiga cacat yang ditemukan lewat audit seluruh korpus (1 Agu 2026): foto hero dicetak
 // ulang di badan pada 75 dari 81 artikel berhero, 93 dari 93 kapsi berupa cap lembaga
 // berulang yang tanggalnya bahkan bertentangan dengan dateline, dan 165 dari 177 foto
@@ -54,6 +64,37 @@ $expect(str_contains($template, '$photoKey'), 'Article template must drop a body
 $expect(str_contains($template, '$photoCaption = static function'), 'Figure captions must be derived from the image alt text, not a repeated institutional credit.');
 $expect(!str_contains($template, "'Dokumentasi Pengadilan Negeri Natuna · '"), 'The caption must not restate the publish date; it contradicted the article dateline.');
 $expect(str_contains($template, '$photoBox'), 'Body images must carry width/height so text does not jump while photos arrive.');
+
+// Tiga artikel terbaru sempat menyimpan nama kamera/WhatsApp. URL gambar publik harus
+// memakai slug ringkas yang menjelaskan momen, lengkap dengan seluruh varian responsif.
+$renameMigration = (string) file_get_contents($root . '/database/migrations/20260810_normalize_recent_news_image_paths.sql');
+$recentCanonicalPhotos = [
+    'images/PATCANIA.jpg' => 'images/berita/2026/alih-tugas-cania-kirana-1.webp',
+    'images/IMG_3408.jpg' => 'images/berita/2026/alih-tugas-cania-kirana-2.webp',
+    'images/WhatsApp Image 2026-07-31 at 08.17.57.jpeg' => 'images/berita/2026/bola-voli-hut-81-ri-ma-1.webp',
+    'images/IMG_3150.jpg' => 'images/berita/2026/bola-voli-hut-81-ri-ma-2.webp',
+    'images/IMG_3204.jpg' => 'images/berita/2026/bola-voli-hut-81-ri-ma-3.webp',
+    'images/IMG_3729 1.jpg' => 'images/berita/2026/mobile-legends-hut-81-ri-ma-1.webp',
+    'images/IMG_3701.jpg' => 'images/berita/2026/mobile-legends-hut-81-ri-ma-2.webp',
+    'images/IMG_3738 1.jpg' => 'images/berita/2026/mobile-legends-hut-81-ri-ma-3.webp',
+];
+foreach ($recentCanonicalPhotos as $legacyPath => $canonicalPath) {
+    $expect(str_contains($renameMigration, "'{$legacyPath}'")
+        && str_contains($renameMigration, "'{$canonicalPath}'"), "Image migration omits {$legacyPath} -> {$canonicalPath}.");
+    $canonicalFile = $root . '/' . $canonicalPath;
+    $expect(is_file($canonicalFile), "Canonical article photo is missing: {$canonicalPath}");
+    $canonicalSize = @getimagesize($canonicalFile);
+    $expect($canonicalSize !== false && (int) $canonicalSize[0] >= 1200 && (int) $canonicalSize[0] <= 1600,
+        "Canonical article photo {$canonicalPath} must retain useful detail without shipping a camera-size source.");
+    $base = preg_replace('/\.[a-z0-9]+$/i', '', $canonicalFile);
+    foreach (VARIANT_WIDTHS as $width) {
+        $variantFile = "{$base}-{$width}.webp";
+        $expect(is_file($variantFile), "Canonical article photo {$canonicalPath} has no {$width}w variant.");
+        $variantSize = @getimagesize($variantFile);
+        $expect($variantSize !== false && (int) $variantSize[0] === $width,
+            "Canonical article photo {$canonicalPath} has an invalid {$width}w variant.");
+    }
+}
 
 $result = $db->query(
     "SELECT a.alias, a.images, a.introtext, a.`fulltext` FROM {$config->dbprefix}content a"

@@ -287,6 +287,7 @@ Sesi `/impeccable shape` atas pencarian beranda. Rancangannya dikoreksi di tenga
 - Rule mobile lama `.home-juknis-main > :nth-child(n+8) { contain-intrinsic-size:520px }` berbahaya untuk elemen kosong baru; divider dikecualikan via override di blok EDITORIAL.
 - JSON `images` Joomla dapat berisi `image_fulltext` kosong; fallback harus berdasarkan nilai non-kosong ke `image_intro`, dengan path lokal root-relative.
 - Portal artikel 53 wajib mengambil `introtext` dan `fulltext` bersama JSON `images`; jika gambar intro/fulltext kosong, kartu berita memakai foto lokal pertama dalam badan artikel. Ini membuat foto otomatis muncul untuk berita baru yang hanya memasukkan foto melalui editor.
+- Foto Berita baru memakai `/images/berita/YYYY/<slug-ringkas>-<urutan>.webp`, bukan nama kamera/WhatsApp; plugin `pnnatunaimagevariants` memperingatkan editor bila jalurnya belum kanonis. Bingkai paragraf yang hanya berisi foto tidak memakai padding putih: garis bingkai wajib mengikuti rasio foto, dengan URL lama dipertahankan melalui redirect permanen.
 
 ## Prinsip pemeliharaan
 
