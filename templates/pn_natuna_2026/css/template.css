@@ -12573,6 +12573,11 @@ body.is-dark .editorial-article__masthead { border-bottom-color: #c8a45a; color:
   .editorial-article__related-card strong span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
   .editorial-article__share > span:first-child { flex-basis: 100%; }
 }
+@media (max-width: 480px) {
+  /* Justify membutuhkan satu kata tambahan per baris agar tidak membentuk sungai putih. */
+  .editorial-article--news .editorial-article__body { font-size: 1rem; }
+  .editorial-article--news .editorial-article__body p { text-wrap: wrap; }
+}
 @media (max-width: 360px) {
   /* Di 320px kolom judul kartu tinggal 68px dan judul pecah 4-7 huruf per baris. */
   .editorial-article__related-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; }

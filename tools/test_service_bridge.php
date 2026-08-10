@@ -84,6 +84,7 @@ $expect($inlineEligible(1), 'One body mention must remain eligible for an inline
 // berita kemudian memilih rata kiri-kanan secara spesifik.
 $expect((bool) preg_match('/\.editorial-article :is\(p, li\) \{[^}]*text-align: start/', $css), 'Article navigation and list items must stay left aligned, including the table-of-contents rail.');
 $expect((bool) preg_match('/\.editorial-article--news \.editorial-article__body p \{[^}]*text-align: justify;[^}]*text-align-last: start;[^}]*hyphens: auto;[^}]*overflow-wrap: break-word;/', $css), 'News body paragraphs must use resilient justified alignment.');
+$expect((bool) preg_match('/@media \(max-width: 480px\) \{[^}]*\.editorial-article--news \.editorial-article__body \{ font-size: 1rem; \}[^}]*\.editorial-article--news \.editorial-article__body p \{ text-wrap: wrap; \}/s', $css), 'Narrow news columns must tighten wrapping enough to avoid extreme justified word spacing.');
 // Bekas panel tidak boleh meninggalkan gaya menganggur di lembar gaya.
 $expect(!str_contains($css, '.editorial-article__service-lead'), 'Panel styling must be removed with the panel, not left behind.');
 
