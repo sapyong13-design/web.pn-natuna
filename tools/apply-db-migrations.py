@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Apply immutable project DB migrations after every Joomla dump import."""
-from __future__ import annotations
 
 import argparse
 import hashlib
@@ -8,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+from typing import Dict, List, Tuple
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +39,7 @@ def session_sql(sql: str, charset: str, collation: str) -> str:
         raise ValueError("database charset and collation do not match")
     return f"SET NAMES {charset} COLLATE {collation};\n{sql}"
 
-def discover_migrations(directory: Path) -> list[Path]:
+def discover_migrations(directory: Path) -> List[Path]:
     return sorted(path for path in directory.glob("*.sql") if path.is_file())
 
 
@@ -52,7 +52,7 @@ def migration_checksum(sql: str) -> str:
     return hashlib.sha256(sql.encode("utf-8")).hexdigest()
 
 
-def mysql_command(args: argparse.Namespace) -> list[str]:
+def mysql_command(args: argparse.Namespace) -> List[str]:
     command = [args.mysql]
     if args.mysql_defaults_file is not None:
         defaults_file = args.mysql_defaults_file.expanduser().resolve()
@@ -74,13 +74,20 @@ def mysql_command(args: argparse.Namespace) -> list[str]:
     return command
 
 
-def run_mysql(command: list[str], sql: str, env: dict[str, str]) -> str:
-    result = subprocess.run(command, input=sql, env=env, text=True, encoding="utf-8", capture_output=True)
+def run_mysql(command: List[str], sql: str, env: Dict[str, str]) -> str:
+    result = subprocess.run(
+        command,
+        input=sql.encode("utf-8"),
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     if result.returncode:
-        raise RuntimeError(result.stderr.strip() or f"mysql failed with exit code {result.returncode}")
-    return result.stdout.strip()
+        message = result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(message or f"mysql failed with exit code {result.returncode}")
+    return result.stdout.decode("utf-8", errors="replace").strip()
 
-def database_text_encoding(command: list[str], database: str, prefix: str, env: dict[str, str]) -> tuple[str, str]:
+def database_text_encoding(command: List[str], database: str, prefix: str, env: Dict[str, str]) -> Tuple[str, str]:
     validate_identifier(database)
     validate_identifier(prefix)
     table = f"{prefix}content"

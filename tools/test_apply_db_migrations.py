@@ -11,6 +11,15 @@ SPEC.loader.exec_module(MIGRATIONS)
 
 
 class MigrationRunnerTests(unittest.TestCase):
+    def test_remains_compatible_with_cpanel_python_36(self):
+        source = MODULE_PATH.read_text(encoding="utf-8")
+        for unsupported in (
+            "from __future__ import annotations",
+            "list[", "dict[", "tuple[",
+            "text=True", "capture_output=True",
+        ):
+            self.assertNotIn(unsupported, source)
+
     def test_discovers_sql_files_in_name_order(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
