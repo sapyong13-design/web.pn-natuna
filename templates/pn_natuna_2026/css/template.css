@@ -12445,6 +12445,9 @@ body.is-dark .transparency-family { color: var(--color-ink); }
 /* 2,15em = 43px pada isi 20px, menyamai jeda 42,8px milik Medium: 1,26x tinggi baris,
    cukup untuk menandai pergantian gagasan tanpa memutus alirannya. */
 .editorial-article__body > p { margin: 0 0 2.15em; }
+/* Isi berita memakai rata kiri-kanan sesuai format publikasi kedinasan. Baris terakhir
+   tetap rata awal; pemenggalan dan pembungkus kata menahan celah besar di layar sempit. */
+.editorial-article--news .editorial-article__body p { text-align: justify; text-align-last: start; text-justify: inter-word; hyphens: auto; overflow-wrap: break-word; }
 .editorial-article__body > p:first-of-type { color: #44322d; font-size: 1.16em; line-height: 1.6; }
 .editorial-article__body h2, .editorial-article__body h3 { margin: 2.25em 0 .6em; font-family: Fraunces, Georgia, serif; line-height: 1.25; text-wrap: balance; scroll-margin-top: 88px; }
 .editorial-article__body h2 { font-size: clamp(1.375rem, 2vw, 1.75rem); }

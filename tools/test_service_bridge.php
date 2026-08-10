@@ -80,8 +80,10 @@ $expect($panelEligible(false, false, 2), 'Two body mentions must render the pane
 $inlineEligible = static fn(int $bodyCount): bool => $bodyCount >= 1;
 $expect($inlineEligible(1), 'One body mention must remain eligible for an inline service link.');
 
-// Aturan generik .content-primary merata-kanan-kirikan p dan li; artikel melepaskannya.
-$expect((bool) preg_match('/\.editorial-article :is\(p, li\) \{[^}]*text-align: start/', $css), 'Article paragraphs and list items must stay left aligned, including the table-of-contents rail.');
+// Aturan generik tetap melepaskan justify dari navigasi dan daftar isi; paragraf badan
+// berita kemudian memilih rata kiri-kanan secara spesifik.
+$expect((bool) preg_match('/\.editorial-article :is\(p, li\) \{[^}]*text-align: start/', $css), 'Article navigation and list items must stay left aligned, including the table-of-contents rail.');
+$expect((bool) preg_match('/\.editorial-article--news \.editorial-article__body p \{[^}]*text-align: justify;[^}]*text-align-last: start;[^}]*hyphens: auto;[^}]*overflow-wrap: break-word;/', $css), 'News body paragraphs must use resilient justified alignment.');
 // Bekas panel tidak boleh meninggalkan gaya menganggur di lembar gaya.
 $expect(!str_contains($css, '.editorial-article__service-lead'), 'Panel styling must be removed with the panel, not left behind.');
 
