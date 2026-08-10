@@ -286,6 +286,7 @@ Sesi `/impeccable shape` atas pencarian beranda. Rancangannya dikoreksi di tenga
 - Referensi gambar WebP dimigrasikan di DB (`pnn_content` 105/13, `pnn_modules` 808/482); file JPG/PNG lama sudah dihapus dari `images/`. Jangan mengembalikan referensi lama.
 - Rule mobile lama `.home-juknis-main > :nth-child(n+8) { contain-intrinsic-size:520px }` berbahaya untuk elemen kosong baru; divider dikecualikan via override di blok EDITORIAL.
 - JSON `images` Joomla dapat berisi `image_fulltext` kosong; fallback harus berdasarkan nilai non-kosong ke `image_intro`, dengan path lokal root-relative.
+- Portal artikel 53 wajib mengambil `introtext` dan `fulltext` bersama JSON `images`; jika gambar intro/fulltext kosong, kartu berita memakai foto lokal pertama dalam badan artikel. Ini membuat foto otomatis muncul untuk berita baru yang hanya memasukkan foto melalui editor.
 
 ## Prinsip pemeliharaan
 
