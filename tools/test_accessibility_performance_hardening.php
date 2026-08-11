@@ -71,6 +71,24 @@ foreach ([
 ] as $image) {
     $expect(is_file($root . '/' . $image), "Responsive menu-route image missing: {$image}");
 }
+$transparentVariants = [
+    'images/brand/logo-pn-natuna-96.webp',
+    'images/brand/commemorative/hut-ri-2026-header-128.webp',
+    'images/brand/commemorative/hut-ma-ri-2026-header-128.webp',
+];
+$expect(function_exists('imagecreatefromwebp'), 'GD WebP support is required to validate transparent shared-brand variants.');
+if (function_exists('imagecreatefromwebp')) {
+    foreach ($transparentVariants as $image) {
+        $resource = imagecreatefromwebp($root . '/' . $image);
+        $expect($resource !== false, "Transparent shared-brand variant is unreadable: {$image}");
+        if ($resource === false) {
+            continue;
+        }
+        $corner = imagecolorsforindex($resource, imagecolorat($resource, 0, 0));
+        $expect(($corner['alpha'] ?? 0) >= 120, "Transparent shared-brand variant was flattened: {$image}");
+        imagedestroy($resource);
+    }
+}
 $expect(str_contains($index, 'hut-ri-2026-header-128.webp 128w'), 'Shared August RI mark must use its compact source candidate.');
 $expect(str_contains($index, 'hut-ma-ri-2026-header-128.webp 128w'), 'Shared August MA mark must use its compact source candidate.');
 $expect(str_contains($index, 'logo-pn-natuna-96.webp 96w'), 'Mobile menu logo must use its compact source candidate.');
