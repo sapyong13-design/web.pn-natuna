@@ -41,6 +41,7 @@ MODULE_MIGRATIONS = (
     "20260824_optimize_brand_logo_assets.sql",
     "20260825_optimize_maklumat_thumbnail_assets.sql",
     "20261009_enable_public_page_cache_and_lazy_assets.sql",
+    "20261010_responsive_facility_gallery_images.sql",
 )
 
 def mysql(sql: str) -> str:

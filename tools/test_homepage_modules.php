@@ -10,7 +10,7 @@ if ($db->connect_errno) {
 }
 $db->set_charset('utf8mb4');
 
-$result = $db->query("SELECT id, title, content, published, showtitle, position, module, access, language FROM {$config->dbprefix}modules WHERE id IN (482, 808, 816, 817)");
+$result = $db->query("SELECT id, title, content, published, showtitle, position, module, access, language FROM {$config->dbprefix}modules WHERE id IN (480, 482, 808, 816, 817)");
 if (!$result) {
     fwrite(STDERR, "Module query failed: {$db->error}\n");
     exit(1);
@@ -37,6 +37,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
     }
 };
 
+$expect(isset($modules[480]), 'Module 480 is missing.');
 $expect(isset($modules[482]), 'Module 482 is missing.');
 $expect(isset($modules[808]), 'Module 808 is missing.');
 $expect(isset($modules[816]), 'Module 816 is missing.');
@@ -66,6 +67,26 @@ $expect(str_contains($modules[482]['content'] ?? '', '/images/role-model/joko-ci
 $expect(!str_contains($modules[482]['content'] ?? '', 'joko-ciptanto-role-model-2026.png'), 'Role Model module must not reference removed PNG image.');
 $expect(substr_count($modules[482]['content'] ?? '', 'loading="lazy"') === 2, 'Both below-fold Role Model portraits must be lazy loaded.');
 $expect(substr_count($modules[482]['content'] ?? '', 'decoding="async"') === 2, 'Both Role Model portraits must decode asynchronously.');
+$facilityContent = $modules[480]['content'] ?? '';
+$expect(($modules[480]['published'] ?? '0') === '1', 'Facility gallery module must be published.');
+$expect(substr_count($facilityContent, 'loading="lazy"') === 4, 'All facility gallery photos must be lazy loaded.');
+$expect(substr_count($facilityContent, 'decoding="async"') === 4, 'All facility gallery photos must decode asynchronously.');
+$expect(substr_count($facilityContent, 'srcset="') === 4, 'All facility gallery photos must expose responsive sources.');
+$expect(substr_count($facilityContent, 'sizes="(max-width: 760px) calc(100vw - 40px), 280px"') === 4, 'Facility gallery responsive sizes must match the card layout.');
+$facilityVariants = [
+    'akses-disabilitas-2026-400.webp',
+    'akses-disabilitas-2026-800.webp',
+    'lokasi-kantor-2026-400.webp',
+    'lokasi-kantor-2026-800.webp',
+    'posbakum-2026-400.webp',
+    'posbakum-2026-800.webp',
+    'ruang-ptsp-2026-400.webp',
+    'ruang-ptsp-2026-800.webp',
+    'ruang-ptsp-2026-1200.webp',
+];
+foreach ($facilityVariants as $variant) {
+    $expect(is_file(__DIR__ . '/../images/layanan/gallery/' . $variant), "Facility gallery variant {$variant} is missing.");
+}
 $expect(is_file(__DIR__ . '/../images/role-model/joko-ciptanto-role-model-2026.webp'), 'Wakil Ketua Role Model image is missing.');
 $expect(is_file(__DIR__ . '/../images/layanan/maklumat-pelayanan-2026.webp'), 'Maklumat Pelayanan image is missing.');
 $expect(is_file(__DIR__ . '/../images/layanan/maklumat-layanan-informasi-publik.webp'), 'Maklumat Informasi Publik image is missing.');
