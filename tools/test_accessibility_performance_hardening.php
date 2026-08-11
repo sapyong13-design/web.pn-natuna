@@ -4,6 +4,8 @@ $index = file_get_contents($root . '/templates/pn_natuna_2026/index.php');
 $hero = file_get_contents($root . '/templates/pn_natuna_2026/hero-slider.php');
 $js = file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
 $css = file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$instagram = file_get_contents($root . '/templates/pn_natuna_2026/instagram-feed.php');
+$routeMigration = file_get_contents($root . '/database/migrations/20261015_optimize_menu_route_assets.sql');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) $failures[] = $message;
@@ -53,6 +55,43 @@ foreach ([
 ] as $image) {
     $expect(is_file($root . '/images/hero/' . $image), "Responsive hero image missing: {$image}");
 }
+
+foreach ([
+    'images/profil/struktur-organisasi-2026-480.webp',
+    'images/profil/struktur-organisasi-2026-960.webp',
+    'images/profil/struktur-organisasi-2026-1500.webp',
+    'images/layanan/maklumat-pelayanan-2026-480.webp',
+    'images/layanan/maklumat-pelayanan-2026-800.webp',
+    'images/layanan/maklumat-pelayanan-2026-1200.webp',
+    'images/profil/pegawai/hakim/joko-ciptanto-400.webp',
+    'images/profil/pegawai/hakim/joko-ciptanto-800.webp',
+    'images/brand/commemorative/hut-ri-2026-header-128.webp',
+    'images/brand/commemorative/hut-ma-ri-2026-header-128.webp',
+    'images/brand/logo-pn-natuna-96.webp',
+] as $image) {
+    $expect(is_file($root . '/' . $image), "Responsive menu-route image missing: {$image}");
+}
+$expect(str_contains($index, 'hut-ri-2026-header-128.webp 128w'), 'Shared August RI mark must use its compact source candidate.');
+$expect(str_contains($index, 'hut-ma-ri-2026-header-128.webp 128w'), 'Shared August MA mark must use its compact source candidate.');
+$expect(str_contains($index, 'logo-pn-natuna-96.webp 96w'), 'Mobile menu logo must use its compact source candidate.');
+$expect(str_contains($instagram, 'data-src="'), 'Offscreen Instagram fallback embed must defer its network request.');
+$expect(!str_contains($instagram, '<iframe title="Profil dan posting terbaru Instagram Pengadilan Negeri Natuna" src="'), 'Instagram fallback embed must not expose src before intersection.');
+$expect(str_contains($js, '.kontak-map-card iframe[data-embed-src]'), 'Contact map must use the shared IntersectionObserver loader.');
+foreach ([
+    'struktur-organisasi-2026-480.webp 480w',
+    'maklumat-pelayanan-2026-480.webp 480w',
+    'gedung-pn-natuna-2026-400.webp 400w',
+    'joko-ciptanto-400.webp 400w',
+    '2026-briefing-ptsp-1-400.webp 400w',
+    'lokasi-kantor-2026-400.webp 400w',
+    'data-embed-src="https://www.google.com/maps',
+] as $needle) {
+    $expect(str_contains($routeMigration, $needle), "Menu-route migration missing performance contract: {$needle}");
+}
+$expect(str_contains($css, "url('/images/hero/gedung-pn-natuna-2026-800.webp')"), 'History cinema desktop backdrop must reuse a responsive source.');
+$expect(str_contains($css, "url('/images/hero/gedung-pn-natuna-2026-400.webp')"), 'History cinema mobile backdrop must reuse the selected 400px source.');
+$expect(!str_contains($css, "url('/images/hero/gedung-pn-natuna-2026.webp')"), 'History cinema must not force the full-resolution backdrop.');
+$expect(substr_count($routeMigration, "WHERE alias = 'kontak-landing'") === 2, 'Contact optimizations must target the article behind the published menu route.');
 
 // --- Kendali rotasi hero (25 Jul 2026) -------------------------------------
 // WCAG 2.2.2: konten yang bergerak otomatis lebih dari 5 detik wajib punya

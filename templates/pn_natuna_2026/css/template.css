@@ -12891,7 +12891,7 @@ body.is-dark .leadership-welcome__greeting, body.is-dark .leadership-welcome__me
 .profile-status-badge { display: inline-flex; margin-bottom: 12px; border-radius: 999px; padding: 6px 10px; color: #664500; background: #ffedb8; font-size: var(--step--2); font-weight: 850; text-transform: uppercase; }
 .profile-contact-action { width: fit-content; margin-top: 8px; }
 .sejarah-cinema { position: relative; isolation: isolate; min-height: 430px; background: #35161a; }
-.sejarah-cinema::before { content: ""; position: absolute; inset: 0; z-index: -2; background: linear-gradient(rgba(76, 20, 26, .32), rgba(30, 12, 13, .7)), url('/images/hero/gedung-pn-natuna-2026.webp') center / cover; filter: saturate(.76); transform: scale(1.035); animation: profile-cinema-drift 18s ease-in-out infinite alternate; }
+.sejarah-cinema::before { content: ""; position: absolute; inset: 0; z-index: -2; background: linear-gradient(rgba(76, 20, 26, .32), rgba(30, 12, 13, .7)), url('/images/hero/gedung-pn-natuna-2026-800.webp') center / cover; filter: saturate(.76); transform: scale(1.035); animation: profile-cinema-drift 18s ease-in-out infinite alternate; }
 .sejarah-cinema::after { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at center, transparent 42%, rgba(28, 10, 12, .52) 100%); pointer-events: none; }
 .sejarah-photo-card.sejarah-cinema img { height: 100%; min-height: 430px; object-fit: contain; filter: sepia(.08) saturate(.82); }
 .sejarah-cinema figcaption { position: absolute; inset: auto 12px 12px; border: 0; border-radius: 6px; color: #fff5e8; background: rgba(44, 16, 18, .9); }
@@ -12902,7 +12902,7 @@ body.is-dark .profile-note strong { color: #f3c96b; }
 body.is-dark .profile-contact-action { border-color: #46515a; color: #f3d580; background: #101820; }
 body.is-dark .profile-note { color: #e8e1d8; background: #252d30; }
 .profile-contact-action:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
-@media (max-width: 760px) { .sejarah-cinema, .sejarah-photo-card.sejarah-cinema img { min-height: 300px; } .roster-meta > div { align-items: flex-start; flex-wrap: wrap; } .roster-meta dd { width: 100%; text-align: left; } }
+@media (max-width: 760px) { .sejarah-cinema, .sejarah-photo-card.sejarah-cinema img { min-height: 300px; } .sejarah-cinema::before { background-image: linear-gradient(rgba(76, 20, 26, .32), rgba(30, 12, 13, .7)), url('/images/hero/gedung-pn-natuna-2026-400.webp'); } .roster-meta > div { align-items: flex-start; flex-wrap: wrap; } .roster-meta dd { width: 100%; text-align: left; } }
 @media (prefers-reduced-motion: reduce) { .sejarah-cinema::before { animation: none; transform: none; } }
 
 /* PERF-MOTION 2026-07-11 */

@@ -143,9 +143,9 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
             </path>
           </svg>
           <span class="august-lockup__marks">
-            <span class="august-lockup__mark august-lockup__mark--ri"><img src="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ri-2026-header.webp" alt="Hari Ulang Tahun ke-81 Republik Indonesia" width="640" height="389" decoding="async"></span>
+            <span class="august-lockup__mark august-lockup__mark--ri"><img src="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ri-2026-header.webp" srcset="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ri-2026-header-128.webp 128w, <?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ri-2026-header.webp 640w" sizes="64px" alt="Hari Ulang Tahun ke-81 Republik Indonesia" width="640" height="389" decoding="async"></span>
             <span class="august-lockup__divider" aria-hidden="true"></span>
-            <span class="august-lockup__mark august-lockup__mark--ma"><img src="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ma-ri-2026-header.webp" alt="Hari Ulang Tahun ke-81 Mahkamah Agung Republik Indonesia" width="760" height="330" decoding="async"></span>
+            <span class="august-lockup__mark august-lockup__mark--ma"><img src="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ma-ri-2026-header.webp" srcset="<?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ma-ri-2026-header-128.webp 128w, <?php echo $this->baseurl; ?>/images/brand/commemorative/hut-ma-ri-2026-header.webp 760w" sizes="64px" alt="Hari Ulang Tahun ke-81 Mahkamah Agung Republik Indonesia" width="760" height="330" decoding="async"></span>
           </span>
         </aside>
       <?php endif; ?>
@@ -157,7 +157,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
       <div id="main-menu-list" class="main-menu-list mobile-menu-panel" aria-label="Menu Navigasi">
         <div class="mobile-menu-heading">
           <div class="mobile-menu-brand" id="mobile-menu-title">
-            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp" alt="" width="40" height="40" loading="lazy" decoding="async">
+            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp" srcset="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna-96.webp 96w, <?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp 179w" sizes="40px" alt="" width="40" height="40" loading="lazy" decoding="async">
             <span><strong>PN Natuna</strong><small>Pengadilan Negeri Kelas II</small></span>
           </div>
           <button class="menu-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>

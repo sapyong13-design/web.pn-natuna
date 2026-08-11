@@ -271,6 +271,7 @@ function setupAmpuhDirectory() {
   const toggles = Array.from(root.querySelectorAll('[data-ampuh-toggle]'));
   const items = Array.from(root.querySelectorAll('[data-search-text]'));
   const resultNodes = Array.from(root.querySelectorAll('[data-ampuh-file-result]'));
+  const searchableItems = Array.from(new Set([...items, ...resultNodes]));
   const checklistNodes = Array.from(root.querySelectorAll('[data-ampuh-checklist]'));
   const subchecklistNodes = Array.from(root.querySelectorAll('[data-ampuh-subchecklist]'));
   const search = root.querySelector('[data-ampuh-search]');
@@ -283,6 +284,8 @@ function setupAmpuhDirectory() {
   const results = root.querySelector('[data-ampuh-results]');
   const tree = root.querySelector('.ampuh-directory__tree');
   let selectedGobi = '';
+  const originalFilenames = new WeakMap();
+  const highlightedFiles = new Set();
 
   const setExpanded = (toggle, expanded, animate = true) => {
     const panel = document.getElementById(toggle.getAttribute('aria-controls'));
@@ -306,20 +309,28 @@ function setupAmpuhDirectory() {
   const restoreFilename = (item) => {
     const name = item.querySelector('.ampuh-directory__file-name');
     if (!name) return;
-    name.dataset.original ||= name.textContent;
-    name.textContent = name.dataset.original;
+    const original = originalFilenames.get(name);
+    if (typeof original !== 'string') return;
+    name.textContent = original;
+    originalFilenames.delete(name);
+  };
+  const restoreHighlights = () => {
+    highlightedFiles.forEach(restoreFilename);
+    highlightedFiles.clear();
   };
   const highlightFilename = (item, rawQuery) => {
     const name = item.querySelector('.ampuh-directory__file-name');
     if (!name || !rawQuery || typeof name.replaceChildren !== 'function') return;
-    const original = name.dataset.original || name.textContent;
+    const original = originalFilenames.get(name) || name.textContent;
     const query = rawQuery.toLocaleLowerCase('id-ID').trim();
     const index = original.toLocaleLowerCase('id-ID').indexOf(query);
     if (index < 0) return;
+    originalFilenames.set(name, original);
     const mark = document.createElement('mark');
     mark.className = 'ampuh-directory__match';
     mark.textContent = original.slice(index, index + query.length);
     name.replaceChildren(document.createTextNode(original.slice(0, index)), mark, document.createTextNode(original.slice(index + query.length)));
+    highlightedFiles.add(item);
   };
   const syncResults = (count, gobiCount, query, matchingChecklists = [], exactChecklist = null, matchingSubchecklists = []) => {
     if (results) {
@@ -347,13 +358,14 @@ function setupAmpuhDirectory() {
   };
   const apply = () => {
     const query = normalize(search?.value || '');
-    resultNodes.forEach(restoreFilename);
+    restoreHighlights();
     closeEveryPanel();
-    items.forEach((item) => { item.hidden = true; });
+    searchableItems.forEach((item) => { item.hidden = true; });
     const matchingFiles = resultNodes.filter((item) => {
       const gobi = item.closest('[data-ampuh-gobi]');
       const inSelectedGobi = !selectedGobi || gobi?.getAttribute('data-ampuh-gobi') === selectedGobi;
-      return inSelectedGobi && (!query || normalize(item.getAttribute('data-search-text') || item.textContent).includes(query));
+      const filename = item.querySelector('.ampuh-directory__file-name')?.textContent || item.textContent;
+      return inSelectedGobi && (!query || normalize(filename).includes(query));
     });
     const hierarchyTokens = query.split(/\s+/).filter(Boolean);
     const numericHierarchyQuery = hierarchyTokens.length > 0 && hierarchyTokens.every((token) => /^\d+(?:\.\d+)*$/.test(token));
@@ -374,7 +386,7 @@ function setupAmpuhDirectory() {
       return normalize(item.getAttribute('data-search-text') || item.textContent).includes(query);
     });
     if (!query) {
-      items.forEach((item) => {
+      searchableItems.forEach((item) => {
         const gobi = item.closest('[data-ampuh-gobi]');
         item.hidden = Boolean(selectedGobi && gobi?.getAttribute('data-ampuh-gobi') !== selectedGobi);
       });
@@ -384,7 +396,7 @@ function setupAmpuhDirectory() {
         showAncestors(item);
         const toggle = item.querySelector('[data-ampuh-toggle]');
         if (toggle) setExpanded(toggle, true, false);
-        item.querySelectorAll('[data-search-text]').forEach((descendant) => { descendant.hidden = false; });
+        item.querySelectorAll('[data-search-text], [data-ampuh-file-result]').forEach((descendant) => { descendant.hidden = false; });
       });
     } else {
       matchingFiles.forEach((item) => {
@@ -425,15 +437,15 @@ function setupAmpuhDirectory() {
   filterPrev?.addEventListener('click', () => scrollFilter(-1));
   filterNext?.addEventListener('click', () => scrollFilter(1));
   gobiSelect?.addEventListener('change', () => setSelectedGobi(gobiSelect.value));
-  apply();
 }
 
 function setupLazyIframes() {
-  const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src], .instagram-profile-embed iframe[data-src], .home-map-card iframe[data-src]');
+  const frames = document.querySelectorAll('.instagram-profile-card iframe[data-src], .instagram-profile-embed iframe[data-src], .home-map-card iframe[data-src], .kontak-map-card iframe[data-embed-src]');
   if (!frames.length) return;
   const load = (frame) => {
-    if (!frame.src && frame.dataset.src) {
-      frame.src = frame.dataset.src;
+    const source = frame.dataset.src || frame.dataset.embedSrc;
+    if (!frame.src && source) {
+      frame.src = source;
     }
   };
   if (!('IntersectionObserver' in window)) {
@@ -1586,8 +1598,12 @@ function setupHeroNewsTabs() {
     slide.querySelectorAll('.hero-tab-list a.is-preview').forEach((a) => a.classList.remove('is-preview'));
     link.classList.add('is-preview');
     const src = link.dataset.image || '';
+    const srcset = link.dataset.srcset || '';
     const cap = link.dataset.caption || '';
-    if (!src || preview.getAttribute('src') === src) {
+    if (!src || (
+      preview.getAttribute('src') === src
+      && (preview.getAttribute('srcset') || '') === srcset
+    )) {
 
       if (caption && cap) {
         caption.textContent = cap;
@@ -1596,6 +1612,11 @@ function setupHeroNewsTabs() {
     }
     preview.classList.add('is-swapping');
     window.setTimeout(() => {
+      if (srcset) {
+        preview.setAttribute('srcset', srcset);
+      } else {
+        preview.removeAttribute('srcset');
+      }
       preview.setAttribute('src', src);
       if (caption) {
         caption.textContent = cap;

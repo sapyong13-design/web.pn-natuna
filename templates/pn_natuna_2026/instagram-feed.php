@@ -53,7 +53,7 @@ function pn_natuna_instagram_render_profile_embed(): string
 {
     $profile = 'https://www.instagram.com/pn.natuna/';
     $embed = $profile . 'embed/';
-    return '<section class="instagram-profile-embed module-card" aria-label="Instagram Pengadilan Negeri Natuna"><div class="instagram-profile-embed__head"><div><span>Media Sosial Resmi</span><strong>Instagram PN Natuna</strong></div><a href="' . $profile . '" target="_blank" rel="noopener noreferrer">Buka Instagram</a></div><div class="instagram-profile-embed__frame"><iframe title="Profil dan posting terbaru Instagram Pengadilan Negeri Natuna" src="' . $embed . '" loading="lazy" scrolling="no" referrerpolicy="strict-origin-when-cross-origin" allowtransparency="true"></iframe></div><noscript><a href="' . $profile . '" target="_blank" rel="noopener noreferrer">Lihat Instagram Pengadilan Negeri Natuna</a></noscript></section>';
+    return '<section class="instagram-profile-embed module-card" aria-label="Instagram Pengadilan Negeri Natuna"><div class="instagram-profile-embed__head"><div><span>Media Sosial Resmi</span><strong>Instagram PN Natuna</strong></div><a href="' . $profile . '" target="_blank" rel="noopener noreferrer">Buka Instagram</a></div><div class="instagram-profile-embed__frame"><iframe title="Profil dan posting terbaru Instagram Pengadilan Negeri Natuna" data-src="' . $embed . '" loading="lazy" scrolling="no" referrerpolicy="strict-origin-when-cross-origin" allowtransparency="true"></iframe></div><noscript><a href="' . $profile . '" target="_blank" rel="noopener noreferrer">Lihat Instagram Pengadilan Negeri Natuna</a></noscript></section>';
 }
 
 function pn_natuna_instagram_render(array $cache): string

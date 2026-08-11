@@ -92,6 +92,7 @@ $expect(!str_contains($html, '<h5>') && !str_contains($html, '-files"'), 'Docume
 $expect((bool) preg_match('/<div id="ampuh-gobi-1-checklist-1-sub-13-2" data-ampuh-panel hidden><h5 class="ampuh-directory__files-heading">Daftar dokumen \(5\)<\/h5><ul class="ampuh-directory__files">/', $html), 'Opening a sub-checklist must expose its document heading and list immediately.');
 $expect(str_contains($html, 'ampuh-directory__files'), 'Attachments need a file-list hook.');
 $expect(str_contains($html, 'data-ampuh-file-result'), 'Document files need a dedicated result hook.');
+$expect(!preg_match('/<li[^>]*data-ampuh-file-result[^>]*data-search-text=/', $html), 'Document filenames must not be duplicated into per-file search attributes.');
 $expect(str_contains($html, 'data-ampuh-clear-search hidden'), 'Search tools need a hidden clear-search control.');
 $expect(str_contains($html, 'class="ampuh-directory__file-name"'), 'Document names need a dedicated highlight-safe hook.');
 $expect(!str_contains($html, '<section class="ampuh-directory__subchecklist" data-ampuh-result'), 'Branch nodes must not be document result nodes.');
@@ -120,7 +121,11 @@ $expect($toggleIds === $panelIds, 'Every toggle aria-controls must match its hid
 $expect(str_contains($html, 'data-ampuh-panel'), 'Disclosure panels need behavior hooks.');
 $expect(str_contains($html, 'data-ampuh-gobi-filter'), 'GOBI filter needs behavior hook.');
 $css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
-$ampuhCss = substr($css, strpos($css, '/* AMPUH DIRECTORY 2026-07-13 */'));
+$ampuhStart = strpos($css, '/* AMPUH DIRECTORY 2026-07-13 */');
+$ampuhEnd = strpos($css, '/* END AMPUH DIRECTORY 2026-07-13 */', $ampuhStart === false ? 0 : $ampuhStart);
+$ampuhCss = $ampuhStart === false || $ampuhEnd === false
+    ? ''
+    : substr($css, $ampuhStart, $ampuhEnd - $ampuhStart);
 $cssRule = static function (string $selector, string $declarations) use ($ampuhCss): bool {
     return (bool) preg_match('/' . preg_quote($selector, '/') . '\s*\{(?=[^}]*' . $declarations . ')[^}]*\}/s', $ampuhCss);
 };

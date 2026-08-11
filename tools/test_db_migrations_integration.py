@@ -46,6 +46,7 @@ MODULE_MIGRATIONS = (
     "20261012_record_lscache_joomla6_patch.sql",
     "20261013_harden_lscache_purge_endpoint.sql",
     "20261014_record_lscache_component_patch.sql",
+    "20261015_optimize_menu_route_assets.sql",
 )
 
 def mysql(sql: str) -> str:

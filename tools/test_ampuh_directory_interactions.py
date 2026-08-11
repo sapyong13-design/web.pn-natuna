@@ -68,7 +68,7 @@ const panel2 = new Node('div', {'data-ampuh-panel': '', id: 'panel-2'}); panel2.
 const sub = new Node('section', {'data-search-text': 'sub-checklist 5.2 diskusi reguler', 'data-ampuh-subchecklist': '5.2'}, 'Sub checklist 5.2 diskusi reguler');
 const heading = new Node('h5', {}, 'Daftar dokumen (1)');
 const files = new Node('ul');
-const file = new Node('li', {'data-search-text': 'surat keputusan ampuh.pdf', 'data-ampuh-file-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
+const file = new Node('li', {'data-ampuh-file-result': ''}, 'Surat Keputusan ÁMPUH.pdf');
 const gobi2 = new Node('section', {'data-ampuh-gobi': '2', 'data-search-text': 'gobi hukum'}, 'GOBI hukum');
 const legal = new Node('section', {'data-search-text': 'checklist perkara'}, 'Checklist perkara');
 root.append(search, select, filter.append(one, two), close, results, tree.append(gobi1.append(toggle1, panel1.append(checklist.append(toggle2, panel2.append(sub.append(heading, files.append(file)))))), gobi2.append(legal)));
@@ -139,6 +139,8 @@ assert "data-ampuh-file-result" in function_source
 assert "data-ampuh-checklist" in function_source
 assert "data-ampuh-subchecklist" in function_source
 assert "numericHierarchyQuery" in function_source
+assert "name.dataset.original" not in function_source
+assert "restoreHighlights()" in function_source
 try:
     completed = subprocess.run(["node", runner_path, str(SOURCE)], text=True, capture_output=True)
     assert completed.returncode == 0, completed.stderr
