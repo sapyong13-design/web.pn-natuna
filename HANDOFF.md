@@ -299,6 +299,8 @@ Sesi `/impeccable shape` atas pencarian beranda. Rancangannya dikoreksi di tenga
 
 - Galeri Fasilitas Publik ditutup oleh migrasi `20261010_responsive_facility_gallery_images.sql`: empat kartu memakai `srcset` 400/800 (PTSP juga 1200) dan `sizes` sesuai lebar kartu. Pada ponsel, sumber terpilih turun dari foto dokumenter 141–235 KiB ke varian 17–26 KiB; gambar tetap lazy dan baru terunduh ketika galeri didekati.
 
+- Commit `018e4982` dan `d4d7f65e` sudah tayang di `pn-natuna.go.id`. Browser nyata pada profil 4G/CPU 4× mencatat homepage final 30 resource/`630.181` byte encoded, turun 8 request dan 64,5% dari baseline `1.775.036` byte; tiga foto fasilitas yang masuk ambang lazy native memakai varian 400px dengan total 61.462 byte. Setelah cache dibersihkan, request eksternal homepage turun dari TTFB `2.831 ms` menjadi `344 ms` pada hit kedua. Drawer mobile tetap 83 tautan dan lulus buka/Escape; homepage, daftar berita, artikel SEF, dan aset WebP baru membalas `200`. Backup pra-deploy: `/home/pnnatuna/private/backups/db-018e4982-20260811113948.sql`, `/home/pnnatuna/private/backups/perf-018e4982-20260811113948`, dan `/home/pnnatuna/private/backups/db-d4d7f65e-20260811115024.sql`.
+
 ## Prinsip pemeliharaan
 
 - Joomla-native bila cukup; custom code hanya untuk kebutuhan yang tidak dipenuhi Joomla.
