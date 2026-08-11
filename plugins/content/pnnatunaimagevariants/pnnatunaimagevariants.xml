@@ -3,8 +3,8 @@
 	<name>plg_content_pnnatunaimagevariants</name>
 	<author>Pengadilan Negeri Natuna</author>
 	<creationDate>2026-08</creationDate>
-	<version>1.1.0</version>
-	<description>Memberi nama WebP kanonis dari slug artikel dan membuat varian responsif -400/-800/-1200.webp begitu berita atau pengumuman disimpan.</description>
+	<version>1.1.1</version>
+	<description>Memberi nama WebP kanonis dari slug artikel, membuat varian responsif -400/-800/-1200.webp, dan membersihkan upload sementara yang tidak lagi dirujuk.</description>
 	<namespace path="src">Joomla\Plugin\Content\Pnnatunaimagevariants</namespace>
 	<files>
 		<folder plugin="pnnatunaimagevariants">services</folder>

@@ -112,7 +112,7 @@ $rewrittenImages = json_decode((string) $item->images, true);
 $expect(($rewrittenImages['image_intro'] ?? '') === $expectedPath, 'Before-save must rewrite Joomla images JSON to the canonical article slug.');
 $expect(str_contains((string) $item->introtext, $expectedPath), 'Before-save must rewrite body image references to the canonical article slug.');
 $expect(is_file($canonical), 'Before-save must create the canonical WebP source.');
-$expect(is_file($fixture), 'The upload-generated source must remain available for legacy URLs.');
+$expect(is_file($fixture), 'The temporary upload must remain available until the article save succeeds.');
 
 $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onContentAfterSave', [
     'context' => 'com_content.article',
@@ -120,6 +120,7 @@ $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onCont
     'isNew' => true,
     'data' => [],
 ]));
+$expect(!is_file($fixture), 'A successful new-article save must remove its unreferenced temporary upload.');
 
 $made = [];
 foreach ([400, 800, 1200] as $width) {
@@ -149,8 +150,30 @@ $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onCont
 $after = array_map('filemtime', glob($canonicalDir . '/selftest-varian-foto-1-*.webp') ?: []);
 $expect($before === $after, 'Second save must skip variants that are already newer than their source.');
 
+// Artikel yang sudah pernah tersimpan dapat memiliki URL publik lama: sumbernya dipertahankan.
+$existingItem = clone $item;
+$existingItem->images = json_encode(['image_intro' => 'images/_variant-selftest/selftest-photo.jpg', 'image_fulltext' => '']);
+$existingItem->introtext = '<p><img src="images/_variant-selftest/selftest-photo.jpg" alt=""></p>';
+$canvas = imagecreatetruecolor(1500, 1000);
+imagefilledrectangle($canvas, 0, 0, 1499, 999, imagecolorallocate($canvas, 143, 31, 11));
+imagejpeg($canvas, $fixture, 90);
+imagedestroy($canvas);
+$app->getDispatcher()->dispatch('onContentBeforeSave', new BeforeSaveEvent('onContentBeforeSave', [
+    'context' => 'com_content.article',
+    'subject' => $existingItem,
+    'isNew' => false,
+    'data' => [],
+]));
+$app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onContentAfterSave', [
+    'context' => 'com_content.article',
+    'subject' => $existingItem,
+    'isNew' => false,
+    'data' => [],
+]));
+$expect(is_file($fixture), 'An existing article save must retain its legacy source for published URL compatibility.');
+
 array_map('unlink', glob($fixtureDir . '/*') ?: []);
-array_map('unlink', glob($canonicalDir . '/selftest-varian-foto-1*.webp') ?: []);
+array_map('unlink', glob($canonicalDir . '/selftest-varian-foto-*.webp') ?: []);
 @rmdir($fixtureDir);
 
 if ($failures) {
@@ -158,4 +181,4 @@ if ($failures) {
     exit(1);
 }
 
-echo "image variant plugin contract: ok (auto-named source + 3 variants from one simulated save)\n";
+echo "image variant plugin contract: ok (new upload cleanup, existing-source retention, responsive variants)\n";

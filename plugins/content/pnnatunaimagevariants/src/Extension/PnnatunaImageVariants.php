@@ -20,8 +20,8 @@ use Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker;
  * Joomla tidak pernah memperkecil atau mengganti nama berkas saat diunggah. Untuk
  * Berita/Pengumuman, hook before-save membuat `/images/berita/YYYY/slug-N.webp`
  * lalu mengganti JSON `images` dan seluruh `src` badan sebelum data ditulis. Hook
- * after-save membuat `-400/-800/-1200.webp`. Sumber lama dipertahankan agar URL
- * yang pernah dibagikan tetap hidup.
+ * after-save membuat `-400/-800/-1200.webp`. Upload sementara artikel baru
+ * dibuang setelah save sukses; sumber artikel lama atau yang masih dirujuk dipertahankan.
  *
  * Kegagalan apa pun menjadi peringatan: menyimpan artikel tidak boleh gagal hanya
  * karena GD, permission folder, atau foto kamera yang melampaui batas memori.
@@ -37,6 +37,9 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
 
     private int $canonicalTooBig = 0;
 
+
+    /** @var list<string> */
+    private array $disposableSources = [];
     public static function getSubscribedEvents(): array
     {
         return [
@@ -52,6 +55,7 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
         $this->canonicalized = [];
         $this->canonicalFailed = 0;
         $this->canonicalTooBig = 0;
+        $this->disposableSources = [];
 
         if (!$this->supports($context, $item)) {
             return;
@@ -88,6 +92,9 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
             $this->canonicalized = $canonical['replacements'];
             $this->canonicalFailed = $canonical['failed'];
             $this->canonicalTooBig = $canonical['tooBig'];
+            if ($event->getIsNew()) {
+                $this->disposableSources = array_keys($this->canonicalized);
+            }
             if (!$this->canonicalized) {
                 return;
             }
@@ -202,6 +209,18 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
                 'warning'
             );
         }
+
+        $cleaned = $this->cleanupTemporarySources();
+        if ($cleaned['removed'] > 0) {
+            $this->getApplication()->enqueueMessage(
+                sprintf(
+                    '%d berkas upload sementara dibersihkan setelah nama kanonis tersimpan (%.1f MB).',
+                    $cleaned['removed'],
+                    $cleaned['bytes'] / 1048576
+                ),
+                'notice'
+            );
+        }
     }
 
     private function supports(string $context, mixed $item): bool
@@ -226,6 +245,58 @@ final class PnnatunaImageVariants extends CMSPlugin implements SubscriberInterfa
         return \in_array($path, ['berita', 'pengumuman'], true)
             || str_starts_with($path, 'berita/')
             || str_starts_with($path, 'pengumuman/');
+    }
+
+    /** @return array{removed:int,bytes:int} */
+    private function cleanupTemporarySources(): array
+    {
+        $sources = $this->disposableSources;
+        $this->disposableSources = [];
+        $result = ['removed' => 0, 'bytes' => 0];
+        foreach ($sources as $source) {
+            try {
+                if ($this->isSourceReferenced($source)) {
+                    continue;
+                }
+                $tally = VariantMaker::removeSourceFamily(JPATH_ROOT, $source);
+                $result['removed'] += $tally['removed'];
+                $result['bytes'] += $tally['bytes'];
+            } catch (\Throwable $error) {
+                // Gagal membuktikan sumber tidak dipakai: pertahankan berkasnya.
+            }
+        }
+
+        return $result;
+    }
+
+    private function isSourceReferenced(string $source): bool
+    {
+        $path = parse_url($source, PHP_URL_PATH);
+        if (!\is_string($path) || $path === '') {
+            return true;
+        }
+        $needle = basename(rawurldecode($path));
+        if ($needle === '') {
+            return true;
+        }
+        $db = $this->getDatabase();
+        foreach ([
+            ['#__content', ['images', 'introtext', 'fulltext']],
+            ['#__modules', ['content']],
+        ] as [$table, $columns]) {
+            $quotedColumns = array_map([$db, 'quoteName'], $columns);
+            $haystack = 'CONCAT_WS(' . $db->quote(' ') . ', ' . implode(', ', $quotedColumns) . ')';
+            $query = $db->createQuery()
+                ->select('1')
+                ->from($db->quoteName($table))
+                ->where('LOCATE(:source_name, ' . $haystack . ') > 0')
+                ->bind(':source_name', $needle, \Joomla\Database\ParameterType::STRING);
+            if ($db->setQuery($query, 0, 1)->loadResult() !== null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return array{string,bool} */

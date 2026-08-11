@@ -205,6 +205,39 @@ final class VariantMaker
         return str_replace(array_keys($forms), array_values($forms), $content);
     }
 
+    /**
+     * Menghapus upload generik beserta varian lamanya setelah artikel baru sukses
+     * tersimpan. Pemanggil wajib lebih dulu memastikan jalur itu tidak dipakai konten lain.
+     *
+     * @return array{removed:int,bytes:int}
+     */
+    public static function removeSourceFamily(string $root, string $src): array
+    {
+        $result = ['removed' => 0, 'bytes' => 0];
+        $path = self::localPath($src);
+        if ($path === null || self::hasCanonicalArticleName($path)) {
+            return $result;
+        }
+        $file = rtrim($root, '/\\') . $path;
+        $family = [$file];
+        $base = preg_replace('/\.[a-z0-9]+$/i', '', $file);
+        foreach (self::WIDTHS as $width) {
+            $family[] = $base . '-' . $width . '.webp';
+        }
+        foreach ($family as $candidate) {
+            if (!is_file($candidate)) {
+                continue;
+            }
+            $bytes = (int) filesize($candidate);
+            if (@unlink($candidate)) {
+                $result['removed']++;
+                $result['bytes'] += $bytes;
+            }
+        }
+
+        return $result;
+    }
+
     private static function localPath(string $src): ?string
     {
         $path = parse_url($src, PHP_URL_PATH);
