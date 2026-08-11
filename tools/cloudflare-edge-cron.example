@@ -1,0 +1,3 @@
+# Aktifkan hanya setelah zone Cloudflare, token privat, Cache Rules, dan uji rollback selesai.
+# Jangan tempel token ke crontab; pn-natuna.env wajib mode 0600.
+*/2 * * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; "$PYTHON_BIN" /home/USER/private/cron/cloudflare-edge-cache.py purge --queue /home/USER/private/cloudflare/purge-queue.jsonl >> /home/USER/private/logs/cloudflare-purge.log 2>&1
