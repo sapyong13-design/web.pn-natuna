@@ -52,7 +52,8 @@ def fetch(url, timeout):
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Encoding": "identity"})
     started = time.monotonic()
     with urllib.request.urlopen(request, timeout=timeout) as response:
-        response.read(1)
+        while response.read(65536):
+            pass
         elapsed = int((time.monotonic() - started) * 1000)
         return response.status, (response.headers.get("X-LiteSpeed-Cache") or "none").lower(), elapsed
 
