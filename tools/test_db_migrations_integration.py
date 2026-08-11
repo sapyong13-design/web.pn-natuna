@@ -44,6 +44,7 @@ MODULE_MIGRATIONS = (
     "20261010_responsive_facility_gallery_images.sql",
     "20261011_enable_litespeed_public_page_cache.sql",
     "20261012_record_lscache_joomla6_patch.sql",
+    "20261013_harden_lscache_purge_endpoint.sql",
 )
 
 def mysql(sql: str) -> str:
@@ -112,6 +113,8 @@ def main() -> int:
             " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.cacheTimeout')),"
             " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.homePageCacheTimeout')),"
             " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.loginCachable')),"
+            " CHAR_LENGTH(JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.cleanCache'))),"
+            " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.adminIPs')),"
             " JSON_UNQUOTE(JSON_EXTRACT(plugin.manifest_cache, '$.version'))"
             f" FROM {DATABASE}.pnn_extensions AS plugin"
             f" JOIN {DATABASE}.pnn_extensions AS component"
@@ -124,7 +127,7 @@ def main() -> int:
             raise RuntimeError(f"canonical module assignments not reconstructed: {menus}")
         if not page_cache.startswith('0\t') or '"browsercache": "0"' not in page_cache:
             raise RuntimeError(f"conflicting Joomla page cache still enabled: {page_cache}")
-        if litespeed_cache != "1\t1\t15\t15\t0\t1.5.2-pn.1":
+        if litespeed_cache != "1\t1\t15\t15\t0\t40\t127.0.0.1\t1.5.2-pn.2":
             raise RuntimeError(f"LiteSpeed public cache policy not reconstructed: {litespeed_cache}")
         print("empty database module migration contract: ok")
         return 0
