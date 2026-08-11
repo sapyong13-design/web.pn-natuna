@@ -43,6 +43,10 @@ $expect(is_file($root . '/tools/make-image-variants.php'), 'The variant generato
 // Fragmen itu tidak boleh ikut tercetak ke `src` mana pun.
 $expect(substr_count($template, "strtok(") >= 2, 'Article template must strip the Media Manager fragment from hero and body images.');
 $expect(str_contains($card, "\$image = strtok(\$image, '#');"), 'Listing cards must strip the Media Manager fragment.');
+$expect(
+    str_contains($template, '$relatedImageUrl = $articleImage((string) $relatedItem->images, (string) $relatedItem->introtext, (string) $relatedItem->fulltext)'),
+    'Related cards must fall back to the first article-body photo when Joomla images JSON is empty.'
+);
 // Foto 24MP butuh 92 MB hanya untuk bitmapnya. Kehabisan memori adalah fatal error
 // yang tidak bisa ditangkap, jadi penyimpanan artikel akan mati dengan 500.
 $expect(str_contains($helper, 'public static function fits('), 'Variant maker must refuse photos that do not fit in the remaining memory.');
@@ -125,6 +129,31 @@ foreach ($encodedCanonicalPhotos as $legacyPath => $canonicalPath) {
     $expect(str_contains($encodedRepair, "'{$legacyPath}'")
         && str_contains($encodedRepair, "'{$canonicalPath}'"), "Encoded image migration omits {$legacyPath} -> {$canonicalPath}.");
 }
+
+$canonicalUrlMigration = (string) file_get_contents($root . '/database/migrations/20261008_canonicalize_published_news_aliases.sql');
+$expect(
+    str_contains($canonicalUrlMigration, "CONCAT('/', c.path, '/', a.alias)")
+        && str_contains($canonicalUrlMigration, "CONCAT('/', c.path, '/', SUBSTRING(a.alias, 8))"),
+    'Canonical news URL migration must preserve every legacy route with a permanent redirect.'
+);
+$expect(
+    str_contains($canonicalUrlMigration, 'SET a.alias = SUBSTRING(a.alias, 8)'),
+    'Published imported news aliases must drop the internal legacy marker.'
+);
+
+$legacyAliasResult = $db->query(
+    "SELECT COUNT(*) FROM {$config->dbprefix}content a"
+    . " INNER JOIN {$config->dbprefix}categories c ON c.id = a.catid"
+    . " WHERE a.state = 1 AND c.path IN ('berita', 'pengumuman') AND a.alias LIKE 'legacy-%'"
+);
+$legacyAliasCount = $legacyAliasResult ? (int) $legacyAliasResult->fetch_row()[0] : -1;
+$expect($legacyAliasCount === 0, "Published article URLs still expose {$legacyAliasCount} import-only legacy aliases.");
+$redirectResult = $db->query(
+    "SELECT COUNT(*) FROM {$config->dbprefix}redirect_links"
+    . " WHERE published = 1 AND comment = 'Alias impor berita dibersihkan; URL lama dialihkan ke route kanonis.'"
+);
+$canonicalRedirectCount = $redirectResult ? (int) $redirectResult->fetch_row()[0] : 0;
+$expect($canonicalRedirectCount > 0, 'Canonical news aliases must retain redirects from their former public URLs.');
 
 $result = $db->query(
     "SELECT a.alias, a.images, a.introtext, a.`fulltext` FROM {$config->dbprefix}content a"

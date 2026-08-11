@@ -31,6 +31,15 @@ $variantHelper = JPATH_SITE . '/plugins/content/pnnatunaimagevariants/src/Helper
 if (is_file($variantHelper)) {
     require_once $variantHelper;
 }
+$articleImage = static function (string $images, string $introtext = '', string $fulltext = ''): string {
+    $decoded = json_decode($images, true) ?: [];
+    $image = trim((string) ($decoded['image_fulltext'] ?? '')) ?: trim((string) ($decoded['image_intro'] ?? ''));
+    if ($image === '' && class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
+        $image = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage($introtext, $fulltext);
+    }
+
+    return $image !== '' && !preg_match('#^(?:https?:)?//#i', $image) ? '/' . ltrim($image, '/') : $image;
+};
 if ((int) $item->id === 53) {
     $nowSql = Factory::getDate()->format('Y-m-d H:i:s');
     $levels = array_map('intval', $this->getCurrentUser()->getAuthorisedViewLevels());
@@ -60,14 +69,7 @@ if ((int) $item->id === 53) {
         $date = Factory::getDate($raw);
         return [$date->format(DATE_ATOM), (int) $date->format('j') . ' ' . $months[(int) $date->format('n')] . ' ' . $date->format('Y')];
     };
-    $portalImage = static function (string $images, string $introtext = '', string $fulltext = ''): string {
-        $decoded = json_decode($images, true) ?: [];
-        $image = trim((string) ($decoded['image_fulltext'] ?? '')) ?: trim((string) ($decoded['image_intro'] ?? ''));
-        if ($image === '' && class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
-            $image = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::firstImage($introtext, $fulltext);
-        }
-        return $image !== '' && !preg_match('#^(?:https?:)?//#i', $image) ? '/' . ltrim($image, '/') : $image;
-    };
+
     ?>
     <section class="news-portal" aria-labelledby="news-portal-title">
       <section class="news-portal__hero">
@@ -77,7 +79,7 @@ if ((int) $item->id === 53) {
       <nav class="news-portal__channels" aria-label="Kanal informasi"><a href="<?php echo Route::_('/berita'); ?>" aria-label="Buka semua berita">Berita</a><a href="<?php echo Route::_('/pengumuman'); ?>" aria-label="Buka semua pengumuman">Pengumuman</a></nav>
       <section class="news-portal__section" aria-labelledby="portal-news-title"><header class="news-portal__heading"><div><p>Berita</p><h2 id="portal-news-title">Kabar dari pengadilan</h2></div><a href="<?php echo Route::_('/berita'); ?>">Semua berita</a></header>
         <div class="news-portal__news-grid">
-        <?php foreach ($portalNews as $portalItem) : $portalItemImage = $portalImage((string) $portalItem->images, (string) $portalItem->introtext, (string) $portalItem->fulltext); [$portalDateTime, $portalDate] = $formatPortalDate((string) $portalItem->publish_up, (string) $portalItem->created); ?>
+        <?php foreach ($portalNews as $portalItem) : $portalItemImage = $articleImage((string) $portalItem->images, (string) $portalItem->introtext, (string) $portalItem->fulltext); [$portalDateTime, $portalDate] = $formatPortalDate((string) $portalItem->publish_up, (string) $portalItem->created); ?>
           <article class="news-portal__news-card"><a href="<?php echo Route::_(RouteHelper::getArticleRoute($portalItem->id . ':' . $portalItem->alias, $portalItem->catid, $portalItem->language)); ?>"><span class="news-portal__news-image"><?php if ($portalItemImage) : ?><img src="<?php echo $this->escape($portalItemImage); ?>" alt="" width="640" height="400" loading="lazy" decoding="async"><?php else : ?><span aria-hidden="true">PN</span><?php endif; ?></span><span class="news-portal__news-copy"><time datetime="<?php echo $portalDateTime; ?>"><?php echo $portalDate; ?></time><strong><?php echo $this->escape($portalItem->title); ?></strong></span></a></article>
         <?php endforeach; ?>
         </div>
@@ -550,7 +552,7 @@ $articleBody = implode('', $bodySegments);
 // Itu kaitan yang benar-benar ada, berbeda untuk setiap artikel, dan judulnya jujur.
 $levels = array_map('intval', $user->getAuthorisedViewLevels());
 $relatedQuery = $db->getQuery(true)
-    ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.language', 'a.publish_up', 'a.created', 'a.images']))
+    ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.language', 'a.publish_up', 'a.created', 'a.images', 'a.introtext', 'a.fulltext']))
     ->from($db->quoteName('#__content', 'a'))
     ->where($db->quoteName('a.catid') . ' = :relatedCategory')
     ->where($db->quoteName('a.id') . ' <> :currentId')
@@ -762,9 +764,9 @@ if ($referrer !== '') {
 
   <?php if ($related) : ?>
   <section class="editorial-article__related" aria-labelledby="related-heading"><h2 id="related-heading"><?php echo $hasGenuineRelation ? ($channel === 'news' ? 'Berita terkait' : 'Pengumuman terkait') : ($channel === 'news' ? 'Berita di sekitar tanggal ini' : 'Pengumuman di sekitar tanggal ini'); ?></h2><div class="editorial-article__related-grid">
-    <?php foreach ($related as $relatedItem) : $relatedImages = json_decode((string) $relatedItem->images, true) ?: []; $relatedImage = trim((string) ($relatedImages['image_intro'] ?? '')) ?: trim((string) ($relatedImages['image_fulltext'] ?? '')); $relatedImageUrl = $relatedImage && !preg_match('#^(?:https?:)?//#i', $relatedImage) ? '/' . ltrim($relatedImage, '/') : $relatedImage; $relatedDateRaw = !empty($relatedItem->publish_up) && $relatedItem->publish_up > '2000-01-02 00:00:00' ? $relatedItem->publish_up : $relatedItem->created; $relatedDate = Factory::getDate($relatedDateRaw); ?>
+    <?php foreach ($related as $relatedItem) : $relatedImageUrl = $articleImage((string) $relatedItem->images, (string) $relatedItem->introtext, (string) $relatedItem->fulltext); $relatedDateRaw = !empty($relatedItem->publish_up) && $relatedItem->publish_up > '2000-01-02 00:00:00' ? $relatedItem->publish_up : $relatedItem->created; $relatedDate = Factory::getDate($relatedDateRaw); ?>
       <a class="editorial-article__related-card" href="<?php echo Route::_(RouteHelper::getArticleRoute($relatedItem->id . ':' . $relatedItem->alias, $relatedItem->catid, $relatedItem->language)); ?>">
-        <?php if ($relatedImage) : $relatedSrcset = $photoSrcset($relatedImageUrl); ?><img src="<?php echo $this->escape($relatedImageUrl); ?>"<?php echo $relatedSrcset ? ' srcset="' . $this->escape($relatedSrcset) . '" sizes="(max-width: 760px) 128px, 320px"' : ''; ?> alt="" width="480" height="270" loading="lazy" decoding="async"><?php elseif ($channel === 'announcement') : ?><img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="" width="480" height="270" loading="lazy" decoding="async"><?php else : ?><span class="editorial-article__related-fallback" aria-hidden="true">PN</span><?php endif; ?>
+        <?php if ($relatedImageUrl) : $relatedSrcset = $photoSrcset($relatedImageUrl); ?><img src="<?php echo $this->escape($relatedImageUrl); ?>"<?php echo $relatedSrcset ? ' srcset="' . $this->escape($relatedSrcset) . '" sizes="(max-width: 760px) 128px, 320px"' : ''; ?> alt="" width="480" height="270" loading="lazy" decoding="async"><?php elseif ($channel === 'announcement') : ?><img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="" width="480" height="270" loading="lazy" decoding="async"><?php else : ?><span class="editorial-article__related-fallback" aria-hidden="true">PN</span><?php endif; ?>
         <time datetime="<?php echo $relatedDate->format(DATE_ATOM); ?>"><?php echo $formatIdDate($relatedDate); ?></time><strong><span><?php echo $this->escape($relatedItem->title); ?></span></strong>
       </a>
     <?php endforeach; ?>
