@@ -13487,7 +13487,7 @@ body.nav-stuck .ampuh-directory__tools { top: var(--nav-height, 56px); }
 .ampuh-directory__subchecklist li:hover, .ampuh-directory__subchecklist li:focus-within { background: var(--color-accent-soft); transform: translateX(2px); }
 .ampuh-directory__file-name { min-width: 0; font-weight: 650; }
 .ampuh-directory__meta { display: block; margin-top: 7px; color: var(--color-muted); font-size: var(--step--2); font-weight: 600; line-height: 1.45; }
-.ampuh-directory__file-icon { display: inline-flex; width: max-content; min-width: 3.5rem; padding: 2px 6px; border: 1px solid var(--color-line); border-radius: 999px; color: var(--color-primary); background: var(--color-soft); font-size: var(--step--3); font-weight: 900; letter-spacing: .04em; }
+.ampuh-directory__subchecklist li[data-file-type]::before { content: attr(data-file-type); display: inline-flex; width: max-content; min-width: 3.5rem; padding: 2px 6px; border: 1px solid var(--color-line); border-radius: 999px; color: var(--color-primary); background: var(--color-soft); font-size: var(--step--3); font-weight: 800; letter-spacing: .04em; }
 .ampuh-directory__match { border-radius: 3px; padding-inline: 2px; color: inherit; background: var(--color-accent-soft); box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-primary) 45%, transparent); }
 .ampuh-directory__empty { color: var(--color-muted); }
 .ampuh-directory a:focus-visible, .ampuh-directory button:focus-visible, .ampuh-directory input:focus-visible, .ampuh-directory select:focus-visible { z-index: 2; outline: 3px solid var(--color-accent); outline-offset: 2px; }
@@ -15433,8 +15433,7 @@ body.is-dark .instansi-updated.is-stale {
   .ampuh-directory__kicker,
   .ampuh-directory__summary h2,
   .ampuh-directory__summary dt,
-  .ampuh-directory__tools label,
-  .ampuh-directory__file-icon
+  .ampuh-directory__tools label
 ) {
   font-weight: 800;
 }

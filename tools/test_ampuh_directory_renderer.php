@@ -74,11 +74,11 @@ $expect(!str_contains($html, '>1.0 &lt;img&gt;</button>'), 'Bare dataset GOBI na
 $expect((bool) preg_match('/data-ampuh-filter-value="1" aria-pressed="false"/', $html), 'Rendered GOBI filters must expose an initial unpressed state.');
 $expect(str_contains($html, '1 checklist · 1 sub-checklist · 5 dokumen'), 'GOBI header must expose its scoped inventory count.');
 $expect(str_contains($html, '1 sub-checklist · 5 dokumen'), 'Checklist header must expose its scoped inventory count.');
-$expect((bool) preg_match('/<li[^>]*><span class="ampuh-directory__file-icon" aria-hidden="true">PDF<\/span><span class="ampuh-directory__file-name">Bukti &lt;script&gt;alert\(1\)&lt;\/script&gt;\.pdf<\/span><\/li>/', $html), 'PDF files need a decorative type marker and filename hook.');
-$expect(str_contains($html, 'aria-hidden="true">SHEET</span><span class="ampuh-directory__file-name">Rekap.xlsx</span>'), 'Spreadsheet files need deterministic type markers.');
-$expect(str_contains($html, 'aria-hidden="true">WORD</span><span class="ampuh-directory__file-name">Berita.docx</span>'), 'Word files need deterministic type markers.');
-$expect(str_contains($html, 'aria-hidden="true">IMAGE</span><span class="ampuh-directory__file-name">Foto.png</span>'), 'Image files need deterministic type markers.');
-$expect(str_contains($html, 'aria-hidden="true">FILE</span><span class="ampuh-directory__file-name">Catatan.txt</span>'), 'Unknown extensions need generic type markers.');
+$expect((bool) preg_match('/<li data-ampuh-file-result data-file-type="PDF"><span class="ampuh-directory__file-name">Bukti &lt;script&gt;alert\(1\)&lt;\/script&gt;\.pdf<\/span><\/li>/', $html), 'PDF files need a generated type marker and filename hook.');
+$expect(str_contains($html, 'data-file-type="SHEET"><span class="ampuh-directory__file-name">Rekap.xlsx</span>'), 'Spreadsheet files need deterministic type markers.');
+$expect(str_contains($html, 'data-file-type="WORD"><span class="ampuh-directory__file-name">Berita.docx</span>'), 'Word files need deterministic type markers.');
+$expect(str_contains($html, 'data-file-type="IMAGE"><span class="ampuh-directory__file-name">Foto.png</span>'), 'Image files need deterministic type markers.');
+$expect(str_contains($html, 'data-file-type="FILE"><span class="ampuh-directory__file-name">Catatan.txt</span>'), 'Unknown extensions need generic type markers.');
 $expect(str_contains($html, 'ampuh-directory__hero-secondary'), 'Hero needs institutional secondary field.');
 $expect(str_contains($html, 'ampuh-directory__watermark') && str_contains($html, 'aria-hidden="true">2026'), 'Hero needs decorative 2026 watermark.');
 $expect(str_contains($html, 'Indeks Koleksi'), 'Inventory needs an explicit collection-index label.');
