@@ -48,6 +48,7 @@ MODULE_MIGRATIONS = (
     "20261014_record_lscache_component_patch.sql",
     "20261015_optimize_menu_route_assets.sql",
     "20261016_cache_bust_repaired_brand_variants.sql",
+    "20261017_extend_litespeed_cache_ttl.sql",
 )
 
 def mysql(sql: str) -> str:
@@ -137,7 +138,7 @@ def main() -> int:
             raise RuntimeError(f"canonical module assignments not reconstructed: {menus}")
         if not page_cache.startswith('0\t') or '"browsercache": "0"' not in page_cache:
             raise RuntimeError(f"conflicting Joomla page cache still enabled: {page_cache}")
-        if litespeed_cache != "1\t1\t15\t15\t0\t40\t127.0.0.1\t1.5.2-pn.3":
+        if litespeed_cache != "1\t1\t120\t15\t0\t40\t127.0.0.1\t1.5.2-pn.3":
             raise RuntimeError(f"LiteSpeed public cache policy not reconstructed: {litespeed_cache}")
         if litespeed_admin_menu != "0":
             raise RuntimeError(f"unsupported LiteSpeed administrator UI is published: {litespeed_admin_menu}")

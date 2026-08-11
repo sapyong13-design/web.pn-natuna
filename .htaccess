@@ -31,6 +31,9 @@ Options -Indexes
 ## mengirim purge tags ketika artikel, kategori, menu, atau modul berubah.
 <IfModule LiteSpeed>
 	CacheLookup on
+	## Izinkan objek kedaluwarsa melayani pengunjung selama warmer membangun
+	## salinan baru. Batas satu jam menjaga fallback tetap segar.
+	CacheMaxStaleAge 3600
 </IfModule>
 
 ## --- Kompresi dan cache aset statis ---------------------------------------

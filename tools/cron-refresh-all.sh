@@ -58,4 +58,5 @@ run survei "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-survey.py" || sta
 run dipa "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-dipa.py" || status=1
 run sitemap "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/generate-sitemap.php" || status=1
 run migrations "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/apply-db-migrations.py" --mysql "$MYSQL_BIN" --mysql-defaults-file "$MYSQL_DEFAULTS_FILE" --database "$DB_NAME" || status=1
+run cache-warm "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/warm-public-cache.py" --sitemap "$PN_NATUNA_JPATH_ROOT/sitemap.xml" --passes 2 || status=1
 exit "$status"

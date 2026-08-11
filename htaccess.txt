@@ -29,6 +29,8 @@ Options -Indexes
 ## Logged-in sessions, non-GET requests, errors, and excluded components bypass it.
 <IfModule LiteSpeed>
 	CacheLookup on
+	## Serve an expired object briefly while the controlled warmer rebuilds it.
+	CacheMaxStaleAge 3600
 </IfModule>
 
 <IfModule mod_filter.c>
