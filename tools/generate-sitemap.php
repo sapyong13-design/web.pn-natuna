@@ -21,19 +21,29 @@ if ($db->connect_errno) {
 }
 $db->set_charset('utf8mb4');
 $prefix = $config->dbprefix;
-$sql = "SELECT path FROM {$prefix}menu WHERE client_id=0 AND published=1 AND type IN ('component','url') AND home IN (0,1) AND language IN ('*','id-ID','en-GB') ORDER BY home DESC, lft";
+$sql = "SELECT menu.path, content.modified, content.created FROM {$prefix}menu AS menu"
+    . " LEFT JOIN {$prefix}content AS content"
+    . " ON menu.link = CONCAT('index.php?option=com_content&view=article&id=', content.id)"
+    . " WHERE menu.client_id=0 AND menu.published=1"
+    . " AND menu.menutype='mainmenu' AND menu.type IN ('component','url')"
+    . " AND menu.home IN (0,1) AND menu.language IN ('*','id-ID','en-GB')"
+    . " ORDER BY menu.home DESC, menu.lft";
 $result = $db->query($sql);
 if (!$result) {
     fwrite(STDERR, "Query sitemap gagal.\n");
     exit(4);
 }
 $base = 'https://pn-natuna.go.id';
-$urls = ['/'=>gmdate('Y-m-d')];
+$latestResult = $db->query("SELECT MAX(CASE WHEN modified > '2000-01-02 00:00:00' THEN modified ELSE created END) latest FROM {$prefix}content WHERE state=1");
+$latestRow = $latestResult ? $latestResult->fetch_assoc() : null;
+$latestTimestamp = !empty($latestRow['latest']) ? strtotime((string) $latestRow['latest'] . ' UTC') : false;
+$urls = ['/' => ($latestTimestamp ? gmdate('Y-m-d', $latestTimestamp) : gmdate('Y-m-d'))];
 while ($row = $result->fetch_assoc()) {
     $path = trim((string) $row['path'], '/');
     if ($path === '' || str_starts_with($path, 'component/')) continue;
-    $loc = '/' . $path;
-    $urls[$loc] = gmdate('Y-m-d');
+    $changed = trim((string) ($row['modified'] ?: $row['created'] ?: ''));
+    $timestamp = $changed !== '' ? strtotime($changed . ' UTC') : false;
+    $urls['/' . $path] = $timestamp ? gmdate('Y-m-d', $timestamp) : gmdate('Y-m-d');
 }
 $xml = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'];
 foreach ($urls as $path => $date) {
