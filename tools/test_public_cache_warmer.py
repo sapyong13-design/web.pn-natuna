@@ -16,7 +16,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         count = self.counts.get(self.path, 0)
-        assert self.headers.get("User-Agent") == "lscache_runner", self.headers.get("User-Agent")
+        assert self.headers.get("User-Agent", "").startswith("Mozilla/5.0"), self.headers.get("User-Agent")
         self.counts[self.path] = count + 1
         self.send_response(200)
         self.send_header("Content-Type", "text/html")

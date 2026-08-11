@@ -10,7 +10,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 
 DEFAULT_BASE_URL = "https://pn-natuna.go.id"
-USER_AGENT = "lscache_runner"
+USER_AGENT = "Mozilla/5.0 (compatible; PN-Natuna-Cache-Warmer/1.0; +https://pn-natuna.go.id/)"
 
 def parse_args():
     parser = argparse.ArgumentParser()
