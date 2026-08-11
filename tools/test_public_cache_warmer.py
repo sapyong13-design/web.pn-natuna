@@ -44,7 +44,7 @@ def main():
                 encoding="utf-8",
             )
             result = subprocess.run(
-                [sys.executable, str(WARMER), "--base-url", base, "--sitemap", str(sitemap), "--passes", "2", "--delay", "0"],
+                [sys.executable, str(WARMER), "--base-url", base, "--sitemap", str(sitemap), "--passes", "2", "--delay", "0", "--settle-delay", "0"],
                 text=True,
                 encoding="utf-8",
                 capture_output=True,

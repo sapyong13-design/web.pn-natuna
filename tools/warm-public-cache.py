@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("--sitemap", default=None)
     parser.add_argument("--homepage-only", action="store_true")
     parser.add_argument("--passes", type=int, default=2)
+    parser.add_argument("--settle-delay", type=float, default=3.0)
     parser.add_argument("--delay", type=float, default=0.15)
     parser.add_argument("--timeout", type=float, default=45.0)
     return parser.parse_args()
@@ -58,7 +59,7 @@ def fetch(url, timeout):
 
 def main():
     args = parse_args()
-    if args.passes < 1 or args.passes > 3 or args.delay < 0 or args.timeout <= 0:
+    if args.passes < 1 or args.passes > 3 or args.delay < 0 or args.settle_delay < 0 or args.timeout <= 0:
         print("Parameter warmer tidak valid.", file=sys.stderr)
         return 2
     try:
@@ -84,6 +85,8 @@ def main():
                 print("FAIL pass={} {} {}".format(pass_number, url, error), file=sys.stderr)
             if args.delay and index + 1 < len(urls):
                 time.sleep(args.delay)
+        if pass_number < args.passes and args.settle_delay:
+            time.sleep(args.settle_delay)
         print("Cache warmer pass {}: {} URL; hit={}, miss={}, tanpa-header={}".format(pass_number, len(urls), counts["hit"], counts["miss"], counts["none"]))
 
     if failures:
