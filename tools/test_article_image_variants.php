@@ -44,7 +44,8 @@ $expect(is_file($root . '/tools/make-image-variants.php'), 'The variant generato
 $expect(substr_count($template, "strtok(") >= 2, 'Article template must strip the Media Manager fragment from hero and body images.');
 $expect(str_contains($card, "\$image = strtok(\$image, '#');"), 'Listing cards must strip the Media Manager fragment.');
 $expect(
-    str_contains($template, '$relatedImageUrl = $articleImage((string) $relatedItem->images, (string) $relatedItem->introtext, (string) $relatedItem->fulltext)'),
+    str_contains($template, "\$relatedImageUrl = \$articleImage((string) (\$relatedItem->images ?? ''), (string) (\$relatedItem->introtext ?? ''), (string) (\$relatedItem->fulltext ?? ''))")
+        || str_contains($template, '$relatedImageUrl = $articleImage((string) $relatedItem->images, (string) $relatedItem->introtext, (string) $relatedItem->fulltext)'),
     'Related cards must fall back to the first article-body photo when Joomla images JSON is empty.'
 );
 // Foto 24MP butuh 92 MB hanya untuk bitmapnya. Kehabisan memori adalah fatal error
