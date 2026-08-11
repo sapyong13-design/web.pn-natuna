@@ -13,6 +13,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Plugin\Content\Pnnatunaimagevariants\Extension\PnnatunaImageVariants;
+use Joomla\Database\DatabaseInterface;
 
 return new class () implements ServiceProviderInterface {
     public function register(Container $container): void
@@ -24,6 +25,7 @@ return new class () implements ServiceProviderInterface {
                     (array) PluginHelper::getPlugin('content', 'pnnatunaimagevariants')
                 );
                 $plugin->setApplication(Factory::getApplication());
+                $plugin->setDatabase($container->get(DatabaseInterface::class));
 
                 return $plugin;
             })

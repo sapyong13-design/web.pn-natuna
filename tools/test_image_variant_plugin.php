@@ -21,6 +21,7 @@ require_once $root . '/includes/framework.php';
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Event\Model\AfterSaveEvent;
+use Joomla\CMS\Event\Model\BeforeSaveEvent;
 
 $container = Factory::getContainer();
 $container->alias('session', 'session.cli')
@@ -65,16 +66,22 @@ $expect(
     'External body images must not become local primary-image fallbacks.'
 );
 
-// Foto uji ditaruh di dalam /images/ karena hanya jalur itu yang dilayani templat.
+// Foto uji ditaruh di dalam /images/ karena hanya jalur itu yang boleh diubah.
 $fixtureDir = $root . '/images/_variant-selftest';
 $fixture = $fixtureDir . '/selftest-photo.jpg';
+$canonicalDir = $root . '/images/berita/2026';
+$canonical = $canonicalDir . '/selftest-varian-foto-1.webp';
 @mkdir($fixtureDir, 0755, true);
+@mkdir($canonicalDir, 0755, true);
 $canvas = imagecreatetruecolor(1500, 1000);
 imagefilledrectangle($canvas, 0, 0, 1499, 999, imagecolorallocate($canvas, 143, 31, 11));
 imagejpeg($canvas, $fixture, 90);
 imagedestroy($canvas);
-foreach ([400, 800, 1200] as $width) {
-    @unlink($fixtureDir . '/selftest-photo-' . $width . '.webp');
+foreach ([$canonical, ...array_map(
+    static fn(int $width): string => $canonicalDir . '/selftest-varian-foto-1-' . $width . '.webp',
+    [400, 800, 1200]
+)] as $generated) {
+    @unlink($generated);
 }
 
 // Properti lengkap supaya plugin inti lain (Finder) tidak mengeluh atas artikel tiruan.
@@ -89,9 +96,24 @@ $item = (object) [
     'images' => json_encode(['image_intro' => 'images/_variant-selftest/selftest-photo.jpg', 'image_fulltext' => '']),
     'introtext' => '<p><img src="images/_variant-selftest/selftest-photo.jpg" alt=""></p>',
     'fulltext' => '',
+    'created' => '2026-08-10 00:00:00',
+    'publish_up' => '2026-08-10 00:00:00',
 ];
 
-// Hanya plugin ini yang dimuat: indexer Finder tidak perlu ikut memproses artikel tiruan.
+// Before-save mengubah nama fisik dan semua referensi pada objek yang akan disimpan.
+$app->getDispatcher()->dispatch('onContentBeforeSave', new BeforeSaveEvent('onContentBeforeSave', [
+    'context' => 'com_content.article',
+    'subject' => $item,
+    'isNew' => true,
+    'data' => [],
+]));
+$expectedPath = 'images/berita/2026/selftest-varian-foto-1.webp';
+$rewrittenImages = json_decode((string) $item->images, true);
+$expect(($rewrittenImages['image_intro'] ?? '') === $expectedPath, 'Before-save must rewrite Joomla images JSON to the canonical article slug.');
+$expect(str_contains((string) $item->introtext, $expectedPath), 'Before-save must rewrite body image references to the canonical article slug.');
+$expect(is_file($canonical), 'Before-save must create the canonical WebP source.');
+$expect(is_file($fixture), 'The upload-generated source must remain available for legacy URLs.');
+
 $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onContentAfterSave', [
     'context' => 'com_content.article',
     'subject' => $item,
@@ -101,7 +123,7 @@ $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onCont
 
 $made = [];
 foreach ([400, 800, 1200] as $width) {
-    $variant = $fixtureDir . '/selftest-photo-' . $width . '.webp';
+    $variant = $canonicalDir . '/selftest-varian-foto-1-' . $width . '.webp';
     if (is_file($variant)) {
         $size = @getimagesize($variant);
         $made[$width] = $size ? (int) $size[0] : 0;
@@ -113,10 +135,10 @@ foreach ($made as $width => $actual) {
 }
 
 // Sumber 1500px tidak boleh melahirkan varian yang lebih lebar daripada dirinya.
-$expect(!is_file($fixtureDir . '/selftest-photo-1600.webp'), 'Variant maker must never upscale.');
+$expect(!is_file($canonicalDir . '/selftest-varian-foto-1-1600.webp'), 'Variant maker must never upscale.');
 
 // Aman diulang: pemanggilan kedua tidak menulis ulang berkas yang sudah ada.
-$before = array_map('filemtime', glob($fixtureDir . '/selftest-photo-*.webp') ?: []);
+$before = array_map('filemtime', glob($canonicalDir . '/selftest-varian-foto-1-*.webp') ?: []);
 sleep(1);
 $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onContentAfterSave', [
     'context' => 'com_content.article',
@@ -124,10 +146,11 @@ $app->getDispatcher()->dispatch('onContentAfterSave', new AfterSaveEvent('onCont
     'isNew' => false,
     'data' => [],
 ]));
-$after = array_map('filemtime', glob($fixtureDir . '/selftest-photo-*.webp') ?: []);
+$after = array_map('filemtime', glob($canonicalDir . '/selftest-varian-foto-1-*.webp') ?: []);
 $expect($before === $after, 'Second save must skip variants that are already newer than their source.');
 
 array_map('unlink', glob($fixtureDir . '/*') ?: []);
+array_map('unlink', glob($canonicalDir . '/selftest-varian-foto-1*.webp') ?: []);
 @rmdir($fixtureDir);
 
 if ($failures) {
@@ -135,4 +158,4 @@ if ($failures) {
     exit(1);
 }
 
-echo "image variant plugin contract: ok (3 variants from one simulated save)\n";
+echo "image variant plugin contract: ok (auto-named source + 3 variants from one simulated save)\n";

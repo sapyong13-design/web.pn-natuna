@@ -55,7 +55,26 @@ $expect(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::hasCan
 $expect(!\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::hasCanonicalArticleName(
     '/images/IMG_3701.jpg'
 ), 'A camera filename must never be accepted as a canonical public article image URL.');
-$expect(str_contains($plugin, 'Nama foto belum kanonis:'), 'Editors must receive an actionable warning when an article still references upload-generated filenames.');
+$expect(str_contains($plugin, 'nama foto otomatis diubah mengikuti slug artikel'), 'Saving a news article must report automatic canonical naming, not merely warn the editor.');
+// Auto-naming mengambil bagian bermakna dari alias, berhenti pada batas kata, dan
+// mengganti bentuk URL-encoded yang lazim ditulis Media Manager.
+$autoSlug = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::conciseSlug(
+    'pengadilan-negeri-natuna-berikan-pembekalan-sistem-peradilan-indonesia-kepada-mahasiswa-hukum-stai-natuna'
+);
+$expect($autoSlug === 'berikan-pembekalan-sistem-peradilan-indonesia-kepada', 'Automatic image slug must stay concise without cutting a word.');
+$expect(strlen($autoSlug) <= \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::SLUG_MAX_LENGTH, 'Automatic image slug exceeds its public filename budget.');
+$rewrittenPath = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::replacePaths(
+    '<img src="images/WhatsApp%20Image%202026-08-10.jpg">',
+    ['/images/WhatsApp%20Image%202026-08-10.jpg' => '/images/berita/2026/berita-sidang-1.webp']
+);
+$expect(str_contains($rewrittenPath, 'images/berita/2026/berita-sidang-1.webp'), 'Automatic naming must rewrite URL-encoded image references.');
+$unsafeRename = \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::canonicalizeArticlePaths(
+    $root,
+    ['/images/%2e%2e/configuration.php'],
+    'uji-keamanan-path',
+    '2026'
+);
+$expect($unsafeRename['replacements'] === [], 'Automatic naming must reject encoded traversal outside the images directory.');
 // Tiga cacat yang ditemukan lewat audit seluruh korpus (1 Agu 2026): foto hero dicetak
 // ulang di badan pada 75 dari 81 artikel berhero, 93 dari 93 kapsi berupa cap lembaga
 // berulang yang tanggalnya bahkan bertentangan dengan dateline, dan 165 dari 177 foto

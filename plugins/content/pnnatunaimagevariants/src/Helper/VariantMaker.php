@@ -20,6 +20,12 @@ final class VariantMaker
 
     public const QUALITY = 82;
 
+    /** Sumber kanonis cukup 1600px; kamera asli tidak perlu dikirim ke pengunjung. */
+    public const SOURCE_MAX_WIDTH = 1600;
+
+    /** Menjaga nama akhir tetap ringkas setelah nomor urut dan ekstensi ditambahkan. */
+    public const SLUG_MAX_LENGTH = 56;
+
     /**
      * Merangkai `srcset` dari varian yang benar-benar ada di cakram. Dipakai templat
      * artikel maupun kartu daftar supaya keduanya menawarkan berkas yang sama.
@@ -72,6 +78,229 @@ final class VariantMaker
             '#^/images/berita/[0-9]{4}/[a-z0-9]+(?:-[a-z0-9]+)+-[0-9]+\.(?:jpe?g|png|webp)$#',
             $path
         ) === 1;
+    }
+
+    /** Membentuk bagian nama berkas dari alias artikel tanpa memotong kata. */
+    public static function conciseSlug(string $alias, string $title = ''): string
+    {
+        $value = trim($alias) !== '' ? $alias : $title;
+        $value = rawurldecode(trim($value));
+        if (\function_exists('iconv')) {
+            $transliterated = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+            if (\is_string($transliterated) && $transliterated !== '') {
+                $value = $transliterated;
+            }
+        }
+        $value = strtolower((string) preg_replace('/[^a-z0-9]+/i', '-', $value));
+        $value = trim($value, '-');
+        $specific = preg_replace('/^pengadilan-negeri-natuna(?:-kelas-ii)?-/', '', $value);
+        if (\is_string($specific) && str_contains($specific, '-')) {
+            $value = $specific;
+        }
+
+        $kept = [];
+        foreach (array_values(array_filter(explode('-', $value))) as $part) {
+            $candidate = implode('-', [...$kept, $part]);
+            if (strlen($candidate) > self::SLUG_MAX_LENGTH) {
+                break;
+            }
+            $kept[] = $part;
+        }
+        if (!$kept) {
+            $kept = ['foto', 'berita'];
+        } elseif (\count($kept) === 1) {
+            $kept[] = 'berita';
+        }
+
+        return implode('-', $kept);
+    }
+
+    /** Memakai tahun publikasi/penulisan yang nyata, bukan tanggal sentinel Joomla. */
+    public static function articleYear(?string $publishUp, ?string $created): string
+    {
+        foreach ([$publishUp, $created] as $date) {
+            if (preg_match('/^(20[0-9]{2})-/', (string) $date, $match) && (int) $match[1] > 2000) {
+                return $match[1];
+            }
+        }
+
+        return date('Y');
+    }
+
+    /**
+     * Membuat sumber WebP kanonis dan peta penggantian URL untuk foto yang namanya
+     * masih berasal dari kamera/WhatsApp. Sumber lama sengaja dipertahankan supaya
+     * URL yang pernah dibagikan tidak mendadak mati.
+     *
+     * @param string[] $paths
+     *
+     * @return array{replacements:array<string,string>,made:int,failed:int,tooBig:int}
+     */
+    public static function canonicalizeArticlePaths(
+        string $root,
+        array $paths,
+        string $slug,
+        string $year,
+        int $quality = self::QUALITY
+    ): array {
+        $result = ['replacements' => [], 'made' => 0, 'failed' => 0, 'tooBig' => 0];
+        $root = rtrim($root, '/\\');
+        $slug = self::conciseSlug($slug);
+        if (!preg_match('/^20[0-9]{2}$/', $year)) {
+            $year = date('Y');
+        }
+
+        $sequence = 1;
+        foreach ($paths as $path) {
+            if (self::hasCanonicalArticleName($path)) {
+                continue;
+            }
+            $sourcePath = self::localPath($path);
+            if ($sourcePath === null) {
+                continue;
+            }
+            $source = $root . $sourcePath;
+            if (!is_file($source)) {
+                $result['failed']++;
+                continue;
+            }
+
+            do {
+                $targetPath = "/images/berita/{$year}/{$slug}-{$sequence}.webp";
+                $sequence++;
+            } while (is_file($root . $targetPath));
+
+            $status = self::writeCanonicalSource($source, $root . $targetPath, $quality);
+            if ($status === 'made') {
+                $result['replacements'][$path] = $targetPath;
+                $result['made']++;
+            } elseif ($status === 'tooBig') {
+                $result['tooBig']++;
+            } else {
+                $result['failed']++;
+            }
+        }
+
+        return $result;
+    }
+
+    /** Mengganti bentuk root-relative, relatif, literal-spasi, dan `%20`. */
+    public static function replacePaths(string $content, array $replacements): string
+    {
+        $forms = [];
+        foreach ($replacements as $source => $target) {
+            $source = '/' . ltrim((string) $source, '/');
+            $target = '/' . ltrim((string) $target, '/');
+            foreach (array_unique([$source, rawurldecode($source)]) as $from) {
+                $relativeFrom = ltrim($from, '/');
+                $relativeTarget = ltrim($target, '/');
+                $forms[$from] = $target;
+                $forms[$relativeFrom] = $relativeTarget;
+                $forms[str_replace('/', '\\/', $from)] = str_replace('/', '\\/', $target);
+                $forms[str_replace('/', '\\/', $relativeFrom)] = str_replace('/', '\\/', $relativeTarget);
+            }
+        }
+        uksort($forms, static fn(string $left, string $right): int => strlen($right) <=> strlen($left));
+
+        return str_replace(array_keys($forms), array_values($forms), $content);
+    }
+
+    private static function localPath(string $src): ?string
+    {
+        $path = parse_url($src, PHP_URL_PATH);
+        if (!\is_string($path) || $path === '') {
+            return null;
+        }
+        $path = rawurldecode('/' . ltrim($path, '/'));
+        if (!str_starts_with($path, '/images/') || str_contains($path, "\0")) {
+            return null;
+        }
+        foreach (explode('/', $path) as $part) {
+            if ($part === '..' || $part === '.') {
+                return null;
+            }
+        }
+
+        return $path;
+    }
+
+    private static function writeCanonicalSource(string $source, string $target, int $quality): string
+    {
+        if (!\function_exists('imagewebp')) {
+            return 'failed';
+        }
+        $size = @getimagesize($source);
+        if (!$size || !\in_array($size['mime'], ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return 'failed';
+        }
+        if (!self::fits((int) $size[0], (int) $size[1])) {
+            return 'tooBig';
+        }
+        $image = self::loadUpright($source, (string) $size['mime']);
+        if (!$image) {
+            return 'failed';
+        }
+        imagepalettetotruecolor($image);
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $targetWidth = min($width, self::SOURCE_MAX_WIDTH);
+        $output = $image;
+        if ($targetWidth < $width) {
+            $output = imagecreatetruecolor($targetWidth, (int) round($height * ($targetWidth / $width)));
+            imagealphablending($output, false);
+            imagesavealpha($output, true);
+            imagefilledrectangle(
+                $output,
+                0,
+                0,
+                $targetWidth,
+                imagesy($output),
+                imagecolorallocatealpha($output, 0, 0, 0, 127)
+            );
+            imagecopyresampled(
+                $output,
+                $image,
+                0,
+                0,
+                0,
+                0,
+                $targetWidth,
+                imagesy($output),
+                $width,
+                $height
+            );
+        }
+
+        $directory = dirname($target);
+        if (!is_dir($directory) && !@mkdir($directory, 0755, true) && !is_dir($directory)) {
+            if ($output !== $image) {
+                imagedestroy($output);
+            }
+            imagedestroy($image);
+
+            return 'failed';
+        }
+        $temporary = tempnam($directory, '.pnnatuna-');
+        $ok = \is_string($temporary) && imagewebp($output, $temporary, $quality);
+        if ($output !== $image) {
+            imagedestroy($output);
+        }
+        imagedestroy($image);
+        if (!$ok || !\is_string($temporary) || filesize($temporary) === 0) {
+            if (\is_string($temporary)) {
+                @unlink($temporary);
+            }
+
+            return 'failed';
+        }
+        @chmod($temporary, 0644);
+        if (!@rename($temporary, $target)) {
+            @unlink($temporary);
+
+            return 'failed';
+        }
+
+        return 'made';
     }
 
     /**
