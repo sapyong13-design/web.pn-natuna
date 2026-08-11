@@ -42,6 +42,8 @@ MODULE_MIGRATIONS = (
     "20260825_optimize_maklumat_thumbnail_assets.sql",
     "20261009_enable_public_page_cache_and_lazy_assets.sql",
     "20261010_responsive_facility_gallery_images.sql",
+    "20261011_enable_litespeed_public_page_cache.sql",
+    "20261012_record_lscache_joomla6_patch.sql",
 )
 
 def mysql(sql: str) -> str:
@@ -63,11 +65,15 @@ def main() -> int:
         f" CREATE TABLE {DATABASE}.pnn_modules_menu LIKE {SOURCE}.pnn_modules_menu;"
         f" CREATE TABLE {DATABASE}.pnn_content LIKE {SOURCE}.pnn_content;"
         f" CREATE TABLE {DATABASE}.pnn_menu LIKE {SOURCE}.pnn_menu;"
+        f" CREATE TABLE {DATABASE}.pnn_schemas LIKE {SOURCE}.pnn_schemas;"
         # Barisnya ikut disalin, bukan hanya strukturnya: guard CHECK migrasi
         # mencari `extension_id` com_content, dan tabel kosong membuat guard itu
         # menggagalkan runner (`ampuh_dependency_check_chk_1`).
         f" CREATE TABLE {DATABASE}.pnn_extensions LIKE {SOURCE}.pnn_extensions;"
         f" INSERT INTO {DATABASE}.pnn_extensions SELECT * FROM {SOURCE}.pnn_extensions;"
+        f" DELETE FROM {DATABASE}.pnn_extensions"
+        " WHERE (type='component' AND element='com_lscache')"
+        "    OR (type='plugin' AND folder='system' AND element='lscache');"
     )
     try:
         with tempfile.TemporaryDirectory() as staging:
@@ -101,12 +107,25 @@ def main() -> int:
             f"SELECT enabled, params FROM {DATABASE}.pnn_extensions"
             " WHERE type='plugin' AND folder='system' AND element='cache'"
         )
+        litespeed_cache = mysql(
+            f"SELECT plugin.enabled, component.enabled,"
+            " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.cacheTimeout')),"
+            " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.homePageCacheTimeout')),"
+            " JSON_UNQUOTE(JSON_EXTRACT(component.params, '$.loginCachable')),"
+            " JSON_UNQUOTE(JSON_EXTRACT(plugin.manifest_cache, '$.version'))"
+            f" FROM {DATABASE}.pnn_extensions AS plugin"
+            f" JOIN {DATABASE}.pnn_extensions AS component"
+            "   ON component.type='component' AND component.element='com_lscache'"
+            " WHERE plugin.type='plugin' AND plugin.folder='system' AND plugin.element='lscache'"
+        )
         if modules != "4\t3\t1\t1":
             raise RuntimeError(f"canonical modules not reconstructed: {modules}")
         if menus != "4\t4\t4":
             raise RuntimeError(f"canonical module assignments not reconstructed: {menus}")
-        if page_cache != '1\t{"browsercache":"0","cachetime":"15"}':
-            raise RuntimeError(f"public page cache not enabled server-side: {page_cache}")
+        if not page_cache.startswith('0\t') or '"browsercache": "0"' not in page_cache:
+            raise RuntimeError(f"conflicting Joomla page cache still enabled: {page_cache}")
+        if litespeed_cache != "1\t1\t15\t15\t0\t1.5.2-pn.1":
+            raise RuntimeError(f"LiteSpeed public cache policy not reconstructed: {litespeed_cache}")
         print("empty database module migration contract: ok")
         return 0
     finally:

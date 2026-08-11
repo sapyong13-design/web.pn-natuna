@@ -47,6 +47,9 @@ for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     assert "https://www.youtube-nocookie.com" in htaccess_source
     assert "RewriteRule ^api(?:/|$) - [F,END,NC]" in htaccess_source
     assert "RewriteRule ^(?:images|files|cache|tmp)/.*\\.(?:php[0-9]?|phtml|phar)$ - [F,END,NC]" in htaccess_source
+    assert "<IfModule LiteSpeed>" in htaccess_source
+    assert "CacheLookup on" in htaccess_source
+    assert "CacheEnable public" not in htaccess_source
     for canonical_image in (
         "images/berita/2026/alih-tugas-cania-kirana-1",
         "images/berita/2026/alih-tugas-cania-kirana-2",
@@ -60,6 +63,14 @@ for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
         assert canonical_image in htaccess_source
     assert "IMG_3701" in htaccess_source
     assert r"WhatsApp\x20Image\x202026-07-31" in htaccess_source
+for extension_file in (
+    ROOT / "plugins" / "system" / "lscache" / "lscache.php",
+    ROOT / "plugins" / "system" / "lscache" / "lscache.xml",
+    ROOT / "administrator" / "components" / "com_lscache" / "config.xml",
+    ROOT / "components" / "com_lscache" / "lscache.php",
+):
+    assert extension_file.is_file(), "LiteSpeed extension file missing: {}".format(extension_file)
+assert "<version>1.5.2-pn.1</version>" in (ROOT / "plugins" / "system" / "lscache" / "lscache.xml").read_text(encoding="utf-8")
 config_values = MODULE.read_joomla_database_config("""<?php
 public $user = 'stage_user';
 public $password = 'ignored-here';

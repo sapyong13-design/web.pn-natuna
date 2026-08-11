@@ -25,6 +25,12 @@ Options -Indexes
 	</IfModule>
 </FilesMatch>
 
+## Public HTML is cached only when Joomla's LSCache plugin marks a response.
+## Logged-in sessions, non-GET requests, errors, and excluded components bypass it.
+<IfModule LiteSpeed>
+	CacheLookup on
+</IfModule>
+
 <IfModule mod_filter.c>
 	<IfModule mod_deflate.c>
 		AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css

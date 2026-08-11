@@ -25,6 +25,14 @@ Options -Indexes
 	</IfModule>
 </FilesMatch>
 
+## --- Cache HTML publik di LiteSpeed --------------------------------------
+## Hanya mengaktifkan lookup cache server. Plugin system LSCache menentukan
+## respons publik yang boleh disimpan, melewati sesi login/non-GET/error, dan
+## mengirim purge tags ketika artikel, kategori, menu, atau modul berubah.
+<IfModule LiteSpeed>
+	CacheLookup on
+</IfModule>
+
 ## --- Kompresi dan cache aset statis ---------------------------------------
 ## Aset template disajikan langsung oleh Apache, di luar jangkauan `$gzip` di
 ## configuration.php yang hanya memampatkan keluaran HTML dari PHP. Tanpa blok
@@ -75,8 +83,8 @@ Options -Indexes
 	ExpiresByType image/png "access plus 1 year"
 	ExpiresByType image/svg+xml "access plus 1 year"
 	ExpiresByType image/x-icon "access plus 1 year"
-	## HTML tidak pernah di-cache: jadwal sidang, status PTSP, dan berita
-	## berubah tanpa mengubah URL-nya.
+	## Browser selalu merevalidasi HTML. Cache publik 15 menit, bila aktif,
+	## hidup di server LiteSpeed dan dikendalikan plugin Joomla LSCache.
 	ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
