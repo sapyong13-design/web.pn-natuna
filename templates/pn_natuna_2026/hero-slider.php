@@ -108,6 +108,19 @@ function pn_natuna_hero_article_image(object $article): string
     return '/' . ltrim(explode('#', $img)[0], '/');
 }
 
+function pn_natuna_hero_article_srcset(string $image): string
+{
+    $helper = JPATH_SITE . '/plugins/content/pnnatunaimagevariants/src/Helper/VariantMaker.php';
+    if (is_file($helper)) {
+        require_once $helper;
+    }
+    if (!class_exists(\Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::class)) {
+        return '';
+    }
+
+    return \Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\VariantMaker::srcset(JPATH_SITE, $image);
+}
+
 function pn_natuna_announcement_image(object $article): string
 {
     $decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
@@ -207,16 +220,22 @@ function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel,
 {
     ?>
     <ul id="hero-panel-<?php echo $panel; ?>" class="hero-tab-list<?php echo $active ? ' is-active' : ''; ?>" data-hero-panel="<?php echo $panel; ?>" role="tabpanel" aria-labelledby="hero-tab-<?php echo $panel; ?>" <?php echo $active ? '' : 'hidden'; ?>>
-      <?php if ($items) : foreach ($items as $item) : $itemImage = pn_natuna_hero_article_image($item); ?>
+      <?php if ($items) : foreach ($items as $item) :
+          $itemImage = pn_natuna_hero_article_image($item);
+          $itemSrcset = pn_natuna_hero_article_srcset($itemImage);
+      ?>
         <li>
           <a href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($item, $catId), ENT_QUOTES, 'UTF-8'); ?>"
              data-image="<?php echo htmlspecialchars($itemImage, ENT_QUOTES, 'UTF-8'); ?>"
+             data-srcset="<?php echo htmlspecialchars($itemSrcset, ENT_QUOTES, 'UTF-8'); ?>"
              data-caption="<?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>">
             <time><?php echo pn_natuna_hero_date($item->created); ?></time>
             <?php /* Hanya tampil di mobile: di sana panel pratinjau besar disembunyikan,
                       jadi tanpa ini daftar berita jadi teks polos tanpa satu gambar pun. */ ?>
             <span class="hero-item-thumb" aria-hidden="true">
-              <img src="<?php echo htmlspecialchars($itemImage, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="160" height="120" loading="lazy" decoding="async">
+              <img src="<?php echo htmlspecialchars($itemImage, ENT_QUOTES, 'UTF-8'); ?>"
+                   <?php if ($itemSrcset !== '') : ?>srcset="<?php echo htmlspecialchars($itemSrcset, ENT_QUOTES, 'UTF-8'); ?>" sizes="(max-width: 900px) 68px, 1px"<?php endif; ?>
+                   alt="" width="160" height="120" loading="lazy" decoding="async">
             </span>
             <span class="hero-item-body">
               <span class="hero-item-title">
@@ -261,6 +280,7 @@ function pn_natuna_render_hero_slider(): void
         : ['stale' => false, 'updated' => ''];
     $sippStale = (bool) ($sippStatus['stale'] ?? false);
     $previewImg = $berita ? pn_natuna_hero_article_image($berita[0]) : '/images/sejarah/sejarah-pn-natuna.jpg';
+    $previewSrcset = pn_natuna_hero_article_srcset($previewImg);
     $previewCaption = $berita ? $berita[0]->title : 'Berita Pengadilan Negeri Natuna';
     ?>
     <div class="hero-slider hero-cinema" data-interval="7000">
@@ -327,7 +347,10 @@ function pn_natuna_render_hero_slider(): void
             </div>
           </div>
           <figure class="hero-media hero-news-media">
-            <img id="hero-news-preview" src="<?php echo htmlspecialchars($previewImg, ENT_QUOTES, 'UTF-8'); ?>" alt="Pratinjau berita" width="800" height="600" loading="lazy" decoding="async">
+            <img id="hero-news-preview"
+                 src="<?php echo htmlspecialchars($previewImg, ENT_QUOTES, 'UTF-8'); ?>"
+                 <?php if ($previewSrcset !== '') : ?>srcset="<?php echo htmlspecialchars($previewSrcset, ENT_QUOTES, 'UTF-8'); ?>" sizes="(max-width: 900px) 1px, 50vw"<?php endif; ?>
+                 alt="Pratinjau berita" width="800" height="600" loading="lazy" decoding="async">
             <figcaption id="hero-news-caption"><?php echo htmlspecialchars($previewCaption, ENT_QUOTES, 'UTF-8'); ?></figcaption>
           </figure>
         </div>

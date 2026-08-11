@@ -64,6 +64,8 @@ $expect(($modules[817]['published'] ?? '1') === '0', 'Legacy standalone DIPA mod
 $expect(($modules[482]['published'] ?? '0') === '1', 'Role Model module must be published.');
 $expect(str_contains($modules[482]['content'] ?? '', '/images/role-model/joko-ciptanto-role-model-2026.webp'), 'Wakil Ketua Role Model must use available WebP image.');
 $expect(!str_contains($modules[482]['content'] ?? '', 'joko-ciptanto-role-model-2026.png'), 'Role Model module must not reference removed PNG image.');
+$expect(substr_count($modules[482]['content'] ?? '', 'loading="lazy"') === 2, 'Both below-fold Role Model portraits must be lazy loaded.');
+$expect(substr_count($modules[482]['content'] ?? '', 'decoding="async"') === 2, 'Both Role Model portraits must decode asynchronously.');
 $expect(is_file(__DIR__ . '/../images/role-model/joko-ciptanto-role-model-2026.webp'), 'Wakil Ketua Role Model image is missing.');
 $expect(is_file(__DIR__ . '/../images/layanan/maklumat-pelayanan-2026.webp'), 'Maklumat Pelayanan image is missing.');
 $expect(is_file(__DIR__ . '/../images/layanan/maklumat-layanan-informasi-publik.webp'), 'Maklumat Informasi Publik image is missing.');

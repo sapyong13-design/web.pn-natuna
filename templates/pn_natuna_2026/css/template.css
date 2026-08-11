@@ -1486,15 +1486,6 @@ body.is-dark .access-panel-voice.is-active {
   min-height: 150px;
 }
 
-.facility-card::before {
-  content: "";
-  display: block;
-  height: 74px;
-  border-radius: calc(var(--radius) - 2px);
-  background:
-    linear-gradient(135deg, rgba(143, 31, 11, 0.76), rgba(31, 91, 75, 0.58)),
-    url("/images/berita/2026-briefing-ptsp-1.jpeg") center/cover;
-}
 
 .office-map {
   display: grid;

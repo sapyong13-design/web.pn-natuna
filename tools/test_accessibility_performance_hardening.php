@@ -83,6 +83,13 @@ $expect((bool) preg_match("/addEventListener\\('focusout'/", $js), 'Jeda karena 
 $expect((bool) preg_match('/\.home-slider \.hero-tabs button\s*\{[^}]*min-height:\s*44px/s', $css), 'Tab Berita/Pengumuman wajib 44px.');
 $expect(str_contains($hero, 'class="hero-item-thumb"'), 'Tiap item berita wajib punya thumbnail untuk mobile.');
 $expect((bool) preg_match('/@media \(max-width: 900px\).*?\.home-slider \.hero-tab-list \.hero-item-thumb\s*\{[^}]*display:\s*block/s', $css), 'Thumbnail wajib tampil di mobile, tempat panel pratinjau besar disembunyikan.');
+$expect(str_contains($hero, 'pn_natuna_hero_article_srcset'), 'Hero news images must use generated responsive variants.');
+$expect(str_contains($hero, 'data-srcset='), 'Hero preview links must carry responsive source candidates.');
+$expect(str_contains($hero, 'sizes="(max-width: 900px) 68px, 1px"'), 'Mobile hero thumbnails must advertise their rendered width.');
+$expect(str_contains($js, "link.dataset.srcset || ''"), 'Hero preview swaps must retain responsive source candidates.');
+$expect(str_contains($js, "preview.setAttribute('srcset', srcset)"), 'Hero preview swaps must update srcset before src.');
+$expect(!str_contains($css, 'url("/images/berita/2026-briefing-ptsp-1.jpeg")'), 'Overridden facility pseudo-element must not trigger a redundant background download.');
+$expect(!str_contains($index, 'pn_natuna_track_visitor();'), 'Public page renders must not perform unused visitor counter writes.');
 $expect(!str_contains($hero, 'hero-kicker'), 'Kicker "Informasi Terkini" dihapus: h2 di bawahnya menyatakan hal yang sama.');
 $expect(str_contains($hero, 'mb_strrpos($cut'), 'Kutipan wajib dipotong di batas kata, bukan di tengah kata.');
 

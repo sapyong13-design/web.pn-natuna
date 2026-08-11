@@ -40,6 +40,7 @@ MODULE_MIGRATIONS = (
     "20260823_repair_lazy_map_attribute.sql",
     "20260824_optimize_brand_logo_assets.sql",
     "20260825_optimize_maklumat_thumbnail_assets.sql",
+    "20261009_enable_public_page_cache_and_lazy_assets.sql",
 )
 
 def mysql(sql: str) -> str:
@@ -95,10 +96,16 @@ def main() -> int:
             f"SELECT COUNT(*), COUNT(DISTINCT moduleid), SUM(menuid=0)"
             f" FROM {DATABASE}.pnn_modules_menu WHERE moduleid IN (482,808,816,817)"
         )
+        page_cache = mysql(
+            f"SELECT enabled, params FROM {DATABASE}.pnn_extensions"
+            " WHERE type='plugin' AND folder='system' AND element='cache'"
+        )
         if modules != "4\t3\t1\t1":
             raise RuntimeError(f"canonical modules not reconstructed: {modules}")
         if menus != "4\t4\t4":
             raise RuntimeError(f"canonical module assignments not reconstructed: {menus}")
+        if page_cache != '1\t{"browsercache":"0","cachetime":"15"}':
+            raise RuntimeError(f"public page cache not enabled server-side: {page_cache}")
         print("empty database module migration contract: ok")
         return 0
     finally:

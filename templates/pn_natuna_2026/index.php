@@ -19,7 +19,6 @@ if (is_file($sippScheduleHelper)) {
 }
 if (is_file($statsCounterHelper)) {
     require_once $statsCounterHelper;
-    pn_natuna_track_visitor();
 }
 if (is_file($instansiFeedHelper)) {
     require_once $instansiFeedHelper;

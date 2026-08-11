@@ -294,6 +294,9 @@ Sesi `/impeccable shape` atas pencarian beranda. Rancangannya dikoreksi di tenga
 - Python default cPanel adalah 3.6. Runner `tools/apply-db-migrations.py` wajib tetap kompatibel dengannya: jangan memakai `from __future__ import annotations`, generic bawaan `list[...]`/`dict[...]`/`tuple[...]`, atau opsi `subprocess` yang baru hadir di Python 3.7.
 - Document root cPanel wajib bermode `755`. Mode `700` pernah membuat `/` menampilkan autoindex sementara seluruh route, CSS, dan gambar membalas `404`, meskipun berkasnya ada. Setelah setiap cutover, periksa mode `public_html` dan `.htaccess`, lalu probe `/`, satu route SEF, dan satu aset statis sebelum menganggap deploy berhasil.
 
+- **Hardening performa publik 11 Agu 2026.** Baseline produksi mobile cold/warm menunjukkan bottleneck utama pada HTML dinamis shared hosting: TTFB `8,66–25,80 s`; homepage cold juga memuat 38 resource/`1.775.036` byte encoded. Migrasi `20261009_enable_public_page_cache_and_lazy_assets.sql` mengaktifkan page cache server-side selama 15 menit tanpa browser cache; sesi login dan request non-GET tetap dilewati oleh plugin Joomla. Render publik tidak lagi menjalankan tiga query tulis statistik pengunjung yang hasilnya memang tidak pernah ditampilkan.
+- Hero Berita kini memakai varian `-400/-800/-1200.webp`; gambar Role Model, footer, sosial, dan logo modul bawah-fold memakai lazy loading. Smoke lokal mobile pada simulasi 4G/CPU 4× turun menjadi 27 resource/`981.260` byte encoded tanpa download foto Role Model atau sumber hero `2026-briefing-ptsp-1.jpeg`. Cache lokal menurunkan TTFB homepage `201→89 ms`, daftar berita `180→95 ms`, dan artikel `183→100 ms`; ini bukti perilaku cache, bukan proyeksi waktu shared hosting. Konten menu tetap 83 tautan dan drawer lulus buka/Escape.
+
 ## Prinsip pemeliharaan
 
 - Joomla-native bila cukup; custom code hanya untuk kebutuhan yang tidak dipenuhi Joomla.
