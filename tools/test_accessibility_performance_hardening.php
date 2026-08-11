@@ -6,6 +6,7 @@ $js = file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
 $css = file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
 $instagram = file_get_contents($root . '/templates/pn_natuna_2026/instagram-feed.php');
 $routeMigration = file_get_contents($root . '/database/migrations/20261015_optimize_menu_route_assets.sql');
+$brandRepairMigration = file_get_contents($root . '/database/migrations/20261016_cache_bust_repaired_brand_variants.sql');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) $failures[] = $message;
@@ -89,9 +90,10 @@ if (function_exists('imagecreatefromwebp')) {
         imagedestroy($resource);
     }
 }
-$expect(str_contains($index, 'hut-ri-2026-header-128.webp 128w'), 'Shared August RI mark must use its compact source candidate.');
-$expect(str_contains($index, 'hut-ma-ri-2026-header-128.webp 128w'), 'Shared August MA mark must use its compact source candidate.');
-$expect(str_contains($index, 'logo-pn-natuna-96.webp 96w'), 'Mobile menu logo must use its compact source candidate.');
+$expect(str_contains($index, 'hut-ri-2026-header-128.webp?v=<?php echo $riCompactVersion; ?> 128w'), 'Shared August RI mark must use a cache-busted compact source candidate.');
+$expect(str_contains($index, 'hut-ma-ri-2026-header-128.webp?v=<?php echo $maCompactVersion; ?> 128w'), 'Shared August MA mark must use a cache-busted compact source candidate.');
+$expect(str_contains($index, 'logo-pn-natuna-96.webp?v=<?php echo $logoCompactVersion; ?> 96w'), 'Mobile menu logo must use a cache-busted compact source candidate.');
+$expect(str_contains($brandRepairMigration, 'logo-pn-natuna-96.webp?v=20260811-alpha 96w'), 'Published header logo markup must bypass the flattened long-lived cache entry.');
 $expect(str_contains($instagram, 'data-src="'), 'Offscreen Instagram fallback embed must defer its network request.');
 $expect(!str_contains($instagram, '<iframe title="Profil dan posting terbaru Instagram Pengadilan Negeri Natuna" src="'), 'Instagram fallback embed must not expose src before intersection.');
 $expect(str_contains($js, '.kontak-map-card iframe[data-embed-src]'), 'Contact map must use the shared IntersectionObserver loader.');

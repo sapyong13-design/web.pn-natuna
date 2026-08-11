@@ -47,6 +47,7 @@ MODULE_MIGRATIONS = (
     "20261013_harden_lscache_purge_endpoint.sql",
     "20261014_record_lscache_component_patch.sql",
     "20261015_optimize_menu_route_assets.sql",
+    "20261016_cache_bust_repaired_brand_variants.sql",
 )
 
 def mysql(sql: str) -> str:
