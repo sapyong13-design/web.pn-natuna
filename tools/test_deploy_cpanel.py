@@ -70,7 +70,7 @@ for extension_file in (
     ROOT / "components" / "com_lscache" / "lscache.php",
 ):
     assert extension_file.is_file(), "LiteSpeed extension file missing: {}".format(extension_file)
-assert "<version>1.5.2-pn.2</version>" in (ROOT / "plugins" / "system" / "lscache" / "lscache.xml").read_text(encoding="utf-8")
+assert "<version>1.5.2-pn.3</version>" in (ROOT / "plugins" / "system" / "lscache" / "lscache.xml").read_text(encoding="utf-8")
 config_values = MODULE.read_joomla_database_config("""<?php
 public $user = 'stage_user';
 public $password = 'ignored-here';

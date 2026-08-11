@@ -45,6 +45,7 @@ MODULE_MIGRATIONS = (
     "20261011_enable_litespeed_public_page_cache.sql",
     "20261012_record_lscache_joomla6_patch.sql",
     "20261013_harden_lscache_purge_endpoint.sql",
+    "20261014_record_lscache_component_patch.sql",
 )
 
 def mysql(sql: str) -> str:
@@ -121,14 +122,23 @@ def main() -> int:
             "   ON component.type='component' AND component.element='com_lscache'"
             " WHERE plugin.type='plugin' AND plugin.folder='system' AND plugin.element='lscache'"
         )
+        litespeed_admin_menu = mysql(
+            f"SELECT COALESCE(SUM(published), 0) FROM {DATABASE}.pnn_menu"
+            " WHERE client_id=1"
+            " AND component_id=(SELECT extension_id FROM"
+            f" {DATABASE}.pnn_extensions WHERE type='component'"
+            " AND element='com_lscache' LIMIT 1)"
+        )
         if modules != "4\t3\t1\t1":
             raise RuntimeError(f"canonical modules not reconstructed: {modules}")
         if menus != "4\t4\t4":
             raise RuntimeError(f"canonical module assignments not reconstructed: {menus}")
         if not page_cache.startswith('0\t') or '"browsercache": "0"' not in page_cache:
             raise RuntimeError(f"conflicting Joomla page cache still enabled: {page_cache}")
-        if litespeed_cache != "1\t1\t15\t15\t0\t40\t127.0.0.1\t1.5.2-pn.2":
+        if litespeed_cache != "1\t1\t15\t15\t0\t40\t127.0.0.1\t1.5.2-pn.3":
             raise RuntimeError(f"LiteSpeed public cache policy not reconstructed: {litespeed_cache}")
+        if litespeed_admin_menu != "0":
+            raise RuntimeError(f"unsupported LiteSpeed administrator UI is published: {litespeed_admin_menu}")
         print("empty database module migration contract: ok")
         return 0
     finally:
