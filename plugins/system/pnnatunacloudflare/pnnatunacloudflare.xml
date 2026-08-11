@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="system" method="upgrade">
+	<name>plg_system_pnnatunacloudflare</name>
+	<author>Pengadilan Negeri Natuna</author>
+	<creationDate>2026-08</creationDate>
+	<version>1.0.0</version>
+	<description>Mengantrekan invalidasi Cloudflare edge cache setelah artikel disimpan tanpa menyimpan token di Joomla.</description>
+	<namespace path="src">Joomla\Plugin\System\Pnnatunacloudflare</namespace>
+	<files>
+		<folder plugin="pnnatunacloudflare">services</folder>
+		<folder>src</folder>
+	</files>
+</extension>

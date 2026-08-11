@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 define('_JEXEC', true);
-require dirname(__DIR__) . '/plugins/content/pnnatunaimagevariants/src/Helper/CloudflarePurgeQueue.php';
+require dirname(__DIR__) . '/plugins/system/pnnatunacloudflare/src/Helper/CloudflarePurgeQueue.php';
 
-use Joomla\Plugin\Content\Pnnatunaimagevariants\Helper\CloudflarePurgeQueue;
+use Joomla\Plugin\System\Pnnatunacloudflare\Helper\CloudflarePurgeQueue;
 
 $news = (object) ['alias' => 'berita-baru', 'catid' => 12];
 $announcement = (object) ['alias' => 'pengumuman-baru', 'catid' => 13];
@@ -22,6 +22,6 @@ if (($record['urls'] ?? []) !== [
     'https://pn-natuna.go.id/berita/berita-baru',
 ]) exit(1);
 @unlink($queue); @rmdir(dirname($queue)); @rmdir($root);
-$plugin = (string) file_get_contents(dirname(__DIR__) . '/plugins/content/pnnatunaimagevariants/src/Extension/PnNatunaImageVariants.php');
-if (!str_contains($plugin, 'CloudflarePurgeQueue::enqueue(CloudflarePurgeQueue::articlePaths($item))')) exit(1);
+$plugin = (string) file_get_contents(dirname(__DIR__) . '/plugins/system/pnnatunacloudflare/src/Extension/PnNatunaCloudflare.php');
+if (!str_contains($plugin, "'onContentAfterSave' => 'onContentAfterSave'") || !str_contains($plugin, 'CloudflarePurgeQueue::articlePaths($item)')) exit(1);
 printf("Cloudflare purge queue contract: ok\n");

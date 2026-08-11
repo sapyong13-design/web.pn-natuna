@@ -49,6 +49,7 @@ MODULE_MIGRATIONS = (
     "20261015_optimize_menu_route_assets.sql",
     "20261016_cache_bust_repaired_brand_variants.sql",
     "20261017_extend_litespeed_cache_ttl.sql",
+    "20261018_register_cloudflare_purge_queue.sql",
 )
 
 def mysql(sql: str) -> str:
