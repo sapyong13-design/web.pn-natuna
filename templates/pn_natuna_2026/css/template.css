@@ -3393,19 +3393,27 @@ body.is-dark .roster-vacant-badge {
 
 .service-hours > div {
   display: grid;
-  grid-template-columns: minmax(104px, 0.8fr) minmax(138px, 1.2fr);
-  align-items: baseline;
-  gap: 12px;
+  gap: 7px;
 }
 
 .service-hours dt {
   color: var(--color-muted);
-  white-space: nowrap;
 }
 
 .service-hours dd {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
   margin: 0;
   font-weight: 800;
+}
+
+.service-hours dd span {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.service-hours dd strong {
   text-align: right;
   white-space: nowrap;
 }

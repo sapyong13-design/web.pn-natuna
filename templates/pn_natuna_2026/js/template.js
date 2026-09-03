@@ -690,18 +690,12 @@ function setupDynamicServiceHours() {
   const elements = document.querySelectorAll('#dynamic-service-hours, .js-service-hours');
   if (!elements.length) return;
 
-  // Dapatkan hari ini dalam waktu Jakarta
-  const today = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta', weekday: 'long' });
-
-  let hours;
-  if (today === 'Friday') {
-    hours = '08.00-17.00 WIB';
-  } else if (today === 'Saturday' || today === 'Sunday') {
-    hours = 'Tutup (Libur Akhir Pekan)';
-  } else {
-    // Monday, Tuesday, Wednesday, Thursday
-    hours = '08.00-16.30 WIB';
-  }
+  const day = pnNatunaJakartaNow().getDay();
+  const hours = day === 5
+    ? '08.00–16.30 WIB'
+    : day === 0 || day === 6
+      ? 'Tutup (Libur Akhir Pekan)'
+      : '08.00–16.00 WIB';
   elements.forEach((element) => {
     element.textContent = hours;
   });
@@ -1723,27 +1717,34 @@ function pnNatunaJakartaNow() {
 /* setupHeroGreeting dihapus bersama baris salam di hero: tidak ada lagi
    #hero-greeting di markup, dan tanggal hanya hidup di ribbon "Hari ini". */
 
+/* Status publik mengikuti jam pelayanan PTSP, termasuk jeda istirahat. */
 function setupHeroServiceStatus() {
   const elements = document.querySelectorAll('#hero-service-status, [data-service-status]');
-  if (!elements.length) {
-    return;
-  }
+  if (!elements.length) return;
+
   const now = pnNatunaJakartaNow();
   const day = now.getDay();
   const minutes = now.getHours() * 60 + now.getMinutes();
+  const friday = day === 5;
+  const closesAt = friday ? 990 : 960;
+  const breakEndsAt = friday ? 810 : 780;
   let open = false;
-  let label = '';
+  let label;
 
-  // Baris "Jam loket" hero digantikan IPAK, jadi pill status kembali memikul
-  // jam bukanya. Ini satu-satunya tempat jam layanan muncul di hero.
-  if (day >= 1 && day <= 4) {
-    open = minutes >= 480 && minutes < 990;
-    label = open ? 'Buka sekarang · tutup 16.30 WIB' : 'Tutup · buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'besok 08.00 WIB');
-  } else if (day === 5) {
-    open = minutes >= 480 && minutes < 1020;
-    label = open ? 'Buka sekarang · tutup 17.00 WIB' : 'Tutup · buka ' + (minutes < 480 ? 'hari ini 08.00 WIB' : 'Senin 08.00 WIB');
-  } else {
+  if (day === 0 || day === 6) {
     label = 'Tutup · buka Senin 08.00 WIB';
+  } else if (minutes < 480) {
+    label = 'Tutup · buka hari ini 08.00 WIB';
+  } else if (minutes < 720) {
+    open = true;
+    label = 'Buka sekarang · istirahat 12.00 WIB';
+  } else if (minutes < breakEndsAt) {
+    label = 'Tutup · istirahat hingga ' + (friday ? '13.30' : '13.00') + ' WIB';
+  } else if (minutes < closesAt) {
+    open = true;
+    label = 'Buka sekarang · tutup ' + (friday ? '16.30' : '16.00') + ' WIB';
+  } else {
+    label = 'Tutup · buka ' + (friday ? 'Senin' : 'besok') + ' 08.00 WIB';
   }
 
   elements.forEach((element) => {
@@ -1757,10 +1758,7 @@ function setupHeroServiceStatus() {
 
 function setupMaklumatLightbox() {
   const triggers = Array.from(document.querySelectorAll('[data-maklumat-zoom]'));
-  if (!triggers.length) {
-    return;
-  }
-
+  if (!triggers.length) return;
   let overlay = null;
   let lastFocus = null;
 
