@@ -1840,7 +1840,7 @@ function setupApparatusDossier() {
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'dossier-name');
-    overlay.innerHTML = '<button type="button" class="dossier-close" aria-label="Tutup kartu pegawai"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><div class="dossier-card"><figure><img alt=""></figure><div class="dossier-body"><h2 id="dossier-name"></h2><ul class="dossier-roles"></ul><dl class="dossier-meta"></dl></div></div>';
+    overlay.innerHTML = '<div class="dossier-card"><button type="button" class="dossier-close" aria-label="Tutup kartu pegawai"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><figure><img alt=""></figure><div class="dossier-body"><header class="dossier-header"><h2 id="dossier-name"></h2><ul class="dossier-roles"></ul></header><dl class="dossier-meta"></dl><section class="dossier-career"><h3>Riwayat Kedinasan</h3><ol></ol></section></div></div>';
     overlay.querySelector('.dossier-close').addEventListener('click', close);
     overlay.addEventListener('click', (event) => {
       if (event.target === overlay) {
@@ -1848,6 +1848,172 @@ function setupApparatusDossier() {
       }
     });
     document.body.appendChild(overlay);
+  };
+
+  const careers = {
+    'Joko Ciptanto, S.H., M.H.': [
+      ['06 Agustus 2026', 'Ketua Pengadilan', 'Pengadilan Negeri Natuna', 'Karir'],
+      ['21 Januari 2026', 'Wakil Ketua Pengadilan', 'Pengadilan Negeri Natuna', 'Karir'],
+      ['17 Mei 2022', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Jepara', 'Karir'],
+      ['10 Juni 2019', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Pelalawan', 'Karir'],
+      ['07 April 2015', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Kota Agung', 'Karir'],
+      ['09 Februari 2012', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Bintuhan', 'Karir'],
+      ['02 Juni 2009', 'Pengadministrasi Umum', 'Panitera Sekretaris Pengadilan Negeri Pekanbaru', 'PNS'],
+      ['01 Mei 2008', 'Pengadministrasi Umum', 'Panitera Sekretaris Pengadilan Negeri Pekanbaru', 'CPNS']
+    ],
+    'Sutriyadi, S.H., M.Si.': [
+      ['29 April 2025', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna'],
+      ['04 Februari 2020', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna']
+    ],
+    'Sirodjuddin, S.H., M.H.': [
+      ['03 Maret 2026', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna'],
+      ['28 April 2021', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna']
+    ],
+    'Endro Basuki Prabowo, A.Pi.': [
+      ['03 Maret 2026', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna'],
+      ['14 Januari 2021', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna']
+    ],
+    'Salihin Ardiansyah, S.H., M.H.': [
+      ['05 Agustus 2024', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Natuna'],
+      ['01 Agustus 2022', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Baturaja'],
+      ['01 April 2020', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Baturaja'],
+      ['17 Juli 2019', 'Calon Hakim', 'Pengadilan Negeri Baturaja'],
+      ['01 Desember 2017', 'Calon Hakim', 'Pengadilan Negeri Baturaja']
+    ],
+    'Suriadi, S.H.': [
+      ['03 Maret 2026', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna'],
+      ['08 Maret 2021', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna']
+    ],
+    'Geraldo Gracelo Mario Situmeang, S.H., M.H.': [
+      ['23 Juni 2025', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Natuna'],
+      ['02 Februari 2024', 'Klerek - Analis Perkara Peradilan', 'Panitera, Pengadilan Negeri Subang'],
+      ['02 Oktober 2023', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Bitung'],
+      ['01 Maret 2023', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Bitung'],
+      ['01 Maret 2022', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Bitung']
+    ],
+    'Haditio, S.H.': [
+      ['23 Juni 2025', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Natuna'],
+      ['02 Februari 2024', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Slawi'],
+      ['02 Februari 2024', 'Klerek - Analis Perkara Peradilan', 'Panitera, Pengadilan Negeri Slawi'],
+      ['02 Oktober 2023', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Tanjung Selor'],
+      ['01 Maret 2023', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Tanjung Selor'],
+      ['01 Maret 2022', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Tanjung Selor']
+    ],
+    'Alfariz Maulana Reza, S.H., M.H.': [
+      ['23 Juni 2025', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Natuna'],
+      ['02 Februari 2024', 'Klerek - Analis Perkara Peradilan', 'Panitera, Pengadilan Negeri Kendal'],
+      ['02 Oktober 2023', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Gugatan, Pengadilan Agama Padang Panjang'],
+      ['01 Maret 2023', 'Analis Perkara Peradilan', 'Panitera Muda Gugatan, Pengadilan Agama Padang Panjang'],
+      ['01 Maret 2022', 'Analis Perkara Peradilan', 'Panitera Muda Gugatan, Pengadilan Agama Padang Panjang']
+    ],
+    'Swandi Hutabarat, S.H.': [
+      ['23 Juni 2025', 'Hakim Tingkat Pertama', 'Pengadilan Negeri Natuna'],
+      ['02 Februari 2024', 'Klerek - Analis Perkara Peradilan', 'Panitera, Pengadilan Negeri Balikpapan'],
+      ['02 Oktober 2023', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Sarolangun'],
+      ['01 Maret 2023', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Sarolangun'],
+      ['01 Maret 2022', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Sarolangun']
+    ],
+    'Dr. Halomoan Freddy Sitinjak Alexandra, S.H., M.H.': [
+      ['11 November 2022', 'Hakim Ad Hoc Perikanan', 'Pengadilan Negeri Natuna']
+    ],
+    'Hadry B., S.H.': [
+      ['19 Desember 2023', 'Panitera Tingkat Pertama', 'Panitera, Pengadilan Negeri Natuna'],
+      ['25 Januari 2023', 'Panitera Muda', 'Panitera Muda Perdata, Pengadilan Negeri Natuna'],
+      ['02 Maret 2020', 'Panitera Muda', 'Panitera Muda Perdata, Pengadilan Negeri Natuna'],
+      ['31 Januari 2018', 'Panitera Muda', 'Panitera Muda Hukum, Pengadilan Negeri Natuna'],
+      ['23 November 2015', 'Panitera Pengganti', 'Panitera Sekretaris, Pengadilan Negeri Natuna'],
+      ['01 September 2012', 'Calon Panitera Pengganti', 'Sekretaris Mahkamah Agung, Mahkamah Agung'],
+      ['01 Juni 2011', 'Staf', 'Wakil Panitera, Pengadilan Negeri Natuna']
+    ],
+    'Mario Tyson Nadapdap, S.E.': [
+      ['28 Agustus 2025', 'Sekretaris', 'Sekretaris, Pengadilan Negeri Natuna'],
+      ['06 Oktober 2023', 'Kepala Subbagian', 'Subbagian Rencana Program dan Anggaran, Pengadilan Tinggi Kepulauan Riau'],
+      ['02 Oktober 2023', 'Penata Layanan Operasional', 'Subbagian Kepegawaian dan Teknologi Informasi, Pengadilan Tinggi Kepulauan Riau'],
+      ['20 September 2023', 'Plh. Kepala Subbagian', 'Subbagian Kepegawaian dan Teknologi Informasi, Pengadilan Tinggi Kepulauan Riau'],
+      ['26 Desember 2022', 'Analis Tata Laksana', 'Subbagian Kepegawaian dan Teknologi Informasi, Pengadilan Tinggi Kepulauan Riau'],
+      ['27 Juni 2022', 'Analis Tata Laksana', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Sampit'],
+      ['02 Maret 2020', 'Analis Sumber Daya Manusia Aparatur', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Sampit'],
+      ['01 Maret 2019', 'Analis Sumber Daya Manusia Aparatur', 'Sekretaris, Pengadilan Negeri Sampit']
+    ],
+    'Candra Firmansyah, S.I.Pust.': [
+      ['03 Juli 2026', 'Kepala Subbagian', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Natuna'],
+      ['31 Oktober 2025', 'Penata Layanan Operasional', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Natuna'],
+      ['30 Januari 2023', 'Plt. Kepala Subbagian', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Natuna'],
+      ['01 Agustus 2022', 'Arsiparis Terampil', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Natuna'],
+      ['03 Januari 2022', 'Arsiparis Terampil', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Natuna'],
+      ['01 Desember 2020', 'Arsiparis Terampil', 'Sekretaris, Pengadilan Negeri Natuna']
+    ],
+    'Jhivo Wilanda, S.H.': [
+      ['08 Desember 2025', 'Plt. Panitera Muda', 'Panitera Muda Hukum, Pengadilan Negeri Natuna'],
+      ['01 Desember 2025', 'Panitera Pengganti', 'Panitera, Pengadilan Negeri Natuna'],
+      ['02 Oktober 2023', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Calang'],
+      ['01 Juli 2022', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Calang'],
+      ['01 Desember 2020', 'Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Calang']
+    ],
+    'Ari Putra Utama, A.Md. A.B.': [
+      ['10 Oktober 2025', 'Plt. Panitera Muda', 'Panitera Muda Pidana, Pengadilan Negeri Natuna'],
+      ['06 Oktober 2025', 'Plh. Panitera Tingkat Pertama', 'Panitera, Pengadilan Negeri Natuna'],
+      ['16 September 2025', 'Panitera Pengganti', 'Panitera, Pengadilan Negeri Natuna'],
+      ['02 Januari 2025', 'Plt. Kepala Subbagian', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna'],
+      ['11 Januari 2024', 'Plt. Kepala Subbagian', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna'],
+      ['02 Oktober 2023', 'Pengelola Penanganan Perkara', 'Panitera Muda Pidana, Pengadilan Negeri Natuna'],
+      ['05 Mei 2023', 'Plt. Kepala Subbagian', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna'],
+      ['01 Maret 2023', 'Pengelola Perkara', 'Panitera Muda Pidana, Pengadilan Negeri Natuna'],
+      ['01 Maret 2022', 'Pengelola Perkara', 'Panitera Muda Pidana, Pengadilan Negeri Natuna']
+    ],
+    'Marihod Tua Lubis, S.H.': [
+      ['02 Mei 2025', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Natuna'],
+      ['01 Mei 2024', 'Klerek - Analis Perkara Peradilan', 'Panitera Muda Pidana, Pengadilan Negeri Natuna']
+    ],
+    'Frans Alberto Siregar, S.T.': [
+      ['03 Juni 2026', 'Plt. Teknisi Sarana dan Prasarana', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna'],
+      ['01 Juni 2026', 'Teknisi Sarana dan Prasarana', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna'],
+      ['01 Juni 2025', 'Teknisi Sarana dan Prasarana', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna']
+    ],
+    'Muhammad Faris Akbar, A.Md.': [
+      ['03 Juni 2026', 'Plt. Kepala Subbagian', 'Subbagian Perencanaan, Teknologi Informasi, dan Pelaporan, Pengadilan Negeri Natuna'],
+      ['01 Juni 2026', 'Dokumentalis Hukum', 'Panitera Muda Pidana, Pengadilan Negeri Natuna'],
+      ['01 Juni 2025', 'Dokumentalis Hukum', 'Panitera Muda Pidana, Pengadilan Negeri Natuna']
+    ],
+    'Asturi Periyadi, A.Md. A.B.': [
+      ['01 Juni 2026', 'Dokumentalis Hukum', 'Panitera Muda Perdata, Pengadilan Negeri Natuna'],
+      ['01 Juni 2025', 'Dokumentalis Hukum', 'Panitera Muda Perdata, Pengadilan Negeri Natuna']
+    ],
+    'Dion Boy Ardita, A.Md. A.B.': [
+      ['01 Juni 2026', 'Dokumentalis Hukum', 'Panitera Muda Khusus Hak Asasi Manusia, Pengadilan Negeri Natuna'],
+      ['01 Juni 2025', 'Dokumentalis Hukum', 'Panitera Muda Khusus Hak Asasi Manusia, Pengadilan Negeri Natuna']
+    ],
+    'Juprizal, A.Md., A.B.': [
+      ['01 Juni 2026', 'Dokumentalis Hukum', 'Panitera Muda Khusus Perikanan, Pengadilan Negeri Natuna'],
+      ['01 Juni 2025', 'Dokumentalis Hukum', 'Panitera Muda Khusus Perikanan, Pengadilan Negeri Natuna']
+    ],
+    'Bait, S.H.': [
+      ['01 September 2025', 'Penata Layanan Operasional', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna']
+    ],
+    'Rati Pusita, S.Pd.I.': [
+      ['01 September 2025', 'Penata Layanan Operasional', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna']
+    ],
+    'Yuningsih': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Panitera Muda Pidana, Pengadilan Negeri Natuna']
+    ],
+    'Kartina': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Panitera Muda Perdata, Pengadilan Negeri Natuna']
+    ],
+    'Kusnaidi': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Subbagian Perencanaan, Teknologi Informasi, dan Pelaporan, Pengadilan Negeri Natuna']
+    ],
+    'Noki Suryatno': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Subbagian Kepegawaian, Organisasi, dan Tata Laksana, Pengadilan Negeri Natuna']
+    ],
+    'Ardiansyah': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna']
+    ],
+    'Riko Gustianto': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna']
+    ],
+    'Ria Angelina Sitompul': [
+      ['01 September 2025', 'Operator Layanan Operasional', 'Subbagian Umum dan Keuangan, Pengadilan Negeri Natuna']
+    ]
   };
 
   const open = (card) => {
@@ -1883,26 +2049,44 @@ function setupApparatusDossier() {
     });
 
     const meta = overlay.querySelector('.dossier-meta');
-    meta.textContent = '';
+    const metadata = new Map();
     card.querySelectorAll('.roster-meta > div').forEach((row) => {
       const label = row.querySelector('dt')?.textContent.trim();
       const value = row.querySelector('dd')?.textContent.trim();
-      if (!label || !value) {
-        return;
-      }
+      if (label) metadata.set(label, value || '-');
+    });
+    const hasLabel = (prefix) => [...metadata.keys()].some((label) => label.toLowerCase().startsWith(prefix));
+    if (!hasLabel('nip')) metadata.set('NIP', '-');
+    if (!hasLabel('pangkat')) metadata.set('Pangkat/Gol.', '-');
+    if (!hasLabel('pendidikan')) metadata.set('Pendidikan', degree || '-');
+    const orderedMetadata = ['NIP', 'Pangkat/Gol.', 'Pendidikan'].map((wanted) => {
+      const entry = [...metadata].find(([label]) => label.toLowerCase().startsWith(wanted.toLowerCase().split('/')[0]));
+      return [wanted, entry?.[1] || '-'];
+    });
+    meta.replaceChildren(...orderedMetadata.map(([label, value]) => {
       const group = document.createElement('div');
       const term = document.createElement('dt');
-      term.textContent = label;
       const detail = document.createElement('dd');
+      term.textContent = label;
       detail.textContent = value;
       group.append(term, detail);
-      meta.appendChild(group);
-    });
+      return group;
+    }));
     meta.hidden = !meta.children.length;
 
     overlay.hidden = false;
     document.body.classList.add('dossier-lightbox-open');
     lastFocus = card;
+    const career = careers[name?.textContent.trim()] || [];
+    const careerSection = overlay.querySelector('.dossier-career');
+    const careerList = careerSection.querySelector('ol');
+    careerList.replaceChildren();
+    career.forEach(([date, role, unit]) => {
+      const item = document.createElement('li');
+      item.innerHTML = `<time>${date}</time><strong>${role}</strong><span>${unit}</span>`;
+      careerList.appendChild(item);
+    });
+    careerSection.hidden = !career.length;
     overlay.querySelector('.dossier-close').focus();
   };
 
