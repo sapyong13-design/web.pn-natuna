@@ -1820,6 +1820,27 @@ function setupApparatusDossier() {
     return;
   }
 
+  cards.forEach((card) => {
+    const body = card.querySelector('.roster-body, .roster-featured-body');
+    if (!body || body.querySelector('.roster-meta')) return;
+    const rows = Array.from(body.children).filter((element) => /^(NIP|Pangkat\/Gol\.)/i.test(element.textContent.trim()));
+    if (!rows.length) return;
+    const meta = document.createElement('dl');
+    meta.className = 'roster-meta';
+    rows.forEach((row) => {
+      const match = row.textContent.trim().match(/^(NIP|Pangkat\/Gol\.)(.*)$/i);
+      const group = document.createElement('div');
+      const term = document.createElement('dt');
+      const detail = document.createElement('dd');
+      term.textContent = match[1];
+      detail.textContent = match[2].trim() || '-';
+      group.append(term, detail);
+      meta.appendChild(group);
+      row.remove();
+    });
+    body.appendChild(meta);
+  });
+
   const zoomIcon = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path><path d="M11 8v6M8 11h6"></path></svg>';
   let overlay = null;
   let lastFocus = null;
