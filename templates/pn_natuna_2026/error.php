@@ -51,7 +51,7 @@ $routes = [
     <meta name="robots" content="noindex, follow">
     <title><?php echo $code; ?> - <?php echo $title; ?> | Pengadilan Negeri Natuna Kelas II</title>
     <link href="<?php echo $baseUrl; ?>/images/favicon-pn-natuna.png" rel="icon" type="image/png">
-    <link href="<?php echo $baseUrl; ?>/templates/pn_natuna_2026/css/template.css" rel="stylesheet">
+    <link href="<?php echo $baseUrl; ?>/templates/pn_natuna_2026/css/template-4b123344.css" rel="stylesheet">
 </head>
 <body class="site site-error">
     <?php // Halaman ini tidak memuat template.js, jadi kelas mode gelap dipasang sendiri
