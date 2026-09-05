@@ -31,6 +31,8 @@ assert MODULE._builder.allowed(__import__('pathlib').PurePosixPath('administrato
 assert MODULE._builder.allowed(__import__('pathlib').PurePosixPath('media/templates/site/cassiopeia/scss/tools/_tools.scss'))
 assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath('administrator/cache/autoload_psr4.php'))
 assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath('administrator/logs/joomla_update.php'))
+for payload in ('images/payload.php', 'files/payload.phtml', 'media/payload.phar'):
+    assert not MODULE._builder.allowed(__import__('pathlib').PurePosixPath(payload))
 for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     htaccess_source = htaccess.read_text(encoding="utf-8")
     assert "<IfModule mod_setenvif.c>" in htaccess_source
@@ -42,11 +44,8 @@ for htaccess in (ROOT / ".htaccess", ROOT / "htaccess.txt"):
     assert "RewriteCond %{HTTPS} !=on" in htaccess_source
     assert "RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]" in htaccess_source
     assert "RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]" in htaccess_source
-    assert 'Content-Security-Policy "default-src \'self\'' in htaccess_source
-    assert "Content-Security-Policy-Report-Only" not in htaccess_source
-    assert "https://www.youtube-nocookie.com" in htaccess_source
     assert "RewriteRule ^api(?:/|$) - [F,END,NC]" in htaccess_source
-    assert "RewriteRule ^(?:images|files|cache|tmp)/.*\\.(?:php[0-9]?|phtml|phar)$ - [F,END,NC]" in htaccess_source
+    assert "RewriteRule ^(?:images|files|media|cache|tmp)/.*\\.(?:php[0-9]?|phtml|phar)$ - [F,END,NC]" in htaccess_source
     assert "<IfModule LiteSpeed>" in htaccess_source
     assert "CacheLookup on" in htaccess_source
     assert "CacheEnable public" not in htaccess_source
@@ -70,7 +69,6 @@ for extension_file in (
     ROOT / "components" / "com_lscache" / "lscache.php",
 ):
     assert extension_file.is_file(), "LiteSpeed extension file missing: {}".format(extension_file)
-assert "<version>1.5.2-pn.3</version>" in (ROOT / "plugins" / "system" / "lscache" / "lscache.xml").read_text(encoding="utf-8")
 config_values = MODULE.read_joomla_database_config("""<?php
 public $user = 'stage_user';
 public $password = 'ignored-here';

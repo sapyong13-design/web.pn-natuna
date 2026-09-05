@@ -319,23 +319,21 @@ Gunakan Google Search Console/Bing Webmaster Tools: Security Issues, Manual Acti
 
 ## 7. CSP rollout P1
 
-CSP harus mengikuti host asset nyata. Jangan menyalin allowlist luas atau memakai `unsafe-eval` tanpa bukti.
+CSP harus mengikuti host aset nyata. Jangan menyalin allowlist luas, memakai `unsafe-eval`, atau membuat hash dari HTML akhir: script yang tersisip lewat artikel/modul tidak boleh otomatis dipercaya.
 
-1. Inventaris script/style/font/image/frame/connect pada homepage, artikel, pencarian, login admin, editor, media manager, Turnstile, map, Instagram, dan dark/mobile UI.
-2. Mulai header **Content-Security-Policy-Report-Only**, bukan meta, dari Apache/Cloudflare Transform Rules bila plan mendukung. Contoh awal perlu disesuaikan:
+**Status repository lokal — bukan bukti produksi:** frontend membentuk `Content-Security-Policy` di `includes/pn-csp.php`. `script-src` hanya mengizinkan sumber tepercaya dan hash script yang didaftarkan melalui renderer Joomla; script badan template sudah dipindahkan ke berkas same-origin. `script-src-attr 'none'` memblokir event handler inline. Area administrator tetap memakai policy ketat dalam mode Report-Only, sementara `base-uri`, `object-src`, dan `frame-ancestors` tetap enforced. Tidak ada nonce per-respons karena HTML publik dapat disimpan LiteSpeed; nonce yang ikut tercache akan dipakai ulang.
 
-```text
-Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://www.instagram.com; connect-src 'self'; upgrade-insecure-requests; report-to csp-endpoint
-```
+Urutan deployment:
 
-`'unsafe-inline'` adalah tahap kompatibilitas sementara Joomla; targetkan nonce/hash bila arsitektur mendukung. `img-src https:` terlalu luas; sempitkan dari laporan. Jangan memasukkan domain violation yang tidak dikenal—investigasi sebagai potensi injeksi.
-3. Sediakan endpoint report terautentikasi/rate-limited atau layanan CSP; laporan dapat berisi URL, jadi batasi retensi dan akses. Jika endpoint belum ada, gunakan DevTools Console dan Cloudflare logs; jangan membuat endpoint publik asal-asalan.
-4. Jalankan Report-Only minimal satu siklus kerja editor. Perbaiki violation; uji browser desktop/mobile.
-5. Enforce bertahap di frontend dahulu. Admin tetap Report-Only sampai seluruh workflow lolos. Naikkan header menjadi `Content-Security-Policy`; pertahankan report-only policy lebih ketat untuk observasi.
+1. Jalankan `php tools/test_csp.php`, `php tools/test_lscache_csrf.php`, dan smoke browser lokal. Native plugin page cache Joomla harus tetap nonaktif; jalur cache HTML yang didukung hanya LSCache.
+2. Deploy ke staging. Terapkan migrasi normal, lalu purge seluruh objek HTML LiteSpeed dan edge yang dibuat sebelum perubahan. Policy dan body yang tercache harus berasal dari build yang sama.
+3. Verifikasi satu header CSP enforced pada homepage, artikel, pencarian, halaman 404, dan respons `tmpl=component`; pastikan `script-src` tidak memuat `'unsafe-inline'` atau `'unsafe-eval'`. SVG harus membalas `script-src 'none'`.
+4. Uji desktop/mobile: menu, slider, pencarian, mode gelap, tab jadwal, Turnstile, map, Instagram, serta embed. Tidak boleh ada CSP violation tak dikenal.
+5. Administrator tetap Report-Only sampai login, MFA, editor WYSIWYG, media upload, dan simpan artikel lulus satu siklus kerja. Baru pertimbangkan enforce policy script administrator berdasarkan laporan nyata.
 
-Browser checks: tidak ada mixed content/CSP error tak dikenal; menu/slider/form/Turnstile/map/embed berfungsi; admin login, MFA, editor WYSIWYG, media upload, save article berfungsi.
+Jika laporan CSP perlu dikumpulkan, gunakan endpoint terautentikasi/rate-limited atau layanan CSP. Laporan dapat berisi URL; batasi retensi dan akses. Jangan membuat endpoint publik tanpa kontrol.
 
-**Rollback:** kembalikan enforce ke Report-Only atau policy versi sebelumnya. Jangan menghapus CSP permanen tanpa tiket dan bukti violation.
+**Rollback:** kembalikan frontend ke policy Report-Only versi sebelumnya dan purge cache HTML lagi. Jangan menghapus CSP permanen tanpa tiket dan bukti violation.
 
 ## 8. Backup, file integrity, monitoring
 

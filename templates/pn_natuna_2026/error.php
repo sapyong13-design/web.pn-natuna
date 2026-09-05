@@ -19,6 +19,12 @@ use Joomla\CMS\Uri\Uri;
 
 /** @var Joomla\CMS\Document\ErrorDocument $this */
 $app = Factory::getApplication();
+require_once JPATH_ROOT . '/includes/pn-csp.php';
+$app->setHeader(
+    'Content-Security-Policy',
+    pnNatunaContentSecurityPolicy('', Uri::getInstance()->isSsl()),
+    true
+);
 $baseUrl = Uri::base(true);
 $code = (int) ($this->error->getCode() ?: 500);
 $isMissing = $code === 404;
@@ -51,15 +57,7 @@ $routes = [
     <?php // Halaman ini tidak memuat template.js, jadi kelas mode gelap dipasang sendiri
           // sebelum cat pertama - pembaca yang sudah memilih mode gelap tidak boleh
           // disilaukan halaman terang hanya karena ia tersesat. Sama dengan index.php. ?>
-    <script>
-        (function () {
-            try {
-                var dark = localStorage.getItem('pnNatunaDark') === '1';
-                document.body.classList.toggle('is-dark', dark);
-                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-            } catch (e) { /* mode penyamaran */ }
-        })();
-    </script>
+    <script src="<?php echo $baseUrl; ?>/templates/pn_natuna_2026/js/theme-boot.js"></script>
     <main class="error-page">
         <div class="error-page__inner">
             <p class="error-page__masthead">

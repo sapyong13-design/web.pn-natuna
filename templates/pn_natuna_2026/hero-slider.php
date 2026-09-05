@@ -16,15 +16,20 @@ function pn_natuna_hero_latest_articles(int $catId, int $limit = 4): array
     try {
         $db = Factory::getDbo();
         $now = Factory::getDate()->toSql();
+        $levels = array_map('intval', Factory::getUser()->getAuthorisedViewLevels());
         $query = $db->getQuery(true)
-            ->select($db->quoteName(['id', 'title', 'alias', 'catid', 'created', 'publish_up', 'images', 'introtext', 'fulltext', 'metadesc']))
-            ->from($db->quoteName('#__content'))
-            ->where($db->quoteName('state') . ' = 1')
-            ->where($db->quoteName('catid') . ' = ' . (int) $catId)
-            ->where($db->quoteName('alias') . ' NOT LIKE ' . $db->quote('%berita-dan-pengumuman%'))
-            ->where('(' . $db->quoteName('publish_up') . ' IS NULL OR ' . $db->quoteName('publish_up') . ' = ' . $db->quote($db->getNullDate()) . ' OR ' . $db->quoteName('publish_up') . ' <= ' . $db->quote($now) . ')')
-            ->where('(' . $db->quoteName('publish_down') . ' IS NULL OR ' . $db->quoteName('publish_down') . ' = ' . $db->quote($db->getNullDate()) . ' OR ' . $db->quoteName('publish_down') . ' >= ' . $db->quote($now) . ')')
-            ->order('CASE WHEN ' . $db->quoteName('publish_up') . ' > ' . $db->quote('2000-01-02 00:00:00') . ' THEN ' . $db->quoteName('publish_up') . ' ELSE ' . $db->quoteName('created') . ' END DESC')
+            ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.created', 'a.publish_up', 'a.images', 'a.introtext', 'a.fulltext', 'a.metadesc']))
+            ->from($db->quoteName('#__content', 'a'))
+            ->innerJoin($db->quoteName('#__categories', 'c') . ' ON ' . $db->quoteName('c.id') . ' = ' . $db->quoteName('a.catid'))
+            ->where($db->quoteName('a.state') . ' = 1')
+            ->where($db->quoteName('c.published') . ' = 1')
+            ->whereIn($db->quoteName('a.access'), $levels)
+            ->whereIn($db->quoteName('c.access'), $levels)
+            ->where($db->quoteName('a.catid') . ' = ' . (int) $catId)
+            ->where($db->quoteName('a.alias') . ' NOT LIKE ' . $db->quote('%berita-dan-pengumuman%'))
+            ->where('(' . $db->quoteName('a.publish_up') . ' IS NULL OR ' . $db->quoteName('a.publish_up') . ' = ' . $db->quote($db->getNullDate()) . ' OR ' . $db->quoteName('a.publish_up') . ' <= ' . $db->quote($now) . ')')
+            ->where('(' . $db->quoteName('a.publish_down') . ' IS NULL OR ' . $db->quoteName('a.publish_down') . ' = ' . $db->quote($db->getNullDate()) . ' OR ' . $db->quoteName('a.publish_down') . ' >= ' . $db->quote($now) . ')')
+            ->order('CASE WHEN ' . $db->quoteName('a.publish_up') . ' > ' . $db->quote('2000-01-02 00:00:00') . ' THEN ' . $db->quoteName('a.publish_up') . ' ELSE ' . $db->quoteName('a.created') . ' END DESC')
             ->setLimit($limit);
         $db->setQuery($query);
         $items = $db->loadObjectList() ?: [];

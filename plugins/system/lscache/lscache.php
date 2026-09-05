@@ -197,10 +197,6 @@ class plgSystemLSCache extends CMSPlugin {
             $this->purgeAdmin($option);
         } else {
             $this->checkVary();
-            if($app->input->get("lscache_formtoken")=="1"){
-                $token = JSession::getFormToken();
-                $app->input->post->set($token,'1');
-            }
         }
 
         
@@ -283,6 +279,11 @@ class plgSystemLSCache extends CMSPlugin {
         }
         
         if (!$this->pageCachable) {
+            return;
+        }
+
+        // Keep session forms inline; an ESI include could otherwise hide their tokens.
+        if ($this->excludeTokenResponse($module->content)) {
             return;
         }
 
@@ -384,14 +385,12 @@ class plgSystemLSCache extends CMSPlugin {
         }
     }
 
-    public function onBeforeRender() {
-        if ($this->settings->get('beforeRender', 0) == 1) {
-            $this->onAfterRender();
-            define('LSCACHE_RENDERED',true);
-        }
-    }
     
     public function onAfterRender() {
+        if ($this->excludeTokenResponse($this->app->getBody())) {
+            return;
+        }
+
         if (!$this->cacheEnabled) {
             if($this->esion){
                 header('X-LiteSpeed-Cache-Control:esi=on');
@@ -399,10 +398,6 @@ class plgSystemLSCache extends CMSPlugin {
             return;
         }
         
-        if(defined('LSCACHE_RENDERED')){
-            return;
-        }
-
         if ($this->purgeObject->recacheAll) {
             $this->recacheAction(true,true);
             $this->app->redirect('index.php?option=com_lscache');
@@ -481,13 +476,6 @@ class plgSystemLSCache extends CMSPlugin {
             $cacheTimeout = $this->settings->get('homePageCacheTimeout', 2000) * 60;
         }
 
-        $content = $this->app->getBody();
-        $token = JSession::getFormToken();
-        $search = '#<input.*?name="'. $token . '".*?>#';
-        $replace = '<input type="hidden" name="lscache_formtoken" value="1">';
-        $data = preg_replace($search, $replace, $content, -1, $count);
-        $this->app->setBody($data);
-        
         if ($cacheTimeout == 0) {
             return;
         }
@@ -496,6 +484,18 @@ class plgSystemLSCache extends CMSPlugin {
         $this->lscInstance->cachePublic($cacheTags, $this->esion);
         $this->log();
         
+    }
+
+    protected function excludeTokenResponse($content) {
+        if (strpos((string) $content, JSession::getFormToken()) === false) {
+            return false;
+        }
+
+        $this->pageCachable = false;
+        $this->app->setHeader('Cache-Control', 'private, no-store', true);
+        header('Cache-Control: private, no-store');
+        header('X-LiteSpeed-Cache-Control: no-cache');
+        return true;
     }
 
     private function getOption($context) {
@@ -1416,17 +1416,12 @@ class plgSystemLSCache extends CMSPlugin {
         }
 
         $moduleid = $this->app->input->getInt('moduleid', -1);
-        if ($moduleid == -1) {
+        if ($moduleid < 0) {
             http_response_code(403);
             $app->close();
             return;
         }
 
-        if ($moduleid == -2) {
-            $this->esiTokenForm();
-            $app->close();
-            return;
-        }
         
         $module = $this->getModule($moduleid);
         if (!$module) {
@@ -1516,7 +1511,9 @@ class plgSystemLSCache extends CMSPlugin {
 
             $cacheTimeout = $module->lscache_ttl * 60;
             $this->lscInstance->config(array("public_cache_timeout" => $cacheTimeout, "private_cache_timeout" => $cacheTimeout));
-            if ($module->lscache_type == 1) {
+            if ($this->excludeTokenResponse($content)) {
+                // Session tokens must not enter either public or private ESI storage.
+            } else if ($module->lscache_type == 1) {
                 $this->lscInstance->cachePublic($tag);
                 $this->log();
             } else if ($module->lscache_type == -1) {
@@ -1959,16 +1956,6 @@ class plgSystemLSCache extends CMSPlugin {
         return (string) JFactory::getApplication()->input->server->get('REMOTE_ADDR', '');
     }
     
-    protected function esiTokenForm(){
-        $this->lscInstance->checkPrivateCookie();
-        $this->lscInstance->cachePrivate('token','token');
-        echo JHtml::_( 'form.token' );
-    }
-
-    protected function esiTokenBlock(){
-        $block = '<esi:include src="index.php?option=com_lscache&moduleid=-2" cache-control="private,no-vary" cache-tag="token" />' . PHP_EOL;
-        return $block;
-    }
     
     protected function isAdmin(){
         return $this->app->isClient('administrator') ;

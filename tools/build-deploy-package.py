@@ -18,12 +18,15 @@ ALLOW_DIRS = {
     "includes", "language", "layouts", "libraries", "media", "modules",
     "plugins", "templates",
 }
-DENY_PARTS = {".git", ".svn", "database", "docs", "tools", "cache", "logs", "tmp", ".runtime-logs"}
+DENY_PARTS = {".git", ".svn", ".runtime-logs"}
+DENY_PREFIXES = {("administrator", "cache"), ("administrator", "logs")}
 DENY_NAMES = {"configuration.php", ".env", ".user.ini", "php.ini", ".htpasswd"}
 DENY_SUFFIXES = {
     ".sql", ".dump", ".bak", ".backup", ".old", ".orig", ".save", ".swp",
     ".log", ".pem", ".key", ".p12", ".pfx", ".zip", ".7z", ".tgz", ".gz",
 }
+WRITABLE_DIRS = {"images", "files", "media"}
+EXECUTABLE_SUFFIXES = {".php", ".php3", ".php4", ".php5", ".php7", ".php8", ".phtml", ".phar"}
 
 
 def allowed(rel):
@@ -32,7 +35,9 @@ def allowed(rel):
         return False
     lowered = tuple(part.lower() for part in parts)
     name = lowered[-1]
-    if any(part in DENY_PARTS for part in lowered) or name in DENY_NAMES:
+    if lowered[0] in WRITABLE_DIRS and any(name.endswith(suffix) for suffix in EXECUTABLE_SUFFIXES):
+        return False
+    if any(part in DENY_PARTS for part in lowered) or tuple(lowered[:2]) in DENY_PREFIXES or name in DENY_NAMES:
         return False
     if name.startswith(".env") or "handoff" in name:
         return False

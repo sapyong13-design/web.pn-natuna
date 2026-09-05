@@ -8,6 +8,8 @@ use Joomla\CMS\Uri\Uri;
 
 /** @var Joomla\CMS\Document\HtmlDocument $this */
 $app = Factory::getApplication();
+require_once JPATH_ROOT . '/includes/pn-csp.php';
+pnNatunaRegisterCsp($app);
 $siteName = htmlspecialchars((string) $app->get('sitename', 'Pengadilan Negeri Natuna'), ENT_QUOTES, 'UTF-8');
 $displayMode = (int) $app->get('display_offline_message', 1);
 $message = '';

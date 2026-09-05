@@ -4,6 +4,8 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 
 $app = Factory::getApplication();
+require_once JPATH_ROOT . '/includes/pn-csp.php';
+pnNatunaRegisterCsp($app);
 $menu = $app->getMenu()->getActive();
 $isHome = $menu && $menu->home;
 $hasSidebar = (bool) ($this->countModules('sidebar') || $this->countModules('sidebar-right'));
@@ -97,17 +99,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
-  <script>
-    (function () {
-      try {
-        var dark = localStorage.getItem('pnNatunaDark') === '1';
-        document.body.classList.toggle('is-dark', dark);
-        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-        var theme = document.getElementById('theme-color-meta');
-        if (theme) theme.content = dark ? '#151015' : '#8f1f0b';
-      } catch (e) { /* private mode */ }
-    })();
-  </script>
+  <script src="/templates/pn_natuna_2026/js/theme-boot.js"></script>
   <a class="skip-link" href="#content">Lewati ke konten utama</a>
 
   <header class="site-header">

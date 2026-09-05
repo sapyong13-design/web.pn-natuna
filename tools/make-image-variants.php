@@ -15,6 +15,11 @@
  *   php tools/make-image-variants.php
  *   php tools/make-image-variants.php --quality 82
  */
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
 require_once __DIR__ . '/../configuration.php';
 
 // Logika pembuatan varian tinggal di dalam plugin supaya ikut terkirim saat deploy;
