@@ -92,9 +92,9 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
   <?php $tplPath = JPATH_THEMES . '/' . $this->template; ?>
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css?v=<?php echo @filemtime($tplPath . '/css/fonts.css') ?: '1'; ?>" />
-  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template.css?v=<?php echo @filemtime($tplPath . '/css/template.css') ?: '1'; ?>" />
+  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template.css?v=<?php echo (@filemtime($tplPath . '/css/template.css') ?: '1') . '-4b123344'; ?>" />
   <jdoc:include type="scripts" />
-  <script src="/templates/<?php echo $this->template; ?>/js/template.js?v=<?php echo @filemtime($tplPath . '/js/template.js') ?: '1'; ?>" defer></script>
+  <script src="/templates/<?php echo $this->template; ?>/js/template.js?v=<?php echo (@filemtime($tplPath . '/js/template.js') ?: '1') . '-4b123344'; ?>" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
   <script>
