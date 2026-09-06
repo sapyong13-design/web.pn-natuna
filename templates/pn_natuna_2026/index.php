@@ -96,7 +96,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css?v=<?php echo @filemtime($tplPath . '/css/fonts.css') ?: '1'; ?>" />
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template-4b123344.css" />
   <jdoc:include type="scripts" />
-  <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js" defer></script>
+  <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js?v=20260906-roster-meta" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
   <script src="/templates/pn_natuna_2026/js/theme-boot.js"></script>

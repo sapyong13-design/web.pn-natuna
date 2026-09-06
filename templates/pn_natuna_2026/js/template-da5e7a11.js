@@ -1822,23 +1822,43 @@ function setupApparatusDossier() {
 
   cards.forEach((card) => {
     const body = card.querySelector('.roster-body, .roster-featured-body');
-    if (!body || body.querySelector('.roster-meta')) return;
-    const rows = Array.from(body.children).filter((element) => /^(NIP|Pangkat\/Gol\.)/i.test(element.textContent.trim()));
-    if (!rows.length) return;
-    const meta = document.createElement('dl');
-    meta.className = 'roster-meta';
-    rows.forEach((row) => {
-      const match = row.textContent.trim().match(/^(NIP|Pangkat\/Gol\.)(.*)$/i);
+    if (!body) return;
+    let meta = body.querySelector('.roster-meta');
+    if (!meta) {
+      const rows = Array.from(body.children).filter((element) => /^(NIP|Pangkat\/Gol\.)/i.test(element.textContent.trim()));
+      meta = document.createElement('dl');
+      meta.className = 'roster-meta';
+      rows.forEach((row) => {
+        const match = row.textContent.trim().match(/^(NIP|Pangkat\/Gol\.)(.*)$/i);
+        const group = document.createElement('div');
+        const term = document.createElement('dt');
+        const detail = document.createElement('dd');
+        term.textContent = match[1];
+        detail.textContent = match[2].trim() || '-';
+        group.append(term, detail);
+        meta.appendChild(group);
+        row.remove();
+      });
+      body.appendChild(meta);
+    }
+    const values = new Map([...meta.querySelectorAll(':scope > div')].map((row) => [
+      row.querySelector('dt')?.textContent.trim().toLowerCase(),
+      row.querySelector('dd')?.textContent.trim() || '-'
+    ]));
+    const degree = card.querySelector('.roster-degree')?.textContent.trim() || '-';
+    meta.replaceChildren(...[
+      ['NIP', values.get('nip') || '-'],
+      ['Pangkat/Gol.', values.get('pangkat/gol.') || '-'],
+      ['Pendidikan', values.get('pendidikan') || degree]
+    ].map(([label, value]) => {
       const group = document.createElement('div');
       const term = document.createElement('dt');
       const detail = document.createElement('dd');
-      term.textContent = match[1];
-      detail.textContent = match[2].trim() || '-';
+      term.textContent = label;
+      detail.textContent = value;
       group.append(term, detail);
-      meta.appendChild(group);
-      row.remove();
-    });
-    body.appendChild(meta);
+      return group;
+    }));
   });
 
   const zoomIcon = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path><path d="M11 8v6M8 11h6"></path></svg>';
