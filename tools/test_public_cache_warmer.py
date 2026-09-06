@@ -66,7 +66,7 @@ def main():
     assert "CacheMaxStaleAge 3600" in htaccess
     assert "'$.cacheTimeout', '120'" in migration
     assert "'$.homePageCacheTimeout', '15'" in migration
-    assert "warm-public-cache.py" in cron and "--passes 2" in cron
+    assert "warm-public-cache.py" not in cron, "token-bearing public HTML must not be warmed automatically"
     print("Public cache warmer contract: ok")
 
 

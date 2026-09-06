@@ -16,9 +16,9 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 
 ## Operasi cron cPanel aktif
 
-- Setup updater staging `new.pn-natuna.go.id`, path aktual akun `pnnatuna`, command refresh manual, command per sumber, format Google Drive, dan troubleshooting Python dicatat di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Status cPanel Aktual**.
-- Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"`.
-- Jangan commit `/home/pnnatuna/private/cron/pn-natuna.env`, `mysql.cnf`, password, atau isi log. Private checkout hanya menyimpan kode; konfigurasi/kredensial tetap di luar webroot.
+- Setup updater produksi, command refresh manual, command per sumber, format Google Drive, dan troubleshooting Python dicatat di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Status cPanel Aktual**.
+- Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/cron-refresh-all.sh`.
+- Runner cron hanya refresh data dan sitemap. Deployment template/`.htaccess`, login guard, migrasi, serta cache warming bukan tugas cron. Jangan commit `pn-natuna.env`, `mysql.cnf`, password, atau isi log.
 
 ## Lanjut besok — deployment staging (HEAD wajib diverifikasi operator)
 

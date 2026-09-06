@@ -667,7 +667,7 @@ Nilai `invalid_bounds`, `duplicate_lft`, dan `duplicate_rgt` harus `0`. Jika `cm
 
 ---
 
-## Status cPanel Aktual — `new.pn-natuna.go.id`
+## Status cPanel Aktual — `pn-natuna.go.id`
 
 Setup ini sudah dibuktikan berhasil pada akun cPanel `pnnatuna`:
 
@@ -678,17 +678,17 @@ Setup ini sudah dibuktikan berhasil pada akun cPanel `pnnatuna`:
 - Python virtual environment: `/home/pnnatuna/virtualenv/private/python/pn-natuna-cron/3.12/bin/python`
 - Python 3.12 dengan `PyMuPDF` dan `Pillow` sudah terverifikasi melalui `Cron Python: OK`.
 - Runner berhasil dijalankan melalui `/bin/sh`; bentuk ini dipakai karena eksekusi langsung pernah menghasilkan `Permission denied` pada jailshell.
-- Nilai document root staging dan nama database tetap berasal dari `pn-natuna.env`; jangan menduplikasi kredensial di repository.
+- Nilai document root produksi dan nama database tetap berasal dari `pn-natuna.env`; jangan menduplikasi kredensial di repository.
 
 ### Refresh manual semua sumber
 
-Jalankan command ini dari cPanel Terminal:
+Jalankan runner privat yang dipasang dari release terverifikasi, bukan langsung dari checkout Git yang mungkin tertinggal atau kotor:
 
 ```bash
-set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"
+set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/cron-refresh-all.sh
 ```
 
-Command memuat konfigurasi privat lalu memperbarui instansi, YouTube, SIPP, survei SKM/IPAK, dan DIPA secara berurutan. Target akhir: `instansi berhasil`, `youtube berhasil`, `sipp berhasil`, `survei berhasil`, dan `dipa berhasil`.
+Command hanya memperbarui instansi, YouTube, SIPP, survei SKM/IPAK, DIPA, dan sitemap. Runner tidak menyalin template/`.htaccess`, memasang guard, menjalankan migrasi, atau menghangatkan HTML bertoken. Semua perubahan kode dan schema wajib melalui deployment terjaga.
 
 ### Refresh manual per sumber
 
@@ -722,7 +722,7 @@ PDF Google Drive tidak memicu website secara instan. Dokumen terbaca saat cron a
 
 ## Setup Ringkas Semua Updater
 
-Semua updater kini dapat dijalankan dari **private checkout** repository dengan satu runner. Direktori `tools/` sengaja **tidak masuk ZIP deployment** dan tidak perlu ditaruh di `public_html`.
+Updater memakai source privat, tetapi entrypoint cron wajib berupa salinan release terverifikasi di `/home/USER/private/cron/cron-refresh-all.sh`. Direktori `tools/` tidak masuk ZIP web dan tidak boleh ditaruh di `public_html`.
 
 ### 1. Siapkan file privat
 
@@ -730,12 +730,12 @@ Semua updater kini dapat dijalankan dari **private checkout** repository dengan 
 mkdir -p /home/USER/private/cron /home/USER/private/logs
 cp /home/USER/repos/web.pn-natuna/tools/cron-cpanel.env.example /home/USER/private/cron/pn-natuna.env
 cp /home/USER/repos/web.pn-natuna/tools/mysql.cnf.example /home/USER/private/cron/mysql.cnf
-chmod 700 /home/USER/private/cron
+cp /home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh /home/USER/private/cron/cron-refresh-all.sh
+chmod 700 /home/USER/private/cron /home/USER/private/cron/cron-refresh-all.sh
 chmod 600 /home/USER/private/cron/pn-natuna.env /home/USER/private/cron/mysql.cnf
-chmod 700 /home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh
 ```
 
-Edit `pn-natuna.env`: ganti `USER`, path PHP/Python/MySQL, dan `DB_NAME`. Edit `mysql.cnf`: isi user dan password database cPanel. Password hanya berada di file mode `0600`, bukan command Cron Jobs.
+Edit `pn-natuna.env`: ganti `USER`, path PHP/Python/MySQL, dan `DB_NAME`. Edit `mysql.cnf`: isi user dan password database cPanel. Password hanya berada di file mode `0600`, bukan command Cron Jobs. Setelah setiap perubahan runner, salin ulang hanya dari commit yang sudah diuji dan catat checksum.
 
 Pasang dependensi Python sekali:
 
@@ -749,17 +749,17 @@ Pasang dependensi Python sekali:
 set -a
 . /home/USER/private/cron/pn-natuna.env
 set +a
-/home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh
+/bin/sh /home/USER/private/cron/cron-refresh-all.sh
 ```
 
-Runner melanjutkan updater lain bila satu sumber gagal, lalu mengembalikan exit nonzero agar email cron memberi peringatan. Root web selalu berasal dari `PN_NATUNA_JPATH_ROOT`; cache masuk `public_html/cache`, gambar survei masuk `public_html/images/surveys`, dan log masuk folder privat.
+Runner melanjutkan updater lain bila satu sumber gagal, lalu mengembalikan exit nonzero agar email cron memberi peringatan. Root web selalu berasal dari `PN_NATUNA_JPATH_ROOT`; cache masuk `public_html/cache`, gambar survei masuk `public_html/images/surveys`, dan log masuk folder privat. Template, `.htaccess`, login guard, dan migration registry tidak boleh berubah saat runner berjalan.
 
 ### 3. Satu command cPanel Cron Jobs
 
 Jadwal yang sederhana: setiap hari pukul 06.00.
 
 ```bash
-0 6 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
+0 6 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /bin/sh /home/USER/private/cron/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
 ```
 
 Untuk YouTube lebih cepat, runner yang sama boleh dijalankan per jam, tetapi juga akan memeriksa sumber lain. Jangan menjalankan `refresh-survey.py` dan `refresh-dipa.py` bersamaan; keduanya menyunting modul Joomla `816` secara berurutan di runner ini.
