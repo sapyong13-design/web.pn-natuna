@@ -19,6 +19,9 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 - Setup updater produksi, command refresh manual, command per sumber, format Google Drive, dan troubleshooting Python dicatat di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Status cPanel Aktual**.
 - Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh`.
 - Runner cron hanya memakai bundle release privat yang ditentukan lokasi runner sendiri; `PN_NATUNA_SOURCE_ROOT` tetap checkout Git untuk deployment. Deployment template/`.htaccess`, login guard, migrasi, serta cache warming bukan tugas cron. Jangan commit `pn-natuna.env`, `mysql.cnf`, password, atau isi log.
+- Recovery produksi 6 September 2026 selesai: bundle `b136c2ace41e72cfe925c73a813a87fa5fa681bb` aktif lewat `/home/pnnatuna/private/cron/current`; jadwal tetap `0 * * * *`. Job warmer HTML bertoken dihapus; job buku tamu dan rollback staging tidak diubah. Checkout server `a171f685` dengan perubahan lokal tetap utuh.
+- Backup recovery: `/home/pnnatuna/private/backups/cron-recovery-20260906T085124Z` (template, `.htaccess`, crontab sebelum/sesudah). Dua refresh manual selesai exit 0 untuk seluruh enam updater; hash `.htaccess`, `index.php`, dan `error.php` tidak berubah. DIPA memuat enam periode sampai Juli 2026; run kedua memakai cache seluruh periode. Sitemap berisi 70 URL.
+- Purge Joomla dan LiteSpeed berhasil. Browser produksi: homepage 200, halaman tidak ditemukan 404 dengan stylesheet berversi, empat aset CSS/JS 200, tab DIPA Juni dapat dipilih. Respons HTML yang diuji tidak memiliki `X-LiteSpeed-Cache`; jangan mengklaim miss/hit untuk HTML bertoken.
 
 ## Lanjut besok — deployment staging (HEAD wajib diverifikasi operator)
 
