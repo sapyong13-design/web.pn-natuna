@@ -31,7 +31,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 
 $index = (string) file_get_contents($root . '/templates/pn_natuna_2026/index.php');
 $error = (string) file_get_contents($root . '/templates/pn_natuna_2026/error.php');
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 
 // Komentar templat mengutip rute lama sebagai catatan sejarah, jadi pemeriksaan hanya
 // membaca kode yang benar-benar dipancarkan - bukan komentarnya.

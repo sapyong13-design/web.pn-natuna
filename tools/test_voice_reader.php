@@ -1,6 +1,6 @@
 <?php
 /** Focused source contract for Indonesian voice selection and startup welcome. */
-$source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/js/template.js');
+$source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/js/template-da5e7a11.js');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) $failures[] = $message;

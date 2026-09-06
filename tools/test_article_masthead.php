@@ -14,7 +14,7 @@ $db->set_charset('utf8mb4');
 
 $root = dirname(__DIR__);
 $template = (string) file_get_contents($root . '/templates/pn_natuna_2026/html/com_content/article/default.php');
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {

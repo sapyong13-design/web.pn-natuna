@@ -1,5 +1,5 @@
 <?php
-$root=dirname(__DIR__);$index=file_get_contents($root.'/templates/pn_natuna_2026/index.php');$hero=file_get_contents($root.'/templates/pn_natuna_2026/hero-slider.php');$js=file_get_contents($root.'/templates/pn_natuna_2026/js/template.js');$css=file_get_contents($root.'/templates/pn_natuna_2026/css/template.css');$f=[];$e=static function($c,$m)use(&$f){if(!$c)$f[]=$m;};
+$root=dirname(__DIR__);$index=file_get_contents($root.'/templates/pn_natuna_2026/index.php');$hero=file_get_contents($root.'/templates/pn_natuna_2026/hero-slider.php');$js=file_get_contents($root.'/templates/pn_natuna_2026/js/template-da5e7a11.js');$css=file_get_contents($root.'/templates/pn_natuna_2026/css/template-4b123344.css');$f=[];$e=static function($c,$m)use(&$f){if(!$c)$f[]=$m;};
 $e(str_contains($index,'data-mobile-menu-filter'),'Mobile menu filter input missing.');
 $e(str_contains($index,'data-mobile-menu-empty'),'Mobile menu empty state missing.');
 $e(str_contains($index,'data-sidebar-rail-status'),'Sidebar rail status missing.');

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$jsPath = dirname(__DIR__) . '/templates/pn_natuna_2026/js/template.js';
+$jsPath = dirname(__DIR__) . '/templates/pn_natuna_2026/js/template-da5e7a11.js';
 $js = file_get_contents($jsPath);
 
 if ($js === false) {

@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "templates/pn_natuna_2026/js/template.js"
+SOURCE = ROOT / "templates/pn_natuna_2026/js/template-da5e7a11.js"
 source = SOURCE.read_text(encoding="utf-8")
 for token in [
     "setupAmpuhDirectory()",

@@ -5,11 +5,13 @@ import tempfile
 from io import BytesIO
 from unittest.mock import patch
 import ast
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+parse_kwargs = {"feature_version": (3, 6)} if sys.version_info >= (3, 8) else {}
 for script in (ROOT / "tools" / "build-deploy-package.py", ROOT / "tools" / "deploy-cpanel.py"):
     script_source = script.read_text(encoding="utf-8")
-    ast.parse(script_source, filename=str(script), feature_version=(3, 6))
+    ast.parse(script_source, filename=str(script), **parse_kwargs)
     for unsupported in ("from __future__ import annotations", "list[", "dict[", " | None", "text=True", "capture_output=", "missing_ok="):
         assert unsupported not in script_source, "{} uses unsupported Python 3.6 syntax/API: {}".format(script, unsupported)
 SPEC = spec_from_file_location("deploy_cpanel", ROOT / "tools" / "deploy-cpanel.py")

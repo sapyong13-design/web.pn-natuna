@@ -5,7 +5,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 MYSQL = Path(r"C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysql.exe")
 IMAGE = ROOT / "images" / "layanan" / "maklumat-pelayanan-2026.webp"
-CSS = ROOT / "templates" / "pn_natuna_2026" / "css" / "template.css"
+CSS = ROOT / "templates" / "pn_natuna_2026" / "css" / "template-4b123344.css"
 EXPECTED_URL = "/images/layanan/maklumat-pelayanan-2026.webp"
 
 

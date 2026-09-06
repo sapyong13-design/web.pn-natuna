@@ -1,6 +1,6 @@
 <?php
 /** Focused CSS contract for internal family navigation and accessibility. */
-$css = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/css/template-4b123344.css');
 $article = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/html/com_content/article/default.php');
 $profileMarkup = (string) file_get_contents(__DIR__ . '/profile-service-style.html');
 $profileMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260814_clarify_secretariat_subdivision_cards.sql');
@@ -101,7 +101,7 @@ $expect(str_contains($transparencyArrowMigration, 'REGEXP_REPLACE') && str_conta
 $expect((bool) preg_match('/\.transparency-archive\s*\{[^}]*width:\s*min\(100%,\s*1040px\);/s', $css), 'Two-column transparency archives need a bounded desktop width.');
 $expect((bool) preg_match('/a\.transparency-document::after\s*\{[^}]*content:\s*"↗";/s', $css), 'Transparency documents must use exactly one CSS-generated external arrow.');
 $transparencyRepairMigration = (string) file_get_contents(__DIR__ . '/../database/migrations/20260821_repair_transparency_document_links.sql');
-$templateJs = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/js/template.js');
+$templateJs = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/js/template-da5e7a11.js');
 $expect(str_contains($transparencyRepairMigration, "REPLACE(introtext,'</span>1','</span></a>')"), 'Transparency repair must restore closing anchors, not merely hide the visible artifact.');
 $expect((bool) preg_match('/\.transparency-archive\s*\{[^}]*grid-template-columns:\s*repeat\(2,/s', $css), 'Transparency archives need two desktop columns.');
 $expect(str_contains($templateJs, 'const initialLimit = 10;') && str_contains($templateJs, 'Tampilkan ${hiddenDocuments.length} dokumen lainnya'), 'Long transparency archives need an accessible ten-document disclosure.');

@@ -11,7 +11,7 @@ if ($db->connect_errno) {
 $db->set_charset('utf8mb4');
 
 $templatePath = __DIR__ . '/../templates/pn_natuna_2026/html/com_content/article/default.php';
-$cssPath = __DIR__ . '/../templates/pn_natuna_2026/css/template.css';
+$cssPath = __DIR__ . '/../templates/pn_natuna_2026/css/template-4b123344.css';
 $source = (string) file_get_contents($templatePath);
 $css = (string) file_get_contents($cssPath);
 

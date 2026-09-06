@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 $markup = file_get_contents($root . '/templates/pn_natuna_2026/hero-slider.php');
-$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $asset = $root . '/images/hero/gedung-pn-natuna-2026-graded.webp';
 
 if ($markup === false || $css === false) {

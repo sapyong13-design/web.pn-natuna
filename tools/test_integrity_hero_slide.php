@@ -2,7 +2,7 @@
 /** Focused contract for the three-slide homepage hero. */
 $root = dirname(__DIR__);
 $php = (string) file_get_contents($root . '/templates/pn_natuna_2026/hero-slider.php');
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $asset = $root . '/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp';
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
@@ -31,7 +31,7 @@ $expect((bool) preg_match('/\.hero-slide-integrity__link\s*\{[^}]*display:\s*blo
 preg_match('/@media \(min-width:\s*761px\)\s*\{.*?\.home-slider \.hero-slide-integrity\s*\{[^}]*width:\s*min\((\d+)px, 100%\);[^}]*margin-inline:\s*auto;[^}]*\}/s', $css, $integrityCap);
 $expect(isset($integrityCap[1]) && (int) $integrityCap[1] <= 820, 'Desktop integrity slide must cap artwork width at 820px or less and stay centered.');
 $expect(str_contains($php, 'hero-slider hero-cinema'), 'Hero root contract missing.');
-$js = (string) file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
+$js = (string) file_get_contents($root . '/templates/pn_natuna_2026/js/template-da5e7a11.js');
 $expect(!str_contains($js, 'setupMobileHeroHeight'), 'Mobile hero must not measure every slide at runtime.');
 $expect(!str_contains($css, '--hero-mobile-slide-height'), 'Mobile hero must not depend on a runtime height variable.');
 $expect((bool) preg_match('/\.hero-cinema \.hero-slides\s*\{[^}]*min-height:\s*540px/s', $css), 'Mobile hero track must reserve a stable intrinsic height.');

@@ -1,7 +1,7 @@
 """Focused source contract for dark-mode content surfaces."""
 from pathlib import Path
 
-css = (Path(__file__).resolve().parents[1] / "templates/pn_natuna_2026/css/template.css").read_text(encoding="utf-8")
+css = (Path(__file__).resolve().parents[1] / "templates/pn_natuna_2026/css/template-4b123344.css").read_text(encoding="utf-8")
 required = {
     "shared content headings": "body.is-dark .content-primary :is(h1, h2, h3, h4)",
     "shared interactive accents": "body.is-dark .content-primary :is(a, .svc-more)",

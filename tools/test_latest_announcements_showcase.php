@@ -89,8 +89,8 @@ if (function_exists('pn_natuna_render_latest_announcements')) {
 
 $source = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/hero-slider.php');
 $index = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/index.php');
-$css = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/css/template.css');
-$js = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/js/template.js');
+$css = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/css/template-4b123344.css');
+$js = (string) file_get_contents(JPATH_BASE . '/templates/pn_natuna_2026/js/template-da5e7a11.js');
 $expect(str_contains($css, 'grid-template-columns: minmax(0, 45fr) minmax(0, 55fr)'), 'Desktop showcase grid must use a 45:55 composition.');
 $expect(str_contains($css, '@media (max-width: 1180px)'), 'Tablet stack breakpoint is missing.');
 $expect(str_contains($css, 'scroll-snap-type: x mandatory'), 'Mobile rail snap is missing.');

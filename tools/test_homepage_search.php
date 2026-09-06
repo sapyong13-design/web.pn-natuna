@@ -161,7 +161,7 @@ foreach ($options as $option) {
 
 // --- Penempatan ---------------------------------------------------------------
 $index = (string) file_get_contents($root . '/templates/pn_natuna_2026/index.php');
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 
 $includes = preg_match_all('/<jdoc:include\s+type="modules"\s+name="home-search"/', $index);
 $expect($includes === 1, "The home-search position is included {$includes} time(s); it must appear exactly once or the module renders twice.");

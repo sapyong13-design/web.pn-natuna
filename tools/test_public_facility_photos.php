@@ -62,7 +62,7 @@ if (is_file($variantMigrationPath)) {
     $expect(str_contains($variantSql, 'facility-documentary--disability') && str_contains($variantSql, 'facility-documentary--posbakum'), 'Panel variant classes are missing.');
     $expect(!str_contains($variantSql, 'facility-thumb') && !str_contains($variantSql, 'id = 480'), 'Homepage facility gallery must remain untouched.');
 }
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 foreach (['.facility-documentary {', '.facility-documentary__media:focus-visible', 'body.is-dark .facility-documentary', '@media (prefers-reduced-motion: reduce)'] as $selector) {
     $expect(str_contains($css, $selector), "Facility documentary CSS is missing {$selector}.");
 }

@@ -2,7 +2,7 @@
 /** Focused contract check for nested news channel category overrides. */
 $blog = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/html/com_content/category/blog.php');
 $item = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/html/com_content/category/blog_item.php');
-$css = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/css/template-4b123344.css');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) {

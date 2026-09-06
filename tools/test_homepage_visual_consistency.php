@@ -1,6 +1,6 @@
 <?php
 $root = dirname(__DIR__);
-$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) $failures[] = $message;

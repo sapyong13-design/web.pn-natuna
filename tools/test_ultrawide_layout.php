@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$cssPath = dirname(__DIR__) . '/templates/pn_natuna_2026/css/template.css';
+$cssPath = dirname(__DIR__) . '/templates/pn_natuna_2026/css/template-4b123344.css';
 $css = file_get_contents($cssPath);
 
 if ($css === false) {

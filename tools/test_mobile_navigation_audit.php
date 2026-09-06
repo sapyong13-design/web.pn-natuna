@@ -2,8 +2,8 @@
 /** Source contract for audited mobile navigation behavior. */
 $root = dirname(__DIR__);
 $index = (string) file_get_contents($root . '/templates/pn_natuna_2026/index.php');
-$js = (string) file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$js = (string) file_get_contents($root . '/templates/pn_natuna_2026/js/template-da5e7a11.js');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void { if (!$condition) $failures[] = $message; };
 

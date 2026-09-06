@@ -120,7 +120,7 @@ $expect(count($panelIds) === count(array_unique($panelIds)), 'Panel IDs must be 
 $expect($toggleIds === $panelIds, 'Every toggle aria-controls must match its hidden panel.');
 $expect(str_contains($html, 'data-ampuh-panel'), 'Disclosure panels need behavior hooks.');
 $expect(str_contains($html, 'data-ampuh-gobi-filter'), 'GOBI filter needs behavior hook.');
-$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$css = (string) file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $ampuhStart = strpos($css, '/* AMPUH DIRECTORY 2026-07-13 */');
 $ampuhEnd = strpos($css, '/* END AMPUH DIRECTORY 2026-07-13 */', $ampuhStart === false ? 0 : $ampuhStart);
 $ampuhCss = $ampuhStart === false || $ampuhEnd === false

@@ -2,8 +2,8 @@
 $root = dirname(__DIR__);
 $index = file_get_contents($root . '/templates/pn_natuna_2026/index.php');
 $hero = file_get_contents($root . '/templates/pn_natuna_2026/hero-slider.php');
-$js = file_get_contents($root . '/templates/pn_natuna_2026/js/template.js');
-$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template.css');
+$js = file_get_contents($root . '/templates/pn_natuna_2026/js/template-da5e7a11.js');
+$css = file_get_contents($root . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $instagram = file_get_contents($root . '/templates/pn_natuna_2026/instagram-feed.php');
 $routeMigration = file_get_contents($root . '/database/migrations/20261015_optimize_menu_route_assets.sql');
 $brandRepairMigration = file_get_contents($root . '/database/migrations/20261016_cache_bust_repaired_brand_variants.sql');

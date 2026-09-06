@@ -4,7 +4,7 @@ $root = dirname(__DIR__);
 $resultsPath = $root . '/templates/pn_natuna_2026/html/com_finder/search/default_results.php';
 $cardPath = $root . '/templates/pn_natuna_2026/html/com_finder/search/default_caseroute.php';
 $jsonPath = $root . '/templates/pn_natuna_2026/data/sistem-daring.json';
-$cssPath = $root . '/templates/pn_natuna_2026/css/template.css';
+$cssPath = $root . '/templates/pn_natuna_2026/css/template-4b123344.css';
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) {

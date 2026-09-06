@@ -1,7 +1,7 @@
 <?php
 /** Focused source contract for lazy YouTube showcase behavior. */
-$source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/js/template.js');
-$css = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/css/template.css');
+$source = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/js/template-da5e7a11.js');
+$css = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/css/template-4b123344.css');
 $failures = [];
 $expect = static function (bool $condition, string $message) use (&$failures): void {
     if (!$condition) $failures[] = $message;

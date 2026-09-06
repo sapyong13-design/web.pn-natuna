@@ -2,7 +2,7 @@
 from pathlib import Path
 
 SOURCE = Path(__file__).parent.parent / "templates/pn_natuna_2026/html/com_content/article/default.php"
-CSS = Path(__file__).parent.parent / "templates/pn_natuna_2026/css/template.css"
+CSS = Path(__file__).parent.parent / "templates/pn_natuna_2026/css/template-4b123344.css"
 text = SOURCE.read_text(encoding="utf-8")
 css = CSS.read_text(encoding="utf-8")
 
