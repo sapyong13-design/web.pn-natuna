@@ -19,7 +19,7 @@ assert SPEC and SPEC.loader
 MODULE = module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 import subprocess
-help_result = subprocess.run(["python", str(ROOT / "tools" / "deploy-cpanel.py"), "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+help_result = subprocess.run([sys.executable, str(ROOT / "tools" / "deploy-cpanel.py"), "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 assert help_result.returncode == 0, help_result.stderr
 assert "--full-staging" in help_result.stdout
 
