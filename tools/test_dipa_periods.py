@@ -16,8 +16,10 @@ dari 38,20% ke 54,96% adalah +16,76 poin.
 from __future__ import annotations
 
 import importlib.util
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,10 +32,17 @@ def expect(condition: bool, message: str) -> None:
     if not condition:
         failures.append(message)
 
+os.environ['PN_NATUNA_PRIVATE_ROOT'] = str(Path(tempfile.gettempdir()) / 'pn-natuna-private-test')
 
 spec = importlib.util.spec_from_file_location('refresh_dipa_periods_under_test', SCRIPT)
 rd = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(rd)
+
+TEST_PRIVATE_ROOT = Path(tempfile.gettempdir()) / 'pn-natuna-private-test'
+expect(Path(rd.CACHE_PATH) == TEST_PRIVATE_ROOT / 'cache' / 'pn_natuna_dipa_periods.json',
+       'Cache DIPA cron harus berada di private root, bukan release source.')
+expect(Path(rd.TMP_DIR) == TEST_PRIVATE_ROOT / 'tmp',
+       'PDF sementara DIPA cron harus berada di private root, bukan release source.')
 
 
 def unit(pct: float) -> dict:

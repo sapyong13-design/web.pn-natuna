@@ -45,10 +45,11 @@ DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
 MAX_PERIODS = 12
 # Hasil parse tiap PDF disimpan per file id supaya cron tidak mengunduh ulang
 # seluruh folder tiap kali jalan; PDF di Drive tidak pernah berubah isinya.
-CACHE_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'cache', 'pn_natuna_dipa_periods.json',
-)
+# Runtime produksi harus berada di private root agar release source tetap read-only.
+SOURCE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RUNTIME_ROOT = os.path.abspath(os.environ.get('PN_NATUNA_PRIVATE_ROOT') or SOURCE_ROOT)
+CACHE_PATH = os.path.join(RUNTIME_ROOT, 'cache', 'pn_natuna_dipa_periods.json')
+TMP_DIR = os.path.join(RUNTIME_ROOT, 'tmp')
 # ==========================
 MAX_HTML_BYTES = 2 * 1024 * 1024
 MAX_PDF_BYTES = 25 * 1024 * 1024
@@ -438,16 +439,15 @@ def resolve_periods(entries, cache):
             }
             resolved.append(entry)
             continue
-        tmp_pdf = os.path.join(os.path.dirname(__file__), f'_dipa_{entry["id"][:12]}.pdf')
         try:
-            size = gdrive_download(entry['id'], tmp_pdf)
-            data = parse_dipa(tmp_pdf)
+            os.makedirs(TMP_DIR, exist_ok=True)
+            with tempfile.TemporaryDirectory(prefix='dipa-', dir=TMP_DIR) as temp_dir:
+                tmp_pdf = os.path.join(temp_dir, 'source.pdf')
+                size = gdrive_download(entry['id'], tmp_pdf)
+                data = parse_dipa(tmp_pdf)
         except Exception as exc:
             print(f'      [WARN] {entry["name"]} dilewati: {exc}', file=sys.stderr)
             continue
-        finally:
-            if os.path.exists(tmp_pdf):
-                os.remove(tmp_pdf)
         if not data:
             print(f'      [WARN] {entry["name"]} tidak menghasilkan data DIPA.', file=sys.stderr)
             continue

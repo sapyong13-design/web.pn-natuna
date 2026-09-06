@@ -304,7 +304,7 @@ menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi, dengan
 ### Cara kerja `tools/refresh-dipa.py`
 1. List file folder Gdrive via `embeddedfolderview`.
 2. `collect_periods()` mengambil **semua** bulan yang ada, satu berkas per bulan, terbaru lebih dulu, dibatasi `MAX_PERIODS` (12). Kalau satu bulan punya beberapa berkas, yang bernama `01 dan 03` dimenangkan — bukan karena hanya itu yang lengkap (lihat catatan penamaan di atas), tapi karena namanya paling eksplisit menjanjikan kedua unit.
-3. `resolve_periods()` mengunduh + parse tiap PDF. **Hasil parse di-cache per file id** di `cache/pn_natuna_dipa_periods.json` (gitignored) — PDF di Drive tidak pernah berubah isinya, jadi cron berikutnya hanya mengunduh bulan yang benar-benar baru. Satu berkas gagal hanya melewati periode itu, tidak menjatuhkan refresh.
+3. `resolve_periods()` mengunduh + parse tiap PDF. **Hasil parse di-cache per file id** di `$PN_NATUNA_PRIVATE_ROOT/cache/pn_natuna_dipa_periods.json` saat env produksi dimuat; eksekusi lokal tanpa env tetap memakai `cache/` di root source. PDF di Drive tidak pernah berubah isinya, jadi cron berikutnya hanya mengunduh bulan yang benar-benar baru. Satu berkas gagal hanya melewati periode itu, tidak menjatuhkan refresh.
 4. `attach_deltas()` menghitung selisih **poin persentase** terhadap periode sebelumnya.
 5. `build_html()` merender tab periode + satu panel per bulan; panel teraktif ditandai `is-active` dari server.
 6. `update_module_db()` mengganti blok `.dipa-widget` pada modul Joomla aktif (DB id 816); module 817 versi lama yang unpublished. Modul 816 juga memuat skor SKM/IPAK di atas widget, jadi yang diganti hanya potongan dari tag pembuka widget sampai ujung konten.
@@ -323,7 +323,7 @@ Tablist dengan label pendek (`Jun 26`, `Mei 26`, …). Perilaku keyboard (←/�
 
 ### Menjalankan
 ```bash
-MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
+PN_NATUNA_PRIVATE_ROOT=/path/private MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
   python tools/refresh-dipa.py
 ```
 
@@ -333,14 +333,14 @@ MYSQL_BIN=/path/to/mysql DB_USER=root DB_NAME=pn_natuna_rebuild \
 3. Juli masuk sebagai tab baru dan jadi periode aktif; bulan lama tetap bisa dipilih dan tidak diunduh ulang.
 
 ### Konfigurasi (`tools/refresh-dipa.py`)
-- `FOLDER_ID`, `MODULE_ID` (816), `MAX_PERIODS` (12), `CACHE_PATH`
-- `MYSQL_BIN`/`MYSQL_DEFAULTS_FILE`/`DB_USER`/`DB_PASS`/`DB_NAME` (env var)
+- `FOLDER_ID`, `MODULE_ID` (816), `MAX_PERIODS` (12)
+- `PN_NATUNA_PRIVATE_ROOT`, `MYSQL_BIN`/`MYSQL_DEFAULTS_FILE`/`DB_USER`/`DB_PASS`/`DB_NAME` (env var)
 
 ### Catatan parsing
 Format PDF: tiap Unit Organisasi (01, 03) punya baris `JUMLAH SELURUHNYA`
 dengan kolom realisasi/sisa/%/pagu. Parser cari `%` terdekat sebelum JUMLAH +
 angka terbesar setelahnya (pagu). Kalau struktur PDF berubah, parser perlu disesuaikan.
-Menghapus `cache/pn_natuna_dipa_periods.json` memaksa parse ulang seluruh folder — lakukan itu bila parser diperbaiki, karena cache menyimpan hasil parser lama.
+Menghapus `$PN_NATUNA_PRIVATE_ROOT/cache/pn_natuna_dipa_periods.json` memaksa parse ulang seluruh folder — lakukan itu bila parser diperbaiki, karena cache menyimpan hasil parser lama.
 
 ## Deploy Staging Commit `149f88e`
 
@@ -415,7 +415,7 @@ cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/sipp-schedule.php" "$PN_NAT
 cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/html/mod_custom/default.php" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/html/mod_custom/default.php" && echo 'Brand override: OK'
 cd "$PN_NATUNA_JPATH_ROOT"
 "$PHP_BIN" cli/joomla.php cache:clean
-/bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"
+/bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh
 ```
 
 Nilai `invalid_bounds`, `duplicate_lft`, dan `duplicate_rgt` harus `0`.
@@ -660,7 +660,7 @@ cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/js/template.js" "$PN_NATUNA
 cmp "$PN_NATUNA_SOURCE_ROOT/templates/pn_natuna_2026/html/com_content/article/default.php" "$PN_NATUNA_JPATH_ROOT/templates/pn_natuna_2026/html/com_content/article/default.php" && echo "Renderer: OK"
 cd "$PN_NATUNA_JPATH_ROOT"
 "$PHP_BIN" cli/joomla.php cache:clean
-/bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"
+/bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh
 ```
 
 Nilai `invalid_bounds`, `duplicate_lft`, dan `duplicate_rgt` harus `0`. Jika `cmp` gagal, salin file terkait dari private checkout ke webroot sebelum membersihkan cache.
@@ -671,21 +671,23 @@ Nilai `invalid_bounds`, `duplicate_lft`, dan `duplicate_rgt` harus `0`. Jika `cm
 
 Setup ini sudah dibuktikan berhasil pada akun cPanel `pnnatuna`:
 
-- Private checkout: `/home/pnnatuna/repos/web.pn-natuna`
+- Private checkout deployment: `/home/pnnatuna/repos/web.pn-natuna`
+- Bundle cron immutable: `/home/pnnatuna/private/cron/releases/<commit>`
+- Pointer bundle aktif: `/home/pnnatuna/private/cron/current`
 - Konfigurasi runtime: `/home/pnnatuna/private/cron/pn-natuna.env`
 - Kredensial MySQL privat: `/home/pnnatuna/private/cron/mysql.cnf` (mode `0600`; jangan commit atau salin ke chat)
 - Log gabungan: `/home/pnnatuna/private/logs/cron-refresh-all.log`
 - Python virtual environment: `/home/pnnatuna/virtualenv/private/python/pn-natuna-cron/3.12/bin/python`
 - Python 3.12 dengan `PyMuPDF` dan `Pillow` sudah terverifikasi melalui `Cron Python: OK`.
 - Runner berhasil dijalankan melalui `/bin/sh`; bentuk ini dipakai karena eksekusi langsung pernah menghasilkan `Permission denied` pada jailshell.
-- Nilai document root produksi dan nama database tetap berasal dari `pn-natuna.env`; jangan menduplikasi kredensial di repository.
+- Nilai document root produksi, checkout deployment, bundle cron, dan nama database berasal dari `pn-natuna.env`; jangan menduplikasi kredensial di repository.
 
 ### Refresh manual semua sumber
 
-Jalankan runner privat yang dipasang dari release terverifikasi, bukan langsung dari checkout Git yang mungkin tertinggal atau kotor:
+Jalankan runner dari pointer bundle release terverifikasi, bukan checkout Git yang mungkin tertinggal atau kotor:
 
 ```bash
-set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/cron-refresh-all.sh
+set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh
 ```
 
 Command hanya memperbarui instansi, YouTube, SIPP, survei SKM/IPAK, DIPA, dan sitemap. Runner tidak menyalin template/`.htaccess`, memasang guard, menjalankan migrasi, atau menghangatkan HTML bertoken. Semua perubahan kode dan schema wajib melalui deployment terjaga.
@@ -700,14 +702,16 @@ set -a
 set +a
 ```
 
-Kemudian pilih:
+Kemudian pilih dari bundle aktif:
 
 ```bash
-"$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/cron-refresh-instansi.php"
-"$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-youtube.php"
-"$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-sipp.php"
-"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-survey.py"
-"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-dipa.py"
+CRON_SOURCE=/home/pnnatuna/private/cron/current
+"$PHP_BIN" -f "$CRON_SOURCE/cron-refresh-instansi.php"
+"$PHP_BIN" -f "$CRON_SOURCE/tools/cron-refresh-youtube.php"
+"$PHP_BIN" -f "$CRON_SOURCE/tools/cron-refresh-sipp.php"
+"$PYTHON_BIN" "$CRON_SOURCE/tools/refresh-survey.py"
+"$PYTHON_BIN" "$CRON_SOURCE/tools/refresh-dipa.py"
+"$PHP_BIN" -f "$CRON_SOURCE/tools/generate-sitemap.php"
 ```
 
 ### Pemeriksaan cepat
@@ -722,20 +726,31 @@ PDF Google Drive tidak memicu website secara instan. Dokumen terbaca saat cron a
 
 ## Setup Ringkas Semua Updater
 
-Updater memakai source privat, tetapi entrypoint cron wajib berupa salinan release terverifikasi di `/home/USER/private/cron/cron-refresh-all.sh`. Direktori `tools/` tidak masuk ZIP web dan tidak boleh ditaruh di `public_html`.
+Updater memakai bundle release privat tanpa `.git`, dipilih lewat symlink `/home/USER/private/cron/current`. Checkout Git tetap terpisah untuk deployment. Direktori `tools/` tidak masuk ZIP web dan tidak boleh ditaruh di `public_html`.
 
-### 1. Siapkan file privat
+### 1. Siapkan konfigurasi dan bundle privat
 
 ```bash
-mkdir -p /home/USER/private/cron /home/USER/private/logs
-cp /home/USER/repos/web.pn-natuna/tools/cron-cpanel.env.example /home/USER/private/cron/pn-natuna.env
-cp /home/USER/repos/web.pn-natuna/tools/mysql.cnf.example /home/USER/private/cron/mysql.cnf
-cp /home/USER/repos/web.pn-natuna/tools/cron-refresh-all.sh /home/USER/private/cron/cron-refresh-all.sh
-chmod 700 /home/USER/private/cron /home/USER/private/cron/cron-refresh-all.sh
-chmod 600 /home/USER/private/cron/pn-natuna.env /home/USER/private/cron/mysql.cnf
+CRON_ROOT=/home/USER/private/cron
+REPO=/home/USER/repos/web.pn-natuna
+COMMIT=$(git -C "$REPO" rev-parse HEAD)
+RELEASE="$CRON_ROOT/releases/$COMMIT"
+umask 077
+mkdir -p "$CRON_ROOT/releases" /home/USER/private/logs
+test -f "$CRON_ROOT/pn-natuna.env" || cp "$REPO/tools/cron-cpanel.env.example" "$CRON_ROOT/pn-natuna.env"
+test -f "$CRON_ROOT/mysql.cnf" || cp "$REPO/tools/mysql.cnf.example" "$CRON_ROOT/mysql.cnf"
+test ! -e "$RELEASE" || { echo "STOP: release sudah ada: $RELEASE"; exit 1; }
+mkdir -p "$RELEASE"
+git -C "$REPO" archive "$COMMIT" -- cron-refresh-instansi.php tools/cron-refresh-all.sh tools/cron-refresh-youtube.php tools/cron-refresh-sipp.php tools/refresh-survey.py tools/refresh-dipa.py tools/generate-sitemap.php | tar -x -C "$RELEASE"
+chmod 500 "$RELEASE" "$RELEASE/tools"
+chmod 400 "$RELEASE/cron-refresh-instansi.php" "$RELEASE"/tools/*
+rm -f "$CRON_ROOT/current.next"
+ln -s "releases/$COMMIT" "$CRON_ROOT/current.next"
+mv -Tf "$CRON_ROOT/current.next" "$CRON_ROOT/current"
+chmod 600 "$CRON_ROOT/pn-natuna.env" "$CRON_ROOT/mysql.cnf"
 ```
 
-Edit `pn-natuna.env`: ganti `USER`, path PHP/Python/MySQL, dan `DB_NAME`. Edit `mysql.cnf`: isi user dan password database cPanel. Password hanya berada di file mode `0600`, bukan command Cron Jobs. Setelah setiap perubahan runner, salin ulang hanya dari commit yang sudah diuji dan catat checksum.
+Edit `pn-natuna.env`: ganti `USER`, path PHP/Python/MySQL, dan `DB_NAME`. `PN_NATUNA_SOURCE_ROOT` tetap menunjuk checkout Git deployment. Edit `mysql.cnf`: isi user dan password database cPanel. Password hanya berada di file mode `0600`, bukan command Cron Jobs.
 
 Pasang dependensi Python sekali:
 
@@ -749,17 +764,17 @@ Pasang dependensi Python sekali:
 set -a
 . /home/USER/private/cron/pn-natuna.env
 set +a
-/bin/sh /home/USER/private/cron/cron-refresh-all.sh
+/bin/sh /home/USER/private/cron/current/tools/cron-refresh-all.sh
 ```
 
-Runner melanjutkan updater lain bila satu sumber gagal, lalu mengembalikan exit nonzero agar email cron memberi peringatan. Root web selalu berasal dari `PN_NATUNA_JPATH_ROOT`; cache masuk `public_html/cache`, gambar survei masuk `public_html/images/surveys`, dan log masuk folder privat. Template, `.htaccess`, login guard, dan migration registry tidak boleh berubah saat runner berjalan.
+Runner melanjutkan updater lain bila satu sumber gagal, lalu mengembalikan exit nonzero agar email cron memberi peringatan. Root web selalu berasal dari `PN_NATUNA_JPATH_ROOT`; cache feed masuk `public_html/cache`, cache parser DIPA dan file sementara masuk private root, gambar survei masuk `public_html/images/surveys`, dan log masuk folder privat. Template, `.htaccess`, login guard, dan migration registry tidak boleh berubah saat runner berjalan.
 
 ### 3. Satu command cPanel Cron Jobs
 
 Jadwal yang sederhana: setiap hari pukul 06.00.
 
 ```bash
-0 6 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /bin/sh /home/USER/private/cron/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
+0 6 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /bin/sh /home/USER/private/cron/current/tools/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
 ```
 
 Untuk YouTube lebih cepat, runner yang sama boleh dijalankan per jam, tetapi juga akan memeriksa sumber lain. Jangan menjalankan `refresh-survey.py` dan `refresh-dipa.py` bersamaan; keduanya menyunting modul Joomla `816` secara berurutan di runner ini.
@@ -767,6 +782,9 @@ Untuk YouTube lebih cepat, runner yang sama boleh dijalankan per jam, tetapi jug
 ### 4. Verifikasi
 
 ```bash
+test -L /home/USER/private/cron/current
+test ! -e /home/USER/private/cron/current/.git
+test ! -w /home/USER/private/cron/current/tools/refresh-dipa.py
 tail -n 100 /home/USER/private/logs/cron-refresh-all.log
 test -s /home/USER/public_html/cache/pn_natuna_instansi_feed.json
 test -s /home/USER/public_html/cache/pn_natuna_youtube/feed.json

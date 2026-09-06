@@ -17,8 +17,8 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 ## Operasi cron cPanel aktif
 
 - Setup updater produksi, command refresh manual, command per sumber, format Google Drive, dan troubleshooting Python dicatat di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Status cPanel Aktual**.
-- Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/cron-refresh-all.sh`.
-- Runner cron hanya refresh data dan sitemap. Deployment template/`.htaccess`, login guard, migrasi, serta cache warming bukan tugas cron. Jangan commit `pn-natuna.env`, `mysql.cnf`, password, atau isi log.
+- Refresh manual semua sumber: `set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh`.
+- Runner cron hanya memakai bundle release privat yang ditentukan lokasi runner sendiri; `PN_NATUNA_SOURCE_ROOT` tetap checkout Git untuk deployment. Deployment template/`.htaccess`, login guard, migrasi, serta cache warming bukan tugas cron. Jangan commit `pn-natuna.env`, `mysql.cnf`, password, atau isi log.
 
 ## Lanjut besok — deployment staging (HEAD wajib diverifikasi operator)
 
@@ -39,7 +39,7 @@ Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti k
 - Command retry:
   `"$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/apply-db-migrations.py" --mysql "$MYSQL_BIN" --mysql-defaults-file "$MYSQL_DEFAULTS_FILE" --database "$DB_NAME"`
 - Repo saat ini berisi **56** migrasi SQL; nama terakhir menurut urutan nama adalah `20260831_distinct_news_photo_alt_text.sql`. Jalankan runner normal tanpa `--reapply`; jangan menetapkan skip atau rentang manual sebelum registry staging diperiksa operator.
-- Sesudah sukses: validasi nested-set (`lft < rgt`, tidak ada duplikat boundary), jalankan `cd "$PN_NATUNA_JPATH_ROOT" && "$PHP_BIN" cli/joomla.php cache:clean`, kemudian `/bin/sh "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-all.sh"`.
+- Sesudah sukses: validasi nested-set (`lft < rgt`, tidak ada duplikat boundary), jalankan `cd "$PN_NATUNA_JPATH_ROOT" && "$PHP_BIN" cli/joomla.php cache:clean`, kemudian `/bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh`.
 - Batch memuat file template selain migrasi: `templates/pn_natuna_2026/css/template.css`, `js/template.js`, dan `html/com_content/article/default.php`. `git pull` private checkout tidak memperbarui webroot; ketiga file wajib disalin dan diverifikasi dengan `cmp` terhadap webroot.
 - Halaman/fitur target: `/profil-pengadilan/kata-sambutan` (Joko Ciptanto, S.H., M.H., jabatan terverifikasi **Wakil Ketua**), Jam Layanan dinamis, Laporan Tahunan 2023, DIPA April 2026, IKM/IPAK TW I–II 2026, dan Survei Harian Januari–Juni 2026.
 - Sumber resmi 2026 mengonfirmasi Joko Ciptanto sebagai Wakil Ketua; jangan mengganti menjadi Ketua tanpa sumber resmi baru.

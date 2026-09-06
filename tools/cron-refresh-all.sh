@@ -2,15 +2,20 @@
 set -eu
 
 : "${PN_NATUNA_JPATH_ROOT:?set PN_NATUNA_JPATH_ROOT}"
-: "${PN_NATUNA_SOURCE_ROOT:?set PN_NATUNA_SOURCE_ROOT}"
+PN_NATUNA_CRON_SOURCE_ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd -P)
 : "${PHP_BIN:=/usr/local/bin/php}"
 : "${PYTHON_BIN:=/usr/bin/python3}"
 : "${MYSQL_BIN:=/usr/bin/mysql}"
 : "${MYSQL_DEFAULTS_FILE:?set MYSQL_DEFAULTS_FILE}"
 : "${DB_NAME:?set DB_NAME}"
+
+if [ -e "$PN_NATUNA_CRON_SOURCE_ROOT/.git" ]; then
+    printf 'ERROR: cron source must be an immutable release bundle, not a Git checkout: %s\n' "$PN_NATUNA_CRON_SOURCE_ROOT" >&2
+    exit 77
+fi
 : "${PN_NATUNA_PRIVATE_ROOT:=$(dirname "$PN_NATUNA_JPATH_ROOT")/private}"
 
-export PN_NATUNA_JPATH_ROOT MYSQL_BIN MYSQL_DEFAULTS_FILE DB_NAME
+export PN_NATUNA_JPATH_ROOT PN_NATUNA_PRIVATE_ROOT MYSQL_BIN MYSQL_DEFAULTS_FILE DB_NAME
 export PN_NATUNA_LOG_FILE="$PN_NATUNA_PRIVATE_ROOT/logs/instansi-refresh.log"
 export PN_NATUNA_YOUTUBE_LOG_FILE="$PN_NATUNA_PRIVATE_ROOT/logs/youtube-refresh.log"
 
@@ -37,11 +42,11 @@ run() {
 }
 
 status=0
-run instansi "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/cron-refresh-instansi.php" || status=1
-run youtube "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-youtube.php" || status=1
-run sipp "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/cron-refresh-sipp.php" || status=1
-run survei "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-survey.py" || status=1
-run dipa "$PYTHON_BIN" "$PN_NATUNA_SOURCE_ROOT/tools/refresh-dipa.py" || status=1
-run sitemap "$PHP_BIN" -f "$PN_NATUNA_SOURCE_ROOT/tools/generate-sitemap.php" || status=1
+run instansi "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/cron-refresh-instansi.php" || status=1
+run youtube "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/tools/cron-refresh-youtube.php" || status=1
+run sipp "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/tools/cron-refresh-sipp.php" || status=1
+run survei "$PYTHON_BIN" "$PN_NATUNA_CRON_SOURCE_ROOT/tools/refresh-survey.py" || status=1
+run dipa "$PYTHON_BIN" "$PN_NATUNA_CRON_SOURCE_ROOT/tools/refresh-dipa.py" || status=1
+run sitemap "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/tools/generate-sitemap.php" || status=1
 # ponytail: warming skipped while every public HTML response carries Joomla's session token; restore only after token-free routes prove miss then hit.
 exit "$status"
