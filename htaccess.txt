@@ -85,6 +85,10 @@ Options -Indexes
 	RewriteCond %{HTTPS} !=on
 	RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
 	RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
+	## Search Console 2026-09-09: exact legacy content replacements.
+	RewriteRule ^(?:index\.php/(?:en/)?)?about/profil-pengadilan/sejarah-pengadilan/?$ https://pn-natuna.go.id/profil-pengadilan/sejarah-pengadilan [R=301,L,NE,NC]
+	RewriteRule ^(?:index\.php/(?:en/)?)?artikel-pn-natuna/uncategorised/mediasi/?$ https://pn-natuna.go.id/layanan-hukum/mediasi [R=301,L,NE,NC]
+	RewriteRule ^(?:index\.php/(?:en/)?)?about/kepaniteraan/?$ https://pn-natuna.go.id/profil-pengadilan/profil-kepaniteraan [R=301,L,NE,NC]
 	## Canonical image slugs for the three July/August 2026 news articles.
 	RewriteRule ^images/PATCANIA\.jpg$ /images/berita/2026/alih-tugas-cania-kirana-1.webp [R=301,L,NE,NC]
 	RewriteRule ^images/PATCANIA-(400|800|1200)\.webp$ /images/berita/2026/alih-tugas-cania-kirana-1-$1.webp [R=301,L,NE,NC]
