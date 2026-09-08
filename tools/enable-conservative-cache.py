@@ -21,7 +21,7 @@ def apply(config, backup):
     original = config.read_bytes()
     changed = transform(original.decode('utf-8')).encode('utf-8')
     if changed == original:
-        print('Conservative cache already enabled')
+        print('Requested configuration already applied')
         return
     with backup.open('xb') as handle:
         os.chmod(backup, 0o600)
@@ -37,7 +37,7 @@ def apply(config, backup):
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
-    print('Conservative cache enabled; backup:', backup)
+    print('Configuration updated; backup:', backup)
 
 
 def self_test():
