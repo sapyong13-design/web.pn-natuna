@@ -26,7 +26,7 @@ $sql = "SELECT menu.path, content.modified, content.created FROM {$prefix}menu A
     . " ON menu.link = CONCAT('index.php?option=com_content&view=article&id=', content.id)"
     . " WHERE menu.client_id=0 AND menu.published=1"
     . " AND menu.menutype='mainmenu' AND menu.type IN ('component','url')"
-    . " AND menu.home IN (0,1) AND menu.language IN ('*','id-ID','en-GB')"
+    . " AND menu.home=0 AND menu.language IN ('*','id-ID','en-GB')"
     . " ORDER BY menu.home DESC, menu.lft";
 $result = $db->query($sql);
 if (!$result) {
