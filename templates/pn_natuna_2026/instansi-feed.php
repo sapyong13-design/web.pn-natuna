@@ -205,6 +205,66 @@ function pn_natuna_instansi_fetch_ma_mirror(string $section): array
     return pn_natuna_instansi_parse_ma_mirror(pn_natuna_instansi_fetch_url('https://rss.pt-yogyakarta.go.id/?' . $query . '&rss'), $section);
 }
 
+/**
+ * Parser keluaran reader proxy (`r.jina.ai`) atas halaman MA resmi.
+ *
+ * Halaman resmi tetap sumber datanya; proxy hanya jalur transport karena
+ * Cloudflare menolak TLS fingerprint PHP. Keluaran reader berbentuk blok:
+ *
+ *     Kamis, 10 September 2026 16:45 WIB - Enny Nadra
+ *     # [JUDUL ARTIKEL](https://www.mahkamahagung.go.id/id/berita/7436/slug)
+ *
+ * Tanggal lengkap pada baris sebelum judul disimpan lalu dinormalkan oleh
+ * `pn_natuna_instansi_item_date()`. Hanya tautan artikel resmi pada seksi
+ * yang diminta yang diterima; judul didaur ulang lewat penyaring judul yang
+ * sama dengan kanal MA lain agar tidak ada gaya penulisan yang bocor.
+ */
+function pn_natuna_instansi_parse_ma_reader(string $markdown, string $section): array
+{
+    if ($markdown === '' || !in_array($section, ['berita', 'pengumuman'], true)) {
+        return [];
+    }
+
+    $months = 'Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember';
+    $pattern = '~^\#\s+\[(?<title>.+?)\]\((?<url>https://www\.mahkamahagung\.go\.id/id/'
+        . preg_quote($section, '~') . '/\d+/[^)\s]+)\)\s*$~mu';
+
+    $items = [];
+    $lastDate = '';
+    foreach (preg_split('/\R/u', $markdown) ?: [] as $line) {
+        $line = trim($line);
+        if ($line === '') {
+            continue;
+        }
+        if (preg_match('/\b(\d{1,2})\s+(' . $months . ')\s+(\d{4})\b/u', $line, $dateMatch)) {
+            $lastDate = $dateMatch[0];
+        }
+        if (!preg_match($pattern, $line, $match)) {
+            continue;
+        }
+        $title = pn_natuna_instansi_google_title($match['title']);
+        if ($title === '') {
+            continue;
+        }
+        $items[] = [
+            'title' => $title,
+            'url' => $match['url'],
+            'date' => pn_natuna_instansi_item_date($lastDate),
+            'pub' => $lastDate !== '' ? (strtotime($lastDate) ?: 0) : 0,
+        ];
+        if (count($items) === 5) {
+            break;
+        }
+    }
+    return $items;
+}
+
+function pn_natuna_instansi_fetch_ma_reader(string $section): array
+{
+    $target = 'https://www.mahkamahagung.go.id/id/' . $section;
+    return pn_natuna_instansi_parse_ma_reader(pn_natuna_instansi_fetch_url('https://r.jina.ai/' . $target), $section);
+}
+
 function pn_natuna_instansi_fetch_ma(string $section, int $categoryId, ?string &$status = null): array
 {
     $url = 'https://www.mahkamahagung.go.id/id/' . $section;
@@ -457,27 +517,41 @@ function pn_natuna_instansi_refresh_cache(): array
         'pt_news' => 'fallback',
         'pt_announcements' => 'fallback',
     ];
+    // Urutan sumber MA. Mirror PT Yogyakarta menyiarkan widget Index Berita MA
+    // yang mengikuti halaman resmi, jadi ia didahulukan atas Google News —
+    // urutan lama menaruh Google News di depan sehingga rung mirror tidak
+    // pernah dicoba dan pengumuman tampil sampai tiga minggu lebih basi
+    // (terukur 21 Agu vs 11 Sep pada 11 Sep 2026). Reader proxy menjadi jalur
+    // transport independen terakhir sebelum arsip terkurasi.
     $maNewsStatus = null;
     $maNews = pn_natuna_instansi_fetch_ma('berita', 1, $maNewsStatus);
+    if (count($maNews) < 2) {
+        $maNews = pn_natuna_instansi_fetch_ma_mirror('berita');
+        $maNewsStatus = count($maNews) >= 2 ? 'live-pt-yogyakarta-mirror-after-' . $maNewsStatus : $maNewsStatus;
+    }
     if (count($maNews) < 2) {
         $maNews = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita');
         $maNewsStatus = count($maNews) >= 2 ? 'live-google-news-after-' . $maNewsStatus : $maNewsStatus;
     }
     if (count($maNews) < 2) {
-        $maNews = pn_natuna_instansi_fetch_ma_mirror('berita');
-        $maNewsStatus = count($maNews) >= 2 ? 'live-pt-yogyakarta-mirror-after-' . $maNewsStatus : $maNewsStatus;
+        $maNews = pn_natuna_instansi_fetch_ma_reader('berita');
+        $maNewsStatus = count($maNews) >= 2 ? 'live-reader-proxy-after-' . $maNewsStatus : $maNewsStatus;
     }
     if (count($maNews) >= 2) $data['ma']['news'] = pn_natuna_instansi_fill_items($maNews, $data['ma']['news']);
     $data['_status']['ma_news'] = $maNewsStatus ?: 'fallback';
     $maAnnouncementStatus = null;
     $maAnnouncements = pn_natuna_instansi_fetch_ma('pengumuman', 2, $maAnnouncementStatus);
     if (count($maAnnouncements) < 2) {
+        $maAnnouncements = pn_natuna_instansi_fetch_ma_mirror('pengumuman');
+        $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-pt-yogyakarta-mirror-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
+    }
+    if (count($maAnnouncements) < 2) {
         $maAnnouncements = pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman');
         $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-google-news-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
     }
     if (count($maAnnouncements) < 2) {
-        $maAnnouncements = pn_natuna_instansi_fetch_ma_mirror('pengumuman');
-        $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-pt-yogyakarta-mirror-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
+        $maAnnouncements = pn_natuna_instansi_fetch_ma_reader('pengumuman');
+        $maAnnouncementStatus = count($maAnnouncements) >= 2 ? 'live-reader-proxy-after-' . $maAnnouncementStatus : $maAnnouncementStatus;
     }
     if (count($maAnnouncements) >= 2) $data['ma']['announcements'] = pn_natuna_instansi_fill_items($maAnnouncements, $data['ma']['announcements']);
     $data['_status']['ma_announcements'] = $maAnnouncementStatus ?: 'fallback';

@@ -88,4 +88,42 @@ if (!str_contains($renderer, 'instansi-source-note')) {
     exit(1);
 }
 
-fwrite(STDOUT, "2 institution feed tests passed.\n");
+
+// --- Urutan rung sumber MA (dikunci 11 Sep 2026) ---------------------------
+// Urutan lama menaruh Google News SEBELUM mirror PT Yogyakarta. Karena Google
+// News sering balas >=2 item (ambang minimum), rung mirror tidak pernah
+// dicoba; pengumuman tampil 21 Agu padahal mirror sudah memuat 11 Sep.
+// Kontrak ini menjaga urutan itu tidak diam-diam mundur lagi.
+$readerFixture = "Kamis, 10 September 2026 16:45 WIB - Enny Nadra\n\n"
+    . "# [KETUA UMUM PP IKAHI HADIRI RAPAT DENGAN BALEG DPR RI](https://www.mahkamahagung.go.id/id/berita/7436/ketua-umum-pp-ikahi-hadiri-rapat-dengan-baleg-dpr-ri)\n"
+    . "# [Tautan pengumuman tidak boleh masuk kanal berita](https://www.mahkamahagung.go.id/id/pengumuman/7439/hasil-seleksi-kompetensi)\n"
+    . "# [Tautan host asing harus ditolak](https://example.com/id/berita/9/palsu-yang-cukup-panjang-ini)\n";
+$readerItems = pn_natuna_instansi_parse_ma_reader($readerFixture, 'berita');
+assertSameValue(1, count($readerItems), 'Reader proxy hanya boleh menerima tautan artikel resmi pada seksi yang diminta.');
+assertSameValue('10 Sep', $readerItems[0]['date'] ?? null, 'Reader proxy wajib memakai tanggal halaman, bukan tanggal fetch.');
+assertSameValue(true, pn_natuna_instansi_source_is_live('live-reader-proxy-after-official-cloudflare-challenge'), 'Jalur reader proxy yang berhasil tetap sumber hidup.');
+assertSameValue([], pn_natuna_instansi_parse_ma_reader('Just a moment...', 'berita'), 'Halaman challenge Cloudflare tidak boleh menghasilkan item.');
+assertSameValue([], pn_natuna_instansi_parse_ma_reader('', 'pengumuman'), 'Markdown kosong wajib menghasilkan daftar kosong, bukan galat.');
+
+$chain = (string) file_get_contents(dirname(__DIR__) . '/templates/pn_natuna_2026/instansi-feed.php');
+$mirrorPos = strpos($chain, "pn_natuna_instansi_fetch_ma_mirror('berita')");
+$googlePos = strpos($chain, "pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/berita')");
+$readerPos = strpos($chain, "pn_natuna_instansi_fetch_ma_reader('berita')");
+$mirrorPosAnn = strpos($chain, "pn_natuna_instansi_fetch_ma_mirror('pengumuman')");
+$googlePosAnn = strpos($chain, "pn_natuna_instansi_fetch_google_news('site:mahkamahagung.go.id/id/pengumuman')");
+$readerPosAnn = strpos($chain, "pn_natuna_instansi_fetch_ma_reader('pengumuman')");
+if ($mirrorPos === false || $googlePos === false || $readerPos === false
+    || $mirrorPosAnn === false || $googlePosAnn === false || $readerPosAnn === false) {
+    fwrite(STDERR, "FAIL: seluruh rung sumber MA (mirror, Google News, reader proxy) wajib tetap ada di rantai refresh.\n");
+    exit(1);
+}
+if (!($mirrorPos < $googlePos && $googlePos < $readerPos)) {
+    fwrite(STDERR, "FAIL: urutan rung berita MA wajib resmi -> mirror -> Google News -> reader proxy; Google News tidak boleh mendahului mirror.\n");
+    exit(1);
+}
+if (!($mirrorPosAnn < $googlePosAnn && $googlePosAnn < $readerPosAnn)) {
+    fwrite(STDERR, "FAIL: urutan rung pengumuman MA wajib resmi -> mirror -> Google News -> reader proxy; itulah sebab pengumuman sempat tampil 3 minggu basi.\n");
+    exit(1);
+}
+
+fwrite(STDOUT, "3 institution feed tests passed.\n");
