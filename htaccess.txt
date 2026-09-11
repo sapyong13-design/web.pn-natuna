@@ -185,3 +185,13 @@ Options -Indexes
 		RedirectMatch 302 ^/$ /index.php/
 	</IfModule>
 </IfModule>
+## LiteSpeed-compatible administrator CSP policy.
+<IfModule mod_setenvif.c>
+	SetEnvIf Request_URI "^/administrator(?:/|$)" PN_NATUNA_ADMIN
+</IfModule>
+<IfModule mod_headers.c>
+	Header always unset Content-Security-Policy env=PN_NATUNA_ADMIN
+	Header always unset Content-Security-Policy-Report-Only env=PN_NATUNA_ADMIN
+	Header always set Content-Security-Policy "base-uri 'self'; object-src 'none'; frame-ancestors 'self'" env=PN_NATUNA_ADMIN
+	Header always set Content-Security-Policy-Report-Only "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' https://challenges.cloudflare.com https://www.instagram.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-src 'self'" env=PN_NATUNA_ADMIN
+</IfModule>
