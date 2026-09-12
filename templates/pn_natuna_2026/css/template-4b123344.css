@@ -8021,10 +8021,6 @@ body.nav-stuck .main-menu {
     top: -32px;
   }
 
-  .home-slider .hero-slide-integrity {
-    position: relative;
-    top: -64px;
-  }
 }
 
 /* Label ini menjelaskan foto gedung pada slide sambutan. Pada slide berita,
@@ -13788,64 +13784,6 @@ body.is-dark .app-links a:focus-visible {
 }
 
 
-/* INTEGRITY HERO SLIDE 2026-07-18 */
-.home-slider .hero-slide-integrity {
-  width: 100%;
-  max-width: none;
-  align-self: center;
-}
-
-.hero-slide-integrity__link {
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.48);
-  border-radius: 16px;
-  background: #123629;
-  box-shadow: 0 30px 70px rgba(12, 6, 3, 0.42);
-}
-
-.hero-slide-integrity__link:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 4px;
-}
-
-.hero-slide-integrity__image {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1672 / 941;
-  object-fit: contain;
-  background: #f2f0eb;
-}
-
-@media (min-width: 761px) {
-  .home-slider .hero-slide-integrity {
-    width: min(680px, 100%);
-    margin-inline: auto;
-  }
-}
-
-@media (min-width: 1201px) {
-  .home-slider .hero-slide-integrity {
-    top: -24px;
-  }
-}
-
-@media (max-width: 760px) {
-  .home-slider .hero-slide-integrity {
-    align-self: start;
-  }
-
-  .hero-slide-integrity__link {
-    border-radius: 12px;
-  }
-
-  .hero-slide-integrity__image {
-    height: auto;
-    aspect-ratio: 1672 / 941;
-  }
-}
 body.is-dark .hero-news-panel .hero-tabs button {
   border-color: var(--dark-content-line);
   background: var(--dark-content-raised);
@@ -13926,19 +13864,12 @@ body.is-dark .hero-news-panel :is(.hero-item-title, .hero-item-body) {
 
 /* COMPREHENSIVE MOBILE POLISH 2026-07-18 */
 .mobile-menu-filter-wrap,
-.mobile-rail-status,
-.hero-slide-integrity__cta { display: none; }
-
+.mobile-rail-status { display: none; }
 @media (max-width: 760px) {
   .quick-links { display: none; }
   body.is-home .floating-whatsapp { display: none; }
 
   .hero-cinema .hero-slide { min-height: 330px; align-content: center; }
-  .hero-cinema .hero-slide-integrity { min-height: 330px; align-content: center; }
-  .hero-cinema .hero-slides { min-height: 540px; }
-  .hero-cinema .hero-slide { height: 100%; }
-  .hero-slide-integrity__link { position: relative; }
-  .hero-slide-integrity__cta { position: absolute; right: 10px; bottom: 10px; display: inline-flex; min-height: 44px; align-items: center; gap: 6px; border-radius: 999px; padding: 8px 12px; background: rgba(47, 20, 14, .88); color: #fff8ed; font-size: var(--step--2); font-weight: 800; }
   .hero-nav { display: none; }
 
   .mobile-menu-filter-wrap { display: grid; gap: 5px; margin-bottom: 10px; }
@@ -14594,44 +14525,6 @@ body.is-home .maklumat-compact-doc h3 {
   }
 }
 
-/* --- Poster Zona Integritas: dipajang, bukan ditempel --- */
-.home-slider .hero-slide-integrity__link {
-  border-color: rgba(226, 185, 79, 0.55);
-  box-shadow: 0 26px 64px rgba(10, 5, 3, 0.52), 0 0 0 1px rgba(12, 6, 3, 0.35);
-}
-
-/* Petunjuk bahwa poster bisa dibuka. Di desktop CTA-nya `display:none`,
-   jadi tidak ada afordansi sama sekali; sekarang muncul saat hover atau
-   fokus keyboard. */
-@media (min-width: 761px) {
-  .home-slider .hero-slide-integrity__link {
-    position: relative;
-  }
-
-  .home-slider .hero-slide-integrity__cta {
-    position: absolute;
-    right: 14px;
-    bottom: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border-radius: 999px;
-    padding: 9px 15px;
-    background: rgba(28, 12, 9, 0.9);
-    color: var(--hero-cream);
-    font-size: var(--step--2);
-    font-weight: 800;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 180ms ease, transform 180ms ease;
-  }
-
-  .home-slider .hero-slide-integrity__link:hover .hero-slide-integrity__cta,
-  .home-slider .hero-slide-integrity__link:focus-visible .hero-slide-integrity__cta {
-    opacity: 1;
-    transform: none;
-  }
-}
 
 /* --- Kontrol slider: dot dan tombol jeda sebaris --- */
 .home-slider .hero-slider-controls {
@@ -15370,10 +15263,6 @@ body.is-dark .sipp-day-tabs button[aria-selected="true"] b {
 
   .hero-cinema .hero-slides {
     min-height: 462px;
-  }
-  .home-slider .hero-slide-integrity {
-    top: 0;
-    width: min(660px, 100%);
   }
 
 
@@ -17101,4 +16990,115 @@ body.is-dark .dossier-card .dossier-header h2#dossier-name { color: #f3c96b !imp
   .dossier-card figure { justify-self: center; width: 120px; height: 160px; }
   .dossier-card .dossier-header h2,
   .dossier-card .dossier-header h2#dossier-name { margin-right: 44px; font-size: 1.2rem; }
+}
+
+/* Homepage integrity notice: visible on first visit, quiet for ten minutes after view. */
+.integrity-notice {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 4vw, 40px);
+  background: rgba(24, 8, 3, 0.84);
+  overscroll-behavior: contain;
+  animation: integrity-notice-in 180ms ease-out;
+}
+
+.integrity-notice[hidden] {
+  display: none;
+}
+
+@keyframes integrity-notice-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.integrity-notice__dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 0;
+  width: min(1100px, 100%, calc((100dvh - 80px) * 1568 / 735));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border: 0;
+  border-radius: 16px;
+  padding: 0;
+  background: #fff;
+  color: var(--color-ink);
+  box-shadow: 0 30px 70px rgba(12, 4, 1, 0.48);
+}
+
+.integrity-notice__poster {
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: #f2f0eb;
+}
+
+.integrity-notice__poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1568 / 735;
+  object-fit: contain;
+}
+
+.integrity-notice__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: 8px 11px;
+  color: var(--color-primary);
+  background: #fff;
+  font: inherit;
+  font-size: var(--step--2);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.integrity-notice__close:hover,
+.integrity-notice__close:focus-visible {
+  border-color: var(--color-primary);
+  background: var(--color-soft);
+}
+
+body.integrity-notice-open {
+  overflow: hidden;
+}
+
+body.is-dark .integrity-notice__dialog {
+  border-color: rgba(243, 201, 107, 0.42);
+  background: #19232b;
+  color: #edf2f7;
+}
+
+body.is-dark .integrity-notice__close {
+  color: #f3c96b;
+}
+
+body.is-dark .integrity-notice__close {
+  border-color: #46515a;
+  background: #222d35;
+}
+
+body.is-dark .integrity-notice__close:hover,
+body.is-dark .integrity-notice__close:focus-visible {
+  background: #2b3841;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .integrity-notice { animation: none; }
 }

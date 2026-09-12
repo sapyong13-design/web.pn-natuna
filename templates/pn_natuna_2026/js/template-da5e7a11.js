@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupMobileMenuFilter();
   setupMobileRailStatus();
   setupTransparencyArchives();
+  setupIntegrityNotice();
   const mobileQuery = window.matchMedia('(max-width: 1100px)');
 
   if (!toggle || !menu) {
@@ -1754,6 +1755,78 @@ function setupHeroServiceStatus() {
     element.classList.add(open ? 'is-open' : 'is-closed');
     element.hidden = false;
   });
+}
+
+function setupIntegrityNotice() {
+  const overlay = document.querySelector('#integrity-notice');
+  if (!overlay) return;
+
+  const dialog = overlay.querySelector('.integrity-notice__dialog');
+  const closeButton = overlay.querySelector('.integrity-notice__close');
+  if (!dialog || !closeButton) return;
+
+  const storageKey = 'pnNatunaIntegrityNoticeSeenAt';
+  const suppressFor = 10 * 60 * 1000;
+  const now = Date.now();
+  const seenAt = Number(storageGet(storageKey, '0'));
+  if (Number.isFinite(seenAt) && seenAt > 0 && now >= seenAt && now - seenAt < suppressFor) return;
+
+  const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const background = Array.from(document.body.children).filter((element) => element !== overlay);
+  const previousInert = new Map();
+  let returnFocus = null;
+  let open = false;
+
+  const close = () => {
+    if (!open) return;
+    open = false;
+    overlay.hidden = true;
+    document.body.classList.remove('integrity-notice-open');
+    background.forEach((element) => element.inert = previousInert.get(element) || false);
+    previousInert.clear();
+    if (returnFocus instanceof HTMLElement) returnFocus.focus();
+    else closeButton.blur();
+  };
+
+  const trapFocus = (event) => {
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(dialog.querySelectorAll(focusableSelector)).filter((element) => !element.hidden && element.getClientRects().length);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  const openNotice = () => {
+    returnFocus = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+      ? document.activeElement
+      : null;
+    storageSet(storageKey, String(Date.now()));
+    background.forEach((element) => {
+      previousInert.set(element, element.inert);
+      element.inert = true;
+    });
+    open = true;
+    overlay.hidden = false;
+    document.body.classList.add('integrity-notice-open');
+    closeButton.focus();
+  };
+
+  closeButton.addEventListener('click', close);
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) close();
+  });
+  dialog.addEventListener('keydown', trapFocus);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && open) close();
+  });
+  openNotice();
 }
 
 function setupMaklumatLightbox() {

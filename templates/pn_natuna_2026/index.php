@@ -97,9 +97,9 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
   <?php $tplPath = JPATH_THEMES . '/' . $this->template; ?>
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css?v=<?php echo @filemtime($tplPath . '/css/fonts.css') ?: '1'; ?>" />
-  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template-4b123344.css" />
+  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template-4b123344.css?v=20260912-gratifikasi-new" />
   <jdoc:include type="scripts" />
-  <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js?v=20260906-roster-meta" defer></script>
+  <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js?v=20260912-integrity-popup-v3" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
   <script src="/templates/pn_natuna_2026/js/theme-boot.js"></script>
@@ -307,6 +307,18 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.98 1.005-3.645-.235-.373a9.86 9.86 0 01-1.51-5.26c0-5.445 4.43-9.875 9.882-9.875 2.64 0 5.122 1.028 6.988 2.895a9.82 9.82 0 012.888 6.988c-.004 5.445-4.434 9.882-9.88 9.882m8.536-18.411A11.96 11.96 0 0012.052 0C5.394 0 .003 5.433.003 12.06c0 2.128.555 4.205 1.611 6.035L0 24l6.065-1.587a11.96 11.96 0 005.98 1.6h.005c6.657 0 12.052-5.434 12.052-12.065a11.96 11.96 0 00-3.516-8.52z"/>
     </svg>
   </a>
+
+
+  <?php if ($isHome) : ?>
+  <div id="integrity-notice" class="integrity-notice" hidden>
+    <div class="integrity-notice__dialog" role="dialog" aria-modal="true" aria-label="Tolak Gratifikasi dan Pungutan Liar">
+      <button class="integrity-notice__close" type="button" aria-label="Tutup pemberitahuan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      <figure class="integrity-notice__poster">
+        <img src="/images/hero/tolak-gratifikasi-popup-20260912.webp" alt="Pengadilan Negeri Natuna: Tolak Gratifikasi. Katakan TIDAK pada gratifikasi dalam bentuk apa pun." width="1568" height="735" loading="eager" decoding="async">
+      </figure>
+    </div>
+  </div>
+  <?php endif; ?>
 
 
   <footer class="site-footer">

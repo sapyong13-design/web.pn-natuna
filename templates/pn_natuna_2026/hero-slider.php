@@ -329,12 +329,6 @@ function pn_natuna_render_hero_slider(): void
           </div>
         </div>
 
-        <div class="hero-slide hero-slide-integrity" role="group" aria-label="Tolak Gratifikasi dan Pungutan Liar">
-          <a class="hero-slide-integrity__link" href="/zona-integritas" aria-label="Buka informasi Zona Integritas: Tolak Gratifikasi dan Pungutan Liar">
-            <img class="hero-slide-integrity__image" src="/images/hero/integritas-tolak-gratifikasi-pungli-2026.webp" srcset="/images/hero/integritas-tolak-gratifikasi-pungli-2026-480.webp 480w, /images/hero/integritas-tolak-gratifikasi-pungli-2026-768.webp 768w, /images/hero/integritas-tolak-gratifikasi-pungli-2026-1200.webp 1200w, /images/hero/integritas-tolak-gratifikasi-pungli-2026.webp 1672w" sizes="(max-width: 760px) calc(100vw - 32px), 960px" alt="Pengadilan Negeri Natuna Kelas II secara tegas menolak segala bentuk gratifikasi dan pungutan liar" width="1672" height="941" loading="lazy" decoding="async" data-integrity-poster>
-            <span class="hero-slide-integrity__cta">Lihat poster penuh <span aria-hidden="true">↗</span></span>
-          </a>
-        </div>
 
         <div class="hero-slide hero-slide-news" role="group" aria-label="Berita dan pengumuman terbaru">
           <div class="hero-copy hero-news-panel">
@@ -366,11 +360,10 @@ function pn_natuna_render_hero_slider(): void
         <button type="button" class="hero-nav hero-nav-prev" data-hero-nav="-1" aria-label="Slide sebelumnya">&#8249;</button>
         <div class="hero-slider-dots">
           <button type="button" data-hero-slide="0" class="is-active" aria-label="Slide selamat datang" aria-pressed="true"></button>
-          <button type="button" data-hero-slide="1" aria-label="Slide Tolak Gratifikasi dan Pungutan Liar" aria-pressed="false"></button>
-          <button type="button" data-hero-slide="2" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
+          <button type="button" data-hero-slide="1" aria-label="Slide berita dan pengumuman" aria-pressed="false"></button>
         </div>
         <button type="button" class="hero-nav hero-nav-next" data-hero-nav="1" aria-label="Slide berikutnya">&#8250;</button>
-        <p class="hero-slider-count" data-hero-count aria-hidden="true">1 dari 3</p>
+        <p class="hero-slider-count" data-hero-count aria-hidden="true">1 dari 2</p>
         <button type="button" class="hero-pause" data-hero-pause aria-pressed="false" aria-label="Jeda pergantian slide otomatis">
           <span class="hero-pause__glyph" aria-hidden="true"></span>
         </button>
