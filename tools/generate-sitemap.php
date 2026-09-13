@@ -21,7 +21,7 @@ if ($db->connect_errno) {
 }
 $db->set_charset('utf8mb4');
 $prefix = $config->dbprefix;
-$sql = "SELECT menu.path, content.modified, content.created FROM {$prefix}menu AS menu"
+$sql = "SELECT menu.path, content.modified, content.created, content.images, content.introtext, content.fulltext FROM {$prefix}menu AS menu"
     . " LEFT JOIN {$prefix}content AS content"
     . " ON menu.link = CONCAT('index.php?option=com_content&view=article&id=', content.id)"
     . " WHERE menu.client_id=0 AND menu.published=1"
@@ -34,22 +34,54 @@ if (!$result) {
     exit(4);
 }
 $base = 'https://pn-natuna.go.id';
-$latestResult = $db->query("SELECT MAX(CASE WHEN modified > '2000-01-02 00:00:00' THEN modified ELSE created END) latest FROM {$prefix}content WHERE state=1");
-$latestRow = $latestResult ? $latestResult->fetch_assoc() : null;
-$latestTimestamp = !empty($latestRow['latest']) ? strtotime((string) $latestRow['latest'] . ' UTC') : false;
-$urls = ['/' => ($latestTimestamp ? gmdate('Y-m-d', $latestTimestamp) : gmdate('Y-m-d'))];
+$urls = ['/' => null];
+$images = [];
+$collectImages = static function (string $markup, array $sources = []) use ($root, $base): array {
+    if ($markup !== '') {
+        $document = new DOMDocument();
+        $previous = libxml_use_internal_errors(true);
+        $document->loadHTML('<?xml encoding="UTF-8">' . $markup);
+        foreach ($document->getElementsByTagName('img') as $image) {
+            $sources[] = $image->getAttribute('src');
+        }
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+    }
+    $found = [];
+    foreach ($sources as $source) {
+        $parts = parse_url((string) $source);
+        if ($parts === false || (isset($parts['host']) && !in_array(strtolower($parts['host']), ['pn-natuna.go.id', 'www.pn-natuna.go.id'], true))) continue;
+        $path = '/' . ltrim((string) ($parts['path'] ?? ''), '/');
+        if (!str_starts_with($path, '/images/')) continue;
+        $file = realpath($root . rawurldecode($path));
+        $imageRoot = realpath($root . '/images');
+        if (!$file || !$imageRoot || !str_starts_with($file, $imageRoot . DIRECTORY_SEPARATOR) || !is_file($file)) continue;
+        if (!preg_match('/\.(?:jpe?g|png|webp|gif|avif)$/i', $path)) continue;
+        $found[$base . $path] = true;
+    }
+    return array_keys($found);
+};
+$homeTemplate = $root . '/templates/pn_natuna_2026/index.php';
+$images['/'] = $collectImages((string) file_get_contents($homeTemplate));
 while ($row = $result->fetch_assoc()) {
     $path = trim((string) $row['path'], '/');
     if ($path === '' || str_starts_with($path, 'component/')) continue;
-    $changed = trim((string) ($row['modified'] ?: $row['created'] ?: ''));
+    $changed = (string) ($row['modified'] && $row['modified'] > '2000-01-02 00:00:00' ? $row['modified'] : ($row['created'] ?? ''));
     $timestamp = $changed !== '' ? strtotime($changed . ' UTC') : false;
-    $urls['/' . $path] = $timestamp ? gmdate('Y-m-d', $timestamp) : gmdate('Y-m-d');
+    $urls['/' . $path] = $timestamp && $timestamp > 946684800 ? gmdate('Y-m-d', $timestamp) : null;
+    $articleImages = json_decode((string) ($row['images'] ?? ''), true) ?: [];
+    $images['/' . $path] = $collectImages((string) ($row['introtext'] ?? '') . (string) ($row['fulltext'] ?? ''), [$articleImages['image_intro'] ?? '', $articleImages['image_fulltext'] ?? '']);
 }
-$xml = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'];
+$xml = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'];
 foreach ($urls as $path => $date) {
     $loc = htmlspecialchars($base . $path, ENT_XML1 | ENT_QUOTES, 'UTF-8');
-    $priority = $path === '/' ? '1.0' : '0.7';
-    $xml[] = "  <url><loc>{$loc}</loc><lastmod>{$date}</lastmod><changefreq>weekly</changefreq><priority>{$priority}</priority></url>";
+    $lastmod = $date ? "<lastmod>{$date}</lastmod>" : '';
+    $imageXml = '';
+    foreach (array_slice($images[$path] ?? [], 0, 1000) as $image) {
+        $imageLoc = htmlspecialchars($image, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+        $imageXml .= "<image:image><image:loc>{$imageLoc}</image:loc></image:image>";
+    }
+    $xml[] = "  <url><loc>{$loc}</loc>{$lastmod}{$imageXml}</url>";
 }
 $xml[] = '</urlset>';
 $output = $root . '/sitemap.xml';
