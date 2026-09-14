@@ -72,6 +72,39 @@ while ($row = $result->fetch_assoc()) {
     $articleImages = json_decode((string) ($row['images'] ?? ''), true) ?: [];
     $images['/' . $path] = $collectImages((string) ($row['introtext'] ?? '') . (string) ($row['fulltext'] ?? ''), [$articleImages['image_intro'] ?? '', $articleImages['image_fulltext'] ?? '']);
 }
+// Use the same router as article links; never invent a second URL scheme.
+define('_JEXEC', 1);
+define('JPATH_BASE', $root);
+$_SERVER['HTTP_HOST'] = 'pn-natuna.go.id';
+$_SERVER['HTTPS'] = 'on';
+$_SERVER['REQUEST_URI'] = '/';
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+require_once $root . '/includes/defines.php';
+require_once $root . '/includes/framework.php';
+$container = \Joomla\CMS\Factory::getContainer();
+$container->alias('session', 'session.web.site')
+    ->alias(\Joomla\Session\SessionInterface::class, 'session.web.site');
+$app = $container->get(\Joomla\CMS\Application\SiteApplication::class);
+\Joomla\CMS\Factory::$application = $app;
+$app->createExtensionNamespaceMap();
+$app->bootComponent('com_content');
+$articles = $db->query("SELECT a.* FROM {$prefix}content a JOIN {$prefix}categories c ON c.id=a.catid"
+    . " WHERE a.state=1 AND a.access=1 AND c.published=1 AND c.access=1"
+    . " AND a.language IN ('*','id-ID','en-GB')"
+    . " AND (a.publish_up IS NULL OR a.publish_up<=UTC_TIMESTAMP())"
+    . " AND (a.publish_down IS NULL OR a.publish_down<'1000-01-01 00:00:00' OR a.publish_down>UTC_TIMESTAMP())"
+    . " AND NOT EXISTS (SELECT 1 FROM {$prefix}categories parent WHERE parent.lft<c.lft AND parent.rgt>c.rgt AND parent.id>1 AND (parent.published<>1 OR parent.access<>1))");
+while ($article = $articles->fetch_assoc()) {
+    $route = \Joomla\CMS\Router\Route::_(\Joomla\Component\Content\Site\Helper\RouteHelper::getArticleRoute($article['id'] . ':' . $article['alias'], (int) $article['catid'], $article['language']), false);
+    $path = parse_url($route, PHP_URL_PATH);
+    if (!$path || str_starts_with($path, '/component/') || parse_url($route, PHP_URL_QUERY)) continue;
+    if (array_key_exists($path, $urls)) continue;
+    $changed = $article['modified'] > '2000-01-02 00:00:00' ? $article['modified'] : $article['created'];
+    $timestamp = strtotime($changed . ' UTC');
+    $urls[$path] = $timestamp && $timestamp > 946684800 ? gmdate('Y-m-d', $timestamp) : null;
+    $articleImages = json_decode((string) $article['images'], true) ?: [];
+    $images[$path] = $collectImages($article['introtext'] . $article['fulltext'], [$articleImages['image_intro'] ?? '', $articleImages['image_fulltext'] ?? '']);
+}
 $xml = ['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'];
 foreach ($urls as $path => $date) {
     $loc = htmlspecialchars($base . $path, ENT_XML1 | ENT_QUOTES, 'UTF-8');
