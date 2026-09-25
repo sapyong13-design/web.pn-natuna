@@ -7,6 +7,7 @@
 /logs/
 /administrator/logs/
 /tmp/
+/graphify-out/
 /media/instagram/
 # Live mode Impeccable: config proyek dilacak, state prosesnya tidak.
 # server.json memuat pid, port, dan token sesi.
