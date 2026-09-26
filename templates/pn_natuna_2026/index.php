@@ -314,7 +314,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
     <div class="integrity-notice__dialog" role="dialog" aria-modal="true" aria-label="Tolak Gratifikasi dan Pungutan Liar">
       <button class="integrity-notice__close" type="button" aria-label="Tutup pemberitahuan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       <figure class="integrity-notice__poster">
-        <img src="/images/hero/tolak-gratifikasi-popup-20260912.webp?v=<?php echo @filemtime(JPATH_ROOT . '/images/hero/tolak-gratifikasi-popup-20260912.webp') ?: '1'; ?>" alt="Pengadilan Negeri Natuna: Tolak Gratifikasi. Katakan TIDAK pada gratifikasi dalam bentuk apa pun." width="1568" height="735" loading="eager" decoding="async">
+        <img src="/images/hero/tolak-gratifikasi-popup-20260912.webp?v=<?php echo @filemtime(JPATH_ROOT . '/images/hero/tolak-gratifikasi-popup-20260912.webp') ?: '1'; ?>" srcset="/images/hero/tolak-gratifikasi-popup-20260912-480.webp 480w, /images/hero/tolak-gratifikasi-popup-20260912-768.webp 768w, /images/hero/tolak-gratifikasi-popup-20260912-1200.webp 1200w, /images/hero/tolak-gratifikasi-popup-20260912.webp 1568w" sizes="(max-width: 1100px) 100vw, 1100px" alt="Pengadilan Negeri Natuna: Tolak Gratifikasi. Katakan TIDAK pada gratifikasi dalam bentuk apa pun." width="1568" height="735" loading="eager" decoding="async">
       </figure>
     </div>
   </div>
