@@ -68,8 +68,8 @@ instansi ditarik langsung dari MA RI, Badilum, dan PT Kepri.
 
 ## Capabilities and Constraints
 
-**Kapabilitas terkonfirmasi:** hero slider tiga slide (sambutan/layanan, berita &
-pengumuman, Zona Integritas), pencarian, jadwal sidang dari cache SIPP, jam layanan
+**Kapabilitas terkonfirmasi:** hero slider dua slide (sambutan/layanan dan berita &
+pengumuman), popup Zona Integritas yang dapat ditutup, pencarian, jadwal sidang dari cache SIPP, jam layanan
 dinamis, direktori layanan PTSP, prosedur perkara, transparansi anggaran & kinerja,
 galeri fasilitas, feed Instagram dan YouTube, peta lokasi, checklist AMPUH 2026 di
 route `/ampuh`, mode gelap, dan panel aksesibilitas.

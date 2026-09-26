@@ -34,14 +34,11 @@ $expect((bool) preg_match('/\.hero-slider-dots button\s*\{[^}]*background:\s*tra
 
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-480.webp 480w'), 'Hero backdrop needs responsive 480w source.');
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-768.webp 768w'), 'Hero backdrop needs responsive 768w source.');
-$expect(str_contains($hero, 'integritas-tolak-gratifikasi-pungli-2026-480.webp 480w'), 'Integrity poster needs responsive 480w source.');
 $expect(!str_contains($js, 'prefetchIntegrityPoster'), 'Secondary hero poster must not be idle-prefetched.');
 $expect(!str_contains($js, 'setupMobileHeroHeight'), 'Hero must not measure every slide at runtime.');
 $expect(!str_contains($css, '--hero-mobile-slide-height'), 'Mobile hero must use intrinsic CSS geometry.');
 
 $expect(str_contains($hero, 'fetchpriority="high"'), 'Active hero backdrop must retain high fetch priority.');
-$posterTag = preg_match('/<img[^>]*data-integrity-poster[^>]*>/s', $hero, $posterMatch) ? $posterMatch[0] : '';
-$expect($posterTag !== '' && str_contains($posterTag, 'loading="lazy"'), 'Secondary integrity poster must remain lazy loaded.');
 $expect(str_contains($index, 'id="theme-color-meta"'), 'Theme-color meta needs a stable hook.');
 $expect(str_contains($js, 'syncBrowserTheme'), 'Theme changes must synchronize browser chrome.');
 $expect(str_contains($js, 'document.documentElement.style.colorScheme'), 'Theme changes must synchronize native controls.');
@@ -50,9 +47,6 @@ foreach ([
     'gedung-pn-natuna-2026-graded-480.webp',
     'gedung-pn-natuna-2026-graded-768.webp',
     'gedung-pn-natuna-2026-graded-1200.webp',
-    'integritas-tolak-gratifikasi-pungli-2026-480.webp',
-    'integritas-tolak-gratifikasi-pungli-2026-768.webp',
-    'integritas-tolak-gratifikasi-pungli-2026-1200.webp',
 ] as $image) {
     $expect(is_file($root . '/images/hero/' . $image), "Responsive hero image missing: {$image}");
 }
