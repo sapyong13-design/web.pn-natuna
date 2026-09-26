@@ -50,12 +50,13 @@ class CoreAssetItem extends WebAssetItem implements WebAssetAttachBehaviorInterf
             ]
         );
 
-        // The public homepage has GET-only search forms. Its core JavaScript
-        // needs system paths, not a session-bound CSRF token in cached HTML.
+        // Only audited GET pages without session forms may omit this JavaScript token.
+        // Form tokens in rendered HTML still make LSCache reject the response.
         $app = Factory::getApplication();
-        $menu = $app->getMenu()->getActive();
+        $path = Uri::getInstance()->getPath();
+        $publicPages = ['/', '/profil-pengadilan', '/transparansi', '/berita', '/pengumuman', '/berita-dan-pengumuman', '/kontak'];
 
-        if ($app->isClient('site') && $app->getInput()->getMethod() === 'GET' && $app->getIdentity()->guest && $menu && $menu->home) {
+        if ($app->isClient('site') && $app->getInput()->getMethod() === 'GET' && $app->getIdentity()->guest && Uri::getInstance()->getQuery() === '' && in_array($path, $publicPages, true)) {
             return;
         }
 
