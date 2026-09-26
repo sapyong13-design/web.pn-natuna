@@ -10,6 +10,7 @@
 namespace Joomla\CMS\WebAsset\AssetItem;
 
 use Joomla\CMS\Document\Document;
+use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\WebAsset\WebAssetAttachBehaviorInterface;
@@ -48,6 +49,15 @@ class CoreAssetItem extends WebAssetItem implements WebAssetAttachBehaviorInterf
                 'baseFull' => Uri::base(),
             ]
         );
+
+        // The public homepage has GET-only search forms. Its core JavaScript
+        // needs system paths, not a session-bound CSRF token in cached HTML.
+        $app = Factory::getApplication();
+        $menu = $app->getMenu()->getActive();
+
+        if ($app->isClient('site') && $app->getInput()->getMethod() === 'GET' && $app->getIdentity()->guest && $menu && $menu->home) {
+            return;
+        }
 
         HTMLHelper::_('form.csrf');
     }
