@@ -682,6 +682,8 @@ Setup ini sudah dibuktikan berhasil pada akun cPanel `pnnatuna`:
 - Runner berhasil dijalankan melalui `/bin/sh`; bentuk ini dipakai karena eksekusi langsung pernah menghasilkan `Permission denied` pada jailshell.
 - Nilai document root produksi, checkout deployment, bundle cron, dan nama database berasal dari `pn-natuna.env`; jangan menduplikasi kredensial di repository.
 
+Status checkout pada 26 September 2026: `/home/pnnatuna/repos/web.pn-natuna` telah `fetch` dan fast-forward ke `409cb703`, sama dengan GitHub/workstation saat itu; commit ini penanda historis, bukan target tetap. Perubahan lokal pada `tools/security/test_security_cli.py` diamankan di stash `preserve-server-security-test`; `error_log` tetap untracked. Checkout ini hanya sumber paket deployment, **bukan** webroot aktif dan bukan bundle cron. Kerja device lain: clone branch dari GitHub, sediakan `configuration.php` serta snapshot DB secara privat, lalu ikuti `HANDOFF.md` bagian "Menjalankan di device lain". Sebelum deploy berikutnya, cek status dan HEAD server lagi; `git pull` tidak mengubah produksi sampai paket allowlist diterapkan ke `public_html` dan migrasi dijalankan.
+
 ### Refresh manual semua sumber
 
 Jalankan runner dari pointer bundle release terverifikasi, bukan checkout Git yang mungkin tertinggal atau kotor:

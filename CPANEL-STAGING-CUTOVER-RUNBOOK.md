@@ -36,6 +36,8 @@ Alur update: GitHub branch `continue-joomla-rebuild-polish` → `git pull --ff-o
 
 Jangan clone atau pull repo langsung di `public_html` maupun webroot subdomain. Repo memuat docs, tools, dan SQL yang tidak boleh memiliki URL publik.
 
+Status terverifikasi 26 September 2026: checkout privat cPanel dan GitHub/workstation berada pada `409cb703`, tetapi `public_html` tetap deployment terpisah dan database serta `configuration.php` tetap privat. Commit tertulis ini hanya catatan, bukan target permanen. Perubahan test keamanan yang sempat ada di checkout server tersimpan sebagai stash `preserve-server-security-test`; tinjau sebelum digunakan kembali. Alur kerja device lain dan restore lokal tercatat di `HANDOFF.md` bagian "Menjalankan di device lain"; mengambil kode dari GitHub saja tidak memulihkan database atau berkas konfigurasi.
+
 ### 2.1 Instalasi checkout pertama kali
 
 Gunakan cPanel Git Version Control atau Terminal dengan deploy key read-only untuk repo private. Jangan menaruh Personal Access Token pada URL remote atau shell history.

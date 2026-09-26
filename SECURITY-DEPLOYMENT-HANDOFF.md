@@ -2,6 +2,8 @@
 
 > **Status:** runbook wajib sebelum go-live. Isi dokumen ini adalah tindakan yang harus dilakukan; **bukan bukti bahwa setting sudah aktif**. Jangan tempel token, password, private key, cookie, dump DB, atau nilai rahasia ke repo/tiket/chat.
 
+Untuk kerja dari device lain, gunakan branch GitHub yang sama dan alur lokal di `HANDOFF.md` bagian "Menjalankan di device lain". `configuration.php`, snapshot DB, secret, dan unggahan privat tidak ikut Git; transfer lewat jalur privat. Pull checkout cPanel hanya memperbarui sumber paket, bukan `public_html` maupun pengaturan Cloudflare. Verifikasi status checkout dan lakukan deployment terjaga sesuai `CPANEL-STAGING-CUTOVER-RUNBOOK.md` sebelum menyatakan produksi mengikuti GitHub.
+
 ## 0. Urutan wajib dan stop condition
 
 | Prioritas | Tindakan | Stop condition |

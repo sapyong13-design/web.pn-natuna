@@ -2,6 +2,8 @@
 
 > Instruksi operasi cPanel produksi. Simpan script, konfigurasi, log, baseline, dan backup **di luar `public_html`**, idealnya `$HOME/private/`. Jangan menaruh secret di cron, argumen command, tiket, chat, atau output. Status pengaturan harus dibuktikan; dokumen ini bukan bukti aktivasi.
 
+GitHub menyimpan source dan migrasi, bukan snapshot database, `configuration.php`, maupun backup. Untuk setup device lain, ikuti `HANDOFF.md` bagian "Menjalankan di device lain" dan transfer snapshot serta konfigurasi melalui penyimpanan privat dengan kontrol akses; jangan menjadikan dump lokal pengganti backup produksi. Pull checkout privat cPanel juga tidak memperbarui database atau `public_html` sampai deployment terjaga selesai.
+
 ## 1. Tata letak privat dan kredensial
 
 ```text
