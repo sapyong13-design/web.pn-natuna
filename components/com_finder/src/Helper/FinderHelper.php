@@ -60,42 +60,26 @@ class FinderHelper
         $entry->hits       = 1;
         $entry->results    = $resultCount;
 
-        // Query the table to determine if the term has been searched previously
-        $query->select($db->quoteName('hits'))
-            ->from($db->quoteName('#__finder_logging'))
-            ->where($db->quoteName('md5sum') . ' = ' . $db->quote($entry->md5sum));
+        // md5sum is the primary key. An atomic upsert avoids a read before every write
+        // and keeps concurrent searches from racing on the first occurrence.
+        $query->insert($db->quoteName('#__finder_logging'))
+            ->columns(
+                [
+                    $db->quoteName('searchterm'),
+                    $db->quoteName('query'),
+                    $db->quoteName('md5sum'),
+                    $db->quoteName('hits'),
+                    $db->quoteName('results'),
+                ]
+            )
+            ->values('?, ?, ?, ?, ?')
+            ->bind(1, $entry->searchterm)
+            ->bind(2, $entry->query, ParameterType::LARGE_OBJECT)
+            ->bind(3, $entry->md5sum)
+            ->bind(4, $entry->hits, ParameterType::INTEGER)
+            ->bind(5, $entry->results, ParameterType::INTEGER);
+        $query->setQuery($query . ' ON DUPLICATE KEY UPDATE hits = hits + 1');
         $db->setQuery($query);
-        $hits = (int) $db->loadResult();
-
-        // Reset the $query object
-        $query->clear();
-
-        // Update the table based on the results
-        if ($hits) {
-            $query->update($db->quoteName('#__finder_logging'))
-                ->set('hits = (hits + 1)')
-                ->where($db->quoteName('md5sum') . ' = ' . $db->quote($entry->md5sum));
-            $db->setQuery($query);
-            $db->execute();
-        } else {
-            $query->insert($db->quoteName('#__finder_logging'))
-                ->columns(
-                    [
-                        $db->quoteName('searchterm'),
-                        $db->quoteName('query'),
-                        $db->quoteName('md5sum'),
-                        $db->quoteName('hits'),
-                        $db->quoteName('results'),
-                    ]
-                )
-                ->values('?, ?, ?, ?, ?')
-                ->bind(1, $entry->searchterm)
-                ->bind(2, $entry->query, ParameterType::LARGE_OBJECT)
-                ->bind(3, $entry->md5sum)
-                ->bind(4, $entry->hits, ParameterType::INTEGER)
-                ->bind(5, $entry->results, ParameterType::INTEGER);
-            $db->setQuery($query);
-            $db->execute();
-        }
+        $db->execute();
     }
 }

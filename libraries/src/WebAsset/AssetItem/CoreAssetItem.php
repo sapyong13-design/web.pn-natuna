@@ -54,7 +54,7 @@ class CoreAssetItem extends WebAssetItem implements WebAssetAttachBehaviorInterf
         // Form tokens in rendered HTML still make LSCache reject the response.
         $app = Factory::getApplication();
         $path = Uri::getInstance()->getPath();
-        $publicPages = ['/', '/profil-pengadilan', '/transparansi', '/berita', '/pengumuman', '/berita-dan-pengumuman', '/kontak'];
+        $publicPages = ['/', '/profil-pengadilan', '/profil-pengadilan/visi-misi', '/transparansi', '/berita', '/pengumuman', '/berita-dan-pengumuman', '/kontak'];
 
         if ($app->isClient('site') && $app->getInput()->getMethod() === 'GET' && $app->getIdentity()->guest && Uri::getInstance()->getQuery() === '' && in_array($path, $publicPages, true)) {
             return;

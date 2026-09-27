@@ -73,7 +73,7 @@ if ((int) $item->id === 53) {
     ?>
     <section class="news-portal" aria-labelledby="news-portal-title">
       <section class="news-portal__hero">
-        <img src="/images/hero/gedung-pn-natuna-2026.webp" alt="Gedung Pengadilan Negeri Natuna" width="1536" height="1024" fetchpriority="high">
+        <img src="/images/hero/gedung-pn-natuna-2026.webp" srcset="/images/hero/gedung-pn-natuna-2026-400.webp 400w, /images/hero/gedung-pn-natuna-2026-800.webp 800w, /images/hero/gedung-pn-natuna-2026-1200.webp 1200w, /images/hero/gedung-pn-natuna-2026.webp 1536w" sizes="(max-width: 760px) 100vw, (max-width: 1180px) 76vw, 1084px" alt="Gedung Pengadilan Negeri Natuna" width="1536" height="1024" fetchpriority="high">
         <div class="news-portal__hero-overlay"><p>Informasi resmi</p><h1 id="news-portal-title">Berita dan Pengumuman</h1><span>Informasi terkini Pengadilan Negeri Natuna untuk masyarakat dan para pencari keadilan.</span></div>
       </section>
       <nav class="news-portal__channels" aria-label="Kanal informasi"><a href="<?php echo Route::_('/berita'); ?>" aria-label="Buka semua berita">Berita</a><a href="<?php echo Route::_('/pengumuman'); ?>" aria-label="Buka semua pengumuman">Pengumuman</a></nav>

@@ -51,7 +51,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <?php if ($isHome) : ?>
-  <link rel="preload" as="image" href="/images/hero/gedung-pn-natuna-2026-graded.webp" imagesrcset="/images/hero/gedung-pn-natuna-2026-graded-480.webp 480w, /images/hero/gedung-pn-natuna-2026-graded-768.webp 768w, /images/hero/gedung-pn-natuna-2026-graded-1200.webp 1200w, /images/hero/gedung-pn-natuna-2026-graded.webp 1536w" imagesizes="100vw" fetchpriority="high">
+  <link rel="preload" as="image" href="/images/hero/gedung-pn-natuna-2026-graded.webp" imagesrcset="/images/hero/gedung-pn-natuna-2026-graded-480.webp 480w, /images/hero/gedung-pn-natuna-2026-graded-768-q68.webp 768w, /images/hero/gedung-pn-natuna-2026-graded-1200.webp 1200w, /images/hero/gedung-pn-natuna-2026-graded.webp 1536w" imagesizes="100vw" fetchpriority="high">
   <?php endif; ?>
   <jdoc:include type="metas" />
   <jdoc:include type="styles" />
