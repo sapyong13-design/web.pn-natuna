@@ -105,7 +105,7 @@ def find_latest(files, survey_type):
     """Cari file terbaru untuk survey_type berdasarkan TW + tahun."""
     candidates = []
     for fid, name in files:
-        m = re.match(rf'^{re.escape(survey_type)}\s+TW(\d)\s+(\d{{4}})', name, re.I)
+        m = re.match(rf'^{re.escape(survey_type)}\s+TW\s*([1-4])\s+(\d{{4}})\b', name, re.I)
         if m:
             candidates.append({
                 'year': int(m.group(2)),

@@ -722,7 +722,13 @@ CRON_SOURCE=/home/pnnatuna/private/cron/current
 tail -n 100 /home/pnnatuna/private/logs/cron-refresh-all.log
 ```
 
-PDF Google Drive tidak memicu website secara instan. Dokumen terbaca saat cron atau refresh manual berikutnya. Nama survei wajib mengikuti `SKM TW{1-4} {TAHUN}.pdf` dan `IPAK TW{1-4} {TAHUN}.pdf`; nama DIPA yang aman: `Laporan Realisasi Anggaran DIPA 01 dan 03 {Bulan} {Tahun}.pdf`. Folder Drive wajib publik untuk siapa pun yang memiliki link.
+PDF Google Drive tidak memicu website secara instan. Cron produksi berjalan `0 * * * *` (setiap jam pada menit 00). Nama survei menerima `SKM TW3 2026.pdf` maupun `SKM TW 3 2026.pdf`, juga IPAK; triwulan harus 1–4. Nama DIPA yang aman: `Laporan Realisasi Anggaran DIPA 01 dan 03 {Bulan} {Tahun}.pdf`. Folder Drive wajib publik untuk siapa pun yang memiliki link.
+
+Pada 2 Oktober 2026, parser diperbaiki karena file TW3 berspasi terlewat. Bundle aktif dipindahkan secara atomik ke `/home/pnnatuna/private/cron/releases/b136c2ac-survey-tw-spacing-20261002`; regresi `tools/test_survey_periods.py` lulus dan refresh menghasilkan kedua gambar TW3. Skor modul 816 disesuaikan dari PDF: SKM dan IPAK 4,00 / 100,00%, masing-masing 49 responden, periode Juli–September. Backup konten sebelum penyesuaian skor: `/home/pnnatuna/private/cron/survey-module-before-tw3-scores.html`.
+
+Script survei hanya mengganti gambar dan tag TW, bukan angka skor/jumlah responden atau nama bulan. Nilai kartu harus dicocokkan dengan PDF setelah pergantian periode. Pemeriksaan publik TW3 sudah menunjukkan angka, periode, dan kedua path gambar yang sesuai.
+
+Refresh manual TW3 dijalankan setelah persiapan bundle dengan `umask 077`; gambar hasilnya perlu `chmod 644` agar web server bisa membacanya. Kedua PNG sudah diperbaiki dan berhasil dimuat dari web publik dengan dimensi 800×1132. Saat refresh manual berikutnya, jangan mewariskan umask privat ke output publik.
 
 ---
 
