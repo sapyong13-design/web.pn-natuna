@@ -6,18 +6,6 @@
   "license": "GPL-2.0-or-later",
   "assets": [
     {
-      "name": "com_config.config",
-      "type": "script",
-      "uri": "com_config/config-default.min.js",
-      "dependencies": [
-        "core"
-      ],
-      "attributes": {
-        "type": "module"
-      },
-      "version": "752453"
-    },
-    {
       "name": "com_config.modules",
       "type": "script",
       "uri": "com_config/modules-default.min.js",
@@ -30,16 +18,16 @@
       "version": "a96b5d"
     },
     {
-      "name": "com_config.templates",
+      "name": "com_config.config",
       "type": "script",
-      "uri": "com_config/templates-default.min.js",
+      "uri": "com_config/config-default.min.js",
       "dependencies": [
         "core"
       ],
       "attributes": {
         "type": "module"
       },
-      "version": "8e4ec9"
+      "version": "752453"
     },
     {
       "name": "com_config.filters",
@@ -52,6 +40,18 @@
         "type": "module"
       },
       "version": "2cad91"
+    },
+    {
+      "name": "com_config.templates",
+      "type": "script",
+      "uri": "com_config/templates-default.min.js",
+      "dependencies": [
+        "core"
+      ],
+      "attributes": {
+        "type": "module"
+      },
+      "version": "8e4ec9"
     }
   ]
 }

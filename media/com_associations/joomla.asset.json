@@ -52,12 +52,6 @@
     },
     {
       "name": "com_associations.sidebyside",
-      "type": "style",
-      "uri": "com_associations/sidebyside.min.css",
-      "version": "5da4fc"
-    },
-    {
-      "name": "com_associations.sidebyside",
       "type": "script",
       "uri": "com_associations/sidebyside.min.js",
       "dependencies": [
@@ -67,6 +61,12 @@
         "type": "module"
       },
       "version": "a057fe"
+    },
+    {
+      "name": "com_associations.sidebyside",
+      "type": "style",
+      "uri": "com_associations/sidebyside.min.css",
+      "version": "5da4fc"
     }
   ]
 }

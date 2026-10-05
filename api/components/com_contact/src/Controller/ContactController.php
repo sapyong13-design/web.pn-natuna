@@ -172,15 +172,9 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
         $data = $event->getArgument('data', $data);
 
         // Send the email
-        $sent = false;
-
         $params = ComponentHelper::getParams('com_contact');
 
-        if (!$params->get('custom_reply')) {
-            $sent = $this->_sendEmail($data, $contact, $params->get('show_email_copy', 0));
-        }
-
-        if (!$sent) {
+        if (!$params->get('custom_reply') && !$this->_sendEmail($data, $contact, $params->get('show_email_copy', 0))) {
             throw new SendEmail('Error sending message');
         }
 
@@ -242,6 +236,7 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
             $mailer->addRecipient($contact->email_to);
             $mailer->setReplyTo($templateData['email'], $templateData['name']);
             $mailer->addTemplateData($templateData);
+            $mailer->addUnsafeTags(['name', 'email', 'body']);
             $sent = $mailer->send();
 
             // If we are supposed to copy the sender, do so.
@@ -250,6 +245,7 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
                 $mailer->addRecipient($templateData['email']);
                 $mailer->setReplyTo($templateData['email'], $templateData['name']);
                 $mailer->addTemplateData($templateData);
+                $mailer->addUnsafeTags(['name', 'email', 'body']);
                 $sent = $mailer->send();
             }
         } catch (MailDisabledException | phpMailerException $exception) {
@@ -258,7 +254,7 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
 
                 $sent = false;
             } catch (\RuntimeException $exception) {
-                Factory::getApplication()->enqueueMessage(Text::_($exception->errorMessage()), 'warning');
+                Factory::getApplication()->enqueueMessage(Text::_($exception->getMessage()), 'warning');
 
                 $sent = false;
             }

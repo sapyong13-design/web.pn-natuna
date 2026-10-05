@@ -76,7 +76,7 @@ python3 tools/build-deploy-package.py /home/CPANEL_USER/private/releases/pn-natu
 sha256sum /home/CPANEL_USER/private/releases/pn-natuna-deploy-$COMMIT.zip
 ```
 
-Builder memakai allowlist dan mengecualikan `configuration.php`, `.git`, database, docs, tools, cache, log, backup, archive, dan secret. Verifikasi hash sebelum upload:
+Builder memakai allowlist dan mengecualikan `configuration.php`, `.git`, dump database, migrasi proyek, docs, tools, cache, log, backup, archive, dan secret. SQL schema resmi Joomla pada path core/vendor yang dibatasi wajib ikut paket agar pemeriksaan dan update struktur database berfungsi; SQL lain tetap ditolak. Verifikasi hash sebelum upload:
 
 ```bash
 sha256sum /home/CPANEL_USER/private/releases/pn-natuna-deploy-COMMIT.zip
@@ -380,7 +380,7 @@ Kebijakan sync:
 
 - `templates`, `plugins`, `modules`, `components`, core Joomla, dan direktori code allowlist dimirror; file code yang telah dihapus/rename di Git ikut dihapus dari webroot.
 - `images`, `files`, dan `media` di-copy tanpa delete agar upload Joomla yang tidak ada di Git tetap aman.
-- `configuration.php`, `administrator/logs`, `cache`, `tmp`, SQL, docs, tools, backup, dan secret tidak pernah disalin dari repo.
+- `configuration.php`, `administrator/logs`, `cache`, `tmp`, dump SQL, migrasi proyek, docs, tools, backup, dan secret tidak pernah disalin dari repo. SQL schema resmi pada allowlist core/vendor tetap disalin.
 - Daftar file memakai allowlist yang sama dengan `tools/build-deploy-package.py`.
 
 Hentikan mode `--reset-database` setelah staging menjadi website utama atau mulai menerima konten penting. Setelah go-live, update DB hanya melalui migration baru yang kompatibel dengan MariaDB dan sudah diuji.

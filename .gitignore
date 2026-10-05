@@ -28,6 +28,24 @@
 
 # Database exports, backups, archives, logs, and editor residue
 *.sql
+# Official Joomla schemas only; database dumps remain ignored.
+!/administrator/components/com_admin/sql/updates/mysql/[0-9]*.[0-9]*.[0-9]*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].sql
+!/administrator/components/com_admin/sql/updates/postgresql/[0-9]*.[0-9]*.[0-9]*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].sql
+!/administrator/components/com_banners/sql/install.mysql.utf8.sql
+!/administrator/components/com_banners/sql/uninstall.mysql.utf8.sql
+!/administrator/components/com_contact/sql/install.mysql.utf8.sql
+!/administrator/components/com_contact/sql/uninstall.mysql.utf8.sql
+!/administrator/components/com_newsfeeds/sql/install.mysql.utf8.sql
+!/administrator/components/com_newsfeeds/sql/uninstall.mysql.utf8.sql
+!/administrator/components/com_finder/sql/install.mysql.sql
+!/administrator/components/com_finder/sql/install.postgresql.sql
+!/administrator/components/com_finder/sql/uninstall.mysql.sql
+!/administrator/components/com_finder/sql/uninstall.postgresql.sql
+!/libraries/vendor/joomla/session/meta/sql/mysql.sql
+!/libraries/vendor/joomla/session/meta/sql/sqlite.sql
+!/libraries/vendor/joomla/session/meta/sql/sqlsrv.sql
+!/libraries/vendor/joomla/session/meta/sql/pgsql.sql
+!/libraries/vendor/php-debugbar/php-debugbar/src/DebugBar/Storage/pdo_storage_schema.sql
 /database/*
 !/database/migrations/
 /database/migrations/*

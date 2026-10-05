@@ -4,6 +4,7 @@
 import argparse
 import os
 from pathlib import Path, PurePosixPath
+import re
 import stat
 import sys
 import zipfile
@@ -23,10 +24,31 @@ DENY_PREFIXES = {("administrator", "cache"), ("administrator", "logs")}
 DENY_NAMES = {"configuration.php", ".env", ".user.ini", "php.ini", ".htpasswd"}
 DENY_SUFFIXES = {
     ".sql", ".dump", ".bak", ".backup", ".old", ".orig", ".save", ".swp",
-    ".log", ".pem", ".key", ".p12", ".pfx", ".zip", ".7z", ".tgz", ".gz",
+    ".log", ".pem", ".key", ".p12", ".pfx", ".tar", ".zip", ".7z", ".tgz", ".gz",
 }
 WRITABLE_DIRS = {"images", "files", "media"}
 EXECUTABLE_SUFFIXES = {".php", ".php3", ".php4", ".php5", ".php7", ".php8", ".phtml", ".phar"}
+CORE_SQL_FILES = {
+    "administrator/components/com_banners/sql/install.mysql.utf8.sql",
+    "administrator/components/com_banners/sql/uninstall.mysql.utf8.sql",
+    "administrator/components/com_contact/sql/install.mysql.utf8.sql",
+    "administrator/components/com_contact/sql/uninstall.mysql.utf8.sql",
+    "administrator/components/com_newsfeeds/sql/install.mysql.utf8.sql",
+    "administrator/components/com_newsfeeds/sql/uninstall.mysql.utf8.sql",
+    "administrator/components/com_finder/sql/install.mysql.sql",
+    "administrator/components/com_finder/sql/install.postgresql.sql",
+    "administrator/components/com_finder/sql/uninstall.mysql.sql",
+    "administrator/components/com_finder/sql/uninstall.postgresql.sql",
+    "libraries/vendor/joomla/session/meta/sql/mysql.sql",
+    "libraries/vendor/joomla/session/meta/sql/sqlite.sql",
+    "libraries/vendor/joomla/session/meta/sql/sqlsrv.sql",
+    "libraries/vendor/joomla/session/meta/sql/pgsql.sql",
+    "libraries/vendor/php-debugbar/php-debugbar/src/DebugBar/Storage/pdo_storage_schema.sql",
+}
+CORE_SQL_UPDATE = re.compile(
+    r"administrator/components/com_admin/sql/updates/(?:mysql|postgresql)/"
+    r"[0-9]+\.[0-9]+\.[0-9]+-[0-9]{4}-[0-9]{2}-[0-9]{2}\.sql"
+)
 
 
 def allowed(rel):
@@ -41,6 +63,8 @@ def allowed(rel):
         return False
     if name.startswith(".env") or "handoff" in name:
         return False
+    if name.endswith(".sql"):
+        return rel.as_posix() in CORE_SQL_FILES or CORE_SQL_UPDATE.fullmatch(rel.as_posix()) is not None
     return not any(name.endswith(suffix) for suffix in DENY_SUFFIXES)
 
 
