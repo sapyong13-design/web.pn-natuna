@@ -18,10 +18,16 @@
       "version": "23b63d"
     },
     {
-      "name": "com_menus.admin-item-edit-container",
-      "type": "style",
-      "uri": "com_menus/admin-item-edit_container.min.css",
-      "version": "67209f"
+      "name": "com_menus.admin-item-edit-modules",
+      "type": "script",
+      "uri": "com_menus/admin-item-edit_modules.min.js",
+      "dependencies": [
+        "core"
+      ],
+      "attributes": {
+        "type": "module"
+      },
+      "version": "15ab9c"
     },
     {
       "name": "com_menus.admin-item-edit-container",
@@ -50,16 +56,16 @@
       "version": "9b90e4"
     },
     {
-      "name": "com_menus.admin-item-edit-modules",
+      "name": "com_menus.admin-menus",
       "type": "script",
-      "uri": "com_menus/admin-item-edit_modules.min.js",
+      "uri": "com_menus/admin-menus-default.min.js",
       "dependencies": [
         "core"
       ],
       "attributes": {
         "type": "module"
       },
-      "version": "15ab9c"
+      "version": "8c28f6"
     },
     {
       "name": "com_menus.admin-items-modal",
@@ -76,16 +82,10 @@
       "version": "18f50c"
     },
     {
-      "name": "com_menus.admin-menus",
-      "type": "script",
-      "uri": "com_menus/admin-menus-default.min.js",
-      "dependencies": [
-        "core"
-      ],
-      "attributes": {
-        "type": "module"
-      },
-      "version": "8c28f6"
+      "name": "com_menus.admin-item-edit-container",
+      "type": "style",
+      "uri": "com_menus/admin-item-edit_container.min.css",
+      "version": "67209f"
     },
     {
       "name": "com_menus.batch-body",

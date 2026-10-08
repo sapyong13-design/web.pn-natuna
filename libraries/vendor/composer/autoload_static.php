@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826
+class ComposerStaticInitd0a09c2efaaf167ab120ed9b088760ea
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -839,6 +839,7 @@ class ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826
         'GuzzleHttp\\Psr7\\Query' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/Query.php',
         'GuzzleHttp\\Psr7\\Request' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/Request.php',
         'GuzzleHttp\\Psr7\\Response' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/Response.php',
+        'GuzzleHttp\\Psr7\\Rfc3986' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/Rfc3986.php',
         'GuzzleHttp\\Psr7\\Rfc7230' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/Rfc7230.php',
         'GuzzleHttp\\Psr7\\ServerRequest' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/ServerRequest.php',
         'GuzzleHttp\\Psr7\\Stream' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/Stream.php',
@@ -951,6 +952,7 @@ class ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826
         'Joomla\\CMS\\Authentication\\Password\\MD5Handler' => __DIR__ . '/../../..' . '/libraries/src/Authentication/Password/MD5Handler.php',
         'Joomla\\CMS\\Authentication\\Password\\PHPassHandler' => __DIR__ . '/../../..' . '/libraries/src/Authentication/Password/PHPassHandler.php',
         'Joomla\\CMS\\Authentication\\ProviderAwareAuthenticationPluginInterface' => __DIR__ . '/../../..' . '/libraries/src/Authentication/ProviderAwareAuthenticationPluginInterface.php',
+        'Joomla\\CMS\\Authentication\\RememberMe' => __DIR__ . '/../../..' . '/libraries/src/Authentication/RememberMe.php',
         'Joomla\\CMS\\Autoload\\ClassLoader' => __DIR__ . '/../../..' . '/libraries/src/Autoload/ClassLoader.php',
         'Joomla\\CMS\\Button\\ActionButton' => __DIR__ . '/../../..' . '/libraries/src/Button/ActionButton.php',
         'Joomla\\CMS\\Button\\FeaturedButton' => __DIR__ . '/../../..' . '/libraries/src/Button/FeaturedButton.php',
@@ -3403,6 +3405,7 @@ class ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826
         'Symfony\\Component\\Yaml\\Exception\\RuntimeException' => __DIR__ . '/..' . '/symfony/yaml/Exception/RuntimeException.php',
         'Symfony\\Component\\Yaml\\Inline' => __DIR__ . '/..' . '/symfony/yaml/Inline.php',
         'Symfony\\Component\\Yaml\\Parser' => __DIR__ . '/..' . '/symfony/yaml/Parser.php',
+        'Symfony\\Component\\Yaml\\ParserState' => __DIR__ . '/..' . '/symfony/yaml/ParserState.php',
         'Symfony\\Component\\Yaml\\Tag\\TaggedValue' => __DIR__ . '/..' . '/symfony/yaml/Tag/TaggedValue.php',
         'Symfony\\Component\\Yaml\\Unescaper' => __DIR__ . '/..' . '/symfony/yaml/Unescaper.php',
         'Symfony\\Component\\Yaml\\Yaml' => __DIR__ . '/..' . '/symfony/yaml/Yaml.php',
@@ -3998,9 +4001,9 @@ class ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit1c70aa1a54393496b1fe112c7c9a2826::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitd0a09c2efaaf167ab120ed9b088760ea::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitd0a09c2efaaf167ab120ed9b088760ea::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitd0a09c2efaaf167ab120ed9b088760ea::$classMap;
 
         }, null, ClassLoader::class);
     }

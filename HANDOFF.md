@@ -18,6 +18,15 @@ Knowledge base status aktif untuk rebuild Joomla Pengadilan Negeri Natuna Kelas 
 
 Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti kode harus berupa migrasi SQL idempoten baru di `database/migrations/`; restore dump wajib melalui `tools/restore-local-db.py` agar seluruh migrasi diputar ulang.
 
+## Pembaruan Joomla produksi — 5 Oktober 2026
+
+- `https://pn-natuna.go.id` berhasil diperbarui melalui CLI resmi `core:update --no-interaction`, exit `0`, dari 6.1.2 ke **6.1.4**. Registry manifest kini 6.1.4; schema MySQL `6.1.4-2026-08-27`; `maintenance:database` memeriksa 4 perubahan struktur dan melaporkan seluruh tabel mutakhir. Cache Joomla dibersihkan; browser publik menampilkan beranda, `/berita`, dan artikel pelantikan Joko Ciptanto, tanpa gambar gagal pada pemeriksaan beranda. Akses HTTP langsung ke SQL update ditolak `403`.
+- Penyebab update manual terblokir: `.gitignore` mengabaikan seluruh `*.sql` core dan builder menolak suffix `.sql`. Folder `administrator/components/com_admin/sql/updates/mysql` hilang dari produksi; halaman Database kosong dan CLI lama keliru melaporkan mutakhir. File core/XML sudah 6.1.2, tetapi `files_joomla.manifest_cache` masih 6.1.1. Migrasi dari paket resmi 6.1.2 dipulihkan, lalu `maintenance:database --fix` menyelaraskan registry sebelum update resmi.
+- Core repository memakai [paket upgrade Joomla 6.1.4 resmi](https://downloads.joomla.org/cms/joomla6/6-1-4). SHA1 ZIP sesuai publikasi: `5aa4e54ebbff7c6a178d2e6c09b2f7dae95680fd`. Patch proyek `FinderHelper.php`, `CoreAssetItem.php`, `.htaccess` dan `htaccess.txt` dipertahankan; dua patch PHP dipulihkan dari backup sesudah updater resmi menimpa core. Template, plugin proyek, upload, konfigurasi, dan konten DB tidak diganti dengan checkout lokal.
+- Backup privat sebelum perubahan: `/home/pnnatuna/private/backups/joomla-6.1.4-20261005T061551Z/{database.sql,public_html.tgz}`. Dump tidak kosong dan arsip lolos `tar -tzf`; SHA256 DB `e6a2fe14b01870cf94b14940c311a64d48b41450848bed213b0f93627ab6ae8f`, arsip `a6527cc50187a1e1b03e053c4014cf31c0924350beaaef21803b263838b7a5ec`. Backup tidak masuk GitHub; belum dilakukan restore penuh.
+- Tracking dan deployment sekarang mempertahankan 58 SQL schema resmi pada path core/vendor yang dibatasi. Dump, SQL noncore, migrasi proyek, secret, dan backup tetap tidak masuk ZIP publik. Regresi: `python tools/test_build_deploy_package.py`; ZIP nyata memuat seluruh 58 schema dan tidak memuat konfigurasi/tools/migrasi proyek.
+- Untuk update berikutnya, muat environment privat, jalankan `maintenance:database`, backup file+DB, lalu updater resmi. Jangan hanya menyalin file core tanpa finalisasi database. Setelahnya verifikasi versi manifest/schema, cache, route publik dan patch proyek; jangan memakai nomor versi CMS sebagai nilai schema SQL.
+
 ## Operasi cron cPanel aktif
 
 - Setup updater produksi, command refresh manual, command per sumber, format Google Drive, dan troubleshooting Python dicatat di [`CRON-AUTOUPDATE-HANDOFF.md`](CRON-AUTOUPDATE-HANDOFF.md), bagian **Status cPanel Aktual**.

@@ -56,7 +56,7 @@ class MediaHelper
     {
         static $imageTypes = 'xcf|odg|gif|jpg|jpeg|png|bmp|webp|avif';
 
-        return preg_match("/\.(?:$imageTypes)$/i", $fileName);
+        return (bool) preg_match("/\.(?:$imageTypes)$/i", $fileName);
     }
 
     /**
@@ -500,7 +500,7 @@ class MediaHelper
         $svgErrors = $sanitizer->getXmlIssues();
 
         /**
-         * We allow comments and temp fix for bugs in svg-santitizer
+         * We allow comments and temp fix for bugs in svg-sanitizer
          * https://github.com/darylldoyle/svg-sanitizer/issues/64
          * https://github.com/darylldoyle/svg-sanitizer/issues/63
          * https://github.com/darylldoyle/svg-sanitizer/pull/65
