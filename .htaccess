@@ -108,6 +108,8 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
+	## JDIH application retired; never expose archived source directories.
+	RewriteRule ^jdih(?:/|$) - [G,L,NC]
 	## Paksa HTTPS sebelum Joomla membuat sesi. Kondisi X-Forwarded-Proto mencegah
 	## redirect-loop ketika TLS berakhir di Cloudflare/LiteSpeed reverse proxy.
 	RewriteCond %{HTTPS} !=on

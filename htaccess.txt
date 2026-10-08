@@ -82,6 +82,8 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
+	## JDIH application retired; never expose archived source directories.
+	RewriteRule ^jdih(?:/|$) - [G,L,NC]
 	## Verified surviving legacy news, 2026-09-09.
 	RewriteRule ^(?:index\.php/(?:en/)?)?berita/berita-terkini/pengambilan-sumpah-janji-jabatan-dan-pelantikan-panitera-penganti-pada-pengadilan-negeri-natuna/?$ https://pn-natuna.go.id/berita/pengambilan-sumpah-janji-jabatan-dan-pelantikan-panitera-penganti-pada-pengadilan-negeri-natuna [R=301,L,NE,NC]
 	RewriteRule ^(?:index\.php/(?:en/)?)?berita/berita-terkini/pelaksanaan-upacara-hari-kebangkitan-nasional-ke-118-tahun-2026/?$ https://pn-natuna.go.id/berita/pelaksanaan-upacara-hari-kebangkitan-nasional-ke-118-tahun-2026 [R=301,L,NE,NC]
