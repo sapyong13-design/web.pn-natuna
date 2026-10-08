@@ -380,6 +380,16 @@ Sesi `/impeccable shape` atas pencarian beranda. Rancangannya dikoreksi di tenga
 
 
 
+## Audit foto dan URL Google 8 Oktober 2026
+
+- Produksi `/home/pnnatuna/public_html` memakai DB konfigurasi `pnnatuna_staging`, prefix `pnn_`; nama DB bukan bukti lingkungan staging. Backup 12 artikel profil, Apache, sitemap, dan foto lama: `/home/pnnatuna/private/backups/search-picture-20261008`.
+- Migrasi `20261008_retire_cached_profile_photo_urls.sql` memindahkan Faris ke `images/profil/pegawai/kesekretariatan/faris.webp`, Kusnaidi ke `images/profil/pegawai/pppk/kusnaidi.webp`, memperbaiki seluruh field konten/modul untuk 12 pasangan foto, dan memperbarui `modified` artikel profil yang tertinggal. Semua 12 URL lama HTTP 301; semua target HTTP 200 `image/webp`. Aset lama dihapus setelah query memastikan tidak ada referensi aktif; deployment media copy-only tidak cukup untuk retirement.
+- Sitemap aktif dibuat ulang dari bundle cron saat ini: 184 URL. Lima halaman kesekretariatan/PPPK HTTP 200, memakai foto kanonis tanpa referensi lama; `lastmod` 2026-10-08. Browser produksi membuktikan foto Faris terbaru tampil. Sitemap Google berhasil dikirim ulang; request indexing profil kesekretariatan diterima ke priority crawl queue. Thumbnail hasil pencarian masih menunggu proses Google; jangan klaim langsung berubah.
+- Audit 323 URL terindeks menemukan URL warisan yang kehilangan pemetaan. 79 pengalihan eksplisit ke konten pengganti diverifikasi HTTP 301 beserta target persis. Fallback `index.php/<path>` harus diletakkan sebelum kondisi `THE_REQUEST` milik redirect homepage; kondisi itu tidak boleh melekat ke fallback.
+- Route publik `component/users/reset` dan `component/users/remind` sebelumnya menyajikan homepage dengan self-canonical; kini HTTP 410, termasuk varian `index.php/en/` dan query. Login administrator tidak diubah. URL spam/tidak dikenal tetap HTTP 404; jangan redirect semua URL hilang ke homepage.
+- Removal prefix `https://pn-natuna.go.id/component/users/reset` dan `https://pn-natuna.go.id/component/users/remind` sudah tercatat 8 Oktober 2026 dengan status **Processing request**. Ini blok sementara Google; HTTP 410 di origin menjadi retirement permanen. URL pindahan dan foto aktif memakai 301, bukan temporary removal.
+- Search Console domain mencakup SIPP dan JDIH. Seluruh 64 soft 404, 101 noindex, dan 682 contoh server error berasal dari SIPP, bukan profil situs utama. JDIH gagal koneksi pada pemeriksaan; tidak boleh disimpulkan 404. Bukti audit runtime berada di `C:/tmp/pn-search-*-20261008.json` dan `C:/tmp/pn-indexed-live-audit-20261008.json`, bukan artefak rilis.
+
 ## Prinsip pemeliharaan
 
 - Joomla-native bila cukup; custom code hanya untuk kebutuhan yang tidak dipenuhi Joomla.
