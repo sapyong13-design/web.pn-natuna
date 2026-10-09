@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "path": "application/models/perkara/list_delegasi_m.php",
+      "before": "395d02941f76f7032bfb864e90c60c526d99303fa0649b437b1a2330fed0d359",
+      "after": "c76007bd5e29a28faccb320446382853d078ab013889cd8d1cefb5e2efb0cfa3"
+    },
+    {
+      "path": "application/controllers/detil_perkara.php",
+      "before": "07c25c1d04eb2288f43047c73a46c720899c102e429549dce56aec6690f30cb2",
+      "after": "a3fbf43da43c26b73378143c2fb987384e537b2ff7caa3c5c9249cc6248b68ca"
+    },
+    {
+      "path": "application/controllers/list_perkara.php",
+      "before": "a338506e9b88ecf40e235832753cd0cb74c14756568ee1ac9400d955d2ee2fa9",
+      "after": "f1b98d8a96b3782ae6cdbecebcb1bce1bb728092a4bb294013131277dbbbe2f7"
+    },
+    {
+      "path": "application/config/routes.php",
+      "before": "90ecb882e348ebbad3c6b2f83e8f151876c6a589d9ee197b848a49d7ba292d72",
+      "after": "3d4b4f72028fd2b1192e25bfcb9c726f31d1b986daa60f5c381019400354d2e8"
+    },
+    {
+      "path": "application/controllers/diversi.php",
+      "before": "7719c8317ad4926e0d292f6f3a473b9b3418dea7d7786853dc794e35cfd1c894",
+      "after": "070cfb4115624ae955c9739a82a6981d9ae34c33d611b0bf712b86ecac790030"
+    },
+    {
+      "path": "application/controllers/perkara_list_cetak.php",
+      "before": "b5ae53944acbd3a86ca231409942fc7b1d4ba0910a39bb0b70adee80e03f7704",
+      "after": "fe9355fa98151fe70ccbcc4cca1cdcece3184345030a462cc2303169baf74dca"
+    },
+    {
+      "path": "application/views/perkara_list/perkara_list.php",
+      "before": "bb09b59b94c4e163fd1e656e845eefd7d5b84644724a005fa05d3622f2611a41",
+      "after": "56185580dfb26043627ef77b906901759295eb2bc13e87f53c908e67d7719993"
+    },
+    {
+      "path": "application/views/perkara_list/perkara_list_cetak.php",
+      "before": "c4c90978fb71feb71e3af532aa1029e55bd75168afe1ffd6c147eb60ccdf13b3",
+      "after": "23595e9c2b7d852d01529a04b40b9e858573d9a00b40d16abe64f33d04370edb"
+    },
+    {
+      "path": "application/errors/error_404.php",
+      "before": null,
+      "after": "5ee1c195a69b864ef5d726d8f19efbae0211e587a814d6ce301ba31634104ab0"
+    }
+  ]
+}
