@@ -38,6 +38,13 @@ WIDGET_OPEN = '<div class="dipa-widget" data-dipa-board>'
 WIDGET_OPEN_RE = re.compile(r'<div class="dipa-widget"[^>]*>')
 MYSQL_BIN = os.environ.get('MYSQL_BIN', 'mysql')
 MYSQL_DEFAULTS_FILE = os.environ.get('MYSQL_DEFAULTS_FILE', '')
+
+# Artikel 40 "Laporan Realisasi Anggaran DIPA 01 dan 03" menyimpan daftar kartu
+# dokumen yang sama dengan widget modul 816, tapi tidak pernah ikut ter-refresh.
+# sync_transparency_archive() menutup celah itu; href-nya jadi penanda keberadaan
+# kartu, jadi cukup satu bentuk URL per file id.
+ARCHIVE_ALIAS = 'laporan-realisasi-anggaran-dipa-01-dan-03'
+ARCHIVE_HREF = lambda file_id: f'https://drive.google.com/file/d/{file_id}/'
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASS = os.environ.get('DB_PASS', '')
 DB_NAME = os.environ.get('DB_NAME', 'pn_natuna_rebuild')
@@ -423,6 +430,81 @@ def update_module_db(widget_html):
     return result.returncode == 0, result.stderr
 
 
+def sync_transparency_archive(periods):
+    """Sisipkan kartu bulanan yang belum ada ke artikel transparansi realisasi.
+
+    Modul 816 (beranda) dan artikel 40 (halaman transparansi) menyimpan daftar
+    dokumen yang sama, tapi hanya modul yang pernah di-refresh otomatis. Akibatnya
+    halaman transparansi berhenti di Mei 2026 sementara widget sudah memuat
+    Jun-Sep 2026. Fungsi ini menutup celah itu setiap kali refresh berjalan.
+
+    Aturan yang dijaga:
+    - Hanya periode yang punya file id yang ditambahkan; periode tanpa file
+      dilewati, bukan dibuatkan kartu kosong.
+    - Kartu yang sudah ada tidak disentuh, jadi urutan dan koreksi manual
+      (mis. `&mdash;` pada kartu April) tidak pernah ditimpa.
+    - Kartu baru diletakkan tepat sebelum kartu bulanan terdekat yang lebih tua,
+      supaya urutan menurun tetap terjaga tanpa menulis ulang seluruh daftar.
+    - Tidak ada perubahan berarti = tidak ada UPDATE, jadi `modified` artikel
+      tidak bergerak dan `lastmod` sitemap tidak ikut berubah tanpa alasan.
+    """
+    result = run_mysql(
+        f"SELECT introtext FROM pnn_content WHERE alias = '{ARCHIVE_ALIAS}' AND state = 1;")
+    if result.returncode != 0:
+        return False, result.stderr
+    current = result.stdout.rstrip('\n')
+    if not current:
+        return False, f'Artikel {ARCHIVE_ALIAS} tidak ditemukan atau introtext kosong.'
+
+    present = {entry['id'] for entry in periods if ARCHIVE_HREF(entry['id']) in current}
+    missing = [entry for entry in periods if entry.get('id') and entry['id'] not in present]
+    if not missing:
+        return True, ''
+
+    ordered = sorted(periods, key=lambda e: (e['year'], e['month']), reverse=True)
+    updated = current
+    added = 0
+    for entry in sorted(missing, key=lambda e: (e['year'], e['month'])):
+        # anchor: kartu bulanan pertama yang lebih tua dan sudah ada di konten
+        anchor = None
+        for candidate in ordered:
+            if (candidate['year'], candidate['month']) >= (entry['year'], entry['month']):
+                continue
+            marker = ARCHIVE_HREF(candidate['id'])
+            if marker in updated:
+                anchor = marker
+                break
+        if anchor is None:
+            # tidak ada anchor bulanan (mis. daftar hanya berisi folder tahunan);
+            # taruh sebelum kartu arsip tahunan terbaru agar tetap di atasnya
+            years = re.search(r'<a class="transparency-document" href="https://drive\.google\.com/drive/folders/', updated)
+            if not years:
+                return False, 'Tidak menemukan titik sisip pada daftar dokumen.'
+            anchor = years.group(0)
+        card = (
+            f'<a class="transparency-document" href="{ARCHIVE_HREF(entry["id"])}" '
+            'target="_blank" rel="noopener"><span>'
+            f'<strong>{period_label(entry)}</strong>'
+            '<small>Google Drive &middot; buka di tab baru</small>'
+            '</span></a>'
+        )
+        if card in updated:
+            continue
+        updated = updated.replace(anchor, card + anchor, 1)
+        added += 1
+
+    if added == 0 or updated == current:
+        return True, ''
+    escaped = updated.replace('\\', '\\\\').replace("'", "\\'")
+    result = run_mysql(
+        f"UPDATE pnn_content SET introtext = '{escaped}', modified = UTC_TIMESTAMP(), "
+        f"modified_by = 0 WHERE alias = '{ARCHIVE_ALIAS}';")
+    if result.returncode != 0:
+        return False, result.stderr
+    print(f'      Transparency archive: {added} kartu ditambahkan.')
+    return True, ''
+
+
 def resolve_periods(entries, cache):
     """Parse tiap periode, pakai cache bila file id-nya sudah pernah diparse.
 
@@ -499,6 +581,14 @@ def main():
     else:
         print(f'      [ERROR] Pembaruan database gagal: {err}', file=sys.stderr)
         sys.exit(1)
+
+    # Daftar kartu di halaman transparansi memakai periode yang sama; tanpa
+    # langkah ini halaman itu tertinggal setiap kali periode baru masuk.
+    archive_ok, archive_err = sync_transparency_archive(periods)
+    if not archive_ok:
+        print(f'      [WARN] Arsip transparansi tidak tersinkron: {archive_err}', file=sys.stderr)
+    else:
+        print('      Transparency archive checked.')
 
     print(f'\nSELESAI. Kartu DIPA menawarkan {len(periods)} periode, teraktif {period_label(periods[0])}.')
 
