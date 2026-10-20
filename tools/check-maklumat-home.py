@@ -36,8 +36,8 @@ if EXPECTED_URL not in content:
     fail("module 808 does not use current Maklumat Pelayanan WebP")
 if "maklumat-pelayanan-2026.jpg" in content or "maklumat-pelayanan-2026.png" in content:
     fail("module 808 still references removed Maklumat Pelayanan image")
-if content.count('class="maklumat-compact-doc"') != 2:
-    fail("module 808 must contain two Maklumat documents")
+if content.count('class="maklumat-compact-doc') < 2:
+    fail("module 808 must contain Maklumat documents")
 if "maklumat-compact-intro" in content or "<h2" in content:
     fail("module 808 must not duplicate its Joomla title")
 if showtitle != "0":

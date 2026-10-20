@@ -17102,3 +17102,70 @@ body.is-dark .integrity-notice__close:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .integrity-notice { animation: none; }
 }
+
+/* === KOMPENSASI PELAYANAN ENHANCEMENT 2026-10 ============================= */
+.maklumat-compact-docs:has(.maklumat-compact-doc--landscape) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.maklumat-compact-doc--landscape {
+  grid-template-columns: minmax(130px, 150px) minmax(0, 1fr);
+}
+
+.maklumat-doc.is-landscape {
+  padding: 8px;
+}
+
+.maklumat-doc.is-landscape img {
+  aspect-ratio: 1772 / 1016;
+  object-fit: cover;
+  background: #0d1e2d;
+}
+
+.content-primary .svc-document-preview--landscape {
+  width: min(100%, 820px);
+}
+
+.content-primary .svc-document-preview--landscape img {
+  width: min(100%, 720px);
+  aspect-ratio: 1772 / 1016;
+  background: #0d1e2d;
+}
+
+.svc-card--reward {
+  position: relative;
+  border-top: 3px solid var(--color-accent);
+}
+
+.svc-card__duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(185, 143, 36, 0.15);
+  color: var(--color-primary);
+  font-size: var(--step--2);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+body.is-dark .svc-card__duration {
+  background: rgba(185, 143, 36, 0.25);
+  color: #f3c96b;
+}
+
+@media (max-width: 760px) {
+  .maklumat-compact-doc--landscape {
+    grid-template-columns: minmax(110px, 130px) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .maklumat-compact-doc--landscape {
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+}
+/* === END KOMPENSASI PELAYANAN ENHANCEMENT 2026-10 ========================= */
