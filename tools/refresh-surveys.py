@@ -83,12 +83,19 @@ def listing(folder_id: str, retries: int = 3) -> list[dict]:
 
 
 def card(file_id: str, label: str) -> str:
+    """Satu kartu dokumen.
+
+    Panah ↗ digambar CSS lewat `.transparency-document::after`, jadi tidak ada
+    span panah di markup. Dulu ada `<span aria-hidden="true">&nearr;</span>`
+    di sini; DOMDocument meng-escape entity itu dua kali sehingga yang tampil
+    di halaman justru tulisan "&nearr;" — bukan panah.
+    """
     return (
         f'<a class="transparency-document" href="{FILE_URL.format(id=file_id)}" '
         'target="_blank" rel="noopener"><span>'
         f'<strong>{html.escape(label)}</strong>'
         '<small>Google Drive &mdash; buka di tab baru</small>'
-        '</span><span aria-hidden="true">&nearr;</span></a>'
+        '</span></a>'
     )
 
 
