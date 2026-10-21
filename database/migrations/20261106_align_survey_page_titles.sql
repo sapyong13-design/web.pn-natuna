@@ -64,32 +64,41 @@ WHERE id = 85
 
 -- 5. Catatan penjelas per halaman: istilah, cakupan arsip, dan cara berkas
 --    digabung. Bukan pengulangan judul, bukan pengulangan paragraf hero.
-SET @note_skm := '<p class="transparency-note">Dokumen 2026 memakai istilah SKM; arsip 2024&ndash;2025 masih berjudul IKM (Indeks Kepuasan Masyarakat) untuk pengukuran yang sama. Laporan terbaru diletakkan paling atas.</p>';
-SET @note_ipak := '<p class="transparency-note">Halaman ini sebelumnya memakai nama SPAK (Survei Persepsi Anti Korupsi) untuk dokumen yang sama. Laporan Triwulan III dan IV 2024 digabung dalam satu berkas. Laporan terbaru diletakkan paling atas.</p>';
-SET @note_harian := '<p class="transparency-note">Rekap disusun per bulan, bukan per hari. Arsip tersedia mulai Januari 2025. Laporan terbaru diletakkan paling atas.</p>';
+--
+--    Predikat idempoten memakai literal, bukan variabel @note_*. Variabel
+--    pengguna punya coercibility sama dengan kolom, sehingga LOCATE(@var, kolom)
+--    gagal dengan "Illegal mix of collations" ketika koneksi memakai
+--    utf8mb4_general_ci sementara kolomnya utf8mb4_unicode_ci. Literal mengikuti
+--    collation kolom, jadi aman di kedua server.
 
 UPDATE #__content
 SET introtext = REPLACE(REPLACE(introtext,
         '<p class="transparency-note">SKM adalah Survei Kepuasan Masyarakat; arsip lama menggunakan istilah IKM atau Indeks Kepuasan Masyarakat.</p>', ''),
-        '<section class="transparency-archive"', CONCAT(@note_skm, '<section class="transparency-archive"')),
+        '<section class="transparency-archive"',
+        CONCAT('<p class="transparency-note">Dokumen 2026 memakai istilah SKM; arsip 2024&ndash;2025 masih berjudul IKM (Indeks Kepuasan Masyarakat) untuk pengukuran yang sama. Laporan terbaru diletakkan paling atas.</p>',
+               '<section class="transparency-archive"')),
     modified = UTC_TIMESTAMP()
 WHERE id = 42
-  AND LOCATE(@note_skm, introtext) = 0
+  AND LOCATE('<p class="transparency-note">Dokumen 2026 memakai istilah SKM', introtext) = 0
   AND LOCATE('<section class="transparency-archive"', introtext) > 0;
 
 UPDATE #__content
 SET introtext = REPLACE(introtext,
-        '<section class="transparency-archive"', CONCAT(@note_ipak, '<section class="transparency-archive"')),
+        '<section class="transparency-archive"',
+        CONCAT('<p class="transparency-note">Halaman ini sebelumnya memakai nama SPAK (Survei Persepsi Anti Korupsi) untuk dokumen yang sama. Laporan Triwulan III dan IV 2024 digabung dalam satu berkas. Laporan terbaru diletakkan paling atas.</p>',
+               '<section class="transparency-archive"')),
     modified = UTC_TIMESTAMP()
 WHERE id = 43
-  AND LOCATE(@note_ipak, introtext) = 0
+  AND LOCATE('<p class="transparency-note">Halaman ini sebelumnya memakai nama SPAK', introtext) = 0
   AND LOCATE('<section class="transparency-archive"', introtext) > 0;
 
 UPDATE #__content
 SET introtext = REPLACE(REPLACE(introtext,
         '<p class="transparency-note">Dokumen “survei harian” dipublikasikan sebagai rekap bulanan.</p>', ''),
-        '<section class="transparency-archive"', CONCAT(@note_harian, '<section class="transparency-archive"')),
+        '<section class="transparency-archive"',
+        CONCAT('<p class="transparency-note">Rekap disusun per bulan, bukan per hari. Arsip tersedia mulai Januari 2025. Laporan terbaru diletakkan paling atas.</p>',
+               '<section class="transparency-archive"')),
     modified = UTC_TIMESTAMP()
 WHERE id = 85
-  AND LOCATE(@note_harian, introtext) = 0
+  AND LOCATE('<p class="transparency-note">Rekap disusun per bulan, bukan per hari.', introtext) = 0
   AND LOCATE('<section class="transparency-archive"', introtext) > 0;
