@@ -290,11 +290,31 @@ function pn_natuna_sipp_render_schedule(): void
           <?php if ($status['stale']) : ?>
             <p class="sipp-stale-notice" role="status">Daftar di bawah ini adalah agenda <?php echo htmlspecialchars($schedule['date_label'] ?: $status['expected'], ENT_QUOTES, 'UTF-8'); ?> &mdash; bukan <?php echo mb_strtolower($day['title'], 'UTF-8'); ?>.</p>
           <?php endif; ?>
+          <?php
+          $rooms = [];
+          foreach ($schedule['rows'] as $scheduleRow) {
+              $roomName = trim((string) ($scheduleRow['room'] ?? ''));
+              if ($roomName !== '') {
+                  $rooms[$roomName] = true;
+              }
+          }
+          ?>
+          <div class="sipp-day-toolbar">
+            <p class="sipp-day-toolbar__meta">
+              <span><?php echo count($schedule['rows']); ?> perkara</span>
+              <?php if ($rooms) : ?><span><?php echo count($rooms); ?> ruang sidang</span><?php endif; ?>
+              <?php if ($schedule['updated'] !== '') : ?><span>Diperbarui <?php echo htmlspecialchars($schedule['updated'], ENT_QUOTES, 'UTF-8'); ?></span><?php endif; ?>
+            </p>
+            <button type="button" class="sipp-export" data-sipp-export="<?php echo $key; ?>" aria-haspopup="dialog" aria-controls="sipp-stage" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M12 3v10m0 0 3.5-3.5M12 13 8.5 9.5M5 15v4h14v-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Ekspor jadwal</span>
+            </button>
+          </div>
           <?php if ($schedule['rows']) : ?>
             <div class="sipp-cards">
               <?php foreach ($schedule['rows'] as $index => $row) : ?>
                 <?php $category = pn_natuna_sipp_case_category((string) ($row['case'] ?? '')); ?>
-                <article class="sipp-card sipp-card--<?php echo htmlspecialchars($category['key'], ENT_QUOTES, 'UTF-8'); ?>" data-case-category="<?php echo htmlspecialchars($category['key'], ENT_QUOTES, 'UTF-8'); ?>">
+                <article class="sipp-card sipp-card--<?php echo htmlspecialchars($category['key'], ENT_QUOTES, 'UTF-8'); ?>" data-case-category="<?php echo htmlspecialchars($category['key'], ENT_QUOTES, 'UTF-8'); ?>" data-no="<?php echo $index + 1; ?>" data-category="<?php echo htmlspecialchars($category['label'], ENT_QUOTES, 'UTF-8'); ?>" data-case="<?php echo htmlspecialchars($row['case'], ENT_QUOTES, 'UTF-8'); ?>" data-room="<?php echo htmlspecialchars($row['room'], ENT_QUOTES, 'UTF-8'); ?>" data-agenda="<?php echo htmlspecialchars($row['agenda'], ENT_QUOTES, 'UTF-8'); ?>" data-party-label="<?php echo htmlspecialchars((string) ($row['party_label'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-party="<?php echo htmlspecialchars((string) ($row['party'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" data-circuit="<?php echo strtoupper(trim((string) $row['circuit'])) !== 'TIDAK' ? '1' : '0'; ?>">
                   <span class="sipp-card-number" aria-label="Nomor <?php echo $index + 1; ?>, kategori <?php echo htmlspecialchars($category['label'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT); ?></span>
                   <div class="sipp-card-main">
                     <span class="sipp-card-category"><?php echo htmlspecialchars($category['label'], ENT_QUOTES, 'UTF-8'); ?></span>
@@ -323,7 +343,47 @@ function pn_natuna_sipp_render_schedule(): void
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
+      <div class="sipp-stage" id="sipp-stage" role="dialog" aria-modal="true" aria-labelledby="sipp-stage-title" hidden>
+        <figure class="sipp-poster" id="sipp-poster">
+          <div class="sipp-poster__top">
+            <div class="sipp-poster__identity">
+              <img class="sipp-poster__logo" src="/images/brand/logo-pn-natuna-mark.webp" alt="" width="313" height="420" aria-hidden="true">
+              <div class="sipp-poster__brand">
+                <span class="sipp-poster__court">Pengadilan Negeri Natuna</span>
+                <span class="sipp-poster__class">Kelas II &middot; Kabupaten Natuna</span>
+              </div>
+            </div>
+            <span class="sipp-poster__asn-badge">
+              <img class="sipp-poster__asn" src="/images/brand/logo-asn-berakhlak.webp" alt="BerAKHLAK — Bangga Melayani Bangsa" width="547" height="140" aria-hidden="true">
+            </span>
+          </div>
+          <header class="sipp-poster__head">
+            <h2 id="sipp-stage-title">Jadwal Sidang</h2>
+            <p class="sipp-poster__date" id="sipp-poster-date"></p>
+            <p class="sipp-poster__meta" id="sipp-poster-meta"></p>
+          </header>
+          <ol class="sipp-poster__list" id="sipp-poster-list"></ol>
+          <p class="sipp-poster__note" id="sipp-poster-note" hidden></p>
+          <figcaption class="sipp-poster__foot">
+            <span>Sumber: SIPP PN Natuna</span>
+            <span id="sipp-poster-updated"></span>
+          </figcaption>
+        </figure>
+        <div class="sipp-stage__actions">
+          <div class="sipp-stage__themes" role="group" aria-label="Warna latar poster">
+            <button type="button" data-sipp-theme="maroon" aria-pressed="true">Marun</button>
+            <button type="button" data-sipp-theme="navy" aria-pressed="false">Navy</button>
+            <button type="button" data-sipp-theme="cream" aria-pressed="false">Krem</button>
+          </div>
+          <button type="button" data-sipp-stage-png>Unduh PNG 1080&times;1920</button>
+          <button type="button" data-sipp-stage-video>Unduh video</button>
+          <button type="button" data-sipp-stage-print>Cetak / PDF</button>
+          <button type="button" data-sipp-stage-fullscreen>Layar penuh</button>
+          <button type="button" data-sipp-stage-close>Tutup</button>
+        </div>
+      </div>
     </section>
     <script src="/templates/pn_natuna_2026/js/sipp-tabs.js" defer></script>
+    <script src="/templates/pn_natuna_2026/js/sipp-export.js?v=20261021-glow3" defer></script>
     <?php
 }

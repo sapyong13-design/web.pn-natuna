@@ -81,6 +81,15 @@ $expect(substr_count($output, '>Pidana<') === 2, 'Fixture cards must render visi
 $expect(str_contains($output, 'data-case-category="criminal"'), 'Rendered cards must expose machine-readable category.');
 $expect(str_contains($output, 'Tidak ada sidang besok'), 'Tomorrow empty state must remain visible in its panel.');
 $expect(str_contains($output, 'role="tablist"') && str_contains($output, 'role="tabpanel"'), 'Day switcher must use accessible tab semantics.');
+$expect(str_contains($output, 'data-sipp-export="today"') && str_contains($output, 'data-sipp-export="tomorrow"'), 'Each day must expose its own export trigger.');
+$expect(substr_count($output, 'class="sipp-day-toolbar"') === 2, 'Every day panel must render exactly one export toolbar.');
+$expect(str_contains($output, '>2 perkara<'), 'Toolbar must report the number of cases for the day.');
+$expect(str_contains($output, 'id="sipp-stage"') && str_contains($output, 'aria-modal="true"'), 'Export stage must be an accessible modal dialog.');
+$expect(str_contains($output, 'class="sipp-poster"'), 'Export stage must render the 4:5 poster.');
+$expect(str_contains($output, 'id="sipp-poster-date"'), 'Poster must expose a dedicated full-date slot.');
+$expect(str_contains($output, 'data-sipp-stage-png') && str_contains($output, 'data-sipp-stage-print') && str_contains($output, 'data-sipp-stage-close'), 'Export stage must expose PNG, print and close controls.');
+$expect(str_contains($output, 'sipp-export.js'), 'Export stage behaviour script must be loaded.');
+$expect(substr_count($output, 'data-case="') >= 2, 'Cards must carry machine-readable data for the poster and PNG export.');
 
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);

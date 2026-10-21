@@ -17169,3 +17169,519 @@ body.is-dark .svc-card__duration {
   }
 }
 /* === END KOMPENSASI PELAYANAN ENHANCEMENT 2026-10 ========================= */
+
+/* === EKSPOR JADWAL SIDANG: POSTER 4:5 (1080 x 1350) 2026-10 =============== */
+.sipp-day-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding: 12px 16px 0;
+}
+
+.sipp-day-toolbar__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--step--2);
+  font-weight: 700;
+}
+
+.sipp-day-toolbar__meta span + span::before {
+  content: "·";
+  margin-right: 12px;
+  color: var(--color-line);
+}
+
+.sipp-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: #fff;
+  color: var(--color-primary-dark);
+  font: inherit;
+  font-size: var(--step--2);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.sipp-export[hidden] { display: none !important; }
+
+.sipp-export:hover,
+.sipp-export:focus-visible {
+  background: var(--color-accent);
+  color: #2f140e;
+  transform: translateY(-1px);
+}
+
+/* Panggung: poster 4:5 di tengah, kontrol di bawah poster. */
+.sipp-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  align-items: center;
+  gap: clamp(8px, 1.6vh, 18px);
+  padding: clamp(8px, 1.6vh, 20px);
+  background: rgba(12, 17, 21, 0.88);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sipp-stage[hidden] { display: none !important; }
+.sipp-stage.is-open { opacity: 1; }
+
+.sipp-poster {
+  --fit: 1;
+  position: relative;
+  container-type: inline-size;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  aspect-ratio: 1080 / 1920;
+  width: auto;
+  height: min(calc(100vh - 92px), calc((100vw - 24px) * 1.7778));
+  max-height: calc(100vh - 92px);
+  margin: 0;
+  border-top: 0.74cqw solid #b98f24;
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #2f140e, #5c1508 55%, #7d2a14);
+  color: #fdf6e6;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  transform: translateY(12px) scale(0.985);
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.sipp-stage.is-open .sipp-poster { transform: none; }
+
+/* Baris atas: identitas pengadilan (kiri) + logo BerAKHLAK (kanan). */
+.sipp-poster__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.2cqw;
+  padding: 3.4cqw 5.9cqw 0;
+}
+
+.sipp-poster__identity {
+  display: flex;
+  align-items: center;
+  gap: 1.8cqw;
+  min-width: 0;
+}
+
+.sipp-poster__brand {
+  display: grid;
+  gap: 0.5cqw;
+  min-width: 0;
+}
+
+.sipp-poster__court {
+  color: #ead395;
+  font-size: 1.8cqw;
+  font-weight: 800;
+  letter-spacing: 0.24cqw;
+  text-transform: uppercase;
+}
+
+.sipp-poster__class {
+  color: rgba(244, 227, 189, 0.7);
+  font-size: 1.5cqw;
+  font-weight: 600;
+}
+
+.sipp-poster__asn-badge {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0.8cqw 1.2cqw;
+  border-radius: 1.1cqw;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 0.5cqw 1.4cqw rgba(0, 0, 0, 0.28);
+}
+
+.sipp-poster__asn {
+  display: block;
+  width: 27cqw;
+  height: auto;
+}
+
+/* Judul: lambang PN Natuna di kiri teks. */
+.sipp-poster__head {
+  display: grid;
+  gap: 0.9cqw;
+  padding: 2.6cqw 5.9cqw 2.4cqw;
+  border-bottom: 1px solid rgba(234, 216, 167, 0.35);
+}
+
+.sipp-poster__logo {
+  display: block;
+  flex: none;
+  width: 5.2cqw;
+  height: auto;
+  filter: drop-shadow(0 0.6cqw 1.2cqw rgba(0, 0, 0, 0.42));
+}
+
+.sipp-poster__head h2 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 7.6cqw;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+}
+
+.sipp-poster__date {
+  margin: 0;
+  color: #ead395;
+  font-family: var(--font-display);
+  font-size: 3.9cqw;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.sipp-poster__meta {
+  margin: 0;
+  color: rgba(244, 227, 189, 0.82);
+  font-size: 2.1cqw;
+  font-weight: 500;
+}
+
+.sipp-poster__list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(1.3cqw * var(--fit));
+  min-height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 2.6cqw 5.9cqw 0;
+  list-style: none;
+}
+
+.sipp-poster__row {
+  --row-accent: #b98f24;
+  --row-ink: #2f140e;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: calc(2.3cqw * var(--fit));
+  border: 1px solid rgba(234, 216, 167, 0.18);
+  border-left: 0.66cqw solid var(--row-accent);
+  border-radius: 1.4cqw;
+  padding: calc(1.5cqw * var(--fit)) calc(2.1cqw * var(--fit));
+  background: rgba(255, 255, 255, 0.06);
+  animation: sipp-poster-in 0.45s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* Warna kategori: pidana merah, perdata hijau, perikanan biru muda. */
+.sipp-poster__row--criminal { --row-accent: #c0392b; --row-ink: #fff; --row-glow: rgba(255, 92, 70, 0.95); }
+.sipp-poster__row--civil { --row-accent: #1f7a52; --row-ink: #fff; --row-glow: rgba(64, 226, 150, 0.9); }
+.sipp-poster__row--fishery { --row-accent: #3aa6c9; --row-ink: #08252e; --row-glow: rgba(120, 224, 255, 0.95); }
+.sipp-poster__row--execution,
+.sipp-poster__row--special-civil { --row-accent: #2c6da4; --row-ink: #fff; --row-glow: rgba(96, 176, 245, 0.9); }
+.sipp-poster__row--other { --row-accent: #b98f24; --row-ink: #2f140e; --row-glow: rgba(240, 214, 140, 0.8); }
+
+@keyframes sipp-poster-in {
+  from { opacity: 0; transform: translateY(1.4cqw); }
+  to { opacity: 1; transform: none; }
+}
+
+.sipp-poster__no {
+  display: grid;
+  place-items: center;
+  box-shadow:
+    0 0 1.2cqw var(--row-glow, transparent),
+    0 0 2.6cqw var(--row-glow, transparent);
+  width: calc(4.9cqw * var(--fit));
+  height: calc(4.9cqw * var(--fit));
+  border-radius: 50%;
+  background: var(--row-accent);
+  color: var(--row-ink);
+  font-size: calc(2.05cqw * var(--fit));
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sipp-poster__body {
+  display: grid;
+  gap: calc(0.5cqw * var(--fit));
+  min-width: 0;
+}
+
+.sipp-poster__case {
+  color: #fff;
+  text-shadow:
+    0 0 0.35cqw var(--row-glow, rgba(240, 214, 140, 0.8)),
+    0 0 1.1cqw var(--row-glow, rgba(240, 214, 140, 0.7)),
+    0 0 2.6cqw var(--row-glow, rgba(240, 214, 140, 0.5));
+  font-size: calc(3.05cqw * var(--fit));
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.sipp-poster__line {
+  color: rgba(244, 227, 189, 0.86);
+  font-size: calc(2.2cqw * var(--fit));
+  line-height: 1.25;
+}
+
+.sipp-poster__agenda {
+  color: rgba(244, 227, 189, 0.95);
+  font-size: calc(2.1cqw * var(--fit));
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.sipp-poster__empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: rgba(244, 227, 189, 0.8);
+  font-size: 2.6cqw;
+}
+
+.sipp-poster__note {
+  margin: 0 5.9cqw;
+  padding: 1.5cqw 2cqw;
+  border: 1px solid rgba(234, 216, 167, 0.26);
+  border-radius: 1.2cqw;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ead395;
+  font-size: 1.95cqw;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.sipp-poster__note[hidden] { display: none !important; }
+
+.sipp-poster[data-theme="cream"] .sipp-poster__note {
+  border-color: rgba(47, 20, 14, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  color: rgba(47, 20, 14, 0.8);
+}
+
+
+.sipp-poster__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 2cqw;
+  padding: 2.2cqw 5.9cqw 3.6cqw;
+  color: rgba(244, 227, 189, 0.66);
+  font-size: 1.7cqw;
+}
+
+.sipp-poster__foot span:last-child { text-align: right; }
+
+.sipp-stage__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.sipp-stage__actions button {
+  border: 1px solid rgba(234, 216, 167, 0.4);
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fdf6e6;
+  font: inherit;
+  font-size: var(--step--2);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.sipp-stage__actions button:hover,
+.sipp-stage__actions button:focus-visible {
+  border-color: #ead395;
+  background: rgba(234, 216, 167, 0.22);
+}
+
+.sipp-stage__actions [data-sipp-stage-close] {
+  border-color: #b98f24;
+  background: #b98f24;
+  color: #2f140e;
+}
+
+.sipp-stage__actions [data-sipp-stage-close]:hover,
+.sipp-stage__actions [data-sipp-stage-close]:focus-visible {
+  background: #ead395;
+}
+
+.sipp-stage__actions button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+body.sipp-stage-open { overflow: hidden; }
+
+/* Sedikit perkara: kartu diperbesar dan dikumpulkan di tengah agar tidak jarang. */
+.sipp-poster[data-density="airy"] .sipp-poster__row {
+  gap: calc(2.6cqw * var(--fit));
+  padding: calc(2.4cqw * var(--fit)) calc(2.6cqw * var(--fit));
+}
+.sipp-poster[data-density="airy"] .sipp-poster__case { font-size: calc(4.4cqw * var(--fit)); }
+.sipp-poster[data-density="airy"] .sipp-poster__line { font-size: calc(2.7cqw * var(--fit)); }
+.sipp-poster[data-density="airy"] .sipp-poster__agenda { font-size: calc(2.8cqw * var(--fit)); }
+.sipp-poster[data-density="airy"] .sipp-poster__no {
+  width: calc(6cqw * var(--fit));
+  height: calc(6cqw * var(--fit));
+  font-size: calc(2.5cqw * var(--fit));
+}
+
+/* Hari padat: satu poster harus memuat 8-10 perkara tanpa gulir. */
+.sipp-poster[data-density="compact"] .sipp-poster__line,
+.sipp-poster[data-density="compact"] .sipp-poster__agenda,
+.sipp-poster[data-density="dense"] .sipp-poster__line,
+.sipp-poster[data-density="dense"] .sipp-poster__agenda {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sipp-poster[data-density="compact"] .sipp-poster__head { padding-top: 2.6cqw; padding-bottom: 2cqw; }
+.sipp-poster[data-density="compact"] .sipp-poster__head h2 { font-size: 6.4cqw; }
+
+.sipp-poster[data-density="dense"] .sipp-poster__top { padding-top: 2.4cqw; }
+.sipp-poster[data-density="dense"] .sipp-poster__head { padding-top: 2.2cqw; padding-bottom: 1.8cqw; gap: 2.4cqw; }
+.sipp-poster[data-density="dense"] .sipp-poster__head h2 { font-size: 6.2cqw; }
+.sipp-poster[data-density="dense"] .sipp-poster__date { font-size: 3.3cqw; }
+.sipp-poster[data-density="dense"] .sipp-poster__logo { width: 4.4cqw; }
+.sipp-poster[data-density="dense"] .sipp-poster__row {
+  gap: calc(1.8cqw * var(--fit));
+  padding: calc(1.1cqw * var(--fit)) calc(1.9cqw * var(--fit));
+}
+.sipp-poster[data-density="dense"] .sipp-poster__foot { padding-bottom: 2.8cqw; }
+
+@media (max-width: 760px) {
+  .sipp-day-toolbar { flex-wrap: wrap; }
+  .sipp-stage { padding: 6px; gap: 8px; }
+  .sipp-poster {
+    width: 100%;
+    height: auto;
+    max-height: calc(100vh - 74px);
+    border-radius: 12px;
+  }
+  .sipp-stage__actions button { padding: 8px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sipp-stage,
+  .sipp-poster { transition: none; }
+  .sipp-poster { transform: none; }
+  .sipp-poster__row { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+@media print {
+  @page { size: 1080px 1920px; margin: 0; }
+  body.sipp-stage-print { background: #fff !important; }
+  body.sipp-stage-print > *:not(.sipp-stage) { display: none !important; }
+  body.sipp-stage-print .sipp-stage {
+    position: static;
+    inset: auto;
+    display: block;
+    padding: 0;
+    background: #fff;
+    opacity: 1;
+  }
+  body.sipp-stage-print .sipp-poster {
+    width: 1080px;
+    height: 1920px;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  body.sipp-stage-print .sipp-stage__actions { display: none !important; }
+  body.sipp-stage-print .sipp-poster__row {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    break-inside: avoid;
+  }
+}
+
+/* --- Pilihan warna latar poster --- */
+.sipp-poster[data-theme="navy"] {
+  background: linear-gradient(135deg, #07131d, #0f2735 55%, #17415a);
+  border-top-color: #c9a45c;
+}
+.sipp-poster[data-theme="navy"] .sipp-poster__court { color: #f0c987; }
+.sipp-poster[data-theme="navy"] .sipp-poster__date { color: #f0c987; }
+.sipp-poster[data-theme="navy"] .sipp-poster__head { border-bottom-color: rgba(240, 201, 135, 0.32); }
+.sipp-poster[data-theme="navy"] .sipp-poster__row { border-color: rgba(240, 201, 135, 0.18); background: rgba(255, 255, 255, 0.07); }
+.sipp-poster[data-theme="navy"] .sipp-poster__line { color: rgba(226, 236, 244, 0.86); }
+.sipp-poster[data-theme="navy"] .sipp-poster__agenda { color: rgba(226, 236, 244, 0.95); }
+
+.sipp-poster[data-theme="cream"] {
+  background: linear-gradient(135deg, #fbf6ec, #f3ead8 55%, #e9dcc3);
+  color: #2f140e;
+}
+.sipp-poster[data-theme="cream"] .sipp-poster__court { color: #7a3d10; }
+.sipp-poster[data-theme="cream"] .sipp-poster__class { color: rgba(47, 20, 14, 0.62); }
+.sipp-poster[data-theme="cream"] .sipp-poster__head { border-bottom-color: rgba(47, 20, 14, 0.2); }
+.sipp-poster[data-theme="cream"] .sipp-poster__head h2 { color: #2f140e; }
+.sipp-poster[data-theme="cream"] .sipp-poster__date { color: #8a5a12; }
+.sipp-poster[data-theme="cream"] .sipp-poster__meta { color: rgba(47, 20, 14, 0.72); }
+.sipp-poster[data-theme="cream"] .sipp-poster__row {
+  border-color: rgba(47, 20, 14, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+}
+.sipp-poster[data-theme="cream"] .sipp-poster__case {
+  color: var(--row-accent);
+  text-shadow: none;
+}
+.sipp-poster[data-theme="cream"] .sipp-poster__no { box-shadow: none; }
+.sipp-poster[data-theme="cream"] .sipp-poster__line { color: rgba(47, 20, 14, 0.78); }
+.sipp-poster[data-theme="cream"] .sipp-poster__agenda { color: rgba(47, 20, 14, 0.92); }
+.sipp-poster[data-theme="cream"] .sipp-poster__foot { color: rgba(47, 20, 14, 0.55); }
+.sipp-poster[data-theme="cream"] .sipp-poster__logo { filter: drop-shadow(0 0.6cqw 1.2cqw rgba(47, 20, 14, 0.25)); }
+
+/* --- Kontrol tema --- */
+.sipp-stage__themes {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: auto;
+  padding: 3px;
+  border: 1px solid rgba(234, 216, 167, 0.32);
+  border-radius: 999px;
+}
+
+.sipp-stage__themes button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: transparent;
+  color: rgba(253, 246, 230, 0.75);
+  font: inherit;
+  font-size: var(--step--2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sipp-stage__themes button[aria-pressed="true"] {
+  background: #ead395;
+  color: #2f140e;
+}
+
+/* === END EKSPOR JADWAL SIDANG ============================================= */
