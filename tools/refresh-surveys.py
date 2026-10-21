@@ -173,11 +173,15 @@ def run_mysql(sql: str, conn: dict) -> subprocess.CompletedProcess:
     # -N membuang header kolom dan --raw mencegah escaping: tanpa keduanya,
     # keluaran SELECT ikut membawa baris "introtext" dan ikut tertulis balik
     # ke artikel saat UPDATE.
-    args = [MYSQL_BIN, f"-h{conn['host']}", f"-P{conn['port']}", f"-u{conn['user']}",
-            "--default-character-set=utf8mb4", "-N", "--raw"]
-    if conn["password"]:
-        args.append(f"-p{conn['password']}")
-    args += [conn["database"], "-e", sql]
+    args = [MYSQL_BIN]
+    if conn.get("defaults_file"):
+        # Kredensial cron ada di file mode 0600, bukan di argumen perintah.
+        args.append(f"--defaults-extra-file={conn['defaults_file']}")
+    else:
+        args += [f"-h{conn['host']}", f"-P{conn['port']}", f"-u{conn['user']}"]
+        if conn["password"]:
+            args.append(f"-p{conn['password']}")
+    args += ["--default-character-set=utf8mb4", "-N", "--raw", conn["database"], "-e", sql]
     return subprocess.run(args, capture_output=True, text=True)
 
 
@@ -189,7 +193,11 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=3306)
     parser.add_argument("--user", default="root")
     parser.add_argument("--password", default="")
-    parser.add_argument("--database", default="pn_prod_sync")
+    parser.add_argument("--database", default=os.environ.get("DB_NAME", "pn_prod_sync"))
+    parser.add_argument(
+        "--defaults-file", default=os.environ.get("MYSQL_DEFAULTS_FILE", ""),
+        help="File kredensial MySQL mode 0600; dipakai cron cPanel.",
+    )
     parser.add_argument("--prefix", default="pnn_")
     parser.add_argument(
         "--min-interval-days", type=float, default=0.0,
@@ -214,7 +222,8 @@ def main() -> int:
                   f"(interval {args.min_interval_days:g} hari).")
             return 0
     conn = {"host": args.host, "port": args.port, "user": args.user,
-            "password": args.password, "database": args.database}
+            "password": args.password, "database": args.database,
+            "defaults_file": args.defaults_file}
 
     print("[1/4] Folder kategori...")
     top = {e["name"]: e for e in listing(args.root) if e["folder"]}
