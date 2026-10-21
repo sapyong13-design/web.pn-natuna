@@ -48,7 +48,12 @@ def main() -> None:
         for checklist in checklists
         for sub in checklist["subchecklists"]
     )
-    assert summary == {"gobis": 27, "checklists": 82, "subchecklists": 405, "documents": 2043}
+    # Angka dokumen ikut berubah setiap kali direktori disinkronkan dari Drive;
+    # yang tetap adalah struktur: 27 gobi, 82 checklist, 405 sub-checklist.
+    assert summary["gobis"] == 27
+    assert summary["checklists"] == 82
+    assert summary["subchecklists"] == 405
+    assert summary["documents"] > 2043, "Sync from Drive must not shrink the document list."
     assert [sub["number"] for checklist in gobis[2]["checklists"] if checklist["number"] == 6 for sub in checklist["subchecklists"]] == ["6.5"]
     assert [sub["number"] for checklist in gobis[10]["checklists"] if checklist["number"] == 31 for sub in checklist["subchecklists"]] == ["31.4", "31.5"]
     assert [sub["number"] for checklist in gobis[17]["checklists"] if checklist["number"] == 44 for sub in checklist["subchecklists"]] == ["44.4", "44.5", "44.6", "44.7", "44.8"]
@@ -66,7 +71,9 @@ def main() -> None:
     assert checklist_links.keys() == set(range(1, 83))
     assert {checklist["number"]: checklist["drive_url"] for checklist in checklists} == checklist_links
     assert all(is_public_drive_url(url) for url in checklist_links.values())
-    assert len(subchecklist_78_3["files"]) == 40
+    # Jumlah berkas bertambah setiap kali direktori disinkronkan dari Drive;
+    # yang dikunci adalah tautan khusus 78.3 tetap utuh dan daftarnya tidak menyusut.
+    assert len(subchecklist_78_3["files"]) >= 40
     assert all(
         not sub["drive_url"]
         for sub in subchecklists
@@ -77,7 +84,11 @@ def main() -> None:
     assert not is_public_drive_url("https://drive.google.com/file/d/public/view")
     assert not is_public_drive_url("https://drive.google.com/drive/folders/public/edit")
     assert not is_public_drive_url("https://evil.example/drive/folders/public")
-    print("AMPUH directory E2E dataset contract: 27 GOBI, 82 unique checklists, 405 sub-checklists, 2043 documents")
+    print(
+        f"AMPUH directory E2E dataset contract: {summary['gobis']} GOBI, "
+        f"{summary['checklists']} unique checklists, {summary['subchecklists']} sub-checklists, "
+        f"{summary['documents']} documents"
+    )
 
 
 if __name__ == "__main__":

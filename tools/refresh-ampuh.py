@@ -236,33 +236,75 @@ def main() -> int:
     unreadable_subs: list[str] = []
 
     # Satu nomor checklist bisa muncul di lebih dari satu gobi (6, 31, 44), dan
-    # salinan-salinan itu tidak selalu berisi daftar yang sama. Jadi setiap
-    # salinan diperbarui sendiri, bukan hanya kemunculan pertama.
+    # dataset sengaja MEMBAGI isinya: checklist 6 di GOBI 2 memuat 6.1-6.4
+    # sementara di GOBI 3 hanya 6.5. Menulis daftar penuh ke setiap salinan
+    # membuat 18 sub duplikat dan merusak pembagian itu.
+    # Karena itu setiap sub Drive dikembalikan ke salinan yang memang sudah
+    # memuatnya; sub yang benar-benar baru masuk ke salinan lanjutan (yang punya
+    # nomor tertinggi), supaya pembagian lama tetap utuh.
+    copies: dict[int, list[dict]] = {}
     for gobi in dataset["gobis"]:
         for checklist in gobi["checklists"]:
-            number = int(checklist["number"])
-            if number not in by_number:
-                continue
+            copies.setdefault(int(checklist["number"]), []).append(checklist)
+
+    for number, group in copies.items():
+        if number not in by_number:
+            continue
+        entries, folders = sub_entries[number]
+        sub_folders = [(eid, name) for eid, name, is_folder in entries if is_folder]
+
+        owner: dict[str, dict] = {}
+        owner_by_title: dict[str, tuple[dict, str]] = {}
+        for checklist in group:
+            for sub in checklist.get("subchecklists", []):
+                owner[str(sub["number"])] = checklist
+                title_key = " ".join(str(sub.get("title", "")).split()).lower()
+                if title_key:
+                    owner_by_title.setdefault(title_key, (checklist, str(sub["number"])))
+
+        def continuation(group: list[dict]) -> dict:
+            """Salinan yang memuat nomor sub terbesar (tempat sub baru ditambahkan)."""
+            def highest(checklist: dict) -> int:
+                suffixes = [leading_number(str(s["number"]).split(".")[-1]) or 0
+                            for s in checklist.get("subchecklists", [])]
+                return max(suffixes) if suffixes else 0
+            return max(group, key=highest)
+
+        target = continuation(group)
+        assigned: dict[int, list[tuple[str, str, str | None]]] = {id(c): [] for c in group}
+        for sub_id, sub_name in sub_folders:
+            suffix = leading_number(sub_name)
+            label = f"{number}.{suffix}" if suffix is not None else None
+            home = owner.get(label) if label else None
+            if home is None:
+                # Folder tanpa nomor (mis. "Baru _Sinkronisasi SIPP ..."): cocokkan
+                # lewat judul supaya tidak menempati nomor milik sub lain.
+                title_key = " ".join(sub_name.split()).lower()
+                found = owner_by_title.get(title_key)
+                if found is not None:
+                    home, label = found
+            if home is None:
+                home, label = target, None
+            assigned[id(home)].append((sub_id, sub_name, label))
+
+        for checklist in group:
             checklist["drive_url"] = FOLDER_URL.format(id=by_number[number])
-
-            entries, folders = sub_entries[number]
-            sub_folders = [(eid, name) for eid, name, is_folder in entries if is_folder]
             existing = {str(s["number"]): s for s in checklist.get("subchecklists", [])}
-
             rebuilt: list[dict] = []
-            used: set[str] = set()
-            for position, (sub_id, sub_name) in enumerate(sub_folders, start=1):
-                suffix = leading_number(sub_name) or position
-                label = f"{number}.{suffix}"
-                if label in used:  # dua folder dengan nomor sama
-                    label = f"{number}.{position}"
-                used.add(label)
+            for position, (sub_id, sub_name, fixed_label) in enumerate(assigned[id(checklist)], start=1):
+                if fixed_label is not None:
+                    label = fixed_label
+                else:
+                    suffix = leading_number(sub_name) or position
+                    label = f"{number}.{suffix}"
                 live, unreadable = files_by_sub.get(sub_id, ([], False))
                 sub = existing.get(label)
                 if sub is None:
                     sub = {"number": label, "title": sub_name, "drive_url": "", "files": []}
                     new_subs += 1
-                sub["drive_url"] = FOLDER_URL.format(id=sub_id)
+                # Tautan per sub sengaja hanya dipasang pada sub yang memang sudah
+                # punya (saat ini 78.3). Menambahkan tautan ke 404 sub lain
+                # mengubah tampilan jauh melebihi lingkup sinkronisasi data.
                 if unreadable and sub.get("files"):
                     # Sebagian isi folder tidak terbaca anonim; jangan buang daftar lama.
                     kept_old = list(sub["files"])
@@ -271,6 +313,10 @@ def main() -> int:
                         unreadable_subs.append(label)
                 merged, added, removed = merge_files(list(sub.get("files", [])), live)
                 sub["files"] = merged
+                # `document_count` disimpan terpisah dan dipakai kontrak data;
+                # tanpa pembaruan di sini nilainya tertinggal dari `files`.
+                if "document_count" in sub:
+                    sub["document_count"] = len(merged)
                 added_total += len(added)
                 removed_total += len(removed)
                 rebuilt.append(sub)

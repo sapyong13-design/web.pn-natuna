@@ -13472,6 +13472,8 @@ body.is-dark .site-search__case-route-secondary a { color: #fff4e8; }
 .ampuh-directory__hero-main > :nth-child(4) { animation-delay: 135ms; }
 @keyframes ampuh-command-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .ampuh-directory__kicker { margin: 0; color: var(--color-primary); font-size: var(--step--2); font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+.ampuh-directory__kicker-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.ampuh-directory__stamp { display: inline-flex; align-items: center; margin: 0; padding: 2px 10px; border: 1px solid color-mix(in srgb, var(--color-accent) 62%, var(--color-primary)); border-radius: 999px; color: var(--color-primary-deep); background: var(--color-accent-soft); font-size: var(--step--2); font-weight: 850; letter-spacing: .09em; line-height: 1.4; text-transform: uppercase; }
 .ampuh-directory__header h1 { max-width: 13ch; margin: 0; color: var(--color-primary-deep); font-family: var(--font-display); font-size: clamp(2.7rem, 5vw, 4.8rem); font-weight: 650; line-height: .96; letter-spacing: -.035em; text-wrap: balance; }
 .content-primary .ampuh-directory__lede { max-width: 64ch; margin: 0; color: var(--color-muted); font-size: 1rem; line-height: 1.6; text-align: start; text-wrap: pretty; }
 .ampuh-directory__hero-secondary { z-index: 1; position: relative; display: grid; align-content: end; gap: 5px; padding: 36px 40px; border-inline-start: 1px solid var(--color-line); color: var(--color-primary-deep); }
@@ -13556,6 +13558,7 @@ body.nav-stuck .ampuh-directory__tools { top: var(--nav-height, 56px); }
 body.is-dark .ampuh-directory { color: var(--color-ink); }
 body.is-dark .ampuh-directory__header, body.is-dark .ampuh-directory__tools, body.is-dark .ampuh-directory__summary, body.is-dark .ampuh-directory__tree, body.is-dark .ampuh-directory__gobi, body.is-dark .ampuh-directory__files { background: var(--color-surface); }
 body.is-dark .ampuh-directory__header h1 { color: var(--color-ink); }
+body.is-dark .ampuh-directory__stamp { border-color: color-mix(in srgb, var(--color-accent) 55%, transparent); color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 14%, transparent); }
 body.is-dark .ampuh-directory__hero-main > .ampuh-directory__drive { color: var(--color-ink); }
 body.is-dark .ampuh-directory__hero-main > .ampuh-directory__drive:hover, body.is-dark .ampuh-directory__hero-main > .ampuh-directory__drive:focus-visible { color: var(--color-ink); background: var(--color-primary-dark); }
 @media (max-width: 760px) {

@@ -81,7 +81,10 @@ foreach ($directory['gobis'] as $gobi) {
 <article class="ampuh-directory" data-ampuh-directory>
   <header class="ampuh-directory__header">
     <div class="ampuh-directory__hero-main">
-      <p class="ampuh-directory__kicker">Direktori Bukti</p>
+      <div class="ampuh-directory__kicker-row">
+        <p class="ampuh-directory__kicker">Direktori Bukti</p>
+        <p class="ampuh-directory__stamp">Update Semester II</p>
+      </div>
       <h1><?php echo $escape((string) ($directory['title'] ?? 'AMPUH 2026 Checklist')); ?></h1>
       <p class="ampuh-directory__lede"><?php echo $escape((string) ($directory['summary'] ?? '')); ?></p>
       <?php $driveAction($directory['main_drive_url'], 'Buka Folder Utama AMPUH 2026'); ?>
