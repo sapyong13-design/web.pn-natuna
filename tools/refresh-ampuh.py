@@ -28,9 +28,11 @@ Jalankan tanpa `--write` untuk melihat rencana perubahan saja.
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import re
 import sys
+import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -38,6 +40,7 @@ from pathlib import Path
 DEFAULT_JSON = Path(__file__).resolve().parent.parent / "templates/pn_natuna_2026/data/ampuh-2026.json"
 MAIN_FOLDER_ID = "1x6yBB_YxHRKGsuxgkN1enrWXiV3P2NWH"
 FOLDER_URL = "https://drive.google.com/drive/folders/{id}?usp=sharing"
+FOLDER_UI = "https://drive.google.com/drive/folders/{id}"
 VIEW_URL = "https://drive.google.com/embeddedfolderview?id={id}#list"
 UA = "Mozilla/5.0 (compatible; pn-natuna-ampuh-sync)"
 MAX_DEPTH = 4
@@ -64,6 +67,36 @@ def leading_number(name: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):  # noqa: D401 - urllib hook
+        return None
+
+
+_NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
+def resolve_folder(folder_id: str) -> str:
+    """Ikuti shortcut Drive ke folder aslinya.
+
+    Sebagian subfolder di AMPUH adalah shortcut ke folder lain. Drive membalas
+    302 ke ID asli untuk `/drive/folders/<id>`, sedangkan embeddedfolderview
+    tidak mengikuti shortcut itu dan mengembalikan 0 entri — bedanya penting,
+    karena 0 entri membuat daftar lama tampak "sudah dihapus".
+    """
+    request = urllib.request.Request(
+        FOLDER_UI.format(id=folder_id), headers={"User-Agent": UA}
+    )
+    try:
+        with _NO_REDIRECT_OPENER.open(request, timeout=30) as response:
+            return folder_id
+    except urllib.error.HTTPError as error:
+        location = error.headers.get("Location") or ""
+        match = re.search(r"/folders/([A-Za-z0-9_-]{20,})", location)
+        return match.group(1) if match else folder_id
+    except Exception:
+        return folder_id
+
+
 def fetch_folder(folder_id: str, retries: int = 3) -> tuple[list[tuple[str, str, bool]], set[str]]:
     """Kembalikan (daftar (id, nama, apakah_folder), himpunan id folder)."""
     last: Exception | None = None
@@ -73,13 +106,15 @@ def fetch_folder(folder_id: str, retries: int = 3) -> tuple[list[tuple[str, str,
                 VIEW_URL.format(id=folder_id), headers={"User-Agent": UA}
             )
             with urllib.request.urlopen(request, timeout=45) as response:
-                html = response.read().decode("utf-8", "replace")
+                page = response.read().decode("utf-8", "replace")
             entries: list[tuple[str, str, bool]] = []
-            for block in html.split(BLOCK_SPLIT)[1:]:
+            for block in page.split(BLOCK_SPLIT)[1:]:
                 found = ENTRY_RE.search(BLOCK_SPLIT + block)
                 if not found:
                     continue
-                entry_id, name = found.group(1), found.group(2)
+                # Drive meng-escape nama ("LHP UMUM &amp; KEUANGAN"); tanpa unescape,
+                # berkas lama tampak hilang lalu ditambahkan ulang sebagai duplikat.
+                entry_id, name = found.group(1), html.unescape(found.group(2))
                 entries.append((entry_id, name, FOLDER_MARK in block))
             folders = {entry_id for entry_id, _, is_folder in entries if is_folder}
             return entries, folders
@@ -100,25 +135,51 @@ def flatten(folder_id: str, seen: set[str] | None = None, depth: int = 0) -> tup
         return [], False
     seen.add(folder_id)
     entries, _ = fetch_folder(folder_id)
-    names: list[str] = []
     unreadable = False
+    if not entries:
+        # 0 entri bisa berarti shortcut ke folder lain; coba folder aslinya.
+        resolved = resolve_folder(folder_id)
+        if resolved != folder_id:
+            if resolved in seen:
+                return [], False
+            seen.add(resolved)
+            entries, _ = fetch_folder(resolved)
+            # Shortcut yang targetnya tetap kosong berarti tidak bisa dibaca,
+            # bukan kosong sungguhan.
+            unreadable = not entries
+    names: list[str] = []
     for entry_id, name, is_folder in entries:
         if is_folder:
             child, child_unreadable = flatten(entry_id, seen, depth + 1)
             names.extend(child)
-            unreadable = unreadable or child_unreadable or not child
+            unreadable = unreadable or child_unreadable
         else:
             names.append(name)
     return names, unreadable
 
 
 def merge_files(existing: list[str], live: list[str]) -> tuple[list[str], list[str], list[str]]:
-    """Pertahankan urutan lama, buang yang hilang, tambahkan yang baru di akhir."""
-    live_set = set(live)
-    kept = [name for name in existing if name in live_set]
-    known = set(kept)
-    added = sorted((name for name in live if name not in known), key=natural_key)
-    removed = [name for name in existing if name not in live_set]
+    """Pertahankan urutan lama, buang yang hilang, tambahkan yang baru di akhir.
+
+    Nama dinormalisasi lebih dulu: dataset lama menyimpan sebagian nama dalam
+    bentuk ter-escape ("LHP UMUM &amp; KEUANGAN") dan sebagian tidak. Tanpa
+    normalisasi, satu berkas yang sama dianggap dua berkas berbeda.
+    """
+    live_norm = {html.unescape(name) for name in live}
+    kept: list[str] = []
+    seen_names: set[str] = set()
+    removed: list[str] = []
+    for name in existing:
+        canonical = html.unescape(name)
+        if canonical not in live_norm:
+            removed.append(name)
+        elif canonical not in seen_names:
+            kept.append(canonical)
+            seen_names.add(canonical)
+    added = sorted(
+        (html.unescape(n) for n in live if html.unescape(n) not in seen_names),
+        key=natural_key,
+    )
     return kept + added, added, removed
 
 
