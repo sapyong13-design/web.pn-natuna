@@ -46,6 +46,10 @@ run instansi "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/cron-refresh-instansi.ph
 run youtube "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/tools/cron-refresh-youtube.php" || status=1
 run sipp "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/tools/cron-refresh-sipp.php" || status=1
 run survei "$PYTHON_BIN" "$PN_NATUNA_CRON_SOURCE_ROOT/tools/refresh-survey.py" || status=1
+# Daftar kartu di halaman SKM/IPAK/Survei Harian dibaca dari Drive, bukan dari
+# folder publik lama. Interval 7 hari: cron induk berjalan harian, tapi halaman
+# ini cukup disegarkan mingguan.
+run surveys "$PYTHON_BIN" "$PN_NATUNA_CRON_SOURCE_ROOT/tools/refresh-surveys.py" --write --database "$DB_NAME" --min-interval-days 7 --state-file "$PN_NATUNA_PRIVATE_ROOT/surveys-last-run" || status=1
 run dipa "$PYTHON_BIN" "$PN_NATUNA_CRON_SOURCE_ROOT/tools/refresh-dipa.py" || status=1
 run sitemap "$PHP_BIN" -f "$PN_NATUNA_CRON_SOURCE_ROOT/tools/generate-sitemap.php" || status=1
 # ponytail: warming skipped while every public HTML response carries Joomla's session token; restore only after token-free routes prove miss then hit.

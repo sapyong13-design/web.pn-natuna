@@ -14,8 +14,8 @@ $transparencyCards = [
         41 => ['/transparansi/lhkpn', 'LHKPN / LHKASN', 'Informasi kepatuhan pelaporan harta kekayaan penyelenggara negara dan ASN.', 'assets', 'Lihat kepatuhan'],
     ],
     'Survei dan Integritas' => [
-        42 => ['/transparansi/laporan-skm', 'SKM / IKM', 'Hasil pengukuran kepuasan masyarakat terhadap layanan pengadilan.', 'survey', 'Lihat hasil'],
-        43 => ['/transparansi/laporan-spak', 'SPAK', 'Hasil survei persepsi antikorupsi dan integritas pelayanan.', 'shield', 'Lihat integritas'],
+        42 => ['/transparansi/laporan-skm', 'SKM', 'Hasil Survei Kepuasan Masyarakat terhadap layanan pengadilan.', 'survey', 'Lihat hasil'],
+        43 => ['/transparansi/laporan-spak', 'IPAK', 'Hasil Indeks Persepsi Anti Korupsi dan integritas pelayanan.', 'shield', 'Lihat integritas'],
         85 => ['/transparansi/laporan-survei-harian', 'Survei Harian', 'Rekap umpan balik harian pengguna layanan Pengadilan Negeri Natuna.', 'pulse', 'Buka rekap'],
     ],
     'Informasi Publik' => [
@@ -64,6 +64,13 @@ $arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-widt
 $transparencyIllustration = '<svg class="svc-illus" viewBox="0 0 200 160" aria-hidden="true"><circle cx="100" cy="80" r="72" fill="#fbf2d8"/><rect x="48" y="34" width="104" height="94" rx="10" fill="#fff" stroke="#d9e0e7" stroke-width="2"/><rect x="62" y="48" width="48" height="8" rx="4" fill="#8f1f0b"/><rect x="62" y="64" width="76" height="5" rx="2.5" fill="#e9dfc4"/><rect x="62" y="76" width="76" height="5" rx="2.5" fill="#e9dfc4"/><path d="M66 111V96M86 111V86M106 111V91M126 111V73" stroke="#1f5b4b" stroke-width="8" stroke-linecap="round"/><circle cx="146" cy="38" r="12" fill="#b98f24"/><path d="m141 38 4 4 7-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 $documentIllustration = '<svg class="svc-illus" viewBox="0 0 200 160" aria-hidden="true"><circle cx="100" cy="80" r="72" fill="#fbf2d8"/><path d="M60 26h58l28 28v80H60z" fill="#fff" stroke="#d9e0e7" stroke-width="2"/><path d="M118 26v28h28" fill="#eadfbe"/><rect x="76" y="70" width="54" height="7" rx="3.5" fill="#8f1f0b"/><rect x="76" y="86" width="54" height="5" rx="2.5" fill="#d8cba8"/><rect x="76" y="99" width="42" height="5" rx="2.5" fill="#d8cba8"/><circle cx="132" cy="116" r="20" fill="#1f5b4b"/><path d="m122 116 7 7 13-15" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 $renderSubnav = static function () use ($transparencyCards, $item, $escape): void { ?><nav class="svc-subnav" aria-label="Navigasi Transparansi"><a href="/transparansi">Ringkasan</a><?php foreach ($transparencyCards as $cards) : foreach ($cards as $id => [$route, $label]) : ?><a href="<?php echo $escape($route); ?>"<?php echo (int) $item->id === $id ? ' aria-current="page"' : ''; ?>><?php echo $escape($label); ?></a><?php endforeach; endforeach; ?></nav><?php };
+// Penjelasan per halaman laporan survei. Kalimat generik "Dokumen resmi <judul>"
+// tidak memberi tahu apa yang diukur, jadi tiga halaman ini punya kalimat sendiri.
+$reportLeads = [
+    42 => 'Survei Kepuasan Masyarakat mengukur penilaian pengguna terhadap mutu pelayanan pengadilan pada sembilan unsur pelayanan. Hasilnya dilaporkan setiap triwulan sebagai bagian dari keterbukaan informasi dan evaluasi layanan.',
+    43 => 'Indeks Persepsi Anti Korupsi mengukur penilaian pengguna terhadap integritas pelayanan dan upaya pencegahan korupsi di satuan kerja. Hasilnya dilaporkan setiap triwulan sebagai bagian dari penguatan zona integritas.',
+    85 => 'Survei harian merekam penilaian pengguna layanan setiap hari, lalu dihimpun menjadi satu laporan per bulan. Rekap ini menjadi dasar pemantauan mutu pelayanan harian pengadilan.',
+];
 $isLanding = (int) $item->id === 45;
 ?>
 <article class="transparency-family<?php echo $isLanding ? ' transparency-family--landing' : ''; ?>">
@@ -72,7 +79,7 @@ $isLanding = (int) $item->id === 45;
   <?php foreach ($transparencyCards as $group => $cards) : ?><section class="transparency-service-group"><h2><?php echo $escape($group); ?></h2><div class="svc-grid"><?php foreach ($cards as [$route, $title, $description, $iconName, $action]) : ?><a class="svc-card" href="<?php echo $escape($route); ?>"><span class="svc-icon"><?php echo $icon($iconName); ?></span><h3><?php echo $escape($title); ?></h3><p><?php echo $escape($description); ?></p><span class="svc-more"><?php echo $escape($action); ?> <?php echo $arrow; ?></span></a><?php endforeach; ?></div></section><?php endforeach; ?>
 <?php else : ?>
   <?php $renderSubnav(); ?>
-  <div class="svc-hero"><div><span class="svc-kicker">Transparansi</span><h1><?php echo $escape($item->title); ?></h1><p class="svc-lead">Dokumen resmi <?php echo $escape($item->title); ?> Pengadilan Negeri Natuna.</p></div><?php echo $documentIllustration; ?></div>
+  <div class="svc-hero"><div><span class="svc-kicker">Transparansi</span><h1><?php echo $escape($item->title); ?></h1><p class="svc-lead"><?php echo $escape($reportLeads[(int) $item->id] ?? ('Dokumen resmi ' . $item->title . ' Pengadilan Negeri Natuna.')); ?></p></div><?php echo $documentIllustration; ?></div>
   <div class="transparency-family__archive"><?php echo $extractArchive((string) $item->text); ?></div>
 <?php endif; ?>
 </article>
