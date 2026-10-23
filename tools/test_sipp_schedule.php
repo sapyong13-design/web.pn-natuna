@@ -85,11 +85,27 @@ $expect(str_contains($output, 'data-sipp-export="today"') && str_contains($outpu
 $expect(substr_count($output, 'class="sipp-day-toolbar"') === 2, 'Every day panel must render exactly one export toolbar.');
 $expect(str_contains($output, '>2 perkara<'), 'Toolbar must report the number of cases for the day.');
 $expect(str_contains($output, 'id="sipp-stage"') && str_contains($output, 'aria-modal="true"'), 'Export stage must be an accessible modal dialog.');
-$expect(str_contains($output, 'class="sipp-poster"'), 'Export stage must render the 4:5 poster.');
+$expect(str_contains($output, 'class="sipp-poster"'), 'Export stage must render the 9:16 poster.');
 $expect(str_contains($output, 'id="sipp-poster-date"'), 'Poster must expose a dedicated full-date slot.');
+$expect(str_contains($output, 'class="sipp-poster__meta"'), 'Poster must expose the context badge slot.');
 $expect(str_contains($output, 'data-sipp-stage-png') && str_contains($output, 'data-sipp-stage-print') && str_contains($output, 'data-sipp-stage-close'), 'Export stage must expose PNG, print and close controls.');
 $expect(str_contains($output, 'sipp-export.js'), 'Export stage behaviour script must be loaded.');
 $expect(substr_count($output, 'data-case="') >= 2, 'Cards must carry machine-readable data for the poster and PNG export.');
+
+// Kontrak ekspor video/PNG: badge konteks, varian hari kosong, dan pipeline
+// rekaman yang cukup ringan untuk 1080x1920.
+$exportScript = file_get_contents(__DIR__ . '/../templates/pn_natuna_2026/js/sipp-export.js');
+foreach ([
+    "'Besok'" => 'badge konteks hari esok',
+    'Tidak ada sidang besok' => 'varian hari kosong',
+    'easeOutBack' => 'animasi spring',
+    'captureStream(24)' => 'stream 24 fps',
+    'videoBitsPerSecond: 12000000' => 'bitrate 12 Mbps',
+    'cardBitmaps' => 'cache bitmap kartu',
+    'SAFE_BOTTOM' => 'safe zone Reels',
+] as $needle => $label) {
+    $expect(str_contains($exportScript, $needle), 'Export script must keep ' . $label . '.');
+}
 
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);

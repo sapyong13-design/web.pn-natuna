@@ -80,7 +80,7 @@ function pn_natuna_sipp_case_category(string $caseNumber): array
 {
     $normalized = strtolower(trim($caseNumber));
 
-    if (preg_match('/(?:pid\.sus-(?:prk|perikanan)|perikanan)/i', $caseNumber)) {
+    if (preg_match('/(?:pid\.sus-(?:prk|prl|perikanan)|perikanan)/i', $caseNumber)) {
         return ['key' => 'fishery', 'label' => 'Perikanan'];
     }
     if (preg_match('/(?:pdt\.[^\/]*eks|\beks(?:ekusi)?\b)/i', $caseNumber)) {
@@ -345,22 +345,33 @@ function pn_natuna_sipp_render_schedule(): void
       <?php endforeach; ?>
       <div class="sipp-stage" id="sipp-stage" role="dialog" aria-modal="true" aria-labelledby="sipp-stage-title" hidden>
         <figure class="sipp-poster" id="sipp-poster">
+          <img class="sipp-poster__watermark" src="/images/brand/logo-pn-natuna-mark.webp" alt="" aria-hidden="true">
           <div class="sipp-poster__top">
             <div class="sipp-poster__identity">
               <img class="sipp-poster__logo" src="/images/brand/logo-pn-natuna-mark.webp" alt="" width="313" height="420" aria-hidden="true">
               <div class="sipp-poster__brand">
+                <span class="sipp-poster__mahkamah">Mahkamah Agung RI</span>
                 <span class="sipp-poster__court">Pengadilan Negeri Natuna</span>
-                <span class="sipp-poster__class">Kelas II &middot; Kabupaten Natuna</span>
+                <span class="sipp-poster__class">Kelas II</span>
               </div>
             </div>
             <span class="sipp-poster__asn-badge">
-              <img class="sipp-poster__asn" src="/images/brand/logo-asn-berakhlak.webp" alt="BerAKHLAK — Bangga Melayani Bangsa" width="547" height="140" aria-hidden="true">
+              <img class="sipp-poster__asn sipp-poster__asn--light" src="/images/brand/logo-asn-berakhlak-light.webp" alt="BerAKHLAK — Bangga Melayani Bangsa" width="547" height="140" aria-hidden="true">
+              <img class="sipp-poster__asn sipp-poster__asn--dark" src="/images/brand/logo-asn-berakhlak.webp" alt="" width="547" height="140" aria-hidden="true">
             </span>
           </div>
           <header class="sipp-poster__head">
-            <h2 id="sipp-stage-title">Jadwal Sidang</h2>
-            <p class="sipp-poster__date" id="sipp-poster-date"></p>
+            <p class="sipp-poster__kicker" id="sipp-stage-title">Jadwal Sidang</p>
+            <div class="sipp-poster__dateline">
+              <span class="sipp-poster__day" id="sipp-poster-day" aria-hidden="true"></span>
+              <span class="sipp-poster__side">
+                <span class="sipp-poster__weekday" id="sipp-poster-weekday"></span>
+                <span class="sipp-poster__month" id="sipp-poster-month"></span>
+                <span class="sipp-poster__year" id="sipp-poster-year"></span>
+              </span>
+            </div>
             <p class="sipp-poster__meta" id="sipp-poster-meta"></p>
+            <p class="sipp-poster__date" id="sipp-poster-date" hidden></p>
           </header>
           <ol class="sipp-poster__list" id="sipp-poster-list"></ol>
           <p class="sipp-poster__note" id="sipp-poster-note" hidden></p>
@@ -384,6 +395,6 @@ function pn_natuna_sipp_render_schedule(): void
       </div>
     </section>
     <script src="/templates/pn_natuna_2026/js/sipp-tabs.js" defer></script>
-    <script src="/templates/pn_natuna_2026/js/sipp-export.js?v=20261021-glow3" defer></script>
+    <script src="/templates/pn_natuna_2026/js/sipp-export.js?v=20261023-reels16" defer></script>
     <?php
 }

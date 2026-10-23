@@ -17265,6 +17265,36 @@ body.is-dark .svc-card__duration {
   transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
+/* Tenun Natuna: anyaman diagonal tipis + watermark lambang. */
+.sipp-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(244, 227, 189, 0.075) 0 1px, transparent 1px 3.4cqw),
+    repeating-linear-gradient(-45deg, rgba(244, 227, 189, 0.05) 0 1px, transparent 1px 6.8cqw);
+}
+
+.sipp-poster[data-theme="cream"]::after {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(47, 20, 14, 0.06) 0 1px, transparent 1px 3.4cqw),
+    repeating-linear-gradient(-45deg, rgba(47, 20, 14, 0.04) 0 1px, transparent 1px 6.8cqw);
+}
+
+.sipp-poster__watermark {
+  position: absolute;
+  right: -9%;
+  top: 40%;
+  z-index: 0;
+  width: 74%;
+  opacity: 0.055;
+  pointer-events: none;
+}
+
+.sipp-poster > *:not(.sipp-poster__watermark) { position: relative; z-index: 1; }
+
 .sipp-stage.is-open .sipp-poster { transform: none; }
 
 /* Baris atas: identitas pengadilan (kiri) + logo BerAKHLAK (kanan). */
@@ -17273,7 +17303,8 @@ body.is-dark .svc-card__duration {
   align-items: center;
   justify-content: space-between;
   gap: 2.2cqw;
-  padding: 3.4cqw 5.9cqw 0;
+  /* +5cqw: aman dari header profil IG Story */
+  padding: 8.6cqw 5.9cqw 0;
 }
 
 .sipp-poster__identity {
@@ -17289,11 +17320,19 @@ body.is-dark .svc-card__duration {
   min-width: 0;
 }
 
+.sipp-poster__mahkamah {
+  color: rgba(234, 216, 167, 0.82);
+  font-size: 1.25cqw;
+  font-weight: 700;
+  letter-spacing: 0.34cqw;
+  text-transform: uppercase;
+}
+
 .sipp-poster__court {
-  color: #ead395;
-  font-size: 1.8cqw;
+  color: #fff;
+  font-size: 1.85cqw;
   font-weight: 800;
-  letter-spacing: 0.24cqw;
+  letter-spacing: 0.12cqw;
   text-transform: uppercase;
 }
 
@@ -17307,24 +17346,109 @@ body.is-dark .svc-card__duration {
   flex: none;
   display: flex;
   align-items: center;
-  padding: 0.8cqw 1.2cqw;
-  border-radius: 1.1cqw;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 0.5cqw 1.4cqw rgba(0, 0, 0, 0.28);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 0.5cqw 1.2cqw rgba(0, 0, 0, 0.35));
 }
 
 .sipp-poster__asn {
   display: block;
-  width: 27cqw;
+  width: 26cqw;
   height: auto;
 }
+
+.sipp-poster__more {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.6cqw;
+  min-height: 8cqw;
+  padding: 1.4cqw 2cqw;
+  border: 1px dashed rgba(234, 216, 167, 0.35);
+  border-radius: 1.6cqw;
+  text-align: center;
+}
+
+.sipp-poster__more strong {
+  color: rgba(244, 227, 189, 0.92);
+  font-size: calc(2.2cqw * var(--fit));
+  font-weight: 700;
+}
+
+.sipp-poster__more span {
+  color: rgba(244, 227, 189, 0.62);
+  font-size: calc(1.7cqw * var(--fit));
+}
+
+.sipp-poster__asn--dark { display: none; }
+.sipp-poster[data-theme="cream"] .sipp-poster__asn--light { display: none; }
+.sipp-poster[data-theme="cream"] .sipp-poster__asn--dark { display: block; }
+.sipp-poster[data-theme="cream"] .sipp-poster__mahkamah { color: #8a5a12; }
+.sipp-poster[data-theme="cream"] .sipp-poster__asn-badge { filter: none; }
 
 /* Judul: lambang PN Natuna di kiri teks. */
 .sipp-poster__head {
   display: grid;
-  gap: 0.9cqw;
-  padding: 2.6cqw 5.9cqw 2.4cqw;
+  gap: 1.3cqw;
+  padding: 2.4cqw 5.9cqw 2.2cqw;
   border-bottom: 1px solid rgba(234, 216, 167, 0.35);
+}
+
+/* Tanggal jadi headline: angka besar + hari/bulan/tahun di kanan. */
+.sipp-poster__kicker {
+  margin: 0;
+  color: #ead395;
+  font-size: 1.85cqw;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+.sipp-poster__dateline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.4cqw;
+}
+
+.sipp-poster__day {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 17.2cqw;
+  font-weight: 700;
+  line-height: 0.78;
+  letter-spacing: -0.03em;
+}
+
+.sipp-poster__side {
+  display: grid;
+  gap: 0.2cqw;
+  padding: 0 0 0.6cqw 2.4cqw;
+  border-left: 1px solid rgba(234, 216, 167, 0.35);
+}
+
+.sipp-poster__weekday {
+  color: #ead395;
+  font-size: 1.95cqw;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.sipp-poster__month {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 4.8cqw;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.sipp-poster__year {
+  color: #ead395;
+  font-family: var(--font-display);
+  font-size: 3cqw;
+  font-weight: 600;
 }
 
 .sipp-poster__logo {
@@ -17335,30 +17459,23 @@ body.is-dark .svc-card__duration {
   filter: drop-shadow(0 0.6cqw 1.2cqw rgba(0, 0, 0, 0.42));
 }
 
-.sipp-poster__head h2 {
-  margin: 0;
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 7.6cqw;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.02;
-}
 
-.sipp-poster__date {
-  margin: 0;
-  color: #ead395;
-  font-family: var(--font-display);
-  font-size: 3.9cqw;
-  font-weight: 600;
-  line-height: 1.15;
-}
+
+.sipp-poster__date { display: none; }
 
 .sipp-poster__meta {
-  margin: 0;
-  color: rgba(244, 227, 189, 0.82);
-  font-size: 2.1cqw;
-  font-weight: 500;
+  justify-self: start;
+  margin: 0.9cqw 0 0;
+  padding: 0.85cqw 1.9cqw;
+  border: 1px solid rgba(234, 216, 167, 0.55);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ead395;
+  font-size: 1.75cqw;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  text-transform: uppercase;
 }
 
 .sipp-poster__list {
@@ -17453,10 +17570,34 @@ body.is-dark .svc-card__duration {
 
 .sipp-poster__empty {
   display: grid;
-  place-items: center;
+  place-content: center;
+  justify-items: center;
+  gap: 1.4cqw;
   height: 100%;
+  padding: 4cqw 6cqw;
+  border: 1px solid rgba(234, 216, 167, 0.22);
+  border-radius: 2cqw;
+  background: rgba(255, 255, 255, 0.05);
   color: rgba(244, 227, 189, 0.8);
-  font-size: 2.6cqw;
+  text-align: center;
+}
+
+.sipp-poster__empty strong {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 3.4cqw;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.sipp-poster__empty span {
+  font-size: 2.05cqw;
+  line-height: 1.4;
+}
+
+.sipp-poster__empty .sipp-poster__empty-link {
+  color: #ead395;
+  font-weight: 600;
 }
 
 .sipp-poster__note {
@@ -17643,9 +17784,19 @@ body.sipp-stage-open { overflow: hidden; }
 .sipp-poster[data-theme="cream"] .sipp-poster__court { color: #7a3d10; }
 .sipp-poster[data-theme="cream"] .sipp-poster__class { color: rgba(47, 20, 14, 0.62); }
 .sipp-poster[data-theme="cream"] .sipp-poster__head { border-bottom-color: rgba(47, 20, 14, 0.2); }
+.sipp-poster[data-theme="cream"] .sipp-poster__kicker,
+.sipp-poster[data-theme="cream"] .sipp-poster__weekday,
+.sipp-poster[data-theme="cream"] .sipp-poster__year { color: #8a5a12; }
+.sipp-poster[data-theme="cream"] .sipp-poster__day,
+.sipp-poster[data-theme="cream"] .sipp-poster__month { color: #2f140e; }
+.sipp-poster[data-theme="cream"] .sipp-poster__side { border-left-color: rgba(47, 20, 14, 0.22); }
 .sipp-poster[data-theme="cream"] .sipp-poster__head h2 { color: #2f140e; }
 .sipp-poster[data-theme="cream"] .sipp-poster__date { color: #8a5a12; }
-.sipp-poster[data-theme="cream"] .sipp-poster__meta { color: rgba(47, 20, 14, 0.72); }
+.sipp-poster[data-theme="cream"] .sipp-poster__meta {
+  border-color: rgba(47, 20, 14, 0.35);
+  background: rgba(47, 20, 14, 0.05);
+  color: #8a5a12;
+}
 .sipp-poster[data-theme="cream"] .sipp-poster__row {
   border-color: rgba(47, 20, 14, 0.12);
   background: rgba(255, 255, 255, 0.78);
