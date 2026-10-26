@@ -376,8 +376,15 @@ function pn_natuna_sipp_render_schedule(): void
           <ol class="sipp-poster__list" id="sipp-poster-list"></ol>
           <p class="sipp-poster__note" id="sipp-poster-note" hidden></p>
           <figcaption class="sipp-poster__foot">
-            <span>Sumber: SIPP PN Natuna</span>
-            <span id="sipp-poster-updated"></span>
+            <span class="sipp-poster__source">
+              <span>Sumber: SIPP PN Natuna</span>
+              <span id="sipp-poster-updated"></span>
+            </span>
+            <span class="sipp-poster__credit">
+              <strong>@pn.natuna</strong>
+              <span>pn-natuna.go.id</span>
+            </span>
+            <img class="sipp-poster__qr" src="/images/brand/qr-sipp.png" alt="QR jadwal SIPP" width="640" height="640">
           </figcaption>
         </figure>
         <div class="sipp-stage__actions">
@@ -385,7 +392,16 @@ function pn_natuna_sipp_render_schedule(): void
             <button type="button" data-sipp-theme="maroon" aria-pressed="true">Marun</button>
             <button type="button" data-sipp-theme="navy" aria-pressed="false">Navy</button>
             <button type="button" data-sipp-theme="cream" aria-pressed="false">Krem</button>
+            <button type="button" data-sipp-theme="emerald" aria-pressed="false">Emerald</button>
+            <button type="button" data-sipp-theme="graphite" aria-pressed="false">Grafit</button>
+            <button type="button" data-sipp-theme="royal" aria-pressed="false">Royal</button>
+            <button type="button" data-sipp-theme="obsidian" aria-pressed="false">Hitam-Emas</button>
+            <button type="button" data-sipp-theme="batik" aria-pressed="false">Batik</button>
           </div>
+          <label class="sipp-stage__toggle">
+            <input type="checkbox" data-sipp-effects>
+            <span>Efek lengkap (cover + progress)</span>
+          </label>
           <button type="button" data-sipp-stage-png>Unduh PNG 1080&times;1920</button>
           <button type="button" data-sipp-stage-video>Unduh video</button>
           <button type="button" data-sipp-stage-print>Cetak / PDF</button>
@@ -395,6 +411,6 @@ function pn_natuna_sipp_render_schedule(): void
       </div>
     </section>
     <script src="/templates/pn_natuna_2026/js/sipp-tabs.js" defer></script>
-    <script src="/templates/pn_natuna_2026/js/sipp-export.js?v=20261023-reels16" defer></script>
+    <script src="/templates/pn_natuna_2026/js/sipp-export.js?v=<?php echo @filemtime(__DIR__ . '/js/sipp-export.js') ?: '1'; ?>" defer></script>
     <?php
 }

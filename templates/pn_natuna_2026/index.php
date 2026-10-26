@@ -97,7 +97,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <link rel="preload" href="/templates/<?php echo $this->template; ?>/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
   <?php $tplPath = JPATH_THEMES . '/' . $this->template; ?>
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css?v=<?php echo @filemtime($tplPath . '/css/fonts.css') ?: '1'; ?>" />
-  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template-4b123344.css?v=20261023-reels12" />
+  <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template-4b123344.css?v=<?php echo @filemtime($tplPath . '/css/template-4b123344.css') ?: '1'; ?>" />
   <jdoc:include type="scripts" />
   <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js?v=20260912-integrity-popup-v3" defer></script>
 </head>

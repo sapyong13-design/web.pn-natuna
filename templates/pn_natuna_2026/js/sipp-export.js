@@ -88,6 +88,9 @@
   let currentRows = [];
   let currentDate = '';
   let currentKey = 'today';
+  // Efek tambahan (cover, progress bar, kilau kategori) bisa dimatikan:
+  // versi sederhana lebih lancar di mesin/encoder yang lambat.
+  let fullEffects = false;
 
   const buildRow = (row, index, dense) => {
     const li = document.createElement('li');
@@ -177,14 +180,11 @@
 
     // Hari dengan sedikit perkara menyisakan ruang; isi dengan catatan resmi
     // supaya poster tidak terlihat kosong.
-    const showNote = currentRows.length > 0 && currentRows.length <= 6;
-    noteEl.hidden = !showNote;
-    if (showNote) {
-      noteEl.textContent = 'NB: Jadwal dapat berubah sewaktu-waktu.';
-    }
+    noteEl.hidden = true;
 
     listEl.textContent = '';
-    const shownRows = currentRows.length > MAX_CARDS ? currentRows.slice(0, MAX_CARDS - 1) : currentRows;
+    listEl.classList.toggle('sipp-poster__list--cols', currentRows.length > MAX_CARDS);
+    const shownRows = currentRows.length > MAX_GRID ? currentRows.slice(0, MAX_GRID - 1) : currentRows;
     shownRows.forEach((row, index) => listEl.appendChild(buildRow(row, index, density === 'dense')));
     const overflowRows = currentRows.length - shownRows.length;
     if (overflowRows > 0) {
@@ -286,16 +286,19 @@
   let PN_LOGO = null;
   let ASN_LOGO = null;
   let ASN_LOGO_LIGHT = null;
+  let QR_IMG = null;
   const ensureLogos = async () => {
-    if (!PN_LOGO || !ASN_LOGO || !ASN_LOGO_LIGHT) {
-      const [pn, asn, asnLight] = await Promise.all([
+    if (!PN_LOGO || !ASN_LOGO || !ASN_LOGO_LIGHT || !QR_IMG) {
+      const [pn, asn, asnLight, qr] = await Promise.all([
         loadImage('/images/brand/logo-pn-natuna-mark.webp'),
         loadImage('/images/brand/logo-asn-berakhlak.webp'),
-        loadImage('/images/brand/logo-asn-berakhlak-light.webp')
+        loadImage('/images/brand/logo-asn-berakhlak-light.webp'),
+        loadImage('/images/brand/qr-sipp.png')
       ]);
       PN_LOGO = pn;
       ASN_LOGO = asn;
       ASN_LOGO_LIGHT = asnLight;
+      QR_IMG = qr;
     }
   };
 
@@ -312,7 +315,10 @@
   const SAFE_RIGHT = 96;
   // Story menutup ~180 px atas dengan header profil; geser konten turun.
   const SAFE_TOP = 150;
-  const MAX_CARDS = 10;
+  const MAX_CARDS = 10;   // satu kolom
+  const MAX_GRID = 16;    // dua kolom
+  const COVER_HOLD = 0.8;
+  const COVER_FADE = 0.25;
   const FOOT_Y = H - SAFE_BOTTOM - 18;
 
   const THEMES = {
@@ -324,7 +330,7 @@
       divider: 'rgba(234, 216, 167, 0.35)',
       cardBg: 'rgba(255, 255, 255, 0.06)', cardLine: 'rgba(234, 216, 167, 0.18)',
       caseText: '#ffffff', lineText: 'rgba(244, 227, 189, 0.86)', agendaText: 'rgba(244, 227, 189, 0.95)',
-      foot: 'rgba(244, 227, 189, 0.66)'
+      foot: 'rgba(244, 227, 189, 0.82)'
     },
     navy: {
       bg: ['#07131d', '#0f2735', '#17415a'],
@@ -334,7 +340,57 @@
       divider: 'rgba(240, 201, 135, 0.32)',
       cardBg: 'rgba(255, 255, 255, 0.07)', cardLine: 'rgba(240, 201, 135, 0.18)',
       caseText: '#ffffff', lineText: 'rgba(226, 236, 244, 0.86)', agendaText: 'rgba(226, 236, 244, 0.95)',
-      foot: 'rgba(226, 236, 244, 0.66)'
+      foot: 'rgba(226, 236, 244, 0.82)'
+    },
+    emerald: {
+      bg: ['#06231b', '#0c3a2c', '#145a44'],
+      barTop: 'rgba(180, 240, 210, 0.10)',
+      court: '#9fe3c4', sub: 'rgba(214, 240, 228, 0.72)',
+      title: '#ffffff', date: '#9fe3c4', meta: 'rgba(214, 240, 228, 0.82)',
+      divider: 'rgba(159, 227, 196, 0.32)',
+      cardBg: 'rgba(255, 255, 255, 0.07)', cardLine: 'rgba(159, 227, 196, 0.18)',
+      caseText: '#ffffff', lineText: 'rgba(214, 240, 228, 0.86)', agendaText: 'rgba(214, 240, 228, 0.95)',
+      foot: 'rgba(214, 240, 228, 0.82)'
+    },
+    graphite: {
+      bg: ['#111317', '#1c1f24', '#2b3037'],
+      barTop: 'rgba(226, 232, 240, 0.10)',
+      court: '#d7dce4', sub: 'rgba(226, 232, 240, 0.66)',
+      title: '#ffffff', date: '#e2e8f0', meta: 'rgba(226, 232, 240, 0.78)',
+      divider: 'rgba(226, 232, 240, 0.28)',
+      cardBg: 'rgba(255, 255, 255, 0.06)', cardLine: 'rgba(226, 232, 240, 0.16)',
+      caseText: '#ffffff', lineText: 'rgba(226, 232, 240, 0.84)', agendaText: 'rgba(240, 244, 250, 0.94)',
+      foot: 'rgba(226, 232, 240, 0.80)'
+    },
+    royal: {
+      bg: ['#0d1030', '#171d4a', '#262f6e'],
+      barTop: 'rgba(200, 210, 255, 0.12)',
+      court: '#bcc6ff', sub: 'rgba(214, 220, 255, 0.70)',
+      title: '#ffffff', date: '#bcc6ff', meta: 'rgba(214, 220, 255, 0.80)',
+      divider: 'rgba(188, 198, 255, 0.30)',
+      cardBg: 'rgba(255, 255, 255, 0.07)', cardLine: 'rgba(188, 198, 255, 0.18)',
+      caseText: '#ffffff', lineText: 'rgba(214, 220, 255, 0.86)', agendaText: 'rgba(226, 232, 255, 0.95)',
+      foot: 'rgba(214, 220, 255, 0.80)'
+    },
+    obsidian: {
+      bg: ['#08080a', '#121216', '#1e1e24'],
+      barTop: 'rgba(232, 200, 122, 0.12)',
+      court: '#e8c87a', sub: 'rgba(238, 232, 220, 0.68)',
+      title: '#ffffff', date: '#e8c87a', meta: 'rgba(238, 232, 220, 0.80)',
+      divider: 'rgba(232, 200, 122, 0.30)',
+      cardBg: 'rgba(255, 255, 255, 0.05)', cardLine: 'rgba(232, 200, 122, 0.16)',
+      caseText: '#ffffff', lineText: 'rgba(238, 232, 220, 0.90)', agendaText: 'rgba(248, 244, 236, 0.96)',
+      foot: 'rgba(238, 232, 220, 0.80)'
+    },
+    batik: {
+      bg: ['#1b1008', '#2f1d0e', '#452c16'],
+      barTop: 'rgba(217, 179, 130, 0.12)',
+      court: '#d9b382', sub: 'rgba(240, 226, 208, 0.72)',
+      title: '#fff8ec', date: '#d9b382', meta: 'rgba(240, 226, 208, 0.82)',
+      divider: 'rgba(217, 179, 130, 0.32)',
+      cardBg: 'rgba(255, 246, 232, 0.06)', cardLine: 'rgba(217, 179, 130, 0.20)',
+      caseText: '#fff8ec', lineText: 'rgba(240, 226, 208, 0.92)', agendaText: 'rgba(250, 242, 230, 0.96)',
+      foot: 'rgba(240, 226, 208, 0.80)'
     },
     cream: {
       bg: ['#fbf6ec', '#f3ead8', '#e9dcc3'],
@@ -344,7 +400,7 @@
       divider: 'rgba(47, 20, 14, 0.2)',
       cardBg: 'rgba(255, 255, 255, 0.78)', cardLine: 'rgba(47, 20, 14, 0.12)',
       caseText: '#2f140e', lineText: 'rgba(47, 20, 14, 0.78)', agendaText: 'rgba(47, 20, 14, 0.92)',
-      foot: 'rgba(47, 20, 14, 0.55)'
+      foot: 'rgba(47, 20, 14, 0.72)'
     }
   };
 
@@ -356,6 +412,10 @@
     return 1 + (c + 1) * q * q * q + c * q * q;
   };
   const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const hexToRgb = (hex) => {
+    const h = hex.replace('#', '');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  };
   const palette = () => THEMES[poster.dataset.theme] || THEMES.maroon;
 
   // Kepala poster selalu berakhir di titik yang sama, jadi area kartu tetap.
@@ -494,8 +554,76 @@
   // Varian hari kosong: tetap ada poster yang layak diposting.
   // Lebih dari 10 perkara: tampilkan 9 + satu kartu ringkasan, jangan perkecil
   // tipografi sampai tak terbaca.
-  const visibleRows = () => (currentRows.length > MAX_CARDS ? currentRows.slice(0, MAX_CARDS - 1) : currentRows);
-  const overflowCount = () => Math.max(0, currentRows.length - (MAX_CARDS - 1));
+  const visibleRows = () => (currentRows.length > MAX_GRID ? currentRows.slice(0, MAX_GRID - 1) : currentRows);
+  const overflowCount = () => Math.max(0, currentRows.length - (MAX_GRID - 1));
+
+  // Hari sangat padat: dua kolom, kartu ringkas, tanpa bitmap cache.
+  const drawGridMode = (ctx, pal, t, start, stagger, areaTop, rowsShown, overflow, coverT) => {
+    const cols = 2;
+    const gapX = 16;
+    const gapY = 12;
+    const cardW = (CARD_W - gapX) / 2;
+    const total = rowsShown.length + (overflow ? 1 : 0);
+    const rows = Math.ceil(total / cols);
+    const available = AREA_BOTTOM - areaTop;
+    const cardH = Math.min(150, Math.max(74, (available - (rows - 1) * gapY) / rows));
+
+    const drawOne = (index, alpha) => {
+      const col = index % cols;
+      const line = Math.floor(index / cols);
+      const x = PAD + col * (cardW + gapX);
+      const y = areaTop + line * (cardH + gapY);
+      const row = index < rowsShown.length ? rowsShown[index] : null;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (!row) {
+        ctx.setLineDash([10, 8]);
+        ctx.strokeStyle = pal.divider;
+        ctx.lineWidth = 2;
+        roundRect(ctx, x, y, cardW, cardH, 14);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = pal.title;
+        ctx.font = `700 24px ${SANS}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`+${overflow} lainnya`, x + cardW / 2, y + cardH / 2 + 8);
+        ctx.textAlign = 'left';
+        ctx.restore();
+        return;
+      }
+
+      const tone = ROW_COLORS[row.key] || ROW_COLORS.other;
+      ctx.fillStyle = pal.cardBg;
+      roundRect(ctx, x, y, cardW, cardH, 14);
+      ctx.fill();
+      ctx.strokeStyle = pal.cardLine;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = tone.accent;
+      roundRect(ctx, x, y, 6, cardH, 3);
+      ctx.fill();
+
+      ctx.fillStyle = pal.caseText;
+      ctx.font = `700 24px ${SANS}`;
+      ctx.fillText(fitText(ctx, row.case, cardW - 36), x + 18, y + 36);
+
+      ctx.fillStyle = pal.lineText;
+      ctx.font = `400 17px ${SANS}`;
+      const meta = [row.room, row.circuit ? 'Sidang Keliling' : '', row.agenda].filter(Boolean).join(' · ');
+      ctx.fillText(fitText(ctx, meta, cardW - 36), x + 18, y + 62);
+      ctx.restore();
+    };
+
+    for (let i = 0; i < total; i += 1) {
+      const raw = t === Infinity ? 1 : clamp01((t - (start + i * stagger)) / ROW_ANIM);
+      if (raw <= 0) continue;
+      drawOne(i, t === Infinity ? 1 : clamp01(easeOut(raw) * 1.1));
+    }
+    if (coverT > 0.001) {
+      for (let i = 0; i < total; i += 1) drawOne(i, coverT);
+    }
+  };
 
   const drawMoreCard = (ctx, layout, y, pal, count) => {
     const w = CARD_W;
@@ -625,7 +753,9 @@
   // Zoom halus hanya pada latar: murah, tetap terasa hidup.
   const drawBackground = (ctx, pal, progress) => {
     const layer = backgroundLayer(pal, poster.dataset.theme || 'maroon');
-    const zoom = 1 + 0.03 * progress;
+    // Satu siklus penuh: zoom mulai dan berakhir di skala yang sama.
+    const zoomPhase = (1 - Math.cos(2 * Math.PI * progress)) / 2;
+    const zoom = 1 + 0.02 * zoomPhase;
     ctx.save();
     ctx.translate(W / 2, H / 2);
     ctx.scale(zoom, zoom);
@@ -674,8 +804,20 @@
     const progress = t === Infinity ? 1 : clamp01(t / totalSeconds);
     drawBackground(ctx, pal, progress);
 
+
+    // Progress bar tipis ala Story.
+    if (fullEffects && t !== Infinity) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, 0, W, 6);
+      ctx.fillStyle = pal.date;
+      ctx.fillRect(0, 0, W * clamp01(t / totalSeconds), 6);
+    }
+
+    // Frame cover: poster utuh di awal supaya thumbnail Reels tidak setengah jadi.
+    const coverT = !fullEffects || t === Infinity ? 0 : clamp01(1 - (t - COVER_HOLD) / COVER_FADE);
+
     // Denyut glow: neon yang diam terlihat seperti text-shadow biasa.
-    const pulse = t === Infinity ? 1 : 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(t * 2.4));
+    const pulse = t === Infinity ? 1 : 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(4 * Math.PI * progress));
 
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
@@ -816,11 +958,13 @@
     }
 
     const { start, stagger } = timeline();
+    if (slots > MAX_CARDS) {
+      drawGridMode(ctx, pal, t, start, stagger, areaTop, shown, overflow, coverT);
+    } else {
     const layout = layoutFor(slots, areaTop);
     const blockH = slots * layout.cardH + Math.max(0, slots - 1) * layout.gap;
-    const noteOn = currentRows.length > 0 && currentRows.length <= 6;
-    const noteH = 66;
-    const usableBottom = noteOn ? AREA_BOTTOM - noteH - 18 : AREA_BOTTOM;
+    // Catatan "jadwal dapat berubah" sengaja tidak dicetak di poster ekspor.
+    const usableBottom = AREA_BOTTOM;
     const blockTop = areaTop + Math.max(0, (usableBottom - areaTop - blockH) / 2);
     shown.forEach((row, index) => {
       const raw = t === Infinity ? 1 : clamp01((t - (start + index * stagger)) / ROW_ANIM);
@@ -840,6 +984,18 @@
         ctx.scale(0.94 + 0.06 * spring, 0.94 + 0.06 * spring);
         ctx.translate(0, -midY);
       }
+      // Kilau kategori: satu kotak solid yang memudar, tanpa clip/gradient.
+      if (fullEffects && raw < 1) {
+        const tone = ROW_COLORS[row.key] || ROW_COLORS.other;
+        const [cr, cg, cb] = hexToRgb(tone.accent);
+        ctx.save();
+        ctx.globalAlpha = alpha * (1 - raw) * 0.35;
+        ctx.fillStyle = `rgb(${cr}, ${cg}, ${cb})`;
+        roundRect(ctx, PAD, y, CARD_W, layout.cardH, 18);
+        ctx.fill();
+        ctx.restore();
+      }
+
       // Blur-in: bitmap buram memudar seiring kartu menajam.
       if (raw < 1) {
         ctx.globalAlpha = alpha * (1 - raw) * 0.85;
@@ -868,28 +1024,26 @@
       }
     }
 
-    if (!currentRows.length) drawEmptyState(ctx, pal, t, start, areaTop);
-
-    if (noteOn) {
-      const noteP = t === Infinity ? 1 : easeOut(clamp01((t - start - 0.4) / 0.6));
-      const boxW = W - PAD * 2;
-      const boxY = AREA_BOTTOM - noteH;
-      ctx.save();
-      ctx.globalAlpha = noteP;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-      roundRect(ctx, PAD, boxY, boxW, noteH, 14);
-      ctx.fill();
-      ctx.strokeStyle = pal.cardLine;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      ctx.textAlign = 'center';
-      ctx.fillStyle = pal.date;
-      ctx.font = `700 25px ${SANS}`;
-      ctx.fillText(fitText(ctx, 'NB: Jadwal dapat berubah sewaktu-waktu.', boxW - 60), W / 2, boxY + 42);
-      ctx.textAlign = 'left';
-      ctx.restore();
+    // Cover: poster utuh selama COVER_HOLD, lalu memudar sebelum reveal.
+    if (coverT > 0.001) {
+      shown.forEach((row, index) => {
+        const bmp = cardBitmaps(row, layout, pal, dense);
+        ctx.save();
+        ctx.globalAlpha = coverT;
+        ctx.drawImage(bmp.high, 0, blockTop + index * (layout.cardH + layout.gap) - 4);
+        ctx.restore();
+      });
+      if (overflow) {
+        ctx.save();
+        ctx.globalAlpha = coverT;
+        drawMoreCard(ctx, layout, blockTop + shown.length * (layout.cardH + layout.gap), pal, overflow);
+        ctx.restore();
+      }
     }
+
+    }
+
+    if (!currentRows.length) drawEmptyState(ctx, pal, t, start, areaTop);
 
     const footP = t === Infinity ? 1 : easeOut(clamp01((t - start) / 0.6));
     ctx.save();
@@ -901,22 +1055,45 @@
       .replace(/^Data per\s*/i, '')
       .replace(/\s*\d{1,2}[:.]\d{2}([:.]\d{2})?\s*WIB\s*$/i, '')
       .trim();
-    const footerText = compactUpdated
-      ? `Sumber: SIPP PN Natuna · diperbarui ${compactUpdated}`
+    // Tanggal ringkas: "Minggu, 25 Oktober 2026" -> "25 Okt 2026" agar muat
+    // satu baris bersama QR dan handle.
+    const shortDate = compactUpdated
+      .replace(/^[A-Za-z]+,\s*/, '')
+      .replace(/\s+(Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember)\s+/i,
+        (m, bulan) => ` ${bulan.slice(0, 3)} `);
+    const footerText = shortDate
+      ? `SIPP PN Natuna · diperbarui ${shortDate}`
       : 'Sumber: SIPP PN Natuna';
     ctx.font = `400 21px ${SANS}`;
-    ctx.fillText(fitText(ctx, footerText, CARD_W - 240), PAD, FOOT_Y);
+    ctx.fillText(fitText(ctx, footerText, CARD_W - 380), PAD, FOOT_Y);
+
+    // QR SIPP + handle Instagram: dua jalur menemukan jadwal lengkap.
+    const qrSize = 88;
+    const qrX = W - PAD - qrSize;
+    const qrY = FOOT_Y - qrSize + 6;
+    if (QR_IMG && QR_IMG.naturalWidth) {
+      ctx.save();
+      ctx.globalAlpha = footP;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      roundRect(ctx, qrX - 7, qrY - 7, qrSize + 14, qrSize + 14, 10);
+      ctx.fill();
+      ctx.drawImage(QR_IMG, qrX, qrY, qrSize, qrSize);
+      ctx.restore();
+    }
 
     ctx.textAlign = 'right';
     ctx.fillStyle = pal.court;
-    ctx.font = `600 22px ${SANS}`;
-    ctx.fillText('pn-natuna.go.id', W - PAD - SAFE_RIGHT, FOOT_Y);
+    ctx.font = `700 23px ${SANS}`;
+    ctx.fillText('@pn.natuna', qrX - 22, FOOT_Y - 24);
+    ctx.fillStyle = pal.foot;
+    ctx.font = `500 20px ${SANS}`;
+    ctx.fillText('pn-natuna.go.id', qrX - 22, FOOT_Y + 2);
     ctx.textAlign = 'left';
     ctx.restore();
 
     // Sapuan cahaya diagonal: latar tidak terasa mati sepanjang video.
-    if (t !== Infinity) {
-      const cycle = 3.4;
+    if (fullEffects && t !== Infinity) {
+      const cycle = 1.6;
       const sweep = (t % cycle) / cycle;
       const x = -520 + sweep * (W + 1040);
       const band = ctx.createLinearGradient(x, 0, x + 460, H * 0.55);
@@ -937,7 +1114,7 @@
   const timeline = () => {
     const shown = visibleRows();
     const count = Math.max(shown.length + (overflowCount() ? 1 : 0), 1);
-    const start = 1.2;
+    const start = fullEffects ? 1.2 : 0.9;
     const allIn = 8.2; // seluruh kartu selesai muncul
     const stagger = count > 1
       ? Math.min(0.85, Math.max(0.42, (allIn - start - ROW_ANIM) / (count - 1)))
@@ -1071,6 +1248,7 @@
     const canvas = await drawPoster();
     const ctx = canvas.getContext('2d');
     const { total } = timeline();
+    // captureStream(30): compositor mengirim frame setiap kanvas berubah.
     const stream = canvas.captureStream(24);
     const recorder = new MediaRecorder(stream, { mimeType: VIDEO_MIME, videoBitsPerSecond: 12000000 });
     const chunks = [];
@@ -1080,20 +1258,31 @@
     const finished = new Promise((resolve) => { recorder.onstop = resolve; });
 
     videoBtn.disabled = true;
-    recorder.start();
+    recorder.start(500);
     const startedAt = performance.now();
+    // rAF untuk kelancaran; timer sebagai jaring pengaman karena rAF berhenti
+    // total di tab background (rekaman akan menggantung di 0 detik).
     await new Promise((resolve) => {
-      const frame = () => {
+      let done = false;
+      function tick() {
+        if (done) return;
         const elapsed = (performance.now() - startedAt) / 1000;
-        paintFrame(ctx, Math.min(elapsed, total));
-        videoBtn.textContent = `Merekam ${Math.min(elapsed, total).toFixed(1)}/${total.toFixed(1)} s`;
+        const shownSeconds = Math.min(elapsed, total);
+        paintFrame(ctx, shownSeconds);
+        videoBtn.textContent = `Merekam ${shownSeconds.toFixed(1)}/${total.toFixed(1)} s`;
         if (elapsed >= total) {
+          done = true;
+          window.clearInterval(timer);
           resolve();
-          return;
         }
-        requestAnimationFrame(frame);
+      }
+      const timer = window.setInterval(tick, 1000 / 24);
+      const frame = () => {
+        tick();
+        if (!done) requestAnimationFrame(frame);
       };
-      frame();
+      tick();
+      requestAnimationFrame(frame);
     });
     // Beri waktu encoder mengirim frame terakhir sebelum menutup container.
     await new Promise((resolve) => { window.setTimeout(resolve, 260); });
@@ -1127,6 +1316,13 @@
   stage.addEventListener('click', (event) => {
     if (event.target === stage) close();
   });
+
+  const effectsToggle = stage.querySelector('[data-sipp-effects]');
+  if (effectsToggle) {
+    effectsToggle.addEventListener('change', () => {
+      fullEffects = effectsToggle.checked;
+    });
+  }
 
   pngBtn.addEventListener('click', downloadPng);
 

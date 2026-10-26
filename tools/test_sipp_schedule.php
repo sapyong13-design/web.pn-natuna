@@ -99,8 +99,10 @@ foreach ([
     "'Besok'" => 'badge konteks hari esok',
     'Tidak ada sidang besok' => 'varian hari kosong',
     'easeOutBack' => 'animasi spring',
-    'captureStream(24)' => 'stream 24 fps',
-    'videoBitsPerSecond: 12000000' => 'bitrate 12 Mbps',
+    'captureStream(' => 'stream kanvas',
+    'videoBitsPerSecond' => 'bitrate rekaman',
+    'COVER_HOLD' => 'frame cover',
+    'drawGridMode' => 'mode dua kolom',
     'cardBitmaps' => 'cache bitmap kartu',
     'SAFE_BOTTOM' => 'safe zone Reels',
 ] as $needle => $label) {
