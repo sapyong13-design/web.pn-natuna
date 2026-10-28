@@ -18,6 +18,8 @@ Knowledge base status aktif untuk rebuild Joomla Pengadilan Negeri Natuna Kelas 
 
 Konten artikel dan modul hidup di DB. Setiap perubahan DB yang wajib mengikuti kode harus berupa migrasi SQL idempoten baru di `database/migrations/`; restore dump wajib melalui `tools/restore-local-db.py` agar seluruh migrasi diputar ulang.
 
+**Jangan pakai `$1` di `REGEXP_REPLACE`.** MySQL 8 (lokal) mengembangkannya sebagai backreference; MariaDB (produksi cPanel) menulisnya literal **dan menelan seluruh bagian yang cocok**. Migrasi `20261108`/`20261109` melakukannya pada 28 Oktober 2026 dan menghapus heading, peran, NIP, serta field Pangkat/Gol. keempat hakim karier di `/profil-pengadilan/profil-hakim` produksi — kartunya tinggal `$1Penata Muda Tingkat I / III.b`. Kedua berkas sudah tercatat applied dan tidak boleh diedit, jadi kerusakannya dibatalkan `20261110_repair_career_judge_roster_cards.sql` (literal murni, aman di dua server). `tools/test_migration_idempotency.py` sekarang menolak `$1` pada migrasi baru; pakai `\\1` bila benar-benar butuh backreference. Selalu uji migrasi yang menyentuh HTML artikel pada MariaDB, bukan hanya MySQL lokal.
+
 ## Pembaruan Joomla produksi — 5 Oktober 2026
 
 - `https://pn-natuna.go.id` berhasil diperbarui melalui CLI resmi `core:update --no-interaction`, exit `0`, dari 6.1.2 ke **6.1.4**. Registry manifest kini 6.1.4; schema MySQL `6.1.4-2026-08-27`; `maintenance:database` memeriksa 4 perubahan struktur dan melaporkan seluruh tabel mutakhir. Cache Joomla dibersihkan; browser publik menampilkan beranda, `/berita`, dan artikel pelantikan Joko Ciptanto, tanpa gambar gagal pada pemeriksaan beranda. Akses HTTP langsung ke SQL update ditolak `403`.
