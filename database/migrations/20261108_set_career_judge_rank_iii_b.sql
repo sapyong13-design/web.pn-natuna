@@ -5,20 +5,23 @@
 -- rank of every other person on the page is left untouched. Idempotent: after the rewrite the
 -- pattern no longer matches.
 --
--- The rendered card is `<h3 class="roster-name">NAME</h3> ... <dt>Pangkat/Gol.</dt><dd>RANK</dd>`,
--- so the value never sits directly after the label; the pattern has to cross `</dt><dd>`.
+-- Two card markups exist for this article across environments:
+--   production : <h3 class="roster-name">NAME</h3> ... <div>Pangkat/Gol.Penata / III.c</div>
+--   rebuild DB : <h3 class="roster-name">NAME</h3> ... <dt>Pangkat/Gol.</dt><dd>Penata / III.c</dd>
+-- so the separator between the label and the value is optional in the pattern. The value is
+-- replaced in place; the closing tag is left to the surrounding markup.
 
 UPDATE #__content
 SET introtext = REGEXP_REPLACE(
         introtext,
-        '(?s)(<h3 class="roster-name">(?:Alfariz Maulana Reza|Geraldo Gracelo Mario Situmeang|Haditio|Swandi Hutabarat)[^<]*</h3>.{0,500}?<dt>Pangkat/Gol[.]</dt><dd>)Penata / III[.]c(</dd>)',
-        '$1Penata Muda Tingkat I / III.b$2'
+        '(?s)(<h3 class="roster-name">(?:Alfariz Maulana Reza|Geraldo Gracelo Mario Situmeang|Haditio|Swandi Hutabarat)[^<]*</h3>.{0,500}?Pangkat/Gol[.](?:</dt><dd>)?)Penata / III[.]c',
+        '$1Penata Muda Tingkat I / III.b'
     ),
     `fulltext` = REGEXP_REPLACE(
         `fulltext`,
-        '(?s)(<h3 class="roster-name">(?:Alfariz Maulana Reza|Geraldo Gracelo Mario Situmeang|Haditio|Swandi Hutabarat)[^<]*</h3>.{0,500}?<dt>Pangkat/Gol[.]</dt><dd>)Penata / III[.]c(</dd>)',
-        '$1Penata Muda Tingkat I / III.b$2'
+        '(?s)(<h3 class="roster-name">(?:Alfariz Maulana Reza|Geraldo Gracelo Mario Situmeang|Haditio|Swandi Hutabarat)[^<]*</h3>.{0,500}?Pangkat/Gol[.](?:</dt><dd>)?)Penata / III[.]c',
+        '$1Penata Muda Tingkat I / III.b'
     ),
     modified = UTC_TIMESTAMP(), modified_by = 0
 WHERE title = 'Profil Hakim'
-  AND introtext LIKE '%<dd>Penata / III.c</dd>%';
+  AND introtext REGEXP '(?s)<h3 class="roster-name">(?:Alfariz Maulana Reza|Geraldo Gracelo Mario Situmeang|Haditio|Swandi Hutabarat)[^<]*</h3>.{0,500}?Pangkat/Gol[.](?:</dt><dd>)?Penata / III[.]c';
