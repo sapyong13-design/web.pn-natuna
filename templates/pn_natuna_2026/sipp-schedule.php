@@ -331,7 +331,10 @@ function pn_natuna_sipp_refresh_cache(): array
     if ($days['today']['date_label'] === '' && !$days['today']['rows']) {
         $fallback = pn_natuna_sipp_refresh_from_db();
         if ($fallback === null) {
-            return pn_natuna_sipp_load_cache();
+            $retained = pn_natuna_sipp_load_cache();
+            $retained['_source'] = 'cache';
+
+            return $retained;
         }
         pn_natuna_sipp_write_cache($fallback);
 

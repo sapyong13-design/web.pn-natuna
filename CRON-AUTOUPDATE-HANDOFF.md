@@ -808,3 +808,36 @@ Homepage harus menampilkan feed instansi terbaru, lima video YouTube, jadwal SIP
 ## 9. Refresh YouTube per Jam
 
 Cache YouTube dibuat oleh script CLI-only `tools/cron-refresh-youtube.php`. Script mengambil Atom channel `UCuPb35OggK2PKdW7Ed0qszA` melalui HTTPS, mempertahankan cache lama jika fetch, parse, atau promosi gagal, dan memakai `PN_NATUNA_JPATH_ROOT` untuk menulis cache ke Joomla root. Gunakan runner tunggal pada bagian **Setup Ringkas Semua Updater**; script tidak perlu disalin ke `public_html`.
+
+---
+
+## 10. Refresh SIPP saat endpoint publik diblokir WAF
+
+`sipp.pn-natuna.go.id` dilindungi SafeLine WAF (`103.30.147.103`, panel `https://waf-krd.jcamp.io:9443`). Sejak 6 Nov 2026 seluruh path publik membalas **HTTP 468** dengan halaman `Confirm You Are Human`, termasuk untuk UA `PN-Natuna-Website/1.0`. Fetch server-side karena itu selalu gagal.
+
+`tools/cron-refresh-sipp.php` mencoba HTTP lebih dulu, lalu jatuh ke database SIPP lokal yang dipakai `/home/USER/public_html/sipp315` bila hari ini kosong. Koneksi database hanya dibuka pada CLI dan hanya lewat path konfigurasi di environment:
+
+```bash
+# /home/USER/private/cron/pn-natuna.env (mode 0600)
+PN_NATUNA_SIPP_DB_CONFIG=/home/USER/public_html/sipp315/application/config/database.php
+```
+
+Kosongkan variabel itu bila instalasi SIPP lokal tidak ada; script lalu mempertahankan cache lama dan keluar `exit 3` agar log cron menandai gangguan.
+
+Arti keluaran:
+
+| Keluaran | Arti |
+|---|---|
+| `refreshed from http` | Jalur normal; endpoint publik dapat diakses |
+| `refreshed from db` | WAF memblokir HTTP; cache dibangun dari `jadwalsidangweb` + `dataumumweb` |
+| `cache tidak diperbarui` + `exit 3` | HTTP gagal dan database tidak tersedia; cache basi dipertahankan, beranda menyembunyikan angka basi |
+
+Verifikasi:
+
+```bash
+set -a; . /home/USER/private/cron/pn-natuna.env; set +a
+"$PHP_BIN" -f /home/USER/private/cron/current/tools/cron-refresh-sipp.php; echo "exit=$?"
+"$PHP_BIN" -r '$c=json_decode(file_get_contents(getenv("PN_NATUNA_JPATH_ROOT")."/cache/pn_natuna_sipp_schedule.json"),true); echo $c["_source"]," ",$c["_cached_at"],"\n"; foreach($c["days"] as $k=>$d){echo $k," ",$d["date_label"]," rows=",count($d["rows"]),"\n";}'
+```
+
+Jangan mengakali challenge SafeLine (cookie solver, spoof UA, atau mematikan WAF) sebagai mekanisme cron. Jalur yang benar adalah operator menambahkan allowlist IP server web `103.30.147.68` pada situs `sipp.pn-natuna.go.id` di panel WAF; setelah itu `refreshed from http` kembali dan cadangan database tinggal tidak terpakai.

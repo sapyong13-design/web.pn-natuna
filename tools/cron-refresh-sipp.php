@@ -13,7 +13,11 @@ $schedule = pn_natuna_sipp_refresh_cache();
 $today = count($schedule['days']['today']['rows'] ?? []);
 $tomorrow = count($schedule['days']['tomorrow']['rows'] ?? []);
 $source = (string) ($schedule['_source'] ?? 'cache');
-printf("SIPP schedule cache refreshed from %s: %d today, %d tomorrow\n", $source, $today, $tomorrow);
+if ($source === 'cache') {
+    printf("SIPP cache tidak diperbarui, data lama dipakai: %d today, %d tomorrow\n", $today, $tomorrow);
+} else {
+    printf("SIPP schedule cache refreshed from %s: %d today, %d tomorrow\n", $source, $today, $tomorrow);
+}
 
 // Cache basi adalah kegagalan, bukan keberhasilan: beranda menyembunyikan angka
 // basi, dan log cron harus menunjukkan gangguan alih-alih "berhasil" palsu.
