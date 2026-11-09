@@ -109,6 +109,29 @@ foreach ([
     $expect(str_contains($exportScript, $needle), 'Export script must keep ' . $label . '.');
 }
 
+// Kontrak cadangan database: saat sipp.pn-natuna.go.id menolak fetch server-side
+// (SafeLine WAF, HTTP 468), label tanggal dan label pihak dibentuk lokal, bukan
+// diambil dari HTML. Salah label akan menampilkan nama terdakwa sebagai pemohon.
+$expect(
+    pn_natuna_sipp_format_date_id(new DateTimeImmutable('2026-11-09', new DateTimeZone('Asia/Jakarta'))) === 'Senin, 09 Nov. 2026',
+    'Fallback date label must match the public SIPP wording.'
+);
+$expect(
+    pn_natuna_sipp_format_date_id(new DateTimeImmutable('2026-08-01', new DateTimeZone('Asia/Jakarta'))) === 'Sabtu, 01 Agu. 2026',
+    'Fallback date label must use Indonesian month abbreviations.'
+);
+$dbRow = ['pihakPertama' => 'PENUNTUT UMUM', 'pihakKedua' => 'TERDAKWA SATU'];
+$expect(pn_natuna_sipp_db_party('57/Pid.Sus/2026/PN Ntn', $dbRow) === ['label' => 'Terdakwa', 'name' => 'TERDAKWA SATU'], 'Criminal fallback must label the second party as Terdakwa.');
+$expect(pn_natuna_sipp_db_party('22/Pdt.P/2026/PN Ntn', $dbRow) === ['label' => 'Pemohon', 'name' => 'PENUNTUT UMUM'], 'Voluntary petition fallback must label the first party as Pemohon.');
+$expect(pn_natuna_sipp_db_party('19/Pdt.G/2026/PN Ntn', ['pihakPertama' => '1.NURHADIJAH<br />2.MARDIANA']) === ['label' => 'Penggugat', 'name' => '1.NURHADIJAH, 2.MARDIANA'], 'Civil fallback must flatten <br /> party lists.');
+$expect(pn_natuna_sipp_db_party('6/Pid.Sus-Anak/2026/PN Ntn', $dbRow) === ['label' => '', 'name' => ''], 'Juvenile case must stay anonymous in fallback.');
+$fallbackProbe = pn_natuna_sipp_refresh_from_db();
+$expect($fallbackProbe === null || is_array($fallbackProbe), 'Database fallback must return data or null, never throw.');
+if (is_array($fallbackProbe)) {
+    $expect(isset($fallbackProbe['days']['today']['rows'], $fallbackProbe['days']['tomorrow']['rows']), 'Database fallback must expose both day buckets.');
+    $expect(($fallbackProbe['_source'] ?? '') === 'db', 'Database fallback must be tagged so cron can report its origin.');
+}
+
 if ($failures) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);
