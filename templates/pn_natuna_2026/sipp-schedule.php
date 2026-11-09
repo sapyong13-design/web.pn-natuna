@@ -105,6 +105,217 @@ function pn_natuna_sipp_may_fetch_party(array $row): bool
 }
 
 
+function pn_natuna_sipp_write_cache(array $cache): bool
+{
+    $file = pn_natuna_sipp_cache_file();
+    @mkdir(dirname($file), 0775, true);
+    $temporary = $file . '.' . bin2hex(random_bytes(6)) . '.tmp';
+    if (@file_put_contents($temporary, json_encode($cache, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) {
+        @unlink($temporary);
+        return false;
+    }
+    $written = @rename($temporary, $file);
+    if (!$written) {
+        @unlink($temporary);
+    }
+
+    return (bool) $written;
+}
+
+/**
+ * Koneksi ke database SIPP lokal. Hanya CLI: runtime website tidak boleh membaca
+ * kredensial SIPP, dan jalur ini hanya dipakai cron saat endpoint publik diblokir WAF.
+ */
+function pn_natuna_sipp_db(): ?mysqli
+{
+    if (PHP_SAPI !== 'cli' || !function_exists('mysqli_connect')) {
+        return null;
+    }
+
+    $configFile = (string) (getenv('PN_NATUNA_SIPP_DB_CONFIG') ?: '');
+    if ($configFile === '' || !is_file($configFile)) {
+        return null;
+    }
+
+    try {
+        $config = (static function (string $path): array {
+            // database.php milik CodeIgniter keluar dengan "No direct script
+            // access allowed" bila BASEPATH belum ada.
+            if (!defined('BASEPATH')) {
+                define('BASEPATH', dirname($path) . '/');
+            }
+            $db = [];
+            include $path;
+            return $db;
+        })($configFile);
+    } catch (Throwable $error) {
+        return null;
+    }
+
+    $default = $config['default'] ?? null;
+    if (!is_array($default)) {
+        return null;
+    }
+
+    $link = @mysqli_connect(
+        (string) ($default['hostname'] ?? ''),
+        (string) ($default['username'] ?? ''),
+        (string) ($default['password'] ?? ''),
+        (string) ($default['database'] ?? '')
+    );
+    if (!$link instanceof mysqli) {
+        return null;
+    }
+    @mysqli_set_charset($link, 'utf8');
+
+    return $link;
+}
+
+function pn_natuna_sipp_format_date_id(DateTimeImmutable $date): string
+{
+    $days = [
+        'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
+        'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu',
+    ];
+    $months = [
+        1 => 'Jan.', 2 => 'Feb.', 3 => 'Mar.', 4 => 'Apr.', 5 => 'Mei', 6 => 'Jun.',
+        7 => 'Jul.', 8 => 'Agu.', 9 => 'Sep.', 10 => 'Okt.', 11 => 'Nov.', 12 => 'Des.',
+    ];
+
+    return sprintf(
+        '%s, %s %s %s',
+        $days[$date->format('l')] ?? $date->format('l'),
+        $date->format('d'),
+        $months[(int) $date->format('n')] ?? '',
+        $date->format('Y')
+    );
+}
+
+function pn_natuna_sipp_db_party(string $case, array $row): array
+{
+    $clean = static function ($value): string {
+        return pn_natuna_sipp_text(str_replace(['<br />', '<br/>', '<br>'], ', ', (string) $value));
+    };
+
+    if ($case === '' || stripos($case, 'Pid.Sus-Anak') !== false) {
+        return ['label' => '', 'name' => ''];
+    }
+    if (stripos($case, '/Pid.') !== false) {
+        return ['label' => 'Terdakwa', 'name' => $clean($row['pihakKedua'] ?? '')];
+    }
+    if (preg_match('#/Pdt\.P#i', $case)) {
+        return ['label' => 'Pemohon', 'name' => $clean($row['pihakPertama'] ?? '')];
+    }
+    if (stripos($case, '/Pdt.') !== false) {
+        return ['label' => 'Penggugat', 'name' => $clean($row['pihakPertama'] ?? '')];
+    }
+
+    return ['label' => 'Pihak', 'name' => $clean($row['pihakPertama'] ?? '')];
+}
+
+function pn_natuna_sipp_db_day(mysqli $link, DateTimeImmutable $date): array
+{
+    $day = [
+        'date_label' => pn_natuna_sipp_format_date_id($date),
+        'updated' => '',
+        'total' => '0',
+        'rows' => [],
+    ];
+
+    $iso = $date->format('Y-m-d');
+    $sql = 'SELECT j.jamSidang, j.agenda, j.ruangan, j.sidangKeliling, d.noPerkara, d.pihakPertama, d.pihakKedua'
+        . ' FROM jadwalsidangweb j'
+        . ' LEFT JOIN dataumumweb d ON d.IDPerkara = j.IDPerkara'
+        . " WHERE j.tglSidang = '{$iso}'"
+        . ' ORDER BY j.jamSidang, j.ID';
+    $result = @mysqli_query($link, $sql);
+    if (!$result instanceof mysqli_result) {
+        return $day;
+    }
+
+    $number = 0;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $number++;
+        $case = trim((string) ($row['noPerkara'] ?? ''));
+        $party = pn_natuna_sipp_db_party($case, $row);
+        $day['rows'][] = [
+            'no' => (string) $number,
+            'date' => $day['date_label'],
+            'case' => $case,
+            'circuit' => strtoupper(trim((string) ($row['sidangKeliling'] ?? ''))) === 'Y' ? 'YA' : 'TIDAK',
+            'room' => pn_natuna_sipp_text((string) ($row['ruangan'] ?? '')),
+            'agenda' => pn_natuna_sipp_text((string) ($row['agenda'] ?? '')),
+            'detail' => '',
+            'party_label' => $party['label'],
+            'party' => $party['name'],
+        ];
+    }
+    mysqli_free_result($result);
+    $day['total'] = (string) $number;
+
+    return $day;
+}
+
+function pn_natuna_sipp_db_updated(mysqli $link): string
+{
+    $result = @mysqli_query($link, 'SELECT time_stamp FROM sys_sinkronisasi ORDER BY id LIMIT 1');
+    if (!$result instanceof mysqli_result) {
+        return '';
+    }
+    $row = mysqli_fetch_assoc($result);
+    mysqli_free_result($result);
+
+    $stamp = trim((string) ($row['time_stamp'] ?? ''));
+    if ($stamp === '') {
+        return '';
+    }
+    $date = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $stamp, new DateTimeZone('Asia/Jakarta'));
+
+    return $date instanceof DateTimeImmutable ? pn_natuna_sipp_format_date_id($date) . ' ' . $date->format('H:i:s') . ' WIB' : '';
+}
+
+/**
+ * Cadangan saat sipp.pn-natuna.go.id menolak permintaan server (SafeLine WAF
+ * membalas HTTP 468 "Confirm You Are Human" untuk setiap path). Data dibaca dari
+ * database SIPP lokal yang dipakai instalasi /sipp315, bukan dari HTML publik.
+ * Null berarti database tidak tersedia; baris kosong tetap data yang sah.
+ */
+function pn_natuna_sipp_refresh_from_db(): ?array
+{
+    $link = pn_natuna_sipp_db();
+    if ($link === null) {
+        return null;
+    }
+
+    $total = @mysqli_query($link, 'SELECT COUNT(*) AS n FROM jadwalsidangweb');
+    $rows = $total instanceof mysqli_result ? (int) (mysqli_fetch_assoc($total)['n'] ?? 0) : 0;
+    if ($total instanceof mysqli_result) {
+        mysqli_free_result($total);
+    }
+    if ($rows === 0) {
+        return null;
+    }
+
+    $timezone = new DateTimeZone('Asia/Jakarta');
+    $today = new DateTimeImmutable('today', $timezone);
+    $days = [
+        'today' => pn_natuna_sipp_db_day($link, $today),
+        'tomorrow' => pn_natuna_sipp_db_day($link, $today->modify('+1 day')),
+    ];
+    $updated = pn_natuna_sipp_db_updated($link);
+    foreach ($days as &$schedule) {
+        $schedule['updated'] = $updated !== '' ? $updated : 'tanggal gagal dimuat';
+    }
+    unset($schedule);
+    mysqli_close($link);
+
+    return [
+        'days' => $days,
+        '_cached_at' => gmdate(DATE_ATOM),
+        '_source' => 'db',
+    ];
+}
+
 function pn_natuna_sipp_refresh_cache(): array
 {
     $baseUrl = 'https://sipp.pn-natuna.go.id/list_jadwal_sidang';
@@ -118,7 +329,13 @@ function pn_natuna_sipp_refresh_cache(): array
     ];
 
     if ($days['today']['date_label'] === '' && !$days['today']['rows']) {
-        return pn_natuna_sipp_load_cache();
+        $fallback = pn_natuna_sipp_refresh_from_db();
+        if ($fallback === null) {
+            return pn_natuna_sipp_load_cache();
+        }
+        pn_natuna_sipp_write_cache($fallback);
+
+        return $fallback;
     }
 
     foreach ($days as &$schedule) {
@@ -139,14 +356,10 @@ function pn_natuna_sipp_refresh_cache(): array
     $cache = [
         'days' => $days,
         '_cached_at' => gmdate(DATE_ATOM),
+        '_source' => 'http',
     ];
-    $file = pn_natuna_sipp_cache_file();
-    @mkdir(dirname($file), 0775, true);
-    $temporary = $file . '.' . bin2hex(random_bytes(6)) . '.tmp';
-    if (@file_put_contents($temporary, json_encode($cache, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX) !== false) {
-        @rename($temporary, $file);
-    }
-    @unlink($temporary);
+    pn_natuna_sipp_write_cache($cache);
+
     return $cache;
 }
 
