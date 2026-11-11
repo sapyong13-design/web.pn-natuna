@@ -8475,6 +8475,41 @@ body.nav-stuck .main-menu {
   font-weight: 600;
 }
 
+/* Selisih terhadap periode sebelumnya. Angka periode berjalan saja tidak memberi tahu
+   apakah capaian naik atau turun; badge ini memakai pola yang sama dengan `dipa-delta`
+   di widget anggaran supaya arti warnanya konsisten di seluruh kartu. */
+.survey-score-delta {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: var(--step--3);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.survey-score-delta.is-up {
+  background: rgba(31, 91, 75, 0.12);
+  color: #1f5b4b;
+}
+
+.survey-score-delta.is-flat {
+  background: rgba(29, 39, 48, 0.08);
+  color: var(--color-muted);
+}
+
+body.is-dark .survey-score-delta.is-up {
+  background: rgba(126, 217, 177, 0.16);
+  color: #7ed9b1;
+}
+
+body.is-dark .survey-score-delta.is-flat {
+  background: rgba(237, 242, 247, 0.1);
+  color: #b9c4cd;
+}
+
 /* Pratinjau dokumen publikasi di dalam tile skor. Halaman penuh ditampilkan
    (bukan dipotong) supaya blok tanda tangan dan cap di bagian bawah ikut terlihat;
    klik tile tetap membuka dokumen ukuran penuh. */
