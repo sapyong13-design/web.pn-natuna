@@ -18,6 +18,9 @@
 /.env
 /.env.*
 !/.env.example
+# Dump database (lokal & produksi) dan router dev lokal tinggal di sini.
+# HANDOFF melarang unggah snapshot; tanpa entri ini `git add -A` akan membawanya.
+/private/
 /.user.ini
 /php.ini
 /.htpasswd
