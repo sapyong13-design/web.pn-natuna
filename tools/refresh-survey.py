@@ -163,77 +163,18 @@ def convert_pdf_to_png(pdf_path, png_path, width):
 
 PREVIEW_WIDTH = 400
 
-def _ink_bands(page, threshold=240, min_gap=8, min_height=4):
-    """Baris-baris yang memuat tinta, digabung menjadi rentang.
-
-    Dipakai untuk memotong halaman menjadi bagian yang bermakna: kop + tabel skor di
-    atas, blok tanda tangan dan cap di bawah, sementara paragraf penjelas dan footer
-    cetak (nomor halaman, "Dipindai dengan CamScanner") dibuang.
-    """
-    ink = page.point(lambda value: 255 if value < threshold else 0)
-    rows = [y for y in range(page.height) if ink.crop((0, y, page.width, y + 1)).getbbox()]
-    if not rows:
-        return []
-    bands = []
-    start = previous = rows[0]
-    for y in rows[1:]:
-        if y - previous > min_gap:
-            bands.append((start, previous))
-            start = y
-        previous = y
-    bands.append((start, previous))
-    return [band for band in bands if band[1] - band[0] >= min_height]
-
-def _signature_panel(page, bands):
-    """Potongan halaman yang berisi blok tanda tangan beserta cap.
-
-    Dua keputusan di sini menentukan hasilnya:
-
-    1. Tinggi: pita tinta tertinggi di paruh bawah halaman adalah blok tanda tangan.
-       Pita lain dalam jarak 40px ikut disertakan supaya baris nama yang sesekali
-       terpisah (jarak antar-baris lebih lebar dari penggabung pita) tidak terpotong.
-    2. Lebar: paragraf penutup memakai sisi kiri dan blok tanda tangan sisi kanan.
-       Kolom tinta dikelompokkan, lalu gugus paling kanan dipakai — bukan bounding box
-       seluruh baris — sehingga tanda tangan dan cap mengisi panel, bukan tersisa
-       setengah bidang kosong plus serpihan teks paragraf.
-    """
-    body = [(start, end) for start, end in bands if start > page.height * 0.45]
-    if not body:
-        return None
-    start, end = max(body, key=lambda band: band[1] - band[0])
-    for band_start, band_end in body:
-        if band_start > end and band_start - end <= 40:
-            end = band_end
-    panel = page.crop((0, max(0, start - 12), page.width, min(page.height, end + 12)))
-
-    ink = panel.convert('L').point(lambda value: 255 if value < 240 else 0)
-    box = ink.getbbox()
-    if box is None:
-        return panel
-    columns = [x for x in range(box[0], box[2]) if ink.crop((x, 0, x + 1, panel.height)).getbbox()]
-    if not columns:
-        return panel
-    # Gugus kolom: celah lebih lebar dari 3% lebar halaman memisahkan paragraf dari blok tanda tangan.
-    clusters = [[columns[0]]]
-    for x in columns[1:]:
-        if x - clusters[-1][-1] > panel.width * 0.03:
-            clusters.append([x])
-        else:
-            clusters[-1].append(x)
-    left, right = clusters[-1][0], clusters[-1][-1]
-    if right - left < panel.width * 0.1:
-        return panel
-    pad = round(panel.width * 0.015)
-    return panel.crop((max(0, left - pad), 0, min(panel.width, right + pad), panel.height))
+def _ink_bounds(page, threshold=240):
+    """Bounding box seluruh tinta pada halaman (None bila halamannya kosong)."""
+    ink = page.convert('L').point(lambda value: 255 if value < threshold else 0)
+    return ink.getbbox()
 
 def build_preview(png_path):
     """Pratinjau dokumen publikasi untuk tile skor di beranda.
 
-    Dua panel: kop + tabel skor (halaman atas) dan blok tanda tangan + cap (halaman
-    bawah), dipisah garis tipis. Alasannya praktis — pada lebar kartu 300px, satu
-    halaman utuh menyusutkan tanda tangan dan cap menjadi noda tak terbaca, sementara
-    keduanya justru bukti keaslian dokumen. Kedua panel memakai lebar penuh sehingga
-    tampil dua kali lebih besar daripada versi halaman utuh.
+    Halaman ditampilkan utuh apa adanya — hanya margin putih berlebih di kiri/kanan/
+    atas/bawah yang dipangkas — supaya tile terlihat seperti dokumen aslinya. Tanda
+    tangan dan cap ikut terlihat walaupun kecil; memperbesarnya terpisah membuat
+    pratinjau tidak lagi menyerupai berkasnya.
 
     Template memakai berkas `-preview.webp` bila ada dan jatuh ke PNG asli bila tidak,
     jadi langkah ini penyempurnaan, bukan syarat render.
@@ -241,32 +182,19 @@ def build_preview(png_path):
     preview_path = os.path.splitext(png_path)[0] + '-preview.webp'
     with Image.open(png_path) as source:
         source = source.convert('RGB')
-        bands = _ink_bands(source.convert('L'))
-        panel = _signature_panel(source, bands)
-
-        # Panel atas: kop + tabel skor. Dipotong pada 55% tinggi halaman, bukan pada pita
-        # tinta terakhir sebelum tanda tangan, karena paragraf "Tindak lanjut" akan
-        # mendorong panel tanda tangan keluar dari kartu.
-        top = source.crop((0, 0, source.width, min(source.height, round(source.height * 0.55))))
-        signature = panel if panel is not None else source
-        if signature.width > source.width:
-            signature = signature.crop((0, 0, source.width, signature.height))
-
-        # Kedua panel diskalakan ke lebar kanvas yang sama (bukan skala seragam), supaya
-        # tanda tangan dan cap tetap terbaca pada kartu selebar ~115px. Sumbernya 800px
-        # sehingga ini tetap penyusutan, bukan pembesaran yang mengaburkan.
-        gap = 16
-        top_height = round(top.height * PREVIEW_WIDTH / top.width)
-        signature_height = round(signature.height * PREVIEW_WIDTH / signature.width)
-        canvas = Image.new('RGB', (PREVIEW_WIDTH, top_height + gap + signature_height), 'white')
-        canvas.paste(top.resize((PREVIEW_WIDTH, top_height), Image.LANCZOS), (0, 0))
-        separator = round(gap / 2)
-        for x in range(0, PREVIEW_WIDTH, 12):
-            canvas.paste((222, 216, 204), (x, top_height + separator, min(x + 6, PREVIEW_WIDTH), top_height + separator + 1))
-        canvas.paste(signature.resize((PREVIEW_WIDTH, signature_height), Image.LANCZOS), (0, top_height + gap))
-        canvas.save(preview_path, 'WEBP', quality=84, method=6)
+        box = _ink_bounds(source)
+        if box is not None:
+            # Sisa putih di tepi dokumen (pemindai) ikut dibuang, tetapi sisakan sedikit
+            # bingkai supaya halaman tidak terasa terpotong menempel tepi kartu.
+            pad = round(min(source.size) * 0.02)
+            box = (max(0, box[0] - pad), max(0, box[1] - pad),
+                   min(source.width, box[2] + pad), min(source.height, box[3] + pad))
+            page = source.crop(box)
+        else:
+            page = source
+        height = round(page.height * PREVIEW_WIDTH / page.width)
+        page.resize((PREVIEW_WIDTH, height), Image.LANCZOS).save(preview_path, 'WEBP', quality=84, method=6)
     return preview_path
-
 
 def run_mysql(sql):
     cmd = [MYSQL_BIN]
