@@ -7,6 +7,10 @@ if (PHP_SAPI !== 'cli') {
 
 define('_JEXEC', 1);
 define('JPATH_BASE', dirname(__DIR__));
+// Joomla 6.2 `Date::toSql()` resolves the database through the DI container instead of
+// `Factory::getDbo()`, and that provider reads JDEBUG. A real request defines it in
+// includes/framework.php; this CLI contract boots the libraries directly, so it must too.
+defined('JDEBUG') || define('JDEBUG', false);
 require_once JPATH_BASE . '/includes/defines.php';
 require_once JPATH_BASE . '/libraries/bootstrap.php';
 require_once JPATH_BASE . '/templates/pn_natuna_2026/hero-slider.php';

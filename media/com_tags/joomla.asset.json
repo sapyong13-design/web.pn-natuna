@@ -14,8 +14,7 @@
       ],
       "attributes": {
         "type": "module"
-      },
-      "version": "db210b"
+      }
     },
     {
       "name": "com_tags.tag-list",
@@ -26,8 +25,7 @@
       ],
       "attributes": {
         "type": "module"
-      },
-      "version": "db210b"
+      }
     },
     {
       "name": "com_tags.tags-default",
@@ -38,8 +36,7 @@
       ],
       "attributes": {
         "type": "module"
-      },
-      "version": "db210b"
+      }
     }
   ]
 }

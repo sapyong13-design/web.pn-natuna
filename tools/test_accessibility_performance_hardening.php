@@ -33,7 +33,7 @@ $expect(str_contains($css, '.hero-slider-dots button::before'), 'Hero dots need 
 $expect((bool) preg_match('/\.hero-slider-dots button\s*\{[^}]*background:\s*transparent/s', $css), 'Hero dot hit areas must stay visually transparent.');
 
 $expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-480.webp 480w'), 'Hero backdrop needs responsive 480w source.');
-$expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-768.webp 768w'), 'Hero backdrop needs responsive 768w source.');
+$expect(str_contains($hero, 'gedung-pn-natuna-2026-graded-768-q68.webp 768w'), 'Hero backdrop needs responsive 768w source.');
 $expect(!str_contains($js, 'prefetchIntegrityPoster'), 'Secondary hero poster must not be idle-prefetched.');
 $expect(!str_contains($js, 'setupMobileHeroHeight'), 'Hero must not measure every slide at runtime.');
 $expect(!str_contains($css, '--hero-mobile-slide-height'), 'Mobile hero must use intrinsic CSS geometry.');
@@ -45,7 +45,7 @@ $expect(str_contains($js, 'document.documentElement.style.colorScheme'), 'Theme 
 
 foreach ([
     'gedung-pn-natuna-2026-graded-480.webp',
-    'gedung-pn-natuna-2026-graded-768.webp',
+    'gedung-pn-natuna-2026-graded-768-q68.webp',
     'gedung-pn-natuna-2026-graded-1200.webp',
 ] as $image) {
     $expect(is_file($root . '/images/hero/' . $image), "Responsive hero image missing: {$image}");

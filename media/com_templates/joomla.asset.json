@@ -14,8 +14,7 @@
       ],
       "attributes": {
         "type": "module"
-      },
-      "version": "0480c2"
+      }
     },
     {
       "name": "com_templates.admin-template-toggle-switch",
@@ -26,8 +25,12 @@
       ],
       "attributes": {
         "type": "module"
-      },
-      "version": "8e5d80"
+      }
+    },
+    {
+      "name": "com_templates.admin-templates",
+      "type": "style",
+      "uri": "com_templates/admin-templates-default.min.css"
     },
     {
       "name": "com_templates.admin-templates",
@@ -38,14 +41,7 @@
       ],
       "attributes": {
         "type": "module"
-      },
-      "version": "f515a4"
-    },
-    {
-      "name": "com_templates.admin-templates",
-      "type": "style",
-      "uri": "com_templates/admin-templates-default.min.css",
-      "version": "ff1c10"
+      }
     }
   ]
 }
