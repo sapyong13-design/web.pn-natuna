@@ -155,11 +155,28 @@ if (isset($options['all'])) {
     $gallery = $root . '/tmp/social/index.html';
     $cards = '';
     foreach ($built as $entry) {
-        $file = 'dipa-ig-' . $entry['slug'] . '.html';
-        $cards .= '<figure><div class="thumb"><iframe src="' . $file . '" loading="lazy" title="'
+        $slug = $entry['slug'];
+        $files = [
+            'png' => ['dipa-ig-' . $slug . '.png', 'PNG 1080x1350', 'Poster siap unggah'],
+            'mp4' => ['dipa-ig-' . $slug . '.mp4', 'MP4 8 dtk', 'Reels 1080x1350'],
+            'md' => ['dipa-ig-' . $slug . '.md', 'Caption', 'Garis besar unggahan'],
+            'html' => ['dipa-ig-' . $slug . '.html', 'HTML', 'Poster sumber'],
+        ];
+        $buttons = '';
+        foreach ($files as $kind => [$name, $label, $hint]) {
+            if (!is_file(dirname($gallery) . '/' . $name)) {
+                continue;
+            }
+            $buttons .= '<a class="dl dl--' . $kind . '" href="' . $name . '" download="' . $name . '" title="'
+                . htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') . '">' . $label . '</a>';
+        }
+        if ($buttons === '') {
+            $buttons = '<span class="dl dl--pending">belum dirender</span>';
+        }
+        $cards .= '<figure><div class="thumb"><iframe src="dipa-ig-' . $slug . '.html" loading="lazy" title="'
             . htmlspecialchars($entry['label'], ENT_QUOTES, 'UTF-8') . '"></iframe></div>'
             . '<figcaption><strong>' . htmlspecialchars($entry['label'], ENT_QUOTES, 'UTF-8') . '</strong>'
-            . '<a href="' . $file . '">buka</a></figcaption></figure>';
+            . '<span class="files">' . $buttons . '</span></figcaption></figure>';
     }
     // Tiap poster aslinya 1080x1350. iframe selebar kartu akan memotong kanan-bawah
     // karena isinya tidak menyesuaikan diri, jadi poster dirender penuh di iframe
@@ -171,18 +188,25 @@ if (isset($options['all'])) {
         . '<title>Galeri poster DIPA</title><style>'
         . 'body{margin:0;padding:36px;background:#f4efe6;font-family:system-ui,sans-serif;color:#2f140e}'
         . 'h1{font-size:22px;margin:0 0 6px}p.hint{margin:0 0 26px;color:#6b5a4c;font-size:14px}'
-        . '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(' . $frameWidth . 'px,1fr));gap:24px}'
+        . '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(' . ($frameWidth + 12) . 'px,1fr));gap:26px}'
         . 'figure{margin:0}'
         . '.thumb{width:' . $frameWidth . 'px;height:' . $frameHeight . 'px;overflow:hidden;'
         . 'border:1px solid #d9cdb8;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(47,20,14,.10)}'
         . '.thumb iframe{width:1080px;height:1350px;border:0;'
         . 'transform:scale(' . $scale . ');transform-origin:0 0}'
-        . 'figcaption{margin-top:8px;display:flex;justify-content:space-between;gap:8px;'
-        . 'font-size:12.5px;color:#5a4a3d}figcaption span{color:#9a8b7c}'
-        . 'figcaption a{color:#8f1f0b;text-decoration:none;font-weight:700}'
+        . 'figcaption{margin-top:9px;font-size:12.5px;color:#5a4a3d}'
+        . 'figcaption strong{display:block;margin-bottom:7px;font-size:13.5px}'
+        . '.files{display:flex;flex-wrap:wrap;gap:6px}'
+        . '.dl{display:inline-block;padding:4px 9px;border-radius:6px;font-size:11.5px;font-weight:700;'
+        . 'text-decoration:none;border:1px solid rgba(143,31,11,.22);background:#fff;color:#8f1f0b}'
+        . '.dl:hover{background:#8f1f0b;color:#fff;border-color:#8f1f0b}'
+        . '.dl--mp4{border-color:rgba(185,143,36,.45);color:#7a5c10}'
+        . '.dl--mp4:hover{background:#b98f24;border-color:#b98f24;color:#fff}'
+        . '.dl--pending{border-color:#d9cdb8;background:#f2ece1;color:#9a8b7c;font-weight:600}'
         . '</style></head><body><h1>Galeri poster DIPA 2026</h1>'
-        . '<p class="hint">Tiap kartu memuat poster periode itu apa adanya. Klik judul berkas '
-        . 'untuk melihat ukuran penuh.</p><div class="grid">' . $cards . '</div></body></html>';
+        . '<p class="hint">Klik tombol di bawah tiap poster untuk mengunduh berkasnya. '
+        . 'PNG untuk feed, MP4 untuk Reels, Caption untuk teks unggahan.</p>'
+        . '<div class="grid">' . $cards . '</div></body></html>';
     file_put_contents($gallery, $galleryHtml);
     printf("%d poster dibuat. Galeri: %s\n", count($built), $gallery);
     exit(0);

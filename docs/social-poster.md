@@ -22,7 +22,9 @@ Keluaran di `tmp/social/`:
 `--out`, `--caption`, `--video` mengarahkan tiap keluaran ke path lain.
 
 `--all` memanggil skrip ini sekali per periode lalu menulis `tmp/social/index.html`:
-galeri berisi poster tiap bulan yang bisa dibandingkan berdampingan. Tiap poster hanya
+galeri berisi poster tiap bulan yang bisa dibandingkan berdampingan. Tiap kartu punya
+tombol unduh PNG / MP4 / Caption / HTML; tombol hanya muncul untuk berkas yang sudah
+dirender, dan MP4 baru ada setelah frame-nya dijadikan video (lihat bagian MP4). Tiap poster hanya
 memuat data sampai periode itu — poster Agustus tidak memperlihatkan angka September —
 dan periode paling awal (Februari) tidak memuat kalimat "dibanding bulan sebelumnya"
 karena tidak punya pembanding.
