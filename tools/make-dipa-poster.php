@@ -29,10 +29,12 @@ if (PHP_SAPI !== 'cli') {
 $root = dirname(__DIR__);
 require_once $root . '/configuration.php';
 
-$options = getopt('', ['out::', 'caption::', 'video::', 'period::', 'all', 'list', 'help']);
+$options = getopt('', ['out::', 'caption::', 'video::', 'period::', 'all', 'list',
+    'python::', 'refresh-detail', 'no-detail', 'help']);
 if (isset($options['help'])) {
     fwrite(STDOUT, "php tools/make-dipa-poster.php [--period=2026-09|'September 2026'] [--all] [--list]\n"
-        . "                                  [--out=path] [--caption=path] [--video=path]\n");
+        . "                                  [--out=path] [--caption=path] [--video=path]\n"
+        . "                                  [--python=path] [--refresh-detail] [--no-detail]\n");
     exit(0);
 }
 
@@ -115,9 +117,11 @@ foreach ($find('dipa-panel') as $panel) {
     if (!$items) {
         continue;
     }
+    $linkNode = $find('dipa-link', $panel)->item(0);
     $periods[] = [
         'label' => str_replace('Periode ', '', $text($find('dipa-period', $panel)->item(0))),
         'items' => $items,
+        'link' => $linkNode instanceof DOMElement ? trim($linkNode->getAttribute('href')) : '',
     ];
 }
 
@@ -145,6 +149,12 @@ if (isset($options['all'])) {
         $slug = preg_replace('~[^0-9a-z]+~i', '-', $period['label']);
         $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__)
             . ' --period=' . escapeshellarg($period['label']);
+        if (isset($options['python'])) {
+            $command .= ' --python=' . escapeshellarg((string) $options['python']);
+        }
+        if (isset($options['refresh-detail'])) {
+            $command .= ' --refresh-detail';
+        }
         exec($command, $ignored, $code);
         if ($code !== 0) {
             fwrite(STDERR, "Gagal membuat poster {$period['label']}\n");
@@ -157,7 +167,8 @@ if (isset($options['all'])) {
     foreach ($built as $entry) {
         $slug = $entry['slug'];
         $files = [
-            'png' => ['dipa-ig-' . $slug . '.png', 'PNG 1080x1350', 'Poster siap unggah'],
+            'png' => ['dipa-ig-' . $slug . '.png', 'PNG slide 1', 'Poster siap unggah'],
+            'rincian' => ['dipa-ig-' . $slug . '-rincian.png', 'PNG slide 2', '10 akun terbesar'],
             'mp4' => ['dipa-ig-' . $slug . '.mp4', 'MP4 8 dtk', 'Reels 1080x1350'],
             'md' => ['dipa-ig-' . $slug . '.md', 'Caption', 'Garis besar unggahan'],
             'html' => ['dipa-ig-' . $slug . '.html', 'HTML', 'Poster sumber'],
@@ -167,7 +178,8 @@ if (isset($options['all'])) {
             if (!is_file(dirname($gallery) . '/' . $name)) {
                 continue;
             }
-            $buttons .= '<a class="dl dl--' . $kind . '" href="' . $name . '" download="' . $name . '" title="'
+            $download = ' download="' . $name . '"';
+            $buttons .= '<a class="dl dl--' . $kind . '" href="' . $name . '"' . $download . ' title="'
                 . htmlspecialchars($hint, ENT_QUOTES, 'UTF-8') . '">' . $label . '</a>';
         }
         if ($buttons === '') {
@@ -255,6 +267,8 @@ $chronological = array_reverse(array_slice($periods, $selectedIndex));
 // Periode paling awal tidak punya pembanding: kalimat "dibanding bulan sebelumnya"
 // dan sorotan pertumbuhan sejak periode pertama tidak berlaku di sana.
 $hasPrevious = isset($periods[$selectedIndex + 1]);
+// Panel pembanding untuk kolom "sebelumnya -> sekarang" di kartu; null pada periode awal.
+$previous = $hasPrevious ? $periods[$selectedIndex + 1] : null;
 
 $series = [];
 foreach ($chronological as $period) {
@@ -376,14 +390,31 @@ foreach ($latest['items'] as $item) {
         : '<span class="delta delta--' . $trend . '">'
             . ($trend === 'up' ? '&#9650; ' : ($trend === 'down' ? '&#9660; ' : ''))
             . $fmtPoints($delta) . ' poin</span>';
+    // "Sebelumnya -> sekarang": pembanding diambil dari panel bulan sebelumnya pada
+    // modul, jadi angka di kartu tidak perlu diketik ulang.
+    $previousPercent = null;
+    // Periode paling awal tidak punya pembanding; $previous tidak didefinisikan di sana.
+    foreach (($previous['items'] ?? []) as $candidate) {
+        if ($candidate['label'] === $item['label']) {
+            $previousPercent = $candidate['percent'];
+            break;
+        }
+    }
+    $pathHtml = $previousPercent === null
+        ? ''
+        : '<p class="path">' . $escape(number_format($previousPercent, 2, ',', '.')) . '%'
+            . ' <em>&rarr;</em> <strong>' . $escape($item['percent_text']) . '</strong></p>';
     $cards .= <<<HTML
       <article class="card">
-        <header>
-          <p class="card-label">{$escape($item['label'])}</p>
+        <div class="card-head">
+          <span class="card-label">{$escape($item['label'])}</span>
           {$deltaHtml}
-        </header>
-        <p class="card-value">{$escape($item['percent_text'])}</p>
-        <div class="meter"><i style="width:{$item['percent']}%"></i></div>
+        </div>
+        <div class="card-body">
+          <span class="card-value">{$escape($item['percent_text'])}</span>
+          <span class="ring" style="--pct:{$item['percent']}"><span class="ring-inner">{$escape(number_format($item['percent'], 0, ',', '.'))}%</span></span>
+        </div>
+        {$pathHtml}
         <dl>
           <div><dt>Pagu</dt><dd>{$escape($money($item['pagu']))}</dd></div>
           <div><dt>Terserap</dt><dd>{$escape($money($item['absorbed']))}</dd></div>
@@ -409,6 +440,7 @@ foreach ($growth as $entry) {
 }
 
 $periodLabel = $latest['label'];
+$slug = preg_replace('~[^0-9a-z]+~i', '-', $periodLabel);
 // Interpolasi string PHP tidak menerima ternary; kalimatnya disusun di sini.
 $leadText = 'Penyerapan anggaran per ' . $periodLabel
     . ($hasPrevious ? ', dibanding bulan sebelumnya' : '') . '.';
@@ -424,6 +456,63 @@ if ($out === '' || $captionPath === '') {
     fwrite(STDERR, "Path output kosong.\n");
     exit(1);
 }
+
+/* ---------- Rincian per akun (slide 2) ---------- */
+/*
+ * Modul 816 hanya menyimpan dua baris (DIPA 01 dan DIPA 03); rincian "apa yang paling
+ * banyak terserap" ada di PDF laporan. Ekstraksinya dikerjakan tools/extract-dipa-detail.py
+ * (pymupdf) dan hasilnya di-cache per periode, karena PDF di Drive tidak berubah.
+ */
+$detail = null;
+$detailNote = '';
+if (!isset($options['no-detail'])) {
+    $python = (string) ($options['python'] ?? getenv('PN_NATUNA_PYTHON') ?: '');
+    $usable = null;
+    foreach (array_filter([$python, 'python3', 'python']) as $candidate) {
+        $probe = [];
+        $code = 1;
+        exec(escapeshellarg($candidate) . ' -c "import pymupdf" 2>&1', $probe, $code);
+        if ($code === 0) {
+            $usable = $candidate;
+            break;
+        }
+    }
+    $detailPath = dirname($out) . '/dipa-detail-' . $slug . '.json';
+    if ($usable === null) {
+        $detailNote = 'Python + pymupdf tidak ditemukan; slide rincian dilewati. Pakai --python=<path>.';
+    } elseif (($latest['link'] ?? '') === '') {
+        $detailNote = "Panel {$periodLabel} tidak memuat tautan PDF; slide rincian dilewati.";
+    } else {
+        if (isset($options['refresh-detail']) || !is_file($detailPath)) {
+            $command = escapeshellarg($usable) . ' ' . escapeshellarg($root . '/tools/extract-dipa-detail.py')
+                . ' --url ' . escapeshellarg((string) $latest['link'])
+                . ' --out ' . escapeshellarg($detailPath);
+            $output = [];
+            $status = 1;
+            exec($command . ' 2>&1', $output, $status);
+            if ($status !== 0) {
+                $detailNote = 'Ekstraksi rincian gagal: ' . implode(' ', array_slice($output, -2));
+            }
+        }
+        if (is_file($detailPath)) {
+            $detail = json_decode((string) file_get_contents($detailPath), true) ?: null;
+        }
+    }
+}
+
+/** Rupiah ringkas untuk poster: 4,14 M / 138,58 jt / 9,3 rb. */
+$compact = static function (float $value): string {
+    if ($value >= 1e9) {
+        return 'Rp ' . number_format($value / 1e9, 2, ',', '.') . ' M';
+    }
+    if ($value >= 1e6) {
+        return 'Rp ' . number_format($value / 1e6, 2, ',', '.') . ' jt';
+    }
+    if ($value >= 1e3) {
+        return 'Rp ' . number_format($value / 1e3, 1, ',', '.') . ' rb';
+    }
+    return 'Rp ' . number_format($value, 0, ',', '.');
+};
 
 $html = <<<HTML
 <!doctype html>
@@ -444,40 +533,47 @@ body {
     radial-gradient(circle at 92% 4%, rgba(185,143,36,.20), transparent 44%),
     radial-gradient(circle at 0% 98%, rgba(143,31,11,.14), transparent 48%),
     linear-gradient(164deg, #fdfaf3 0%, #f7f1e4 100%);
-  padding: 56px 72px 44px;
+  padding: 52px 72px 42px;
   display: flex; flex-direction: column;
 }
 .brand { display: flex; align-items: center; gap: 20px; }
-.brand img { width: 80px; height: auto; }
-.brand p { font-size: 25px; font-weight: 800; color: #2f140e; }
-.brand small { display: block; margin-top: 3px; font-size: 16px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a7a6b; }
+.brand img { width: 76px; height: auto; }
+.brand .inst { font-size: 15px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #8f1f0b; }
+.brand p { font-size: 25px; font-weight: 800; color: #2f140e; margin-top: 4px; }
+.brand small { display: block; margin-top: 3px; font-size: 15px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a7a6b; }
 .kicker { margin-left: auto; padding: 9px 20px; border-radius: 999px; background: #8f1f0b; color: #fdf6e8; font-size: 15px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-h1 { font-family: 'Fraunces', Georgia, serif; font-size: 68px; font-weight: 700; line-height: 1.04; letter-spacing: -.02em; color: #2f140e; margin-top: 34px; }
+h1 { font-family: 'Fraunces', Georgia, serif; font-size: 66px; font-weight: 700; line-height: 1.04; letter-spacing: -.02em; color: #2f140e; margin-top: 28px; }
 h1 span { color: #8f1f0b; }
-.lead { margin-top: 12px; font-size: 22px; font-weight: 600; color: #5a4a3d; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; }
-.card { background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 22px 24px; box-shadow: 0 10px 24px rgba(47,20,14,.07); }
-.card header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lead { margin-top: 10px; font-size: 21px; font-weight: 600; color: #5a4a3d; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
+.card { background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 20px 22px; box-shadow: 0 10px 24px rgba(47,20,14,.07); }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .card-label { font-size: 16px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #8a7a6b; }
-.card-value { font-family: 'Fraunces', Georgia, serif; font-size: 62px; font-weight: 700; line-height: 1; color: #2f140e; margin-top: 12px; }
-.meter { height: 10px; border-radius: 999px; background: #efe7d8; overflow: hidden; margin-top: 14px; }
-.meter i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8f1f0b, #c0603f); }
-dl { display: flex; gap: 22px; margin-top: 14px; }
-dt { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a1927f; }
-dd { font-size: 19px; font-weight: 800; color: #3a2c22; margin-top: 3px; }
-.delta { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 999px; font-size: 15px; font-weight: 800; white-space: nowrap; }
+.card-body { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 12px; }
+.card-value { font-family: 'Fraunces', Georgia, serif; font-size: 58px; font-weight: 700; line-height: 1; color: #2f140e; }
+.ring { width: 96px; height: 96px; border-radius: 50%; flex: 0 0 96px; display: grid; place-items: center;
+  background: conic-gradient(#8f1f0b calc(var(--pct) * 1%), #efe7d8 0); }
+.ring-inner { width: 74px; height: 74px; border-radius: 50%; background: #fff; display: grid; place-items: center;
+  font-size: 17px; font-weight: 800; color: #671607; }
+.path { margin-top: 12px; font-size: 17px; font-weight: 700; color: #8a7a6b; display: flex; align-items: center; gap: 8px; }
+.path strong { color: #1f5b4b; font-size: 19px; }
+.path em { font-style: normal; color: #b98f24; }
+dl { display: flex; gap: 18px; margin-top: 12px; }
+dt { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a1927f; }
+dd { font-size: 18px; font-weight: 800; color: #3a2c22; margin-top: 3px; }
+.delta { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 14px; font-weight: 800; white-space: nowrap; }
 .delta--up { background: rgba(31,91,75,.12); color: #1f5b4b; }
 .delta--down { background: rgba(143,31,11,.12); color: #8f1f0b; }
 .delta--flat { background: rgba(29,39,48,.08); color: #6b7280; }
-.panel { margin-top: 30px; background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 22px 24px 16px; box-shadow: 0 10px 24px rgba(47,20,14,.06); }
-.panel h2 { font-size: 16px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #671607; }
-.legend { display: flex; gap: 20px; margin-top: 8px; font-size: 14px; font-weight: 700; color: #6b5a4c; }
+.panel { margin-top: 24px; background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 20px 22px 12px; box-shadow: 0 10px 24px rgba(47,20,14,.06); }
+.panel h2 { font-size: 15px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #671607; }
+.legend { display: flex; gap: 18px; margin-top: 7px; font-size: 13px; font-weight: 700; color: #6b5a4c; }
 .legend i { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
-ul { margin-top: 26px; display: grid; gap: 12px; list-style: none; }
-li { font-size: 19px; font-weight: 600; color: #4a3a2f; padding-left: 24px; position: relative; line-height: 1.35; }
-li::before { content: ''; position: absolute; left: 4px; top: 9px; width: 7px; height: 7px; border-radius: 50%; background: #b98f24; }
+ul { margin-top: 22px; display: grid; gap: 11px; list-style: none; }
+li { font-size: 18px; font-weight: 600; color: #4a3a2f; padding-left: 22px; position: relative; line-height: 1.35; }
+li::before { content: ''; position: absolute; left: 3px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: #b98f24; }
 li strong { color: #2f140e; font-weight: 800; }
-.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid rgba(143,31,11,.16); padding-top: 16px; font-size: 17px; font-weight: 700; color: #7a6a5c; }
+.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid rgba(143,31,11,.16); padding-top: 14px; font-size: 16px; font-weight: 700; color: #7a6a5c; }
 .foot strong { color: #8f1f0b; }
 </style>
 </head>
@@ -485,6 +581,7 @@ li strong { color: #2f140e; font-weight: 800; }
   <div class="brand">
     <img src="/images/brand/logo-pn-natuna.webp" alt="">
     <div>
+      <p class="inst">Mahkamah Agung Republik Indonesia</p>
       <p>Pengadilan Negeri Natuna</p>
       <small>Kelas II</small>
     </div>
@@ -528,27 +625,169 @@ if (file_put_contents($out, $html) === false) {
     exit(1);
 }
 
+/* ---------- Slide 2: rincian 10 akun terbesar ---------- */
+$detailOut = '';
+if ($detail !== null && !empty($detail['items'])) {
+    $rows = '';
+    $rank = 0;
+    foreach ($detail['items'] as $item) {
+        $rank++;
+        $percent = (float) $item['persen'];
+        $itemGrowth = (float) $item['kenaikan'];
+        $trend = $itemGrowth > 0 ? 'up' : ($itemGrowth < 0 ? 'down' : 'flat');
+        $barWidth = min(100, max(0, $percent));
+        $rows .= '<li class="row">'
+            . '<span class="rank">' . $rank . '</span>'
+            . '<span class="body">'
+            . '<span class="name">' . $escape($item['label']) . '</span>'
+            . '<span class="amounts">' . $escape($compact((float) $item['sebelumnya']))
+            . ' <em>&rarr;</em> <strong>' . $escape($compact((float) $item['realisasi'])) . '</strong></span>'
+            . '<span class="bar"><i style="width:' . round($barWidth, 1) . '%"></i></span>'
+            . '</span>'
+            . '<span class="pct">' . $escape(number_format($percent, 2, ',', '.')) . '%'
+            . '<span class="pct-delta delta--' . $trend . '">'
+            . ($itemGrowth > 0 ? '+' : ($itemGrowth < 0 ? '&minus;' : ''))
+            . ($itemGrowth == 0.0 ? 'stabil' : $escape($compact(abs($itemGrowth)))) . '</span></span>'
+            . '</li>';
+    }
+    $detailTotal = (float) $detail['total_realisasi'];
+    $detailPagu = (float) $detail['total_pagu'];
+    $detailPrev = (float) $detail['total_sebelumnya'];
+    $detailOut = dirname($out) . '/dipa-ig-' . $slug . '-rincian.html';
+    $detailHtml = <<<HTML
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Rincian DIPA {$escape($periodLabel)} — PN Natuna</title>
+<style>
+@font-face { font-family: 'Fraunces'; src: url('/templates/pn_natuna_2026/fonts/fraunces-var.woff2') format('woff2'); font-weight: 300 900; font-display: block; }
+@font-face { font-family: 'Jakarta'; src: url('/templates/pn_natuna_2026/fonts/plus-jakarta-sans-var.woff2') format('woff2'); font-weight: 200 800; font-display: block; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; }
+body {
+  height: 1350px;
+  font-family: 'Jakarta', system-ui, sans-serif;
+  color: #1d2730;
+  background:
+    radial-gradient(circle at 94% 3%, rgba(185,143,36,.18), transparent 40%),
+    linear-gradient(166deg, #fdfaf3 0%, #f6f0e2 100%);
+  padding: 48px 64px 38px;
+  display: flex; flex-direction: column;
+}
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand img { width: 60px; }
+.brand .inst { font-size: 12.5px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: #8f1f0b; }
+.brand p { font-size: 20px; font-weight: 800; color: #2f140e; margin-top: 3px; }
+.brand small { display: block; font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a7a6b; margin-top: 2px; }
+.kicker { margin-left: auto; padding: 7px 16px; border-radius: 999px; background: #8f1f0b; color: #fdf6e8; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+h1 { font-family: 'Fraunces', Georgia, serif; font-size: 46px; font-weight: 700; line-height: 1.06; letter-spacing: -.015em; color: #2f140e; margin-top: 20px; }
+h1 span { color: #8f1f0b; }
+.lead { margin-top: 6px; font-size: 17px; font-weight: 600; color: #5a4a3d; }
+.summary { display: flex; gap: 14px; margin-top: 16px; }
+.summary div { flex: 1; background: #fff; border: 1px solid #e6dcc9; border-radius: 14px; padding: 12px 16px; }
+.summary dt { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a1927f; }
+.summary dd { font-size: 22px; font-weight: 800; color: #2f140e; margin-top: 4px; font-family: 'Fraunces', Georgia, serif; }
+.summary small { display: block; font-size: 12px; font-weight: 700; color: #8a7a6b; margin-top: 3px; }
+ol.rows { list-style: none; margin-top: 20px; display: grid; gap: 11px; }
+.row { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #ece3d4; border-radius: 12px; padding: 13px 16px; }
+.rank { flex: 0 0 26px; font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 700; color: #b98f24; text-align: center; }
+.body { flex: 1; min-width: 0; display: block; }
+.name { display: block; font-size: 15px; font-weight: 700; color: #2f140e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amounts { display: block; font-size: 13px; font-weight: 600; color: #8a7a6b; margin-top: 2px; }
+.amounts strong { color: #1f5b4b; font-weight: 800; }
+.amounts em { font-style: normal; color: #b98f24; }
+.bar { display: block; height: 5px; border-radius: 999px; background: #f0e9da; margin-top: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8f1f0b, #c0603f); }
+.pct { flex: 0 0 108px; text-align: right; font-family: 'Fraunces', Georgia, serif; font-size: 21px; font-weight: 700; color: #2f140e; }
+.pct-delta { display: block; font-family: 'Jakarta', sans-serif; font-size: 11.5px; font-weight: 800; border-radius: 999px; padding: 2px 0; margin-top: 3px; }
+.pct-delta.delta--up { color: #1f5b4b; background: rgba(31,91,75,.10); }
+.pct-delta.delta--down { color: #8f1f0b; background: rgba(143,31,11,.10); }
+.pct-delta.delta--flat { color: #6b7280; background: rgba(29,39,48,.07); }
+.foot { margin-top: auto; display: flex; justify-content: space-between; border-top: 2px solid rgba(143,31,11,.16); padding-top: 12px; font-size: 13px; font-weight: 700; color: #7a6a5c; }
+.foot strong { color: #8f1f0b; }
+</style>
+</head>
+<body>
+  <div class="brand">
+    <img src="/images/brand/logo-pn-natuna.webp" alt="">
+    <div>
+      <p class="inst">Mahkamah Agung Republik Indonesia</p>
+      <p>Pengadilan Negeri Natuna</p>
+      <small>Kelas II</small>
+    </div>
+    <span class="kicker">Rincian {$escape($periodLabel)}</span>
+  </div>
+
+  <h1>10 akun <span>terbesar</span></h1>
+  <p class="lead">Realisasi kumulatif {$escape($periodLabel)}: sebelumnya &rarr; sekarang.</p>
+
+  <div class="summary">
+    <div><dt>Terserap</dt><dd>{$escape($compact($detailTotal))}</dd><small>dari pagu {$escape($compact($detailPagu))}</small></div>
+    <div><dt>Bulan ini</dt><dd>{$escape($compact($detailTotal - $detailPrev))}</dd><small>sebelumnya {$escape($compact($detailPrev))}</small></div>
+    <div><dt>Akun</dt><dd>{$escape((string) $detail['akun'])}</dd><small>akun belanja</small></div>
+  </div>
+
+  <ol class="rows">
+{$rows}
+  </ol>
+
+  <div class="foot">
+    <span>Sumber: laporan realisasi SP2D TA 2026 — {$escape($periodLabel)}</span>
+    <strong>pn-natuna.go.id</strong>
+  </div>
+</body>
+</html>
+HTML;
+    if (file_put_contents($detailOut, $detailHtml) === false) {
+        fwrite(STDERR, "Gagal menulis {$detailOut}\n");
+        $detailOut = '';
+    }
+}
+
+
 $caption = "# Garis besar postingan Instagram — Realisasi DIPA {$periodLabel}\n\n"
-    . "**Visual:** poster portrait 1080x1350, dua kartu angka di atas (DIPA 01 & DIPA 03), "
-    . "grafik tren {$shortMonths[0]}–" . end($shortMonths) . " di tengah, sorotan di bawah.\n\n"
-    . "## Angka utama\n";
+    . "**Visual:** dua slide 1080x1350.\n"
+    . "- Slide 1 — kartu DIPA 01 & DIPA 03 dengan cincin persen dan selisih poin, "
+    . "grafik tren {$shortMonths[0]}–" . end($shortMonths) . ", sorotan.\n"
+    . ($detailOut !== '' ? "- Slide 2 — 10 akun belanja terbesar: sebelumnya \u{2192} sekarang.\n" : '')
+    . "\n## Angka utama\n";
 foreach ($latest['items'] as $item) {
-    $caption .= '- ' . $item['label'] . ': ' . $item['percent_text'];
+    $caption .= '- **' . $item['label'] . '**: ' . $item['percent_text'];
     if ($item['delta'] !== null) {
         $caption .= ' (' . $fmtPoints($item['delta']) . ' poin dari bulan sebelumnya)';
     }
     $caption .= ' — terserap ' . $money($item['absorbed']) . ' dari pagu ' . $money($item['pagu']) . "\n";
 }
-$caption .= "- Total: terserap " . $money($absorbed) . " dari pagu " . $money($pagu) . ', sisa ' . $money($pagu - $absorbed) . "\n\n";
+$caption .= '- **Total**: terserap ' . $money($absorbed) . ' dari pagu ' . $money($pagu)
+    . ', sisa ' . $money($pagu - $absorbed) . "\n\n";
+
+if ($detail !== null && !empty($detail['items'])) {
+    $caption .= "## 10 akun terbesar (sebelumnya -> sekarang)\n";
+    $rank = 0;
+    foreach ($detail['items'] as $item) {
+        $rank++;
+        $caption .= $rank . '. ' . $item['label'] . ': '
+            . $money((float) $item['sebelumnya']) . ' -> ' . $money((float) $item['realisasi'])
+            . ' (' . number_format((float) $item['persen'], 2, ',', '.') . '%';
+        if ((float) $item['kenaikan'] > 0) {
+            $caption .= ', +' . $money((float) $item['kenaikan']) . ' bulan ini';
+        }
+        $caption .= ")\n";
+    }
+    $caption .= '- Total ' . $detail['akun'] . ' akun: ' . $money((float) $detail['total_realisasi'])
+        . ' dari pagu ' . $money((float) $detail['total_pagu']) . "\n\n";
+}
+
 $caption .= "## Sorotan\n";
 foreach ($rising as $item) {
     $caption .= '- ' . $item['label'] . ' naik ' . $fmtPoints($item['delta']) . " poin\n";
 }
 $caption .= "\n## Alur unggahan\n"
-    . "1. Slide 1: poster ini.\n"
-    . "2. Slide 2: dokumen laporan DIPA terbaru (tautan Drive pada widget).\n"
-    . "3. Slide 3: rincian delta per bulan bila diperlukan.\n\n"
-    . "## Keterangan\n"
+    . "1. Slide 1: poster utama.\n"
+    . ($detailOut !== '' ? "2. Slide 2: rincian 10 akun terbesar.\n" : '')
+    . ($detailOut !== '' ? "3. Slide 3: dokumen laporan DIPA resmi (tautan Drive).\n" : "2. Slide 2: dokumen laporan DIPA resmi (tautan Drive).\n")
+    . "\n## Keterangan\n"
     . "Realisasi anggaran DIPA {$periodLabel}, Pengadilan Negeri Natuna. "
     . "Rincian laporan: pn-natuna.go.id #DIPA #TransparansiAnggaran\n";
 
@@ -565,6 +804,15 @@ if (file_put_contents($captionPath, $caption) === false) {
 /* ------------------------------------------------------------------ */
 
 $videoPath = $options['video'] ?? ($root . '/tmp/social/dipa-ig-' . preg_replace('~[^0-9a-z]+~i', '-', $periodLabel) . '-video.html');
+
+$previousPercentFor = static function (string $label) use ($previous): ?float {
+    foreach (($previous['items'] ?? []) as $candidate) {
+        if ($candidate['label'] === $label) {
+            return (float) $candidate['percent'];
+        }
+    }
+    return null;
+};
 
 $motion = [
     'duration' => 8.0,
@@ -584,6 +832,7 @@ $motion = [
         'deltaText' => $item['delta'] === null ? 'periode awal' : $fmtPoints($item['delta']) . ' poin',
         'paguText' => $money($item['pagu']),
         'absorbedText' => $money($item['absorbed']),
+        'previousPercent' => $previousPercentFor($item['label']),
     ], $latest['items']),
     'months' => $shortMonths,
     'series' => $series,
@@ -626,19 +875,24 @@ body {
 .will { opacity: 0; }
 .brand { display: flex; align-items: center; gap: 20px; }
 .brand img { width: 80px; height: auto; }
-.brand p { font-size: 25px; font-weight: 800; color: #2f140e; }
-.brand small { display: block; margin-top: 3px; font-size: 16px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a7a6b; }
+.brand .inst { font-size: 15px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #8f1f0b; }
+.brand p { font-size: 25px; font-weight: 800; color: #2f140e; margin-top: 4px; }
+.brand small { display: block; margin-top: 3px; font-size: 15px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8a7a6b; }
 .kicker { margin-left: auto; padding: 9px 20px; border-radius: 999px; background: #8f1f0b; color: #fdf6e8; font-size: 15px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-h1 { font-family: 'Fraunces', Georgia, serif; font-size: 68px; font-weight: 700; line-height: 1.04; letter-spacing: -.02em; color: #2f140e; margin-top: 34px; }
+h1 { font-family: 'Fraunces', Georgia, serif; font-size: 66px; font-weight: 700; line-height: 1.04; letter-spacing: -.02em; color: #2f140e; margin-top: 34px; }
 h1 span { color: #8f1f0b; }
 .lead { margin-top: 12px; font-size: 22px; font-weight: 600; color: #5a4a3d; }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; }
-.card { background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 22px 24px; box-shadow: 0 10px 24px rgba(47,20,14,.07); }
-.card header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card { background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 20px 22px; box-shadow: 0 10px 24px rgba(47,20,14,.07); }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .card-label { font-size: 16px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #8a7a6b; }
-.card-value { font-family: 'Fraunces', Georgia, serif; font-size: 62px; font-weight: 700; line-height: 1; color: #2f140e; margin-top: 12px; }
-.meter { height: 10px; border-radius: 999px; background: #efe7d8; overflow: hidden; margin-top: 14px; }
-.meter i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8f1f0b, #c0603f); }
+.card-body { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 12px; }
+.card-value { font-family: 'Fraunces', Georgia, serif; font-size: 58px; font-weight: 700; line-height: 1; color: #2f140e; }
+.ring { width: 96px; height: 96px; border-radius: 50%; flex: 0 0 96px; display: grid; place-items: center; background: conic-gradient(#8f1f0b calc(var(--pct) * 1%), #efe7d8 0); }
+.ring-inner { width: 74px; height: 74px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 800; color: #671607; }
+.path { margin-top: 12px; font-size: 17px; font-weight: 700; color: #8a7a6b; display: flex; align-items: center; gap: 8px; }
+.path strong { color: #1f5b4b; font-size: 19px; }
+.path em { font-style: normal; color: #b98f24; }
 dl { display: flex; gap: 22px; margin-top: 14px; }
 dt { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a1927f; }
 dd { font-size: 19px; font-weight: 800; color: #3a2c22; margin-top: 3px; }
@@ -660,7 +914,11 @@ li strong { color: #2f140e; font-weight: 800; }
 <body>
   <div class="brand will">
     <img src="/images/brand/logo-pn-natuna.webp" alt="">
-    <div><p>Pengadilan Negeri Natana</p><small>Kelas II</small></div>
+    <div>
+      <p class="inst">Mahkamah Agung Republik Indonesia</p>
+      <p>Pengadilan Negeri Natuna</p>
+      <small>Kelas II</small>
+    </div>
     <span class="kicker" id="kicker"></span>
   </div>
   <h1 class="will">Realisasi <span>DIPA</span> 2026</h1>
@@ -692,11 +950,15 @@ const cards = D.items.map((item) => {
   const el = document.createElement('article');
   el.className = 'card will';
   const trend = item.delta === null ? 'flat' : (item.delta > 0 ? 'up' : 'flat');
+  const pathHtml = item.previousPercent === null ? '' :
+    '<p class="path">' + item.previousPercent.toFixed(2).replace('.', ',') + '% ' +
+    '<em>\u2192</em> <strong>' + item.percentText + '</strong></p>';
   el.innerHTML =
-    '<header><p class="card-label">' + item.label + '</p>' +
-    '<span class="delta delta--' + trend + '">' + (trend === 'up' ? '\u25B2 ' : '') + item.deltaText + '</span></header>' +
-    '<p class="card-value" data-value></p>' +
-    '<div class="meter"><i></i></div>' +
+    '<div class="card-head"><span class="card-label">' + item.label + '</span>' +
+    '<span class="delta delta--' + trend + '">' + (trend === 'up' ? '\u25B2 ' : '') + item.deltaText + '</span></div>' +
+    '<div class="card-body"><span class="card-value" data-value></span>' +
+    '<span class="ring" style="--pct:' + item.percent + '"><span class="ring-inner" data-ring>' +
+    Math.round(item.percent) + '%</span></span></div>' + pathHtml +
     '<dl><div><dt>Pagu</dt><dd>' + item.paguText + '</dd></div>' +
     '<div><dt>Terserap</dt><dd>' + item.absorbedText + '</dd></div></dl>';
   grid.appendChild(el);
@@ -757,7 +1019,6 @@ document.getElementById('kicker').textContent = 's.d. ' + D.period;
 document.getElementById('lead').textContent = 'Penyerapan anggaran per ' + D.period + (D.hasPrevious ? ', dibanding bulan sebelumnya' : '') + '.';
 document.getElementById('panelTitle').textContent = 'Tren Penyerapan ' + months[0] + ' – ' + months[months.length - 1];
 document.getElementById('footNote').textContent = 'Sumber: laporan realisasi anggaran DIPA ' + D.period;
-document.querySelector('.brand p').textContent = 'Pengadilan Negeri Natuna';
 
 function reveal(el, p, dy = 16) {
   el.style.opacity = String(p);
@@ -776,8 +1037,11 @@ window.seek = function (t) {
     const item = D.items[i];
     const shown = item.percent * span(t, 1.1 + i * 0.18, 0.9);
     value.textContent = shown.toFixed(2).replace('.', ',') + '%';
-    card.querySelector('.meter i').style.width = shown + '%';
+    card.querySelector('.ring').style.setProperty('--pct', shown.toFixed(1));
+    card.querySelector('[data-ring]').textContent = Math.round(shown) + '%';
     card.querySelector('.delta').style.opacity = String(span(t, 1.7 + i * 0.18, 0.35));
+    const path = card.querySelector('.path');
+    if (path) path.style.opacity = String(span(t, 1.9 + i * 0.18, 0.4));
   });
 
   const panelP = span(t, 1.9, 0.6);
@@ -860,3 +1124,8 @@ printf(
     $money($pagu)
 );
 printf("%s (durasi %.1f dtk, frame deterministik lewat ?t=)\n", $videoPath, $motion['duration']);
+if ($detailOut !== '') {
+    printf("%s (rincian %d akun terbesar)\n", $detailOut, count($detail['items']));
+} elseif ($detailNote !== '') {
+    fwrite(STDERR, "Catatan: {$detailNote}\n");
+}

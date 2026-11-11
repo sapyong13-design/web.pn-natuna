@@ -15,11 +15,30 @@ Keluaran di `tmp/social/`:
 
 | Berkas | Isi |
 | --- | --- |
-| `dipa-ig-<periode>.html` | poster 1080x1350 |
+| `dipa-ig-<periode>.html` | slide 1: poster 1080x1350 |
+| `dipa-ig-<periode>-rincian.html` | slide 2: 10 akun terbesar, sebelumnya -> sekarang |
+| `dipa-detail-<periode>.json` | hasil ekstraksi PDF (cache per periode) |
 | `dipa-ig-<periode>-video.html` | animasi 8 detik, frame deterministik |
 | `dipa-ig-<periode>.md` | angka utama, sorotan, alur unggahan, caption |
 
 `--out`, `--caption`, `--video` mengarahkan tiap keluaran ke path lain.
+`--python=<path>` menunjuk interpreter yang punya `pymupdf`; tanpa itu slide rincian
+dilewati. `--refresh-detail` memaksa ekstraksi ulang PDF walau cache masih ada, dan
+`--no-detail` melewati slide 2 sepenuhnya.
+
+## Slide 2: rincian akun
+
+Modul Joomla hanya menyimpan dua baris (DIPA 01, DIPA 03). Rincian "apa yang paling
+banyak terserap" diambil dari PDF laporan lewat `tools/extract-dipa-detail.py`:
+
+```sh
+python tools/extract-dipa-detail.py --url "https://drive.google.com/file/d/<id>/view" \
+  --out tmp/social/dipa-detail-September-2026.json --top 10
+```
+
+Skrip itu membaca tabel landscape yang teksnya diputar 90 derajat, lalu menjumlahkan
+per kode akun. Pemeriksaan diri: `periode lalu + periode ini` harus sama dengan
+`realisasi`; kalau tidak, ia menulis peringatan karena pemetaan kolom bergeser.
 
 `--all` memanggil skrip ini sekali per periode lalu menulis `tmp/social/index.html`:
 galeri berisi poster tiap bulan yang bisa dibandingkan berdampingan. Tiap kartu punya
