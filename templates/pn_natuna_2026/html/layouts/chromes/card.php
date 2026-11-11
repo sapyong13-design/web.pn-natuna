@@ -44,5 +44,48 @@ $meta = $sectionMeta[(string) $module->position] ?? null;
     <?php elseif ($meta !== null) : ?>
         <p class="section-kicker"><?php echo $meta['kicker']; ?></p>
     <?php endif; ?>
+    <?php
+    /*
+     * Kinerja & Akuntabilitas: tiap tile skor menyimpan dokumen publikasinya di
+     * `data-maklumat-zoom`. Pratinjau halaman pertama ditempel di dalam tile supaya
+     * pengunjung melihat dokumennya, bukan hanya angka. Sumbernya atribut yang sudah
+     * diurus tools/refresh-survey.py, jadi periode TW berikutnya ikut sendiri tanpa
+     * menyentuh template lagi. Varian `-thumb.webp` dipakai bila ada agar kartu tidak
+     * mengunduh PNG halaman penuh; tanpa varian itu pratinjau tetap memakai PNG asli.
+     */
+    if ((string) $module->position === 'home-survey') {
+        $rewritten = preg_replace_callback(
+            '~(<button type="button" class="survey-score-tile"[^>]*data-maklumat-zoom="([^"]+)"[^>]*>.*?)(</button>)~s',
+            static function (array $match): string {
+                $document = html_entity_decode($match[2], ENT_QUOTES, 'UTF-8');
+                // `-preview.webp` is the whole page with its white margins trimmed, so the
+                // signature block and stamp at the bottom stay inside the preview. Its own
+                // dimensions are read from the file: the crop makes the height vary per
+                // document, and hard-coding it would letterbox the page.
+                $preview_path = preg_replace('~\.(png|jpe?g)$~i', '-preview.webp', $document);
+                $source = $document;
+                $width = 400;
+                $height = 566;
+                if ($preview_path !== null && is_file(JPATH_ROOT . $preview_path)) {
+                    $size = @getimagesize(JPATH_ROOT . $preview_path);
+                    if ($size !== false) {
+                        $source = $preview_path;
+                        [$width, $height] = $size;
+                    }
+                }
+                $preview = '<span class="survey-score-doc"><img src="' . htmlspecialchars($source, ENT_QUOTES, 'UTF-8')
+                    . '" alt="" width="' . (int) $width . '" height="' . (int) $height . '" loading="lazy" decoding="async"></span>';
+
+                return $match[1] . $preview . $match[3];
+            },
+            (string) $module->content
+        );
+        // A null return means the pattern engine failed; keep the raw content rather
+        // than blanking the whole module.
+        if (is_string($rewritten)) {
+            $module->content = $rewritten;
+        }
+    }
+    ?>
     <?php echo $module->content; ?>
 </section>

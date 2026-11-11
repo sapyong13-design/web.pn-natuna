@@ -8437,9 +8437,12 @@ body.nav-stuck .main-menu {
 .survey-score-value {
   color: var(--color-primary-deep);
   font-family: var(--font-display);
-  font-size: 2.15rem;
+  /* 1,8rem: "4,00 / 4,00" harus satu baris di tile 146px. Pada 2,15rem angkanya
+     selebar 116px dan pecah jadi "4,00 /" lalu "4,00" di bawahnya. */
+  font-size: 1.8rem;
   font-weight: 700;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .survey-score-value em {
@@ -8470,6 +8473,39 @@ body.nav-stuck .main-menu {
   color: var(--color-muted);
   font-size: var(--step--2);
   font-weight: 600;
+}
+
+/* Pratinjau dokumen publikasi di dalam tile skor. Halaman penuh ditampilkan
+   (bukan dipotong) supaya blok tanda tangan dan cap di bagian bawah ikut terlihat;
+   klik tile tetap membuka dokumen ukuran penuh. */
+.survey-score-doc {
+  display: block;
+  margin-top: 2px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(29, 39, 48, 0.08);
+}
+
+.survey-score-doc img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.survey-score-tile:hover .survey-score-doc,
+.survey-score-tile:focus-visible .survey-score-doc {
+  border-color: var(--color-accent);
+}
+
+.survey-score-tile:hover .survey-score-doc img {
+  filter: saturate(1.04);
+}
+
+body.is-dark .survey-score-doc {
+  border-color: #46515a;
+  background: #f7f7f5;
 }
 
 .survey-scores-note {

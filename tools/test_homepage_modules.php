@@ -58,7 +58,7 @@ $expect(!str_contains($modules[808]['content'] ?? '', '<h2'), 'Maklumat content 
 $expect(!str_contains($modules[808]['content'] ?? '', 'maklumat-compact-intro'), 'Maklumat content must not duplicate the section introduction.');
 $expect(($modules[816]['published'] ?? '0') === '1', 'Kinerja module must be published.');
 $expect(str_contains($modules[816]['content'] ?? '', 'survey-scores'), 'Kinerja module must contain survey scores.');
-$expect(str_contains($modules[816]['content'] ?? '', 'SKM / IKM'), 'Kinerja module must contain SKM/IKM.');
+$expect(substr_count($modules[816]['content'] ?? '', '<span class="survey-score-label">SKM</span>') === 1, 'Kinerja module must label the survey tile "SKM" (not "SKM / IKM").');
 $expect(str_contains($modules[816]['content'] ?? '', '>IPAK<'), 'Kinerja module must contain IPAK.');
 $expect(str_contains($modules[816]['content'] ?? '', 'dipa-widget'), 'Kinerja module must contain DIPA realization.');
 $expect(($modules[817]['published'] ?? '1') === '0', 'Legacy standalone DIPA module must remain unpublished.');
