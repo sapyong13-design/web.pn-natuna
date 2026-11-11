@@ -48,7 +48,19 @@ memuat data sampai periode itu — poster Agustus tidak memperlihatkan angka Sep
 dan periode paling awal (Februari) tidak memuat kalimat "dibanding bulan sebelumnya"
 karena tidak punya pembanding.
 
-## Merender PNG
+## Satu perintah untuk semuanya
+
+```sh
+python tools/render-social.py                    # semua periode: PNG + MP4 + galeri
+python tools/render-social.py --period=2026-09   # satu periode
+python tools/render-social.py --skip-video       # PNG saja
+```
+
+Skrip ini menjalankan `make-dipa-poster.php`, memotret tiap slide dengan Chrome
+headless pada 1080x1350, merender MP4 per frame, lalu menulis ulang galeri. Set
+`PHP_BIN` bila PHP tidak ada di PATH.
+
+## Merender PNG secara manual
 
 Buka HTML-nya di browser dengan viewport 1080x1350 lalu tangkap elemen `body`:
 

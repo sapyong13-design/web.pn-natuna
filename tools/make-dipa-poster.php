@@ -1114,6 +1114,9 @@ if (file_put_contents($videoPath, $videoHtml) === false) {
     exit(1);
 }
 
+// Baris pertama sengaja mesin-baca: tools/render-social.py butuh slug untuk
+// menemukan berkas video/PNG periode yang dipilih lewat --period.
+printf("SLUG=%s\n", $slug);
 printf(
     "%s\n%s\n%d periode, %d jenis DIPA, terserap %s dari %s\n",
     $out,
