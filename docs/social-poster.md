@@ -5,7 +5,10 @@ Reels, dan garis besar caption. Semua angka dibaca dari modul Joomla `816`
 (`Kinerja & Akuntabilitas`), jadi visual tidak bisa memuat angka berbeda dari situs.
 
 ```sh
-php tools/make-dipa-poster.php
+php tools/make-dipa-poster.php                  # periode terbaru
+php tools/make-dipa-poster.php --period=2026-07  # bulan tertentu (2026-7, "Juli", "Juli 2026")
+php tools/make-dipa-poster.php --list            # daftar periode yang tersedia
+php tools/make-dipa-poster.php --all             # semua periode + galeri
 ```
 
 Keluaran di `tmp/social/`:
@@ -17,6 +20,12 @@ Keluaran di `tmp/social/`:
 | `dipa-ig-<periode>.md` | angka utama, sorotan, alur unggahan, caption |
 
 `--out`, `--caption`, `--video` mengarahkan tiap keluaran ke path lain.
+
+`--all` memanggil skrip ini sekali per periode lalu menulis `tmp/social/index.html`:
+galeri berisi poster tiap bulan yang bisa dibandingkan berdampingan. Tiap poster hanya
+memuat data sampai periode itu — poster Agustus tidak memperlihatkan angka September —
+dan periode paling awal (Februari) tidak memuat kalimat "dibanding bulan sebelumnya"
+karena tidak punya pembanding.
 
 ## Merender PNG
 

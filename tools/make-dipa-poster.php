@@ -7,7 +7,10 @@
  * berbeda dari situs. Tidak ada angka yang ditulis manual di skrip ini.
  *
  * Pemakaian:
- *   php tools/make-dipa-poster.php                 # poster + caption + animasi ke tmp/social/
+ *   php tools/make-dipa-poster.php                 # periode terbaru (poster+caption+animasi)
+ *   php tools/make-dipa-poster.php --list          # daftar periode yang tersedia
+ *   php tools/make-dipa-poster.php --period=2026-07
+ *   php tools/make-dipa-poster.php --all           # semua periode + halaman galeri
  *   php tools/make-dipa-poster.php --out=poster.html --caption=caption.md --video=reel.html
  *
  * Tiga keluaran sekaligus, semua dari data yang sama:
@@ -26,9 +29,10 @@ if (PHP_SAPI !== 'cli') {
 $root = dirname(__DIR__);
 require_once $root . '/configuration.php';
 
-$options = getopt('', ['out::', 'caption::', 'video::', 'help']);
+$options = getopt('', ['out::', 'caption::', 'video::', 'period::', 'all', 'list', 'help']);
 if (isset($options['help'])) {
-    fwrite(STDOUT, "php tools/make-dipa-poster.php [--out=path] [--caption=path] [--video=path]\n");
+    fwrite(STDOUT, "php tools/make-dipa-poster.php [--period=2026-09|'September 2026'] [--all] [--list]\n"
+        . "                                  [--out=path] [--caption=path] [--video=path]\n");
     exit(0);
 }
 
@@ -122,10 +126,111 @@ if (count($periods) < 2) {
     exit(1);
 }
 
-// Modul menyimpan periode terbaru lebih dulu; poster butuh urutan maju.
-$chronological = array_reverse($periods);
-$latest = $periods[0];
-$previous = $periods[1];
+if (isset($options['list'])) {
+    foreach ($periods as $period) {
+        fwrite(STDOUT, $period['label'] . "\n");
+    }
+    exit(0);
+}
+
+/*
+ * Periode terpilih. Modul menyimpan periode terbaru lebih dulu, jadi `--period`
+ * memilih satu panel; grafiknya hanya memuat bulan sampai periode itu, bukan bulan
+ * setelahnya — poster Agustus tidak boleh memperlihatkan angka September.
+ * Penerimaan: "2026-09", "2026-9", "9", "Sep", atau "September 2026".
+ */
+if (isset($options['all'])) {
+    $built = [];
+    foreach ($periods as $period) {
+        $slug = preg_replace('~[^0-9a-z]+~i', '-', $period['label']);
+        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__)
+            . ' --period=' . escapeshellarg($period['label']);
+        exec($command, $ignored, $code);
+        if ($code !== 0) {
+            fwrite(STDERR, "Gagal membuat poster {$period['label']}\n");
+            exit(1);
+        }
+        $built[] = ['label' => $period['label'], 'slug' => $slug];
+    }
+    $gallery = $root . '/tmp/social/index.html';
+    $cards = '';
+    foreach ($built as $entry) {
+        $file = 'dipa-ig-' . $entry['slug'] . '.html';
+        $cards .= '<figure><div class="thumb"><iframe src="' . $file . '" loading="lazy" title="'
+            . htmlspecialchars($entry['label'], ENT_QUOTES, 'UTF-8') . '"></iframe></div>'
+            . '<figcaption><strong>' . htmlspecialchars($entry['label'], ENT_QUOTES, 'UTF-8') . '</strong>'
+            . '<a href="' . $file . '">buka</a></figcaption></figure>';
+    }
+    // Tiap poster aslinya 1080x1350. iframe selebar kartu akan memotong kanan-bawah
+    // karena isinya tidak menyesuaikan diri, jadi poster dirender penuh di iframe
+    // 1080px lalu diskalakan dengan transform dan dipotong oleh pembungkusnya.
+    $scale = 0.3;
+    $frameWidth = (int) round(1080 * $scale);
+    $frameHeight = (int) round(1350 * $scale);
+    $galleryHtml = '<!doctype html><html lang="id"><head><meta charset="utf-8">'
+        . '<title>Galeri poster DIPA</title><style>'
+        . 'body{margin:0;padding:36px;background:#f4efe6;font-family:system-ui,sans-serif;color:#2f140e}'
+        . 'h1{font-size:22px;margin:0 0 6px}p.hint{margin:0 0 26px;color:#6b5a4c;font-size:14px}'
+        . '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(' . $frameWidth . 'px,1fr));gap:24px}'
+        . 'figure{margin:0}'
+        . '.thumb{width:' . $frameWidth . 'px;height:' . $frameHeight . 'px;overflow:hidden;'
+        . 'border:1px solid #d9cdb8;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(47,20,14,.10)}'
+        . '.thumb iframe{width:1080px;height:1350px;border:0;'
+        . 'transform:scale(' . $scale . ');transform-origin:0 0}'
+        . 'figcaption{margin-top:8px;display:flex;justify-content:space-between;gap:8px;'
+        . 'font-size:12.5px;color:#5a4a3d}figcaption span{color:#9a8b7c}'
+        . 'figcaption a{color:#8f1f0b;text-decoration:none;font-weight:700}'
+        . '</style></head><body><h1>Galeri poster DIPA 2026</h1>'
+        . '<p class="hint">Tiap kartu memuat poster periode itu apa adanya. Klik judul berkas '
+        . 'untuk melihat ukuran penuh.</p><div class="grid">' . $cards . '</div></body></html>';
+    file_put_contents($gallery, $galleryHtml);
+    printf("%d poster dibuat. Galeri: %s\n", count($built), $gallery);
+    exit(0);
+}
+
+$requested = isset($options['period']) ? trim((string) $options['period']) : '';
+$selectedIndex = 0;
+if ($requested !== '') {
+    $monthsById = [
+        1 => 'januari', 2 => 'februari', 3 => 'maret', 4 => 'april', 5 => 'mei', 6 => 'juni',
+        7 => 'juli', 8 => 'agustus', 9 => 'september', 10 => 'oktober', 11 => 'november', 12 => 'desember',
+    ];
+    $needle = strtolower(str_replace('periode', '', $requested));
+    $match = null;
+    if (preg_match('~^(\d{4})\s*[-/\s]\s*(\d{1,2})$~', $needle, $m)) {
+        $wanted = [$monthsById[(int) $m[2]] ?? '', $m[1]];
+    } elseif (preg_match('~^([a-z]+)\s+(\d{4})$~', $needle, $m)) {
+        $wanted = [$m[1], $m[2]];
+    } elseif (preg_match('~^([a-z]{3,})$~', $needle, $m)) {
+        $wanted = [$m[1], null];
+    } elseif (preg_match('~^(\d{1,2})$~', $needle, $m)) {
+        $wanted = [$monthsById[(int) $m[1]] ?? '', null];
+    } else {
+        $wanted = [$needle, null];
+    }
+    foreach ($periods as $index => $period) {
+        $label = strtolower($period['label']);
+        $okMonth = $wanted[0] !== '' && str_starts_with($label, $wanted[0]);
+        $okYear = $wanted[1] === null || str_contains($label, $wanted[1]);
+        if ($okMonth && $okYear) {
+            $match = $index;
+            break;
+        }
+    }
+    if ($match === null) {
+        fwrite(STDERR, "Periode '{$requested}' tidak ditemukan. Pilihan: "
+            . implode(', ', array_map(static fn(array $p): string => $p['label'], $periods)) . "\n");
+        exit(1);
+    }
+    $selectedIndex = $match;
+}
+
+// Urutan maju sampai periode terpilih, supaya grafik berhenti di bulan itu.
+$latest = $periods[$selectedIndex];
+$chronological = array_reverse(array_slice($periods, $selectedIndex));
+// Periode paling awal tidak punya pembanding: kalimat "dibanding bulan sebelumnya"
+// dan sorotan pertumbuhan sejak periode pertama tidak berlaku di sana.
+$hasPrevious = isset($periods[$selectedIndex + 1]);
 
 $series = [];
 foreach ($chronological as $period) {
@@ -271,12 +376,18 @@ if ($biggest !== null) {
 $highlights .= '<li>Total terserap <strong>' . $escape($money($absorbed)) . '</strong> dari pagu '
     . $escape($money($pagu)) . ', sisa ' . $escape($money($pagu - $absorbed)) . '.</li>';
 foreach ($growth as $entry) {
+    if (abs($entry['delta']) < 0.005) {
+        continue;
+    }
     $highlights .= '<li>' . $escape($entry['label']) . ' sejak ' . $escape($shortMonths[0]) . ': '
         . $fmtPoints($entry['delta']) . ' poin (' . $escape($fmtPercent($entry['from']))
         . ' &rarr; ' . $escape($fmtPercent($entry['to'])) . ').</li>';
 }
 
 $periodLabel = $latest['label'];
+// Interpolasi string PHP tidak menerima ternary; kalimatnya disusun di sini.
+$leadText = 'Penyerapan anggaran per ' . $periodLabel
+    . ($hasPrevious ? ', dibanding bulan sebelumnya' : '') . '.';
 $out = $options['out'] ?? ($root . '/tmp/social/dipa-ig-' . preg_replace('~[^0-9a-z]+~i', '-', $periodLabel) . '.html');
 $captionPath = $options['caption'] ?? ($root . '/tmp/social/dipa-ig-' . preg_replace('~[^0-9a-z]+~i', '-', $periodLabel) . '.md');
 foreach ([dirname($out), dirname($captionPath)] as $directory) {
@@ -357,7 +468,7 @@ li strong { color: #2f140e; font-weight: 800; }
   </div>
 
   <h1>Realisasi <span>DIPA</span> 2026</h1>
-  <p class="lead">Penyerapan anggaran per {$escape($periodLabel)}, dibanding bulan sebelumnya.</p>
+  <p class="lead">{$escape($leadText)}</p>
 
   <div class="grid">
 {$cards}
@@ -434,6 +545,7 @@ $videoPath = $options['video'] ?? ($root . '/tmp/social/dipa-ig-' . preg_replace
 $motion = [
     'duration' => 8.0,
     'period' => $periodLabel,
+    'hasPrevious' => $hasPrevious,
     'pagu' => $pagu,
     'absorbed' => $absorbed,
     'sisa' => $pagu - $absorbed,
@@ -618,7 +730,7 @@ const lis = items.map((html) => {
 });
 
 document.getElementById('kicker').textContent = 's.d. ' + D.period;
-document.getElementById('lead').textContent = 'Penyerapan anggaran per ' + D.period + ', dibanding bulan sebelumnya.';
+document.getElementById('lead').textContent = 'Penyerapan anggaran per ' + D.period + (D.hasPrevious ? ', dibanding bulan sebelumnya' : '') + '.';
 document.getElementById('panelTitle').textContent = 'Tren Penyerapan ' + months[0] + ' – ' + months[months.length - 1];
 document.getElementById('footNote').textContent = 'Sumber: laporan realisasi anggaran DIPA ' + D.period;
 document.querySelector('.brand p').textContent = 'Pengadilan Negeri Natuna';
