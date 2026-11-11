@@ -514,6 +514,33 @@ $compact = static function (float $value): string {
     return 'Rp ' . number_format($value, 0, ',', '.');
 };
 
+/*
+ * Periode dengan satu titik tidak punya tren: grafiknya kosong dan menyisakan
+ * sepertiga kanvas. Untuk itu panel grafik diganti komposisi lima akun terbesar,
+ * yang tetap informatif dan memakai data rincian yang sama.
+ */
+if (count($chronological) < 3 && $detail !== null && !empty($detail['items'])) {
+    $composition = '';
+    $compositionTotal = max(1.0, (float) $detail['total_realisasi']);
+    foreach (array_slice($detail['items'], 0, 8) as $item) {
+        $share = (float) $item['realisasi'] / $compositionTotal * 100;
+        $composition .= '<li class="comp"><span class="comp-name">' . $escape($item['label']) . '</span>'
+            . '<span class="comp-bar"><i style="width:' . round($share, 1) . '%"></i></span>'
+            . '<span class="comp-value">' . $escape(number_format($share, 1, ',', '.')) . '%</span></li>';
+    }
+    $chartPanel = '<div class="panel"><h2>Delapan akun terbesar</h2>'
+        . '<p class="panel-note">Porsi terhadap total penyerapan '
+        . $escape($compact((float) $detail['total_realisasi'])) . '</p>'
+        . '<ul class="comp-list">' . $composition . '</ul></div>';
+} else {
+    $chartPanel = '<div class="panel"><h2>Tren Penyerapan ' . $escape($shortMonths[0]) . ' &ndash; '
+        . $escape(end($shortMonths)) . '</h2>'
+        . '<div class="legend"><span><i style="background:#8f1f0b"></i>DIPA 01</span>'
+        . '<span><i style="background:#b98f24"></i>DIPA 03</span></div>'
+        . '<svg width="' . $chartWidth . '" height="' . $chartHeight . '" viewBox="0 0 ' . $chartWidth . ' ' . $chartHeight
+        . '" role="img" aria-label="Tren penyerapan DIPA 01 dan DIPA 03">' . $svgGrid . $svgLines . $svgMonths . '</svg></div>';
+}
+
 $html = <<<HTML
 <!doctype html>
 <html lang="id">
@@ -567,6 +594,13 @@ dd { font-size: 18px; font-weight: 800; color: #3a2c22; margin-top: 3px; }
 .delta--flat { background: rgba(29,39,48,.08); color: #6b7280; }
 .panel { margin-top: 24px; background: #fff; border: 1px solid #e6dcc9; border-radius: 20px; padding: 20px 22px 12px; box-shadow: 0 10px 24px rgba(47,20,14,.06); }
 .panel h2 { font-size: 15px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #671607; }
+.panel-note { margin-top: 6px; font-size: 14px; font-weight: 600; color: #8a7a6b; }
+.comp-list { list-style: none; display: grid; gap: 20px; margin-top: 20px; padding-bottom: 6px; }
+.comp { display: grid; grid-template-columns: 1fr 150px 54px; align-items: center; gap: 14px; }
+.comp-name { font-size: 18px; font-weight: 700; color: #2f140e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.comp-bar { display: block; height: 9px; border-radius: 999px; background: #f0e9da; overflow: hidden; }
+.comp-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8f1f0b, #c0603f); }
+.comp-value { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 700; color: #671607; text-align: right; }
 .legend { display: flex; gap: 18px; margin-top: 7px; font-size: 13px; font-weight: 700; color: #6b5a4c; }
 .legend i { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 ul { margin-top: 22px; display: grid; gap: 11px; list-style: none; }
@@ -595,18 +629,7 @@ li strong { color: #2f140e; font-weight: 800; }
 {$cards}
   </div>
 
-  <div class="panel">
-    <h2>Tren Penyerapan {$escape($shortMonths[0])} &ndash; {$escape(end($shortMonths))}</h2>
-    <div class="legend">
-      <span><i style="background:#8f1f0b"></i>DIPA 01</span>
-      <span><i style="background:#b98f24"></i>DIPA 03</span>
-    </div>
-    <svg width="{$chartWidth}" height="{$chartHeight}" viewBox="0 0 {$chartWidth} {$chartHeight}" role="img" aria-label="Tren penyerapan DIPA 01 dan DIPA 03">
-      {$svgGrid}
-{$svgLines}
-      {$svgMonths}
-    </svg>
-  </div>
+  {$chartPanel}
 
   <ul>
 {$highlights}
