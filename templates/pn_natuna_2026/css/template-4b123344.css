@@ -17288,9 +17288,11 @@ body.is-dark .dossier-card .dossier-header h2#dossier-name { color: #f3c96b !imp
 }
 
 .integrity-notice__poster--uji .integrity-notice__link img {
-  width: auto;
-  max-width: 100%;
-  max-height: min(62vh, 520px);
+  /* Lebar menentukan tinggi lewat rasio bannernya. `max-height` tanpa `object-fit`
+     hanya memotong gambar, dan yang hilang justru tombol ajakan di kaki banner. */
+  display: block;
+  width: 100%;
+  height: auto;
   margin: 0 auto;
   border-radius: 10px;
 }
@@ -17334,8 +17336,10 @@ body.is-dark .dossier-card .dossier-header h2#dossier-name { color: #f3c96b !imp
     gap: 14px;
   }
 
+  /* Di layar sempit kedua banner menumpuk, jadi dialog memang lebih tinggi dari
+     viewport dan digulir. Tidak ada gambar yang dipotong. */
   .integrity-notice__poster--uji .integrity-notice__link img {
-    max-height: min(46vh, 420px);
+    max-height: none;
   }
 }
 
