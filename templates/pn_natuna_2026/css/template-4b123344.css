@@ -8873,7 +8873,9 @@ body .announcement-feature--portrait .announcement-feature__media {
   grid-template-rows: minmax(0, 1fr);
   place-items: center;
   padding: clamp(10px, 1.6vw, 18px);
-  background: repeating-linear-gradient(45deg, #f4f1ea, #f4f1ea 10px, #efeae0 10px, #efeae0 20px);
+  /* Papan dokumen polos, sama seperti pratinjau di hero. Pola garis diagonal
+     sebelumnya bersaing dengan isi banner dan terbaca seperti tekstur rusak. */
+  background: #f7f5f0;
 }
 
 /* Kotak diisi penuh lalu `object-fit: contain` yang menyusutkan gambar utuh di
@@ -8892,7 +8894,7 @@ body .announcement-feature--portrait .announcement-feature__media img {
 
 body.is-dark .announcement-feature--portrait .announcement-feature__media,
 body.is-dark.is-home .announcement-feature--portrait .announcement-feature__media {
-  background: repeating-linear-gradient(45deg, #1c252c, #1c252c 10px, #212b33 10px, #212b33 20px);
+  background: #1c252c;
 }
 
 body.is-dark.is-home .announcement-feature--portrait .announcement-feature__media img {

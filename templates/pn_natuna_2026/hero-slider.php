@@ -18,7 +18,7 @@ function pn_natuna_hero_latest_articles(int $catId, int $limit = 4): array
         $now = Factory::getDate()->toSql();
         $levels = array_map('intval', Factory::getUser()->getAuthorisedViewLevels());
         $query = $db->getQuery(true)
-            // `metadata` ikut dipilih: kartu pengumuman membaca `metadata.external_url`
+            // `metadata` ikut dipilih: kartu pengumuman membaca `metadata.card_image`
             // untuk memutuskan apakah klik langsung menuju laman instansi pengirim.
             ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.created', 'a.publish_up', 'a.images', 'a.introtext', 'a.fulltext', 'a.metadesc', 'a.metadata']))
             ->from($db->quoteName('#__content', 'a'))
@@ -149,25 +149,6 @@ function pn_natuna_announcement_image(object $article): string
 }
 
 /**
- * Tujuan klik kartu sorotan pengumuman.
- *
- * Pengumuman yang menindaklanjuti surat dinas kadang harus langsung membuka laman
- * resmi instansi pengirim (mis. Uji Publik Calon Hakim di siwas.mahkamahagung.go.id).
- * Tujuan itu disimpan di `metadata.external_url` artikel, jadi tidak perlu kolom baru
- * dan tetap bisa diubah dari admin tanpa menyentuh template.
- */
-function pn_natuna_announcement_href(object $article, int $catId): string
-{
-    $metadata = json_decode((string) ($article->metadata ?? ''), true) ?: [];
-    $external = trim((string) ($metadata['external_url'] ?? ''));
-    if ($external !== '' && preg_match('~^https?://~i', $external)) {
-        return $external;
-    }
-
-    return pn_natuna_hero_article_url($article, $catId);
-}
-
-/**
  * Gambar pengumuman berbentuk dokumen (portrait) tidak boleh dipotong `object-fit:
  * cover`: kop surat dan blok tanda tangan hilang. Fungsi ini memeriksa rasio berkas
  * supaya template bisa menampilkannya utuh di dalam kartu.
@@ -219,12 +200,15 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
       </div>
       <div class="announcement-showcase__grid">
         <?php
+        // Klik pertama selalu menuju artikel pengumumannya sendiri. Pembaca perlu
+        // membaca isi dan dasar suratnya lebih dulu; tautan ke laman instansi lain
+        // (mis. Uji Publik di siwas.mahkamahagung.go.id) tersedia di dalam artikel,
+        // pada banner dan pada tautan "Buka laman Uji Publik".
         $featureImage = pn_natuna_announcement_image($feature);
-        $featureHref = pn_natuna_announcement_href($feature, 13);
-        $featureExternal = $featureHref !== pn_natuna_hero_article_url($feature, 13);
+        $featureHref = pn_natuna_hero_article_url($feature, 13);
         $featurePortrait = pn_natuna_announcement_is_portrait($featureImage);
         ?>
-        <a class="announcement-feature<?php echo $featurePortrait ? ' announcement-feature--portrait' : ''; ?>" href="<?php echo htmlspecialchars($featureHref, ENT_QUOTES, 'UTF-8'); ?>"<?php echo $featureExternal ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
+        <a class="announcement-feature<?php echo $featurePortrait ? ' announcement-feature--portrait' : ''; ?>" href="<?php echo htmlspecialchars($featureHref, ENT_QUOTES, 'UTF-8'); ?>">
           <span class="announcement-feature__eyebrow">Pengumuman terbaru</span>
           <span class="announcement-feature__media">
             <img src="<?php echo htmlspecialchars($featureImage, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="760" height="460" loading="lazy" decoding="async">
@@ -234,7 +218,7 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
             <time><?php echo htmlspecialchars(pn_natuna_announcement_date($feature->created), ENT_QUOTES, 'UTF-8'); ?></time>
             <strong><?php echo htmlspecialchars($feature->title, ENT_QUOTES, 'UTF-8'); ?></strong>
             <?php if ($featureExcerpt !== '') : ?><span class="announcement-feature__excerpt"><?php echo $featureExcerpt; ?></span><?php endif; ?>
-            <span class="announcement-feature__cta"><?php echo $featureExternal ? 'Buka laman resmi' : 'Baca Pengumuman'; ?> <span aria-hidden="true">&rarr;</span></span>
+            <span class="announcement-feature__cta">Baca Pengumuman <span aria-hidden="true">&rarr;</span></span>
           </span>
         </a>
         <?php if ($activeVideo) : ?>
