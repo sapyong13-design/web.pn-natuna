@@ -5715,14 +5715,16 @@ body.is-dark .maklumat-doc img {
    Panel teraktif dirender `is-active` dari server, jadi angkanya sudah benar
    sebelum JS jalan. Tanpa JS pemilihnya tidak berpindah, tapi tidak ada yang
    kosong - pola yang sama dengan tab Kabar Instansi. */
-.dipa-tabs {
+.dipa-tabs,
+.survey-tabs {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 4px;
 }
 
-.dipa-tab {
+.dipa-tab,
+.survey-tab {
   min-height: 30px;
   border: 1px solid var(--color-line);
   border-radius: 999px;
@@ -5736,18 +5738,21 @@ body.is-dark .maklumat-doc img {
   transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
 }
 
-.dipa-tab:hover {
+.dipa-tab:hover,
+.survey-tab:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.dipa-tab.is-active {
+.dipa-tab.is-active,
+.survey-tab.is-active {
   border-color: var(--color-primary);
   background: var(--color-primary);
   color: #fff;
 }
 
-.dipa-panel[hidden] {
+.dipa-panel[hidden],
+.survey-panel[hidden] {
   display: none;
 }
 
@@ -5791,13 +5796,15 @@ body.is-dark .maklumat-doc img {
   font-style: italic;
 }
 
-body.is-dark .dipa-tab {
+body.is-dark .dipa-tab,
+body.is-dark .survey-tab {
   border-color: var(--dark-content-line);
   background: var(--dark-content-raised);
   color: #d5dde4;
 }
 
-body.is-dark .dipa-tab.is-active {
+body.is-dark .dipa-tab.is-active,
+body.is-dark .survey-tab.is-active {
   border-color: var(--dark-content-accent);
   background: #7a2518;
   color: #fff8ed;
@@ -8396,6 +8403,16 @@ body.nav-stuck .main-menu {
 }
 
 /* --- Indeks Pelayanan Publik: tile skor --- */
+.survey-widget {
+  display: grid;
+  gap: 10px;
+}
+
+.survey-panel {
+  display: grid;
+  gap: 0;
+}
+
 .survey-scores {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -8437,9 +8454,9 @@ body.nav-stuck .main-menu {
 .survey-score-value {
   color: var(--color-primary-deep);
   font-family: var(--font-display);
-  /* 1,8rem: "4,00 / 4,00" harus satu baris di tile 146px. Pada 2,15rem angkanya
-     selebar 116px dan pecah jadi "4,00 /" lalu "4,00" di bawahnya. */
-  font-size: 1.8rem;
+  /* 1,7rem: "4,00 / 4,00" harus satu baris di tile 122px, dan dua baris fakta di
+     bawahnya butuh ruang tanpa membuat tile lebih tinggi dari pratinjau dokumen. */
+  font-size: 1.7rem;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
@@ -8469,45 +8486,55 @@ body.nav-stuck .main-menu {
   background: linear-gradient(90deg, var(--color-accent), #d8b254);
 }
 
-.survey-score-meta {
-  color: var(--color-muted);
-  font-size: var(--step--2);
-  font-weight: 600;
+/* Dua baris fakta: capaian (persentase) dan jumlah responden, label kecil di kiri,
+   angka besar di kanan.
+
+   Sebelumnya keduanya digabung jadi satu kalimat ("100,00% · 49 responden") yang di
+   tile 131px pecah dua baris dan, karena kecil, terbaca seperti catatan kaki. Dua kolom
+   berdampingan juga dicoba dan gagal: label "CAPAIAN" dan "RESPONDEN" bertabrakan di
+   lebar itu. Baris label-nilai memberi tiap angka satu baris penuh, jadi angkanya bisa
+   besar tanpa menabrak apa pun. */
+.survey-score-facts {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 9px;
+  border-top: 1px solid var(--color-line);
 }
 
-/* Selisih terhadap periode sebelumnya. Angka periode berjalan saja tidak memberi tahu
-   apakah capaian naik atau turun; badge ini memakai pola yang sama dengan `dipa-delta`
-   di widget anggaran supaya arti warnanya konsisten di seluruh kartu. */
-.survey-score-delta {
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  border-radius: 999px;
-  padding: 1px 7px;
+/* Label di atas, angka di bawah, keduanya rata tengah.
+
+   Baris label-nilai sempat dicoba dan angkanya meluber 11px keluar tepi: "Capaian"
+   selebar 45px plus "100,00%" selebar 70px tidak muat di 109px isi tile. Dua kolom
+   berdampingan juga gagal karena labelnya bertabrakan. Ditumpuk begini tiap angka
+   memakai lebar penuh tile, jadi ukurannya bisa besar tanpa menabrak label. */
+.survey-score-fact {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  text-align: center;
+}
+
+.survey-score-fact em {
+  color: var(--color-muted);
   font-size: var(--step--3);
-  font-weight: 800;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.survey-score-fact strong {
+  color: var(--color-primary-deep);
+  /* Digit tabular: "49" pada SKM dan "49" pada IPAK duduk di kolom yang sama, dan
+     "100,00%" tidak menggeser angka responden di bawahnya. */
+  font-family: var(--font-display);
+  font-size: 1.16rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
   white-space: nowrap;
-}
-
-.survey-score-delta.is-up {
-  background: rgba(31, 91, 75, 0.12);
-  color: #1f5b4b;
-}
-
-.survey-score-delta.is-flat {
-  background: rgba(29, 39, 48, 0.08);
-  color: var(--color-muted);
-}
-
-body.is-dark .survey-score-delta.is-up {
-  background: rgba(126, 217, 177, 0.16);
-  color: #7ed9b1;
-}
-
-body.is-dark .survey-score-delta.is-flat {
-  background: rgba(237, 242, 247, 0.1);
-  color: #b9c4cd;
 }
 
 /* Pratinjau dokumen publikasi di dalam tile skor. Halaman penuh ditampilkan
@@ -8547,7 +8574,34 @@ body.is-dark .survey-score-doc {
   margin: 12px 0 0;
   color: var(--color-muted);
   font-size: var(--step--2);
+  /* Rata tengah mengikuti tile di atasnya; rata kiri membuat baris kedua catatan
+     menggantung di bawah kolom kiri seolah paragraf terpisah. */
+  text-align: center;
 }
+
+/* Kartu sidebar di ponsel selebar 272px: dua tile menyisakan 117px per tile, sedangkan
+   "4,00 / 4,00" pada 1,8rem butuh 146px. Tanpa penyesuaian ini angka terpotong jadi
+   "4,00 /4,0". Tab dan angkanya ikut mengecil, bukan kolomnya yang ditumpuk - kartu ini
+   sudah tinggi, dan satu kolom membuatnya dua kali lebih panjang. */
+@media (max-width: 480px) {
+  .survey-tab {
+    padding-inline: 8px;
+    font-size: var(--step--3);
+  }
+
+  .survey-score-value {
+    font-size: 1.42rem;
+  }
+
+  .survey-score-value em {
+    font-size: var(--step--3);
+  }
+
+  .survey-score-tile {
+    padding: 11px;
+  }
+}
+
 
 /* --- Role Model: kartu foto + teks HTML --- */
 .role-slide {
@@ -9850,12 +9904,8 @@ a.instagram-follow-standalone {
   font-weight: 800;
 }
 
-.survey-scores-note + .dipa-widget,
-.survey-scores ~ .dipa-widget {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--color-line);
-}
+/* Skor survei dan realisasi DIPA kini dua kartu terpisah (modul 816 dan 817), jadi
+   tidak ada lagi aturan jarak antar-blok di dalam satu kartu. */
 
 /* --- Footer stats strip --- */
 .footer-stats {
@@ -15013,7 +15063,8 @@ body.is-dark .sipp-day-tabs button[aria-selected="false"] b {
   align-items: center;
 }
 
-.dipa-tab {
+.dipa-tab,
+.survey-tab {
   min-height: 44px;
 }
 

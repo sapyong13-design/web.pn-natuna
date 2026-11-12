@@ -72,6 +72,33 @@ expect(all(p['id'] != 'ID_NOPERIOD' for p in periods), 'PDF tanpa bulan/tahun ti
 expect(len(rd.collect_periods(files * 8)) <= rd.MAX_PERIODS,
        f'Jumlah periode harus dibatasi MAX_PERIODS ({rd.MAX_PERIODS}).')
 
+# --- folder tahun: auto-detect 2026, 2027, dst -----------------------------
+# Folder induk berisi subfolder per tahun. Kartu hanya menampilkan tahun berjalan,
+# jadi yang dipilih adalah subfolder yang namanya sama dengan tahun sekarang.
+folders = [
+    {'id': 'F2028', 'year': 2028, 'name': '2028'},
+    {'id': 'F2027', 'year': 2027, 'name': '2027'},
+    {'id': 'F2026', 'year': 2026, 'name': '2026'},
+]
+expect(rd.pick_year_folder(folders, 2027)['id'] == 'F2027', 'Folder tahun berjalan harus dipilih.')
+expect(rd.pick_year_folder(folders, 2029) is None,
+       'Tahun yang belum punya subfolder harus menghasilkan None, bukan menebak folder lain.')
+expect(rd.YEAR_NAME_RE.match('2026') and rd.YEAR_NAME_RE.match('2031'),
+       'Nama subfolder empat digit harus dikenali sebagai tahun.')
+expect(not rd.YEAR_NAME_RE.match('Laporan 2026') and not rd.YEAR_NAME_RE.match('26'),
+       'Nama selain empat digit tidak boleh dianggap folder tahun.')
+
+# Berkas tahun lain yang tercecer di folder tahun berjalan tidak ikut ditawarkan.
+mixed = [
+    ('A', 'Laporan Realisasi Anggaran DIPA 01 dan 03 Juni 2026.pdf'),
+    ('B', 'Laporan Realisasi Anggaran DIPA 01 dan 03 Desember 2025.pdf'),
+    ('C', 'LRA DIPA 01 dan 03 Maret 2027.pdf'),
+]
+scoped = rd.collect_periods(mixed, 2026)
+expect([(p['year'], p['month']) for p in scoped] == [(2026, 6)],
+       f'Periode harus dibatasi tahun berjalan, dapat {[(p["year"], p["month"]) for p in scoped]}.')
+expect(len(rd.collect_periods(mixed)) == 3, 'Tanpa batas tahun, semua periode valid tetap terbaca.')
+
 # --- attach_deltas: pembanding adalah periode tersedia, Mei bolong ----------
 data = [
     {'id': 'A', 'name': 'Juni', 'year': 2026, 'month': 6, 'data': {'01': unit(54.96), '03': unit(42.46)}},
@@ -122,7 +149,8 @@ expect(rd.build_html([{'id': 'X', 'year': 2026, 'month': 6, 'data': {}}]) == '',
        'Periode tanpa data DIPA tidak boleh menghasilkan kartu kosong.')
 
 # --- update_module_db: mengganti, bukan menumpuk -------------------------
-# Modul 816 memuat skor SKM/IPAK lalu widget DIPA. Refresh jalan tiap hari, jadi
+# Modul 817 memuat widget DIPA saja (dipisah dari kartu skor survei oleh migrasi
+# 20261114_split_kinerja_akuntabilitas_cards.sql). Refresh jalan tiap hari, jadi
 # menjalankannya dua kali wajib menghasilkan konten yang sama persis. Pernah
 # tidak: tag pembuka widget diberi atribut `data-dipa-board`, pencocokan literal
 # di update_module_db meleset, dan tiap refresh menambah satu salinan widget.

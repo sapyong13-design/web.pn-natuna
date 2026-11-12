@@ -25,6 +25,7 @@ $sectionMeta = [
     'quick-links'     => ['kicker' => 'Layanan', 'desc' => 'Akses cepat aplikasi peradilan yang paling sering digunakan.'],
     'home-facilities' => ['kicker' => 'Fasilitas'],
     'home-survey'     => ['kicker' => 'Transparansi &amp; Kinerja'],
+    'home-dipa'       => ['kicker' => 'Transparansi &amp; Kinerja'],
 ];
 $meta = $sectionMeta[(string) $module->position] ?? null;
 ?>

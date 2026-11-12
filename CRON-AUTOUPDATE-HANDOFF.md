@@ -249,8 +249,14 @@ Card **Indeks Survei Publik** di sidebar (bawah Role Model) menampilkan hasil
 survei terbaru: SKM (Kepuasan Masyarakat) & IPAK (Persepsi Anti Korupsi).
 
 ### Sumber data
-- Folder Google Drive (public): `SURVEI TERBARU 2026`
-- Link: `https://drive.google.com/drive/folders/1XVTZjSGKPzM0XPSTlYg4w7f6Ut-QyG7z`
+- Folder induk Google Drive (public): `https://drive.google.com/drive/folders/1YsGwoDsqjzryiUeM1HmA2_mlQfKpuTVJ`
+- Struktur: **folder induk → subfolder per tahun** (`2026`, `2027`, …) → berkas PDF.
+  Skrip menemukan subfolder tahun secara otomatis; publikasi tahun baru cukup
+  diletakkan di subfoldernya sendiri, tanpa mengubah kode.
+- Yang dibaca hanya **subfolder tahun berjalan** (`date.today().year`). Kartu tidak
+  pernah mencampur dua tahun anggaran. Kalau subfolder tahun berjalan belum ada,
+  skrip berhenti dengan `[WARN]` dan **tidak mengubah** kartu — konten lama tetap
+  tayang sampai publikasi pertama tahun itu masuk, bukan dikosongkan.
 - Naming file: `{SKM|IPAK} TW{1-4} {TAHUN}.pdf` (mis. `SKM TW2 2026.pdf`)
 
 ### Cara kerja script `tools/refresh-survey.py`
@@ -284,12 +290,76 @@ SELESAI.
 4. Hapus cache Joomla jika perlu (`rm cache/*.json`).
 
 ### Konfigurasi (di `tools/refresh-survey.py` baris atas)
-- `FOLDER_ID` — gdrive folder id (dari URL folder)
+- `ROOT_FOLDER_ID` — id folder induk (dari URL folder); subfolder tahun ditemukan otomatis
 - `SURVEY_TYPES` — jenis survei yang di-track (`['SKM', 'IPAK']`)
 - `MODULE_ID` — id module Joomla (816)
 - `MYSQL_BIN`, `DB_USER`, `DB_PASS`, `DB_NAME` — via env var atau edit langsung
 
 ---
+
+## 9b. Halaman Arsip Laporan Survei (`refresh-surveys.py`)
+
+Tiga halaman `/transparansi/laporan-skm`, `/laporan-spak` (IPAK), dan
+`/laporan-survei-harian` mencetak `introtext` artikel 42, 43, dan 85 apa adanya;
+`tools/refresh-surveys.py` yang memperbarui daftar kartunya.
+
+- Folder induk: `1oinFzi9Fuvd0aHK5ItycefsP_U-PSYdX`
+  (`Laporan SKM`, `Laporan IPAK`, `Laporan Survei Harian`; subfolder
+  `Realisasi DIPA` dan `Survei Terbaru` diurus skrip lain).
+- Struktur: induk → kategori → **subfolder tahun** (`2024`, `2025`, `2026`, …).
+- **Semua tahun ditampilkan**, tanpa batas tahun berjalan: halaman ini arsip, jadi
+  2024 dan 2025 tetap terbaca setelah 2026 masuk. Berbeda dari kartu beranda
+  (Kinerja, Akuntabilitas) yang hanya memuat tahun berjalan.
+- Satu kartu per periode; triwulan gabungan ("3 dan 4") menutup dua nomor sekaligus.
+- Keterangan celah memakai **tanggal hari ini**: tahun lewat wajib lengkap, tahun
+  berjalan hanya sampai periode yang sudah selesai.
+- Kontrak: `python tools/test_survey_archive_pages.py`.
+
+## 9c. Struktur Folder Drive untuk Menu Transparansi
+
+Folder induk kanonis: `1oinFzi9Fuvd0aHK5ItycefsP_U-PSYdX`
+(`WEB PN-NATUNA.GO.ID`). Dibagi **dua bagian**, masing-masing berisi satu subfolder
+per seksi, dan tiap seksi berisi subfolder tahun:
+
+```text
+WEB PN-NATUNA.GO.ID/
+├── Beranda/                       ← sumber kartu beranda
+│   ├── Survei Terbaru/            ├── 2026/   (refresh-survey.py → kartu Kinerja)
+│   └── Realisasi DIPA/            ├── 2021/ … 2026/  (refresh-dipa.py → Akuntabilitas)
+└── Transparansi/                  ← sumber halaman menu Transparansi
+    ├── Laporan SKM/               ├── 2024/ 2025/ 2026/ + berkas 2021-2023
+    ├── Laporan IPAK/              ├── 2024/ 2025/ 2026/ + berkas 2021-2024
+    ├── Laporan Survei Harian/     ├── 2025/ 2026/ + berkas 2022-2023
+    ├── Ringkasan LKjIP/           (berkas langsung, tahun di nama berkas)
+    ├── Laporan Tahunan/           (berkas langsung)
+    ├── SAKIP/                     ├── SAKIP 2020/ … SAKIP 2026/
+    ├── LHKPN/                     ├── LHKPN 2019/ … LHKPN 2025/
+    ├── Laporan Keuangan/          (berkas langsung 2022-2025)
+    ├── E-Brosur/                  (berkas langsung)
+    ├── Peraturan dan Kebijakan/   (berkas langsung)
+    ├── Laporan Pelayanan Informasi Publik/   (kosong sampai arsipnya diverifikasi)
+    └── Lelang Barang dan Jasa/    (kosong sampai ada publikasi resmi)
+```
+
+Nama subfolder tahun tidak harus empat digit saja: `SAKIP 2020` dan `LHKPN 2019`
+dikenali lewat empat digit di namanya (`year_from()`). Folder tahun yang masih
+memuat subfolder lagi (mis. `LHKPN 2020/1. LHKPN 2020/`) ikut ditelusuri sampai
+kedalaman dua, supaya berkasnya tidak hilang dari arsip.
+
+**Pencarian folder toleran terhadap posisi.** `resolve_section()` di
+`refresh-survey.py` dan `refresh-dipa.py`, serta `section_sources()` di
+`refresh-surveys.py`, mencari seksi di akar folder induk **dan** di dalam `Beranda`
+maupun `Transparansi`. Jadi memindahkan folder antar bagian tidak memutus cron, dan
+struktur lama (seksi langsung di akar) tetap terbaca selama migrasi berjalan.
+
+Nama folder dicocokkan longgar (`folder_key()`): huruf besar/kecil, spasi ganda, dan
+tanda hubung tidak membedakan. "E-brosur" tetap dikenali sebagai seksi E-Brosur.
+
+**Selama pemindahan belum selesai**, `SECTIONS[...]["legacy_folders"]` menyebut folder
+tahun yang masih tersebar. `section_sources()` menggabungkan folder induk dengan
+daftar itu, dan `build_articles()` membuang berkas yang muncul dua kali, sehingga
+halaman tetap menampilkan arsip lengkap di tengah migrasi. Setelah semua folder
+dipindahkan, `legacy_folders` boleh dihapus dari `SECTIONS`.
 
 ## 10. Auto-Refresh Realisasi Anggaran DIPA (Google Drive → PDF → Donut Chart)
 
@@ -298,7 +368,13 @@ menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi, dengan
 **pemilih periode** dan **delta terhadap bulan pembanding**.
 
 ### Sumber data
-- Folder Google Drive (public): `1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV`
+- Folder induk Google Drive (public): `https://drive.google.com/drive/folders/1loTSN-hPkaIbE5XIOHDFcldUwbDjOn-X`
+- Struktur: **folder induk → subfolder per tahun** (`2026`, `2027`, …) → berkas PDF.
+  Subfolder tahun ditemukan otomatis; tahun anggaran baru cukup dibuatkan subfolder
+  bernama empat digit.
+- Hanya **subfolder tahun berjalan** yang dibaca, jadi kartu tidak mencampur tahun.
+  Bila subfolder tahun berjalan belum ada, skrip berhenti dengan `[WARN]` dan tidak
+  mengubah kartu.
 - Penamaan berkas **tidak konsisten** dan tidak bisa dipercaya. Folder per Juli 2026 berisi `Laporan Realisasi Anggaran DIPA 01 dan 03 Juni 2026.pdf`, `Realisasi DIPA 01 Mei 2026.pdf`, dan `LRA DIPA 01 dan 03 Maret 2026.pdf`. Berkas Mei yang namanya hanya menyebut "DIPA 01" ternyata memuat **kedua** unit organisasi — pagu DIPA 03-nya `178.354.000`, sama persis dengan bulan lain. Jadi isi PDF yang menentukan, bukan namanya.
 
 ### Cara kerja `tools/refresh-dipa.py`
@@ -307,7 +383,7 @@ menampilkan donut chart % serapan DIPA 01 & 03 + pagu + realisasi, dengan
 3. `resolve_periods()` mengunduh + parse tiap PDF. **Hasil parse di-cache per file id** di `$PN_NATUNA_PRIVATE_ROOT/cache/pn_natuna_dipa_periods.json` saat env produksi dimuat; eksekusi lokal tanpa env tetap memakai `cache/` di root source. PDF di Drive tidak pernah berubah isinya, jadi cron berikutnya hanya mengunduh bulan yang benar-benar baru. Satu berkas gagal hanya melewati periode itu, tidak menjatuhkan refresh.
 4. `attach_deltas()` menghitung selisih **poin persentase** terhadap periode sebelumnya.
 5. `build_html()` merender tab periode + satu panel per bulan; panel teraktif ditandai `is-active` dari server.
-6. `update_module_db()` mengganti blok `.dipa-widget` pada modul Joomla aktif (DB id 816); module 817 versi lama yang unpublished. Modul 816 juga memuat skor SKM/IPAK di atas widget, jadi yang diganti hanya potongan dari tag pembuka widget sampai ujung konten.
+6. `update_module_db()` mengganti blok `.dipa-widget` pada modul Joomla aktif (DB id 817, posisi `home-dipa`). Sejak migrasi `20261114_split_kinerja_akuntabilitas_cards.sql`, skor SKM/IPAK (modul 816) dan realisasi DIPA (modul 817) adalah dua kartu terpisah.
 
 **Tag pembuka widget adalah kontrak.** `WIDGET_OPEN` ditulis `build_html()` dan dicari `update_module_db()` lewat `WIDGET_OPEN_RE` yang mentoleransi atribut apa pun. Keduanya wajib memakai konstanta itu. Pernah tidak: tag diberi atribut `data-dipa-board` sementara pencocokan masih literal `<div class="dipa-widget">`, sehingga tiap refresh **menambah** satu salinan widget alih-alih menggantinya. Sekarang refresh menolak jalan kalau menemukan lebih dari satu blok, dan memverifikasi hasilnya menyisakan tepat satu. Kontraknya di `tools/test_dipa_periods.py`.
 
@@ -333,7 +409,7 @@ PN_NATUNA_PRIVATE_ROOT=/path/private MYSQL_BIN=/path/to/mysql DB_USER=root DB_NA
 3. Juli masuk sebagai tab baru dan jadi periode aktif; bulan lama tetap bisa dipilih dan tidak diunduh ulang.
 
 ### Konfigurasi (`tools/refresh-dipa.py`)
-- `FOLDER_ID`, `MODULE_ID` (816), `MAX_PERIODS` (12)
+- `ROOT_FOLDER_ID` (folder induk, subfolder tahun otomatis), `MODULE_ID` (817), `MAX_PERIODS` (12)
 - `PN_NATUNA_PRIVATE_ROOT`, `MYSQL_BIN`/`MYSQL_DEFAULTS_FILE`/`DB_USER`/`DB_PASS`/`DB_NAME` (env var)
 
 ### Catatan parsing
@@ -692,7 +768,14 @@ Jalankan runner dari pointer bundle release terverifikasi, bukan checkout Git ya
 set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-all.sh
 ```
 
-Command hanya memperbarui instansi, YouTube, SIPP, survei SKM/IPAK, DIPA, dan sitemap. Runner tidak menyalin template/`.htaccess`, memasang guard, menjalankan migrasi, atau menghangatkan HTML bertoken. Semua perubahan kode dan schema wajib melalui deployment terjaga.
+Command hanya memperbarui instansi, YouTube, SIPP, survei SKM/IPAK, DIPA, dan sitemap.
+Daftar kartu halaman Transparansi dijalankan terpisah:
+
+```bash
+set -a; . /home/pnnatuna/private/cron/pn-natuna.env; set +a; /bin/sh /home/pnnatuna/private/cron/current/tools/cron-refresh-transparansi.sh
+```
+
+Log-nya terpisah: `/home/pnnatuna/private/logs/cron-refresh-transparansi.log`. Runner tidak menyalin template/`.htaccess`, memasang guard, menjalankan migrasi, atau menghangatkan HTML bertoken. Semua perubahan kode dan schema wajib melalui deployment terjaga.
 
 ### Refresh manual per sumber
 
@@ -722,7 +805,25 @@ CRON_SOURCE=/home/pnnatuna/private/cron/current
 tail -n 100 /home/pnnatuna/private/logs/cron-refresh-all.log
 ```
 
-PDF Google Drive tidak memicu website secara instan. Cron produksi berjalan `0 * * * *` (setiap jam pada menit 00). Nama survei menerima `SKM TW3 2026.pdf` maupun `SKM TW 3 2026.pdf`, juga IPAK; triwulan harus 1–4. Nama DIPA yang aman: `Laporan Realisasi Anggaran DIPA 01 dan 03 {Bulan} {Tahun}.pdf`. Folder Drive wajib publik untuk siapa pun yang memiliki link.
+PDF Google Drive tidak memicu website secara instan.
+
+**Dua jadwal, dua skrip.** Sejak 12 November 2026 tugas cron dipisah menurut sifat
+perubahannya:
+
+| Skrip | Jadwal | Yang diperbarui |
+|---|---|---|
+| `tools/cron-refresh-all.sh` | `0 * * * *` (tiap jam) | Kabar instansi, YouTube, SIPP, skor survei beranda (Kinerja), donut realisasi anggaran (Akuntabilitas), sitemap |
+| `tools/cron-refresh-transparansi.sh` | `17 2 * * *` (sekali sehari) | Daftar kartu seluruh halaman menu Transparansi: LKjIP, Laporan Tahunan, SAKIP, Realisasi Anggaran, LHKPN, SKM, IPAK, Survei Harian, Laporan Keuangan, E-Brosur, Peraturan, Pelayanan Informasi, Lelang |
+
+Alasannya: angka di beranda ingin terlihat segera setelah dokumen masuk, sedangkan
+halaman Transparansi bersifat arsip — isinya hanya berubah ketika ada dokumen baru
+diunggah. Menjalankannya tiap jam berarti membaca puluhan folder Drive dan menulis
+ulang sebelas artikel tanpa perubahan.
+
+Keduanya tidak boleh dijalankan bersamaan pada menit yang sama: `refresh-survey.py`
+dan `refresh-dipa.py` menulis modul Joomla `816` dan `817`, sedangkan
+`refresh-surveys.py` menulis artikel 37–43 dan 85–90. Jadwal `17 2` dipilih agar
+tidak bertabrakan dengan cron per jam di menit 00. Nama survei menerima `SKM TW3 2026.pdf` maupun `SKM TW 3 2026.pdf`, juga IPAK; triwulan harus 1–4. Nama DIPA yang aman: `Laporan Realisasi Anggaran DIPA 01 dan 03 {Bulan} {Tahun}.pdf`. Folder Drive wajib publik untuk siapa pun yang memiliki link.
 
 Pada 2 Oktober 2026, parser diperbaiki karena file TW3 berspasi terlewat. Bundle aktif dipindahkan secara atomik ke `/home/pnnatuna/private/cron/releases/b136c2ac-survey-tw-spacing-20261002`; regresi `tools/test_survey_periods.py` lulus dan refresh menghasilkan kedua gambar TW3. Skor modul 816 disesuaikan dari PDF: SKM dan IPAK 4,00 / 100,00%, masing-masing 49 responden, periode Juli–September. Backup konten sebelum penyesuaian skor: `/home/pnnatuna/private/cron/survey-module-before-tw3-scores.html`.
 
@@ -749,7 +850,7 @@ test -f "$CRON_ROOT/pn-natuna.env" || cp "$REPO/tools/cron-cpanel.env.example" "
 test -f "$CRON_ROOT/mysql.cnf" || cp "$REPO/tools/mysql.cnf.example" "$CRON_ROOT/mysql.cnf"
 test ! -e "$RELEASE" || { echo "STOP: release sudah ada: $RELEASE"; exit 1; }
 mkdir -p "$RELEASE"
-git -C "$REPO" archive "$COMMIT" -- cron-refresh-instansi.php tools/cron-refresh-all.sh tools/cron-refresh-youtube.php tools/cron-refresh-sipp.php tools/refresh-survey.py tools/refresh-dipa.py tools/generate-sitemap.php | tar -x -C "$RELEASE"
+git -C "$REPO" archive "$COMMIT" -- cron-refresh-instansi.php tools/cron-refresh-all.sh tools/cron-refresh-transparansi.sh tools/cron-refresh-youtube.php tools/cron-refresh-sipp.php tools/refresh-survey.py tools/refresh-surveys.py tools/refresh-dipa.py tools/generate-sitemap.php | tar -x -C "$RELEASE"
 chmod 500 "$RELEASE" "$RELEASE/tools"
 chmod 400 "$RELEASE/cron-refresh-instansi.php" "$RELEASE"/tools/*
 rm -f "$CRON_ROOT/current.next"
@@ -777,15 +878,20 @@ set +a
 
 Runner melanjutkan updater lain bila satu sumber gagal, lalu mengembalikan exit nonzero agar email cron memberi peringatan. Root web selalu berasal dari `PN_NATUNA_JPATH_ROOT`; cache feed masuk `public_html/cache`, cache parser DIPA dan file sementara masuk private root, gambar survei masuk `public_html/images/surveys`, dan log masuk folder privat. Template, `.htaccess`, login guard, dan migration registry tidak boleh berubah saat runner berjalan.
 
-### 3. Satu command cPanel Cron Jobs
-
-Jadwal yang sederhana: setiap hari pukul 06.00.
+### 3. Dua entri cPanel Cron Jobs
 
 ```bash
-0 6 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /bin/sh /home/USER/private/cron/current/tools/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
+# Tiap jam: beranda + feed + sitemap
+0 * * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /bin/sh /home/USER/private/cron/current/tools/cron-refresh-all.sh >> /home/USER/private/logs/cron-refresh-all.log 2>&1
+
+# Sekali sehari: seluruh halaman menu Transparansi
+17 2 * * * set -a; . /home/USER/private/cron/pn-natuna.env; set +a; /bin/sh /home/USER/private/cron/current/tools/cron-refresh-transparansi.sh >> /home/USER/private/logs/cron-refresh-transparansi.log 2>&1
 ```
 
-Untuk YouTube lebih cepat, runner yang sama boleh dijalankan per jam, tetapi juga akan memeriksa sumber lain. Jangan menjalankan `refresh-survey.py` dan `refresh-dipa.py` bersamaan; keduanya menyunting modul Joomla `816` secara berurutan di runner ini.
+Keduanya memakai bundle rilis yang sama (`private/cron/current`) dan env yang sama.
+Menit `17` dipilih supaya tidak bertabrakan dengan cron per jam di menit `00`.
+Jangan menjalankan `refresh-survey.py` dan `refresh-dipa.py` bersamaan; keduanya
+menyunting modul Joomla `816` dan `817` secara berurutan di runner per jam.
 
 ### 4. Verifikasi
 

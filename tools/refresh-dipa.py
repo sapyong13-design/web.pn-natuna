@@ -23,12 +23,22 @@ import sys
 import tempfile
 import urllib.parse
 import urllib.request
+from datetime import date
 
 import pymupdf
 
 # ====== KONFIGURASI ======
-FOLDER_ID = '1fVI4UvO54g9u4jdIEjM9EgGGZOS0igNV'
-MODULE_ID = 816  # Modul "Kinerja & Akuntabilitas" — blok .dipa-widget di dalamnya yang di-update
+# Folder induk laporan realisasi anggaran. Isinya subfolder per tahun (2026, 2027, ...),
+# bukan berkas langsung: laporan tahun baru cukup diletakkan di subfoldernya sendiri dan
+# skrip ini menemukannya tanpa perubahan kode.
+CONTAINER_ID = '1oinFzi9Fuvd0aHK5ItycefsP_U-PSYdX'
+SECTION_NAME = 'Realisasi DIPA'
+# Folder induk dibagi dua bagian; seksi ini tinggal di salah satunya.
+GROUPS = ('Beranda', 'Transparansi')
+# Modul "Akuntabilitas" (posisi home-dipa). Dulu blok DIPA menumpang di modul 816
+# bersama kartu skor survei; migrasi 20261114_split_kinerja_akuntabilitas_cards.sql
+# memisahkannya supaya tiap kartu bisa di-refresh tanpa menyentuh kartu lain.
+MODULE_ID = 817
 # Satu-satunya penanda blok widget di konten modul. build_html() menulis tag ini
 # dan update_module_db() mencarinya lewat pola yang sama, jadi keduanya tidak
 # bisa berbeda diam-diam. Atribut apa pun setelah class ikut cocok: menambahkan
@@ -107,12 +117,60 @@ def fetch(url, max_bytes=MAX_HTML_BYTES, allowed_mimes=()):
     return data
 
 
+ENTRY_RE = re.compile(
+    r'<div class="flip-entry" id="entry-([A-Za-z0-9_-]+)"[^>]*>.*?flip-entry-title">([^<]+)</div>',
+    re.S,
+)
+YEAR_NAME_RE = re.compile(r'^(20\d{2})$')
+
 def list_folder(folder_id):
     url = f'https://drive.google.com/embeddedfolderview?id={folder_id}#list'
     html = fetch(url).decode('utf-8', 'ignore')
     ids = re.findall(r'/file/d/([a-zA-Z0-9_-]+)', html)
     names = re.findall(r'flip-entry-title">([^<]+)</div>', html)
     return list(zip(ids, names))
+
+def list_year_folders(root_id):
+    """Semua subfolder bernama tahun di folder induk, terbaru lebih dulu."""
+    url = f'https://drive.google.com/embeddedfolderview?id={root_id}#list'
+    page = fetch(url).decode('utf-8', 'ignore')
+    folders = []
+    for match in ENTRY_RE.finditer(page):
+        name = html.unescape(match.group(2)).strip()
+        year_match = YEAR_NAME_RE.match(name)
+        if year_match:
+            folders.append({'id': match.group(1), 'year': int(year_match.group(1)), 'name': name})
+    folders.sort(key=lambda f: f['year'], reverse=True)
+    return folders
+
+def pick_year_folder(folders, year):
+    """Folder tahun yang diminta, atau None bila belum ada."""
+    return next((folder for folder in folders if folder['year'] == year), None)
+
+def resolve_section(container_id, name, groups=GROUPS):
+    """ID folder seksi, dicari di akar lalu di dalam tiap grup.
+
+    Folder induk dibagi menjadi `Beranda` dan `Transparansi`. Seksi boleh berada
+    langsung di akar (struktur lama) atau di dalam salah satu grup, jadi keduanya
+    dicari: memindahkan folder tidak boleh membuat cron berhenti menemukannya.
+    """
+    key = re.sub(r'[^a-z0-9]+', ' ', name.lower()).strip()
+    page = fetch(f'https://drive.google.com/embeddedfolderview?id={container_id}#list').decode('utf-8', 'ignore')
+    entries = [{'id': m.group(1), 'name': html.unescape(m.group(2)).strip()}
+               for m in ENTRY_RE.finditer(page)]
+    for entry in entries:
+        if re.sub(r'[^a-z0-9]+', ' ', entry['name'].lower()).strip() == key:
+            return entry['id']
+    for group in groups:
+        group_entry = next((e for e in entries
+                            if re.sub(r'[^a-z0-9]+', ' ', e['name'].lower()).strip() == group.lower()), None)
+        if group_entry is None:
+            continue
+        page = fetch(f'https://drive.google.com/embeddedfolderview?id={group_entry["id"]}#list').decode('utf-8', 'ignore')
+        for match in ENTRY_RE.finditer(page):
+            if re.sub(r'[^a-z0-9]+', ' ', html.unescape(match.group(2)).lower()).strip() == key:
+                return match.group(1)
+    return None
 
 
 def parse_period(name):
@@ -148,12 +206,15 @@ def find_latest(files):
     return candidates[0]
 
 
-def collect_periods(files):
+def collect_periods(files, year=None):
     """Semua periode DIPA di folder, terbaru lebih dulu, maksimum MAX_PERIODS.
 
     Satu bulan bisa punya lebih dari satu berkas (laporan 01 sendiri, 03 sendiri,
     lalu gabungan). Yang dipakai satu per bulan: gabungan `01 dan 03` menang
     karena hanya berkas itu memuat kedua unit organisasi.
+
+    `year` membatasi ke satu tahun anggaran. Kartu hanya menampilkan tahun berjalan,
+    jadi berkas tahun lain yang tercecer di folder tahun itu tidak ikut ditawarkan.
     """
     best = {}
     for fid, name in files:
@@ -162,13 +223,15 @@ def collect_periods(files):
             continue
         if 'dipa' not in low and 'realisasi' not in low and 'lra' not in low:
             continue
-        year, month, has_both = parse_period(name)
-        if not year or not month:
+        period_year, month, has_both = parse_period(name)
+        if not period_year or not month:
             continue
-        key = (year, month)
+        if year is not None and period_year != year:
+            continue
+        key = (period_year, month)
         current = best.get(key)
         if current is None or (has_both, name) > (current['has_both'], current['name']):
-            best[key] = {'id': fid, 'name': name, 'year': year, 'month': month, 'has_both': has_both}
+            best[key] = {'id': fid, 'name': name, 'year': period_year, 'month': month, 'has_both': has_both}
     ordered = sorted(best.values(), key=lambda x: (x['year'], x['month']), reverse=True)
     return ordered[:MAX_PERIODS]
 
@@ -542,14 +605,34 @@ def resolve_periods(entries, cache):
 
 
 def main():
-    print('[1/4] List file dari Google Drive folder...')
-    files = list_folder(FOLDER_ID)
+    year = date.today().year
+
+    section_id = resolve_section(CONTAINER_ID, SECTION_NAME)
+    if section_id is None:
+        print(f'[ERROR] Folder "{SECTION_NAME}" tidak ditemukan di {CONTAINER_ID}.')
+        sys.exit(1)
+
+    print(f'[1/4] Cari subfolder tahun {year} di Google Drive...')
+    folders = list_year_folders(section_id)
+    if not folders:
+        print('[ERROR] Folder induk tidak memuat subfolder tahun.')
+        sys.exit(1)
+    print('      Tersedia: ' + ', '.join(str(f['year']) for f in folders))
+    folder = pick_year_folder(folders, year)
+    if folder is None:
+        # Jangan kosongkan kartu: awal tahun anggaran baru, folder tahun berjalan
+        # sering belum dibuat. Konten lama dibiarkan sampai laporan pertama masuk.
+        print(f'[WARN] Subfolder {year} belum ada; kartu tidak diubah.')
+        sys.exit(1)
+    print(f'      Memakai {folder["name"]} ({folder["id"]})')
+
+    files = list_folder(folder['id'])
     print(f'      Ditemukan {len(files)} file.')
 
-    print(f'\n[2/4] Kumpulkan periode (maks {MAX_PERIODS})...')
-    entries = collect_periods(files)
+    print(f'\n[2/4] Kumpulkan periode tahun {year} (maks {MAX_PERIODS})...')
+    entries = collect_periods(files, year)
     if not entries:
-        print('[ERROR] Tidak ada PDF DIPA ditemukan.')
+        print(f'[ERROR] Tidak ada PDF DIPA tahun {year} ditemukan.')
         sys.exit(1)
     for entry in entries:
         print(f'        - {period_label(entry)}  {entry["name"]}')

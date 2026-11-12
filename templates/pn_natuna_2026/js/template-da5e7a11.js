@@ -213,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupStickyNav();
   setupInstansiTabs();
   setupDipaPeriods();
+  setupSurveyPeriods();
   setupScrollReveal();
   setupCountUp();
   setupHeroBackdropPause();
@@ -594,6 +595,48 @@ function setupDipaPeriods() {
       });
       panels.forEach((p) => {
         const active = p.id === 'dipa-panel-' + tab.dataset.dipaTab;
+        p.classList.toggle('is-active', active);
+        p.hidden = !active;
+      });
+      if (moveFocus) tab.focus();
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => activate(tab));
+      tab.addEventListener('keydown', (event) => {
+        let next = null;
+        if (event.key === 'ArrowLeft') next = tabs[(index + tabs.length - 1) % tabs.length];
+        if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+        if (event.key === 'Home') next = tabs[0];
+        if (event.key === 'End') next = tabs[tabs.length - 1];
+        if (!next) return;
+        event.preventDefault();
+        event.stopPropagation();
+        activate(next, true);
+      });
+    });
+    activate(tabs.find((tab) => tab.getAttribute('aria-selected') === 'true') || tabs[0]);
+  });
+}
+
+/*
+ * Pemilih triwulan kartu Kinerja & Akuntabilitas (SKM/IPAK). Polanya sama dengan
+ * setupDipaPeriods: panel teraktif sudah `is-active` dari server, jadi tanpa JS
+ * angkanya tetap tampil, hanya tidak bisa berganti triwulan.
+ */
+function setupSurveyPeriods() {
+  document.querySelectorAll('[data-survey-board]').forEach((board) => {
+    const tabs = Array.from(board.querySelectorAll('[data-survey-tab]'));
+    const panels = Array.from(board.querySelectorAll('.survey-panel'));
+    if (tabs.length < 2) return;
+    const activate = (tab, moveFocus = false) => {
+      tabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', String(active));
+        t.tabIndex = active ? 0 : -1;
+      });
+      panels.forEach((p) => {
+        const active = p.id === 'survey-panel-' + tab.dataset.surveyTab;
         p.classList.toggle('is-active', active);
         p.hidden = !active;
       });

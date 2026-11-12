@@ -12,6 +12,7 @@ PRIVATE="$TMP/private"
 CALLS="$TMP/calls.log"
 mkdir -p "$WEBROOT/templates/pn_natuna_2026" "$SOURCE/templates/pn_natuna_2026" "$SOURCE/tools" "$PRIVATE"
 cp "$ROOT/tools/cron-refresh-all.sh" "$SOURCE/tools/cron-refresh-all.sh"
+cp "$ROOT/tools/cron-refresh-transparansi.sh" "$SOURCE/tools/cron-refresh-transparansi.sh"
 printf '%s\n' 'production-template' > "$WEBROOT/templates/pn_natuna_2026/sentinel.txt"
 printf '%s\n' 'production-htaccess' > "$WEBROOT/.htaccess"
 printf '%s\n' 'stale-source-template' > "$SOURCE/templates/pn_natuna_2026/sentinel.txt"
@@ -47,11 +48,38 @@ grep -Fq 'cron-refresh-sipp.php' "$CALLS"
 grep -Fq 'refresh-survey.py' "$CALLS"
 grep -Fq 'refresh-dipa.py' "$CALLS"
 grep -Fq 'generate-sitemap.php' "$CALLS"
+# Halaman Transparansi dijalankan harian oleh skrip terpisah; kalau ikut di sini,
+# sebelas artikel ditulis ulang tiap jam tanpa perubahan.
+if grep -Fq 'refresh-surveys.py' "$CALLS"; then
+    echo 'FAIL: hourly cron must not sync the Transparansi pages' >&2
+    exit 1
+fi
 if grep -Eq 'install-admin-login-guard|apply-db-migrations|warm-public-cache|templates/pn_natuna_2026|\.htaccess' "$CALLS"; then
     echo 'FAIL: data cron invoked deployment work' >&2
     exit 1
 fi
 
+# --- cron harian: hanya daftar kartu Transparansi -------------------------------
+: > "$CALLS"
+PN_NATUNA_JPATH_ROOT="$WEBROOT" \
+PN_NATUNA_SOURCE_ROOT="$SOURCE" \
+PN_NATUNA_PRIVATE_ROOT="$PRIVATE" \
+PYTHON_BIN="$TMP/fake-runner" \
+MYSQL_BIN="$TMP/fake-runner" \
+MYSQL_DEFAULTS_FILE="$TMP/mysql.cnf" \
+DB_NAME=test_database \
+sh "$SOURCE/tools/cron-refresh-transparansi.sh" >/dev/null
+
+test "$(cat "$WEBROOT/templates/pn_natuna_2026/sentinel.txt")" = 'production-template'
+test "$(wc -l < "$CALLS" | tr -d ' ')" = 1
+grep -Fq 'refresh-surveys.py' "$CALLS"
+grep -Fq -- '--write' "$CALLS"
+if grep -Eq 'cron-refresh-instansi|cron-refresh-youtube|cron-refresh-sipp|refresh-survey.py|refresh-dipa.py|generate-sitemap|apply-db-migrations|warm-public-cache' "$CALLS"; then
+    echo 'FAIL: daily Transparansi cron invoked hourly or deployment work' >&2
+    exit 1
+fi
+
+# Dua skrip cron berbagi penjaga yang sama: checkout Git ditolak.
 mkdir "$SOURCE/.git"
 if PN_NATUNA_JPATH_ROOT="$WEBROOT" \
     PN_NATUNA_SOURCE_ROOT="$SOURCE" \
@@ -63,6 +91,17 @@ if PN_NATUNA_JPATH_ROOT="$WEBROOT" \
     DB_NAME=test_database \
     sh "$SOURCE/tools/cron-refresh-all.sh" >/dev/null 2>&1; then
     echo 'FAIL: data cron accepted a mutable Git checkout' >&2
+    exit 1
+fi
+if PN_NATUNA_JPATH_ROOT="$WEBROOT" \
+    PN_NATUNA_SOURCE_ROOT="$SOURCE" \
+    PN_NATUNA_PRIVATE_ROOT="$PRIVATE" \
+    PYTHON_BIN="$TMP/fake-runner" \
+    MYSQL_BIN="$TMP/fake-runner" \
+    MYSQL_DEFAULTS_FILE="$TMP/mysql.cnf" \
+    DB_NAME=test_database \
+    sh "$SOURCE/tools/cron-refresh-transparansi.sh" >/dev/null 2>&1; then
+    echo 'FAIL: daily Transparansi cron accepted a mutable Git checkout' >&2
     exit 1
 fi
 

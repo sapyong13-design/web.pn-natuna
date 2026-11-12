@@ -1,0 +1,27 @@
+{
+  "_note": "Skor SKM/IPAK per triwulan untuk kartu Kinerja & Akuntabilitas. Skor dan jumlah responden TIDAK dapat dibaca dari PDF publikasi (berkas itu hanya memuat tiga unsur terendah dan tindak lanjutnya), jadi dicatat di sini saat publikasi baru terbit. tools/refresh-survey.py memakai berkas ini sebagai sumber skor dan memasangkan tiap periode dengan dokumen images/surveys/<JENIS>_TW<tw>_<tahun>.png. Periode yang dokumennya sudah ada tetapi skornya belum dicatat sengaja tidak ditawarkan di pemilih, supaya kartu tidak pernah menampilkan angka karangan.",
+  "_fields": "score = indeks 0-4; pct = persentase yang tertulis di publikasi (bukan score/4*100, karena persentase dihitung dari data mentah); respondents = jumlah responden; months = rentang bulan triwulan.",
+  "periods": [
+    {
+      "year": 2026,
+      "tw": 3,
+      "months": "Juli–September",
+      "skm": { "score": 4.00, "pct": 100.00, "respondents": 49 },
+      "ipak": { "score": 4.00, "pct": 100.00, "respondents": 49 }
+    },
+    {
+      "year": 2026,
+      "tw": 2,
+      "months": "April–Juni",
+      "skm": { "score": 3.97, "pct": 99.27, "respondents": 61 },
+      "ipak": { "score": 4.00, "pct": 100.00, "respondents": 61 }
+    },
+    {
+      "year": 2026,
+      "tw": 1,
+      "months": "Januari–Maret",
+      "skm": { "score": 3.82, "pct": 95.50, "respondents": 76 },
+      "ipak": { "score": 3.99, "pct": 99.80, "respondents": 76 }
+    }
+  ]
+}
