@@ -18239,4 +18239,55 @@ body.sipp-stage-open { overflow: hidden; }
   color: #2f140e;
 }
 
+/* Pratinjau berupa banner dokumen (portrait, mis. pengumuman Uji Publik). Bingkai 4:3
+   dengan `object-fit: cover` memotong kop surat dan tombol ajakan di kaki banner,
+   lalu caption gradien menutupi sisa tombol itu. Untuk berkas seperti ini bingkai
+   dilepas: banner dimuat utuh, dan caption diletakkan di bawah gambar.
+
+   Blok ini sengaja diletakkan paling akhir: aturan `min-width: 901px` di atas memaksa
+   `.hero-media` setinggi 397px dengan `object-fit: cover` dan caption bergradien.
+   Spesifisitasnya sama dengan selektor di sini, jadi hanya urutan yang membuat
+   aturan portrait menang. */
+.home-slider .hero-slide-news .hero-media.is-portrait {
+  /* Banner dokumen memakai rasio berkasnya sendiri, bukan bingkai 4:3. Kalau dipaksa
+     4:3, `object-fit: contain` menyisakan pita gelap di kiri kanan dan bannernya
+     menyusut; kalau dipaksa `cover`, kop surat dan tombol di kaki banner hilang. */
+  display: flex;
+  flex-direction: column;
+  /* Lebar dihitung dari tinggi maksimum dikali rasio asli banner (`--poster-ratio`
+     dari PHP). Dengan begitu bingkai, gambar, dan caption selebar banner, tanpa pita
+     gelap di sisi kiri-kanan dan tanpa memotong kop surat. `--poster-caption` adalah
+     tinggi caption dua baris; tanpa dikurangkan, caption kehilangan baris terakhirnya
+     karena bingkai sudah mentok `max-height`. */
+  --poster-caption: 72px;
+  width: min(100%, calc((min(58vh, 440px) - var(--poster-caption)) * var(--poster-ratio, 0.71)));
+  height: auto;
+  max-height: min(58vh, 440px);
+  margin-inline: auto;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: #101a22;
+  box-shadow: 0 30px 70px rgba(12, 6, 3, 0.45);
+}
+
+.home-slider .hero-slide-news .hero-media.is-portrait img {
+  display: block;
+  aspect-ratio: var(--poster-ratio, 0.71);
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: #101a22;
+}
+
+.home-slider .hero-slide-news .hero-media.is-portrait figcaption {
+  position: static;
+  display: block;
+  min-height: 0;
+  padding: 10px 14px 12px;
+  overflow: visible;
+  background: #101a22;
+  color: #fff;
+  -webkit-line-clamp: unset;
+}
+
+
 /* === END EKSPOR JADWAL SIDANG ============================================= */

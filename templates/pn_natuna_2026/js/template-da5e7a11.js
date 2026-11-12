@@ -1586,12 +1586,31 @@ function setupHeroNewsTabs() {
   const preview = document.getElementById('hero-news-preview');
   const caption = document.getElementById('hero-news-caption');
 
+  const previewFrame = preview ? preview.closest('.hero-news-media') : null;
+
+  // Banner dokumen (portrait) tidak boleh dipotong `object-fit: cover`: kop surat dan
+  // tombol ajakan di bagian bawah hilang, dan caption menutupi tombol itu. Kelas ini
+  // memindahkan caption ke bawah gambar dan memuat bannernya utuh.
+  const setPortrait = (link) => {
+    if (!previewFrame) {
+      return;
+    }
+    const portrait = link.dataset.portrait === '1';
+    previewFrame.classList.toggle('is-portrait', portrait);
+    if (portrait && link.dataset.ratio) {
+      previewFrame.style.setProperty('--poster-ratio', link.dataset.ratio);
+    } else {
+      previewFrame.style.removeProperty('--poster-ratio');
+    }
+  };
+
   const setPreview = (link) => {
     if (!preview || !link) {
       return;
     }
     slide.querySelectorAll('.hero-tab-list a.is-preview').forEach((a) => a.classList.remove('is-preview'));
     link.classList.add('is-preview');
+    setPortrait(link);
     const src = link.dataset.image || '';
     const srcset = link.dataset.srcset || '';
     const cap = link.dataset.caption || '';
@@ -1615,6 +1634,9 @@ function setupHeroNewsTabs() {
       preview.setAttribute('src', src);
       if (caption) {
         caption.textContent = cap;
+      }
+      if (cap) {
+        preview.alt = cap;
       }
       preview.addEventListener('load', () => preview.classList.remove('is-swapping'), { once: true });
       window.setTimeout(() => preview.classList.remove('is-swapping'), 700);

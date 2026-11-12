@@ -183,6 +183,20 @@ function pn_natuna_announcement_is_portrait(string $image): bool
     return $size !== false && $size[1] > $size[0] * 1.05;
 }
 
+/**
+ * Rasio lebar/tinggi berkas banner, dipakai CSS untuk memberi bingkai pratinjau
+ * bentuk yang sama dengan bannernya. Tanpa angka ini bingkai hanya bisa menebak
+ * lewat `object-fit`, dan banner portrait menyisakan pita gelap di kiri kanan.
+ */
+function pn_natuna_announcement_ratio(string $image): string
+{
+    $size = @getimagesize(JPATH_SITE . $image);
+
+    return ($size !== false && (int) $size[0] > 0 && (int) $size[1] > 0)
+        ? number_format((int) $size[0] / (int) $size[1], 4, '.', '')
+        : '1';
+}
+
 function pn_natuna_announcement_date(string $created): string
 {
     $months = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -283,7 +297,7 @@ function pn_natuna_hero_render_tab_list(array $items, int $catId, string $panel,
           <a href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($item, $catId), ENT_QUOTES, 'UTF-8'); ?>"
              data-image="<?php echo htmlspecialchars($itemImage, ENT_QUOTES, 'UTF-8'); ?>"
              data-srcset="<?php echo htmlspecialchars($itemSrcset, ENT_QUOTES, 'UTF-8'); ?>"
-             data-caption="<?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>">
+             data-caption="<?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>"<?php echo pn_natuna_announcement_is_portrait($itemImage) ? ' data-portrait="1" data-ratio="' . pn_natuna_announcement_ratio($itemImage) . '"' : ''; ?>>
             <time><?php echo pn_natuna_hero_date($item->created); ?></time>
             <?php /* Hanya tampil di mobile: di sana panel pratinjau besar disembunyikan,
                       jadi tanpa ini daftar berita jadi teks polos tanpa satu gambar pun. */ ?>
@@ -395,11 +409,11 @@ function pn_natuna_render_hero_slider(): void
               <a class="is-primary" href="/berita-dan-pengumuman">Lihat Semua Berita &amp; Pengumuman</a>
             </div>
           </div>
-          <figure class="hero-media hero-news-media">
+          <figure class="hero-media hero-news-media<?php echo pn_natuna_announcement_is_portrait($previewImg) ? ' is-portrait' : ''; ?>"<?php echo pn_natuna_announcement_is_portrait($previewImg) ? ' style="--poster-ratio: ' . pn_natuna_announcement_ratio($previewImg) . '"' : ''; ?>>
             <img id="hero-news-preview"
                  src="<?php echo htmlspecialchars($previewImg, ENT_QUOTES, 'UTF-8'); ?>"
                  <?php if ($previewSrcset !== '') : ?>srcset="<?php echo htmlspecialchars($previewSrcset, ENT_QUOTES, 'UTF-8'); ?>" sizes="(max-width: 900px) 1px, 50vw"<?php endif; ?>
-                 alt="Pratinjau berita" width="800" height="600" loading="lazy" decoding="async">
+                 alt="<?php echo htmlspecialchars($previewCaption, ENT_QUOTES, 'UTF-8'); ?>" width="800" height="600" loading="lazy" decoding="async">
             <figcaption id="hero-news-caption"><?php echo htmlspecialchars($previewCaption, ENT_QUOTES, 'UTF-8'); ?></figcaption>
           </figure>
         </div>
