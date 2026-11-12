@@ -1592,15 +1592,8 @@ function setupHeroNewsTabs() {
   // tombol ajakan di bagian bawah hilang, dan caption menutupi tombol itu. Kelas ini
   // memindahkan caption ke bawah gambar dan memuat bannernya utuh.
   const setPortrait = (link) => {
-    if (!previewFrame) {
-      return;
-    }
-    const portrait = link.dataset.portrait === '1';
-    previewFrame.classList.toggle('is-portrait', portrait);
-    if (portrait && link.dataset.ratio) {
-      previewFrame.style.setProperty('--poster-ratio', link.dataset.ratio);
-    } else {
-      previewFrame.style.removeProperty('--poster-ratio');
+    if (previewFrame) {
+      previewFrame.classList.toggle('is-portrait', link.dataset.portrait === '1');
     }
   };
 
