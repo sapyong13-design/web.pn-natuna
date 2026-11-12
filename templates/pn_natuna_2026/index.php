@@ -99,7 +99,9 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/fonts.css?v=<?php echo @filemtime($tplPath . '/css/fonts.css') ?: '1'; ?>" />
   <link rel="stylesheet" href="/templates/<?php echo $this->template; ?>/css/template-4b123344.css?v=<?php echo @filemtime($tplPath . '/css/template-4b123344.css') ?: '1'; ?>" />
   <jdoc:include type="scripts" />
-  <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js?v=20260912-integrity-popup-v3" defer></script>
+  <?php /* Versi dari mtime, sama seperti CSS di atas. Versi statis membuat browser
+           memakai JS lama setelah deploy sampai pengunjung menghapus cache. */ ?>
+  <script src="/templates/<?php echo $this->template; ?>/js/template-da5e7a11.js?v=<?php echo @filemtime($tplPath . '/js/template-da5e7a11.js') ?: '1'; ?>" defer></script>
 </head>
 <body class="site <?php echo $isHome ? 'is-home' : 'is-inner'; ?>">
   <script src="/templates/pn_natuna_2026/js/theme-boot.js"></script>
