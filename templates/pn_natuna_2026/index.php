@@ -312,31 +312,30 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <?php if ($isHome) : ?>
   <?php
   /*
-   * Pop-up beranda memuat dua pemberitahuan yang berbeda bentuknya: banner gratifikasi
-   * (lanskap) dan banner Uji Publik Calon Hakim (portrait, wajib dapat diklik sesuai
-   * Surat Badan Pengawasan MA 9436/BP/KP1.1.2/XI/2026). Satu dialog dengan tab membuat
-   * keduanya terbaca tanpa saling mengecilkan; tab Uji Publik dibuka lebih dulu karena
-   * tenggatnya, gratifikasi tetap satu klik dari sana.
+   * Pop-up beranda menampilkan dua pemberitahuan BERDAMPINGAN, bukan bergantian:
+   * banner Tolak Gratifikasi (lanskap) di kiri dan banner Uji Publik Calon Hakim
+   * (portrait) di kanan. Pada layar sempit keduanya menumpuk vertikal.
+   *
+   * Banner Uji Publik wajib dapat diklik menuju laman resmi sesuai Surat Badan
+   * Pengawasan MA 9436/BP/KP1.1.2/XI/2026, jadi gambar dan tombolnya adalah tautan.
    */
   ?>
   <div id="integrity-notice" class="integrity-notice" hidden>
     <div class="integrity-notice__dialog" role="dialog" aria-modal="true" aria-label="Pemberitahuan resmi Pengadilan Negeri Natuna">
       <button class="integrity-notice__close" type="button" aria-label="Tutup pemberitahuan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
-      <div class="integrity-notice__tabs" role="tablist" aria-label="Pilih pemberitahuan">
-        <button type="button" role="tab" id="integrity-tab-uji" class="integrity-notice__tab is-active" data-integrity-tab="uji" aria-selected="true" aria-controls="integrity-panel-uji" tabindex="0">Uji Publik Calon Hakim</button>
-        <button type="button" role="tab" id="integrity-tab-gratifikasi" class="integrity-notice__tab" data-integrity-tab="gratifikasi" aria-selected="false" aria-controls="integrity-panel-gratifikasi" tabindex="-1">Tolak Gratifikasi</button>
-      </div>
-      <div class="integrity-notice__panels">
-        <div class="integrity-notice__panel" id="integrity-panel-uji" role="tabpanel" aria-labelledby="integrity-tab-uji">
-          <a class="integrity-notice__poster integrity-notice__poster--uji" href="https://siwas.mahkamahagung.go.id/Uji_publik" target="_blank" rel="noopener noreferrer" aria-label="Buka laman resmi Uji Publik Calon Hakim Mahkamah Agung RI">
-            <img src="/images/pengumuman/uji-publik-cakim-2026-768.webp?v=<?php echo @filemtime(JPATH_ROOT . '/images/pengumuman/uji-publik-cakim-2026-768.webp') ?: '1'; ?>" srcset="/images/pengumuman/uji-publik-cakim-2026-480.webp 480w, /images/pengumuman/uji-publik-cakim-2026-768.webp 768w, /images/pengumuman/uji-publik-cakim-2026-1200.webp 1200w, /images/pengumuman/uji-publik-cakim-2026.webp 1414w" sizes="(max-width: 760px) 92vw, 560px" alt="Uji Publik Calon Hakim Rekrutmen Internal Mahkamah Agung RI. Suara Anda, Masa Depan Peradilan. Klik untuk melakukan penilaian." width="1414" height="2000" loading="eager" decoding="async">
-          </a>
-          <p class="integrity-notice__caption"><a href="https://siwas.mahkamahagung.go.id/Uji_publik" target="_blank" rel="noopener noreferrer">Beri penilaian di laman Uji Publik <span aria-hidden="true">&rarr;</span></a></p>
-        </div>
-        <div class="integrity-notice__panel" id="integrity-panel-gratifikasi" role="tabpanel" aria-labelledby="integrity-tab-gratifikasi" hidden>
-          <figure class="integrity-notice__poster">
-            <img src="/images/hero/tolak-gratifikasi-popup-20260912.webp?v=<?php echo @filemtime(JPATH_ROOT . '/images/hero/tolak-gratifikasi-popup-20260912.webp') ?: '1'; ?>" srcset="/images/hero/tolak-gratifikasi-popup-20260912-480.webp 480w, /images/hero/tolak-gratifikasi-popup-20260912-768.webp 768w, /images/hero/tolak-gratifikasi-popup-20260912-1200.webp 1200w, /images/hero/tolak-gratifikasi-popup-20260912.webp 1568w" sizes="(max-width: 1100px) 100vw, 1100px" alt="Pengadilan Negeri Natuna: Tolak Gratifikasi. Katakan TIDAK pada gratifikasi dalam bentuk apa pun." width="1568" height="735" loading="lazy" decoding="async">
+      <div class="integrity-notice__grid">
+        <div class="integrity-notice__poster integrity-notice__poster--gratifikasi">
+          <figure class="integrity-notice__banner">
+            <img src="/images/hero/tolak-gratifikasi-popup-20261112-1200.webp?v=<?php echo @filemtime(JPATH_ROOT . '/images/hero/tolak-gratifikasi-popup-20261112-1200.webp') ?: '1'; ?>" srcset="/images/hero/tolak-gratifikasi-popup-20261112-480.webp 480w, /images/hero/tolak-gratifikasi-popup-20261112-768.webp 768w, /images/hero/tolak-gratifikasi-popup-20261112-1200.webp 1200w, /images/hero/tolak-gratifikasi-popup-20261112.webp 3870w" sizes="(max-width: 900px) 92vw, 620px" alt="Pengadilan Negeri Natuna: Tolak Gratifikasi. Gratifikasi merusak integritas, mencoreng keadilan. Tolak, Laporkan, Lindungi Integritas." width="3870" height="1814" loading="eager" decoding="async">
           </figure>
+          <p class="integrity-notice__note">Gratifikasi merusak integritas dan mencoreng keadilan. Tolak, laporkan, lindungi integritas.</p>
+          <p class="integrity-notice__caption"><a href="/layanan-publik/regulasi-pengaduan">Saluran pengaduan <span aria-hidden="true">&rarr;</span></a></p>
+        </div>
+        <div class="integrity-notice__poster integrity-notice__poster--uji">
+          <a class="integrity-notice__link" href="https://siwas.mahkamahagung.go.id/Uji_publik" target="_blank" rel="noopener noreferrer" aria-label="Buka laman resmi Uji Publik Calon Hakim Mahkamah Agung RI">
+            <img src="/images/pengumuman/uji-publik-cakim-2026-768.webp?v=<?php echo @filemtime(JPATH_ROOT . '/images/pengumuman/uji-publik-cakim-2026-768.webp') ?: '1'; ?>" srcset="/images/pengumuman/uji-publik-cakim-2026-480.webp 480w, /images/pengumuman/uji-publik-cakim-2026-768.webp 768w, /images/pengumuman/uji-publik-cakim-2026-1200.webp 1200w, /images/pengumuman/uji-publik-cakim-2026.webp 1414w" sizes="(max-width: 900px) 92vw, 380px" alt="Uji Publik Calon Hakim Rekrutmen Internal Mahkamah Agung RI. Suara Anda, Masa Depan Peradilan. Klik untuk melakukan penilaian." width="1414" height="2000" loading="eager" decoding="async">
+          </a>
+          <p class="integrity-notice__caption"><a href="https://siwas.mahkamahagung.go.id/Uji_publik" target="_blank" rel="noopener noreferrer">Beri penilaian Uji Publik <span aria-hidden="true">&rarr;</span></a></p>
         </div>
       </div>
     </div>

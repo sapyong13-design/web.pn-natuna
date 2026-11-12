@@ -17196,70 +17196,34 @@ body.is-dark .dossier-card .dossier-header h2#dossier-name { color: #f3c96b !imp
   to { opacity: 1; }
 }
 
-/* Dua pemberitahuan dalam satu dialog: tab di atas, panel bergantian di bawah.
-   Lebar dialog mengikuti banner Uji Publik yang portrait — kalau mengikuti banner
-   gratifikasi (1568x735) versi portrait akan memaksa scroll panjang ke bawah. */
+/* Dua pemberitahuan berdampingan dalam satu dialog: Tolak Gratifikasi (lanskap) di
+   kiri, Uji Publik Calon Hakim (portrait) di kanan. Keduanya disejajarkan pada tinggi
+   yang sama, bukan lebar yang sama, karena rasionya berbeda jauh (2,13 vs 0,71).
+   `align-items: center` membuat banner lanskap tidak menggantung di atas. */
 .integrity-notice__dialog {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: start;
+  align-items: center;
   gap: 0;
-  width: min(560px, 100%);
+  width: min(1040px, 100%);
   max-height: calc(100dvh - 32px);
   overflow: auto;
   border: 0;
   border-radius: 16px;
-  padding: 0 0 14px;
+  padding: 18px;
   background: #fff;
   color: var(--color-ink);
   box-shadow: 0 30px 70px rgba(12, 4, 1, 0.48);
 }
 
-.integrity-notice__tabs {
+.integrity-notice__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  padding: 14px 56px 10px 14px;
-  border-bottom: 1px solid var(--color-line);
-  background: #fbf7ef;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-.integrity-notice__tab {
-  min-height: 40px;
-  padding: 6px 10px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-muted);
-  font: inherit;
-  font-size: var(--step--1);
-  font-weight: 800;
-  line-height: 1.2;
-  cursor: pointer;
-}
-
-.integrity-notice__tab.is-active {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.integrity-notice__tab:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.integrity-notice__panel {
-  padding: 12px 14px 0;
-}
-
-.integrity-notice__panel[hidden] {
-  display: none;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  /* Kedua kolom sama tinggi; isinya ditengahkan vertikal. Tanpa `stretch`, kolom
+     lanskap yang pendek menggantung di atas dan menyisakan lubang di bawahnya. */
+  align-items: stretch;
+  gap: 16px;
 }
 
 .integrity-notice__poster {
@@ -17278,24 +17242,74 @@ body.is-dark .dossier-card .dossier-header h2#dossier-name { color: #f3c96b !imp
   object-fit: contain;
 }
 
-.integrity-notice__poster--uji {
+/* Banner Uji Publik tinggi; batasi supaya dialog tidak lebih tinggi dari layar dan
+   kedua banner tetap terlihat bersamaan tanpa scroll. */
+/* Kedua kolom memakai susunan yang sama (banner + keterangan + tombol) supaya
+   tingginya seimbang walau rasio bannernya berbeda jauh. */
+.integrity-notice__poster--uji,
+.integrity-notice__poster--gratifikasi {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  background: transparent;
+  overflow: visible;
+}
+
+.integrity-notice__banner {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(12, 4, 1, 0.18);
+}
+
+.integrity-notice__banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.integrity-notice__note {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: var(--step--1);
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.integrity-notice__poster--uji .integrity-notice__link {
+  display: block;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(12, 4, 1, 0.18);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.integrity-notice__poster--uji:hover,
-.integrity-notice__poster--uji:focus-visible {
+.integrity-notice__poster--uji .integrity-notice__link img {
+  width: auto;
+  max-width: 100%;
+  max-height: min(62vh, 520px);
+  margin: 0 auto;
+  border-radius: 10px;
+}
+
+.integrity-notice__poster--uji .integrity-notice__link:hover,
+.integrity-notice__poster--uji .integrity-notice__link:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 12px 26px rgba(12, 4, 1, 0.24);
+  box-shadow: 0 12px 26px rgba(12, 4, 1, 0.26);
 }
 
 .integrity-notice__caption {
-  margin: 10px 0 0;
+  margin: 0;
   text-align: center;
 }
 
 .integrity-notice__caption a {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   min-height: 44px;
   padding: 0 20px;
@@ -17310,6 +17324,19 @@ body.is-dark .dossier-card .dossier-header h2#dossier-name { color: #f3c96b !imp
 .integrity-notice__caption a:hover,
 .integrity-notice__caption a:focus-visible {
   background: var(--color-primary-dark);
+}
+
+/* Layar sedang: tumpuk vertikal, gratifikasi tetap lebih lebar dari layar karena
+   rasionya lanskap. */
+@media (max-width: 900px) {
+  .integrity-notice__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .integrity-notice__poster--uji .integrity-notice__link img {
+    max-height: min(46vh, 420px);
+  }
 }
 
 .integrity-notice__close {
@@ -17349,19 +17376,8 @@ body.is-dark .integrity-notice__dialog {
   color: #edf2f7;
 }
 
-body.is-dark .integrity-notice__tabs {
-  background: #131b21;
-  border-bottom-color: #3a464f;
-}
-
-body.is-dark .integrity-notice__tab {
-  color: #b9c4cd;
-}
-
-body.is-dark .integrity-notice__tab.is-active {
-  background: #8f1f0b;
-  border-color: #8f1f0b;
-  color: #fff;
+body.is-dark .integrity-notice__note {
+  color: #cfd8e0;
 }
 
 body.is-dark .integrity-notice__close {

@@ -9,7 +9,10 @@ tree = ET.parse(root / 'sitemap.xml')
 pages = tree.findall('s:url', ns)
 home = next(p for p in pages if p.findtext('s:loc', namespaces=ns) == 'https://pn-natuna.go.id/')
 assert home.find('s:lastmod', ns) is None, 'Homepage has no authoritative aggregate modification date'
-assert any(n.text.endswith('/tolak-gratifikasi-popup-20260912.webp') for n in home.findall('i:image/i:loc', ns))
+# Poster popup berganti versi (20260912 -> 20261112); yang diuji adalah keberadaan
+# poster popup yang sedang tayang, bukan satu nama berkas tertentu.
+assert any('/tolak-gratifikasi-popup-' in n.text for n in home.findall('i:image/i:loc', ns)), \
+    'Homepage image sitemap must list the integrity popup poster'
 images = tree.findall('.//i:loc', ns)
 assert images
 for image in images:

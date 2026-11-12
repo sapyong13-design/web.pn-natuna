@@ -1765,38 +1765,6 @@ function setupIntegrityNotice() {
   const closeButton = overlay.querySelector('.integrity-notice__close');
   if (!dialog || !closeButton) return;
 
-  /*
-   * Dua pemberitahuan berbagi satu dialog (Uji Publik Calon Hakim dan Tolak
-   * Gratifikasi). Tab memakai pola APG: panah kiri/kanan berpindah tab, hanya tab
-   * aktif yang bisa difokus, dan panel nonaktif `hidden` supaya pembaca layar tidak
-   * membacakan dua poster sekaligus.
-   */
-  const tabs = Array.from(overlay.querySelectorAll('[data-integrity-tab]'));
-  const panels = new Map(tabs.map((tab) => [tab.dataset.integrityTab, overlay.querySelector('#' + tab.getAttribute('aria-controls'))]));
-
-  const activateTab = (name, focus = false) => {
-    tabs.forEach((tab) => {
-      const active = tab.dataset.integrityTab === name;
-      tab.classList.toggle('is-active', active);
-      tab.setAttribute('aria-selected', active ? 'true' : 'false');
-      tab.tabIndex = active ? 0 : -1;
-      const panel = panels.get(tab.dataset.integrityTab);
-      if (panel) panel.hidden = !active;
-      if (active && focus) tab.focus();
-    });
-  };
-
-  tabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => activateTab(tab.dataset.integrityTab));
-    tab.addEventListener('keydown', (event) => {
-      const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
-      if (!step) return;
-      event.preventDefault();
-      const next = tabs[(index + step + tabs.length) % tabs.length];
-      activateTab(next.dataset.integrityTab, true);
-    });
-  });
-
   const storageKey = 'pnNatunaIntegrityNoticeSeenAt';
   const suppressFor = 10 * 60 * 1000;
   const now = Date.now();
