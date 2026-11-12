@@ -702,7 +702,28 @@ if ($referrer !== '') {
       <figcaption><?php echo $this->escape($heroCaption); ?></figcaption>
     </figure>
   <?php elseif ($channel === 'announcement' && $image) : ?>
-    <figure class="editorial-article__hero editorial-article__hero--document"><img src="<?php echo $this->escape($imageUrl); ?>" alt="<?php echo $this->escape($imageAlt); ?>" width="1200" height="675"><?php if ($imageCaption) : ?><figcaption><?php echo $this->escape($imageCaption); ?></figcaption><?php endif; ?></figure>
+    <?php
+    /*
+     * Banner pengumuman bisa berupa dokumen portrait (kop surat + tanda tangan) atau
+     * banner lanskap. Ukuran asli dibaca dari berkas: memaksa 1200x675 membuat banner
+     * portrait gepeng, sedangkan `object-fit: cover` akan memotong bagian bawahnya.
+     * Bila artikel menyimpan `metadata.external_url` (mis. permintaan Badan Pengawasan
+     * MA agar banner menuju laman Uji Publik), bannernya sekaligus menjadi tautan.
+     */
+    $bannerSize = is_file(JPATH_SITE . $imageUrl) ? @getimagesize(JPATH_SITE . $imageUrl) : false;
+    $bannerPortrait = $bannerSize !== false && $bannerSize[1] > $bannerSize[0];
+    $bannerWidth = $bannerSize !== false ? (int) $bannerSize[0] : 1200;
+    $bannerHeight = $bannerSize !== false ? (int) $bannerSize[1] : 675;
+    $articleMeta = json_decode((string) ($item->metadata ?? ''), true) ?: [];
+    $bannerHref = trim((string) ($articleMeta['external_url'] ?? ''));
+    $bannerExternal = $bannerHref !== '' && preg_match('~^https?://~i', $bannerHref) === 1;
+    ?>
+    <figure class="editorial-article__hero editorial-article__hero--document<?php echo $bannerPortrait ? ' editorial-article__hero--portrait' : ''; ?>">
+      <?php if ($bannerExternal) : ?><a class="editorial-article__hero-link" href="<?php echo $this->escape($bannerHref); ?>" target="_blank" rel="noopener noreferrer" aria-label="<?php echo $this->escape(($imageAlt !== '' ? $imageAlt : $item->title) . ' — buka laman resmi'); ?>"><?php endif; ?>
+      <img src="<?php echo $this->escape($imageUrl); ?>" alt="<?php echo $this->escape($imageAlt); ?>" width="<?php echo $bannerWidth; ?>" height="<?php echo $bannerHeight; ?>" loading="eager" decoding="async">
+      <?php if ($bannerExternal) : ?></a><?php endif; ?>
+      <?php if ($imageCaption) : ?><figcaption><?php echo $this->escape($imageCaption); ?></figcaption><?php endif; ?>
+    </figure>
   <?php elseif ($channel === 'announcement') : ?>
     <figure class="editorial-article__hero editorial-article__hero--document"><img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="Pengumuman Resmi Pengadilan Negeri Natuna" width="1200" height="675"></figure>
   <?php else : ?>

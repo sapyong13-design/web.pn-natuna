@@ -40,14 +40,14 @@ Factory::$application = new class ($user) {
 $db = DatabaseDriver::getInstance(['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => 'test_']);
 Factory::$database = $db;
 $db->setQuery('CREATE TABLE test_categories (id INTEGER PRIMARY KEY, access INTEGER, published INTEGER)')->execute();
-$db->setQuery('CREATE TABLE test_content (id INTEGER PRIMARY KEY, title TEXT, alias TEXT, catid INTEGER, created TEXT, publish_up TEXT, publish_down TEXT, images TEXT, introtext TEXT, fulltext TEXT, metadesc TEXT, state INTEGER, access INTEGER)')->execute();
+$db->setQuery('CREATE TABLE test_content (id INTEGER PRIMARY KEY, title TEXT, alias TEXT, catid INTEGER, created TEXT, publish_up TEXT, publish_down TEXT, images TEXT, introtext TEXT, fulltext TEXT, metadesc TEXT, metadata TEXT, state INTEGER, access INTEGER)')->execute();
 $db->setQuery('INSERT INTO test_categories VALUES (12, 1, 1), (13, 2, 1), (14, 1, 0)')->execute();
 $insert = static function (int $id, array $changes = []) use ($db): void {
     $row = (object) array_replace([
         'id' => $id, 'title' => 'Article ' . $id, 'alias' => 'article-' . $id,
         'catid' => 12, 'created' => '2001-01-01 00:00:00',
         'publish_up' => '2002-01-01 00:00:00', 'publish_down' => null,
-        'images' => '', 'introtext' => 'Teaser', 'fulltext' => '', 'metadesc' => '',
+        'images' => '', 'introtext' => 'Teaser', 'fulltext' => '', 'metadesc' => '', 'metadata' => '',
         'state' => 1, 'access' => 1,
     ], $changes);
     $db->insertObject('#__content', $row);

@@ -18,7 +18,9 @@ function pn_natuna_hero_latest_articles(int $catId, int $limit = 4): array
         $now = Factory::getDate()->toSql();
         $levels = array_map('intval', Factory::getUser()->getAuthorisedViewLevels());
         $query = $db->getQuery(true)
-            ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.created', 'a.publish_up', 'a.images', 'a.introtext', 'a.fulltext', 'a.metadesc']))
+            // `metadata` ikut dipilih: kartu pengumuman membaca `metadata.external_url`
+            // untuk memutuskan apakah klik langsung menuju laman instansi pengirim.
+            ->select($db->quoteName(['a.id', 'a.title', 'a.alias', 'a.catid', 'a.created', 'a.publish_up', 'a.images', 'a.introtext', 'a.fulltext', 'a.metadesc', 'a.metadata']))
             ->from($db->quoteName('#__content', 'a'))
             ->innerJoin($db->quoteName('#__categories', 'c') . ' ON ' . $db->quoteName('c.id') . ' = ' . $db->quoteName('a.catid'))
             ->where($db->quoteName('a.state') . ' = 1')
@@ -128,15 +130,57 @@ function pn_natuna_hero_article_srcset(string $image): string
 
 function pn_natuna_announcement_image(object $article): string
 {
-    $decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
-    $img = trim((string) ($decoded['image_fulltext'] ?? ''));
+    // `metadata.card_image` didahulukan: pengumuman yang bannernya sudah ditanam di
+    // badan artikel tidak mengisi `images.*`, karena templat artikel merender gambar
+    // intro sebagai bingkai 16:9 dan banner portrait akan tampil gepeng.
+    $metadata = json_decode((string) ($article->metadata ?? ''), true) ?: [];
+    $img = trim((string) ($metadata['card_image'] ?? ''));
     if ($img === '') {
-        $img = trim((string) ($decoded['image_intro'] ?? ''));
+        $decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
+        $img = trim((string) ($decoded['image_fulltext'] ?? ''));
+        if ($img === '') {
+            $img = trim((string) ($decoded['image_intro'] ?? ''));
+        }
     }
     if ($img === '') {
         return '/images/brand/pengumuman-resmi-pn-natuna.webp';
     }
     return '/' . ltrim(explode('#', $img)[0], '/');
+}
+
+/**
+ * Tujuan klik kartu sorotan pengumuman.
+ *
+ * Pengumuman yang menindaklanjuti surat dinas kadang harus langsung membuka laman
+ * resmi instansi pengirim (mis. Uji Publik Calon Hakim di siwas.mahkamahagung.go.id).
+ * Tujuan itu disimpan di `metadata.external_url` artikel, jadi tidak perlu kolom baru
+ * dan tetap bisa diubah dari admin tanpa menyentuh template.
+ */
+function pn_natuna_announcement_href(object $article, int $catId): string
+{
+    $metadata = json_decode((string) ($article->metadata ?? ''), true) ?: [];
+    $external = trim((string) ($metadata['external_url'] ?? ''));
+    if ($external !== '' && preg_match('~^https?://~i', $external)) {
+        return $external;
+    }
+
+    return pn_natuna_hero_article_url($article, $catId);
+}
+
+/**
+ * Gambar pengumuman berbentuk dokumen (portrait) tidak boleh dipotong `object-fit:
+ * cover`: kop surat dan blok tanda tangan hilang. Fungsi ini memeriksa rasio berkas
+ * supaya template bisa menampilkannya utuh di dalam kartu.
+ */
+function pn_natuna_announcement_is_portrait(string $image): bool
+{
+    $path = JPATH_SITE . $image;
+    if (!is_file($path)) {
+        return false;
+    }
+    $size = @getimagesize($path);
+
+    return $size !== false && $size[1] > $size[0] * 1.05;
 }
 
 function pn_natuna_announcement_date(string $created): string
@@ -174,17 +218,23 @@ function pn_natuna_render_latest_announcements(?array $articles = null, ?array $
         </div>
       </div>
       <div class="announcement-showcase__grid">
-        <a class="announcement-feature" href="<?php echo htmlspecialchars(pn_natuna_hero_article_url($feature, 13), ENT_QUOTES, 'UTF-8'); ?>">
+        <?php
+        $featureImage = pn_natuna_announcement_image($feature);
+        $featureHref = pn_natuna_announcement_href($feature, 13);
+        $featureExternal = $featureHref !== pn_natuna_hero_article_url($feature, 13);
+        $featurePortrait = pn_natuna_announcement_is_portrait($featureImage);
+        ?>
+        <a class="announcement-feature<?php echo $featurePortrait ? ' announcement-feature--portrait' : ''; ?>" href="<?php echo htmlspecialchars($featureHref, ENT_QUOTES, 'UTF-8'); ?>"<?php echo $featureExternal ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
           <span class="announcement-feature__eyebrow">Pengumuman terbaru</span>
           <span class="announcement-feature__media">
-            <img src="<?php echo htmlspecialchars(pn_natuna_announcement_image($feature), ENT_QUOTES, 'UTF-8'); ?>" alt="" width="760" height="460" loading="lazy" decoding="async">
+            <img src="<?php echo htmlspecialchars($featureImage, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="760" height="460" loading="lazy" decoding="async">
             <span class="announcement-feature__badge">Terbaru</span>
           </span>
           <span class="announcement-feature__copy">
             <time><?php echo htmlspecialchars(pn_natuna_announcement_date($feature->created), ENT_QUOTES, 'UTF-8'); ?></time>
             <strong><?php echo htmlspecialchars($feature->title, ENT_QUOTES, 'UTF-8'); ?></strong>
             <?php if ($featureExcerpt !== '') : ?><span class="announcement-feature__excerpt"><?php echo $featureExcerpt; ?></span><?php endif; ?>
-            <span class="announcement-feature__cta">Baca Pengumuman <span aria-hidden="true">&rarr;</span></span>
+            <span class="announcement-feature__cta"><?php echo $featureExternal ? 'Buka laman resmi' : 'Baca Pengumuman'; ?> <span aria-hidden="true">&rarr;</span></span>
           </span>
         </a>
         <?php if ($activeVideo) : ?>
