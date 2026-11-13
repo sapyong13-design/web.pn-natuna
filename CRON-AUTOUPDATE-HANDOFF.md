@@ -327,13 +327,13 @@ WEB PN-NATUNA.GO.ID/
 │   ├── Survei Terbaru/            ├── 2026/   (refresh-survey.py → kartu Kinerja)
 │   └── Realisasi DIPA/            ├── 2021/ … 2026/  (refresh-dipa.py → Akuntabilitas)
 └── Transparansi/                  ← sumber halaman menu Transparansi
-    ├── Laporan SKM/               ├── 2024/ 2025/ 2026/ + berkas 2021-2023
-    ├── Laporan IPAK/              ├── 2024/ 2025/ 2026/ + berkas 2021-2024
-    ├── Laporan Survei Harian/     ├── 2025/ 2026/ + berkas 2022-2023
+    ├── Laporan SKM/               ├── 2021/ … 2026/
+    ├── Laporan IPAK/              ├── 2021/ … 2026/
+    ├── Laporan Survei Harian/     ├── 2022/ 2023/ 2025/ 2026/
     ├── Ringkasan LKjIP/           (berkas langsung, tahun di nama berkas)
     ├── Laporan Tahunan/           (berkas langsung)
-    ├── SAKIP/                     ├── SAKIP 2020/ … SAKIP 2026/
-    ├── LHKPN/                     ├── LHKPN 2019/ … LHKPN 2025/
+    ├── SAKIP/                     ├── 2020/ … 2026/
+    ├── LHKPN/                     ├── 2019/ … 2025/
     ├── Laporan Keuangan/          (berkas langsung 2022-2025)
     ├── E-Brosur/                  (berkas langsung)
     ├── Peraturan dan Kebijakan/   (berkas langsung)
@@ -341,10 +341,11 @@ WEB PN-NATUNA.GO.ID/
     └── Lelang Barang dan Jasa/    (kosong sampai ada publikasi resmi)
 ```
 
-Nama subfolder tahun tidak harus empat digit saja: `SAKIP 2020` dan `LHKPN 2019`
-dikenali lewat empat digit di namanya (`year_from()`). Folder tahun yang masih
-memuat subfolder lagi (mis. `LHKPN 2020/1. LHKPN 2020/`) ikut ditelusuri sampai
-kedalaman dua, supaya berkasnya tidak hilang dari arsip.
+Nama subfolder tahun yang dipakai sekarang hanya empat digit (`2024`). Nama lain
+tetap dikenali lewat empat digit di dalamnya (`year_from()`), jadi `SAKIP 2020` dan
+`LHKPN 2019` masih terbaca kalau ada yang mengunggah ulang dengan nama lama. Folder
+tahun yang masih memuat subfolder lagi (mis. `2020/1. LHKPN 2020/`) ikut ditelusuri
+sampai kedalaman dua, supaya berkasnya tidak hilang dari arsip.
 
 **Pencarian folder toleran terhadap posisi.** `resolve_section()` di
 `refresh-survey.py` dan `refresh-dipa.py`, serta `section_sources()` di
