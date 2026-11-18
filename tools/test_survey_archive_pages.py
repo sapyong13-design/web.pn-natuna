@@ -305,6 +305,48 @@ rs.keep_legacy_cards(legacy_entry, legacy_html)
 expect(len(legacy_entry["items"]) == 2,
        f"Kartu lama yang sah harus dipertahankan, dapat {len(legacy_entry['items'])}.")
 
+# --- refresh-survey.py: nama konstanta wajib ada -------------------------------
+# `main()` memakai nama modul sebagai variabel global. Satu salah nama
+# (`ROOT_FOLDER_ID` alih-alih `CONTAINER_ID`) tidak tertangkap saat impor karena
+# baru dievaluasi di dalam fungsi, lalu `except Exception` di `__main__` menelannya
+# menjadi "[ERROR] Refresh survei gagal" tanpa jejak. Cron per jam karenanya gagal
+# di tahap [2/4] setiap kali berjalan sejak 12 November 2026.
+survey_spec = importlib.util.spec_from_file_location(
+    "refresh_survey_under_test", ROOT / "tools" / "refresh-survey.py")
+rsv = importlib.util.module_from_spec(survey_spec)
+survey_spec.loader.exec_module(rsv)
+
+# Nama global yang dirujuk main() harus benar-benar ada di modul.
+import ast
+source = (ROOT / "tools" / "refresh-survey.py").read_text(encoding="utf-8")
+tree = ast.parse(source)
+main_fn = next((n for n in ast.walk(tree)
+                if isinstance(n, ast.FunctionDef) and n.name == "main"), None)
+expect(main_fn is not None, "main() tidak ditemukan di refresh-survey.py")
+if main_fn is not None:
+    # Nama yang diikat di mana pun di dalam fungsi: argumen, target assign, variabel
+    # loop (for/tuple), nama `with`, dan target `except ... as`. Tanpa ini variabel
+    # loop seperti `period` salah dilaporkan sebagai tidak terdefinisi.
+    bound = {a.arg for a in main_fn.args.args}
+
+    def collect_targets(node):
+        for t in ast.walk(node):
+            if isinstance(t, ast.Name) and isinstance(t.ctx, (ast.Store, ast.Del)):
+                bound.add(t.id)
+            elif isinstance(t, ast.arg):
+                bound.add(t.arg)
+
+    collect_targets(main_fn)
+    import builtins
+    used = {n.id for n in ast.walk(main_fn)
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    undefined = sorted(name for name in used
+                       if name not in bound
+                       and not hasattr(rsv, name)
+                       and not hasattr(builtins, name))
+    expect(not undefined,
+           f"main() merujuk nama yang tidak ada di modul: {undefined}")
+
 if failures:
     sys.stderr.write("\n".join(failures) + "\n")
     sys.exit(1)

@@ -549,7 +549,7 @@ def main():
     year = date.today().year
 
     print(f'\n[2/4] Cari subfolder tahun {year} di Google Drive...')
-    folders = list_year_folders(ROOT_FOLDER_ID)
+    folders = list_year_folders(CONTAINER_ID)
     if not folders:
         print('[ERROR] Folder induk tidak memuat subfolder tahun.')
         sys.exit(1)
