@@ -347,6 +347,36 @@ if main_fn is not None:
     expect(not undefined,
            f"main() merujuk nama yang tidak ada di modul: {undefined}")
 
+# --- refresh-survey.py: folder tahun dicari lewat folder seksi -----------------
+# Folder tahun tidak berada di akar Drive; strukturnya
+# `WEB PN-NATUNA.GO.ID/Beranda/Survei Terbaru/<tahun>`. Skrip sempat memanggil
+# `list_year_folders(CONTAINER_ID)` sehingga tidak menemukan satu pun folder tahun
+# dan keluar 1 setiap kali cron berjalan. Kontraknya: main() wajib memakai
+# resolve_section() lebih dulu, bukan membaca akar.
+if main_fn is not None:
+    calls = {n.func.id for n in ast.walk(main_fn)
+             if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+    expect("resolve_section" in calls,
+           "main() harus memanggil resolve_section() untuk menemukan folder seksi.")
+    expect("list_year_folders" in calls,
+           "main() harus memanggil list_year_folders() pada folder seksi.")
+    # list_year_folders(CONTAINER_ID) langsung dari akar adalah bug lama.
+    root_reads = [
+        n for n in ast.walk(main_fn)
+        if isinstance(n, ast.Call)
+        and isinstance(n.func, ast.Name) and n.func.id == "list_year_folders"
+        and n.args and isinstance(n.args[0], ast.Name) and n.args[0].id == "CONTAINER_ID"
+    ]
+    expect(not root_reads,
+           "list_year_folders(CONTAINER_ID) membaca akar Drive; pakai id folder seksi.")
+
+# resolve_section(): normalisasi nama harus toleran spasi/tanda baca.
+expect(hasattr(rsv, "resolve_section"), "refresh-survey harus menyediakan resolve_section().")
+expect(rsv.SECTION_NAME == "Survei Terbaru",
+       f"SECTION_NAME salah: {rsv.SECTION_NAME!r}")
+expect(tuple(rsv.GROUPS) == ("Beranda", "Transparansi"),
+       f"GROUPS salah: {rsv.GROUPS!r}")
+
 if failures:
     sys.stderr.write("\n".join(failures) + "\n")
     sys.exit(1)

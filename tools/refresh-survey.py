@@ -549,9 +549,19 @@ def main():
     year = date.today().year
 
     print(f'\n[2/4] Cari subfolder tahun {year} di Google Drive...')
-    folders = list_year_folders(CONTAINER_ID)
+    # Folder tahun TIDAK berada langsung di akar Drive: strukturnya
+    # `WEB PN-NATUNA.GO.ID/Beranda/Survei Terbaru/<tahun>`. Membaca akar membuat
+    # tidak ada folder tahun yang ditemukan dan cron keluar 1 setiap kali berjalan.
+    # `resolve_section()` mencari seksi ini di akar maupun di dalam grup, jadi
+    # memindahkan folder tidak memutus cron.
+    section_id = resolve_section(CONTAINER_ID, SECTION_NAME, GROUPS)
+    if section_id is None:
+        print(f'[ERROR] Folder seksi "{SECTION_NAME}" tidak ditemukan di akar '
+              f'maupun di grup {", ".join(GROUPS)}.')
+        sys.exit(1)
+    folders = list_year_folders(section_id)
     if not folders:
-        print('[ERROR] Folder induk tidak memuat subfolder tahun.')
+        print(f'[ERROR] Folder "{SECTION_NAME}" tidak memuat subfolder tahun.')
         sys.exit(1)
     print('      Tersedia: ' + ', '.join(str(f['year']) for f in folders))
     folder = pick_year_folder(folders, year)
