@@ -393,6 +393,22 @@ def existing_cards(html_text: str) -> list[tuple[str, str]]:
         cards.append((html.unescape(href), html.unescape(re.sub(r'<[^>]+>', '', label)).strip()))
     return cards
 
+def file_id_from_href(href: str) -> str:
+    """Ambil id berkas dari sebuah href tanpa berasumsi bentuknya.
+
+    Kartu lama di database tidak selalu berupa URL Google Drive lengkap: ada yang
+    relatif ("/files/x.pdf"), ada yang tanpa slash sama sekali, dan ada yang menunjuk
+    domain lain. `href.rsplit("/", 2)[-2]` melempar IndexError pada bentuk terakhir dan
+    menghentikan seluruh refresh, jadi id diambil hanya bila benar-benar ada polanya
+    dan selain itu dijatuhkan ke href apa adanya.
+    """
+    match = re.search(r"/d/([A-Za-z0-9_-]{10,})", href)
+    if match:
+        return match.group(1)
+    parts = href.rstrip("/").split("/")
+    return parts[-1] if parts and parts[-1] else href
+
+
 def keep_legacy_cards(entry: dict, html_text: str) -> None:
     """Tambahkan kartu lama yang belum ada di hasil sinkronisasi."""
     known = {href for _, markup, _ in entry["items"] for href in re.findall(r'href="([^"]+)"', markup)}
@@ -401,7 +417,7 @@ def keep_legacy_cards(entry: dict, html_text: str) -> None:
             continue
         year = re.search(r'(20\d{2})', label)
         key = (int(year.group(1)) if year else 0, 12, label.lower())
-        entry["items"].append((key, card(href.rsplit('/', 2)[-2], label), label))
+        entry["items"].append((key, card(file_id_from_href(href), label), label))
         known.add(href)
 
 def build_articles(year_jobs: list[tuple[str, str, str]], year_files: dict) -> dict:

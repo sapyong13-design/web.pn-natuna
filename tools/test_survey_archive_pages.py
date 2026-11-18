@@ -281,6 +281,30 @@ dup_articles = rs.build_articles(dup_jobs, dup_files)
 expect(len(dup_articles[42]["items"]) == 1,
        f"Berkas yang sama tidak boleh jadi dua kartu, dapat {len(dup_articles[42]['items'])}.")
 
+# --- keep_legacy_cards(): href lama tidak boleh menghentikan refresh ------------
+# Produksi pernah memuat kartu dengan href tanpa slash. `href.rsplit("/", 2)[-2]`
+# melempar IndexError dan seluruh refresh transparansi gagal (exit 1), padahal hanya
+# satu kartu lama yang bentuknya tidak terduga.
+expect(rs.file_id_from_href("https://drive.google.com/file/d/1AbCdEfGhIjKlMn/view?usp=sharing")
+       == "1AbCdEfGhIjKlMn", "Id Drive tidak terbaca dari URL lengkap.")
+expect(rs.file_id_from_href("laporan.pdf") == "laporan.pdf",
+       "href tanpa slash tidak boleh melempar; dipakai apa adanya.")
+expect(rs.file_id_from_href("/files/laporan.pdf") == "laporan.pdf",
+       "href relatif memakai segmen terakhir.")
+expect(rs.file_id_from_href("") == "", "href kosong tidak boleh melempar.")
+
+legacy_entry = {"kind": "FILE", "items": [], "years": {}}
+legacy_html = (
+    '<section class="transparency-archive">'
+    '<a class="transparency-document" href="laporan-lama.pdf"><span><strong>Laporan Lama 2024</strong></span></a>'
+    '<a class="transparency-document" href="https://drive.google.com/file/d/1AbCdEfGhIjKlMn/view">'
+    '<span><strong>Laporan Drive 2025</strong></span></a>'
+    "</section>"
+)
+rs.keep_legacy_cards(legacy_entry, legacy_html)
+expect(len(legacy_entry["items"]) == 2,
+       f"Kartu lama yang sah harus dipertahankan, dapat {len(legacy_entry['items'])}.")
+
 if failures:
     sys.stderr.write("\n".join(failures) + "\n")
     sys.exit(1)
