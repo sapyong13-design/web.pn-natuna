@@ -18345,3 +18345,1007 @@ body.sipp-stage-open { overflow: hidden; }
 }
 
 /* === END EKSPOR JADWAL SIDANG ============================================= */
+/* ------------------------------------------------- Lampiran II (accordion)
+   120 butir dalam 9 kelompok. Kalau dibentang semua, halaman jadi 12 000px dan
+   pembaca yang hanya ingin "biaya gugatan" harus menggulir melewati biaya lelang
+   dan eksekusi. <details> memberi buka-tutup tanpa JavaScript dan tetap terbaca
+   oleh pembaca layar sebagai disclosure. */
+.panjar-l2 {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 22px;
+}
+
+.panjar-l2-group {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.panjar-l2-group[open] {
+  box-shadow: var(--shadow-card);
+}
+
+.panjar-l2-group > summary {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--step--1);
+  line-height: 1.4;
+}
+
+.panjar-l2-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.panjar-l2-group > summary:hover {
+  background: var(--color-soft);
+}
+
+.panjar-l2-group > summary::after {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-left: 2px;
+  border-right: 2px solid var(--color-muted);
+  border-bottom: 2px solid var(--color-muted);
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+
+.panjar-l2-group[open] > summary::after {
+  transform: rotate(-135deg);
+}
+
+.panjar-l2-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: var(--step--3);
+  font-weight: 800;
+}
+
+.panjar-l2-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.panjar-l2-count {
+  flex: none;
+  color: var(--color-muted);
+  font-size: var(--step--2);
+  font-variant-numeric: tabular-nums;
+}
+
+.panjar-l2-body {
+  border-top: 1px solid var(--color-line);
+  overflow-x: auto;
+}
+
+.panjar-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step--1);
+}
+
+.panjar-table th {
+  position: sticky;
+  top: 0;
+  border-bottom: 2px solid var(--color-line);
+  background: var(--color-soft);
+  padding: 8px 10px;
+  color: var(--color-muted);
+  font-size: var(--step--3);
+  letter-spacing: 0.05em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.panjar-table td {
+  border-bottom: 1px solid var(--color-line);
+  padding: 8px 10px;
+  vertical-align: top;
+}
+
+.panjar-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.panjar-table .no {
+  width: 36px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.panjar-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.panjar-table .ket {
+  color: var(--color-muted);
+  font-size: var(--step--2);
+}
+
+.panjar-table tr.sec th {
+  position: static;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-accent-soft);
+  padding: 7px 10px;
+  color: var(--color-primary);
+  font-size: var(--step--2);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (max-width: 640px) {
+  .panjar-table .ket {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   Biaya Perkara - panel panjar & radius (SK Ketua PN Natuna 541/XI/2026)
+   ----------------------------------------------------------------------------
+   Satu panel dengan tiga cara membaca data yang sama: peta radius, saringan,
+   dan daftar desa. Peta radius bukan peta geografis - ia cincin jarak dari
+   kantor pengadilan, karena itulah yang menentukan biaya menurut SK. Setiap
+   cincin bisa diklik dan menyaring daftar di bawahnya, jadi tidak ada dua
+   sumber kebenaran yang bisa berselisih.
+   ========================================================================== */
+
+/* Delapan desa tanpa titik: daftarnya dilipat supaya catatan peta tetap tiga baris,
+   tetapi tetap bisa dibuka karena selisih 127 dari 135 itu keterangan resmi halaman.
+   Aturan ini berdiri sendiri - sebelumnya menempel pada selektor catatan di bawah,
+   yang membuat seluruh catatan ikut menyusut ke 10,6 px. */
+.panjar-mapcol .panjar-note {
+  margin: 12px 0 0;
+  font-size: var(--step--2);
+}
+
+.panjar-gap-btn {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  padding: 3px 10px;
+  margin: 0 2px;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.panjar-gap-btn:hover,
+.panjar-gap-btn:focus-visible {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.panjar-gap-btn[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.panjar-gap-names {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-muted);
+}
+
+/* `display: block` di atas mengalahkan atribut `hidden`, jadi nama kedelapan desa
+   selalu terlihat dalam keadaan tertutup. */
+.panjar-gap-names[hidden] {
+  display: none;
+}
+
+/* Peta lebar (Serasan: 560x266) memenuhi kolom dan mendorong legenda; lebarnya dibatasi
+   agar tidak melebihi kolom saat viewBox-nya lebar. */
+.panjar-stage-wrap {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Catatan pada halaman ini tidak berawalan ikon, jadi tidak boleh memakai `.svc-note`:
+   kelas itu `display: flex` dan akan memecah kalimatnya menjadi kolom. */
+.content-primary p.panjar-note,
+.panjar-note {
+  margin: 18px 0;
+  border: 1px solid var(--color-line);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-accent-soft);
+  padding: 13px 16px;
+  color: var(--color-ink);
+  font-size: var(--step--1);
+  line-height: 1.6;
+  /* `.content-primary p` rata kanan-kiri dengan spesifisitas (0,1,1). Catatan ini
+     diwarisinya dan nomor SK yang panjang menyebar jadi celah lebar, jadi selektornya
+     dinaikkan ke bobot yang sama. */
+  text-align: start;
+  text-align-last: start;
+  text-wrap: pretty;
+}
+
+/* Kartu tautan dokumen SK di bawah angka tarif. Paragraf pembungkusnya bukan
+   `.panjar-note` supaya tidak ikut gaya kotak catatan. */
+.panjar-sk-doc {
+  margin: 14px 0 0;
+}
+
+.content-primary .panjar-sk-doc a.svc-doc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 30rem;
+}
+
+.panjar-sk-doc .svc-doc strong {
+  display: block;
+}
+
+.panjar-sk-doc .svc-doc span span {
+  display: block;
+  margin-top: 2px;
+}
+
+/* Nomor SK ("541/KPN.W32.U.4/HK2.4/XI/2026") tidak punya titik patah, jadi pada layar
+   sempit ia mendorong seluruh halaman melebar. Hanya blok yang memuatnya perlu aturan
+   ini; paragraf biasa tidak. */
+.panjar-head span,
+.panjar-note--sk {
+  overflow-wrap: anywhere;
+}
+
+.panjar {
+  margin: 18px 0 30px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.panjar-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-soft);
+  padding: 16px clamp(16px, 3vw, 24px);
+}
+
+.panjar-head h3 {
+  margin: 0;
+  font-size: var(--step-1);
+}
+
+.panjar-head span {
+  color: var(--color-muted);
+  font-size: var(--step--2);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.panjar-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 28px);
+  padding: clamp(16px, 3vw, 24px);
+  align-items: start;
+}
+
+/* Peta 500px, daftar 694px: selisih 194px yang tinggal kosong di bawah legenda.
+   Keduanya memakai tinggi yang sama supaya dasar kolom rata; daftar digulir di dalam
+   kotak itu, dan gradasi bawah menandakan masih ada isi. */
+@media (min-width: 901px) {
+  .panjar-groups {
+    max-height: 640px;
+  }
+}
+
+@media (max-width: 900px) {
+  .panjar-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------- peta radius */
+
+.panjar-map {
+  position: relative;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.panjar-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.panjar-sea {
+  fill: #dce9f0;
+}
+
+.panjar-land path {
+  fill: #e8e2d4;
+  stroke: #c4bba6;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+/* Titik desa: inti berwarna + lingkaran sasaran transparan yang lebih besar.
+   Di ponsel peta hanya ~284 px lebar, inti titiknya jadi 2-3 px - tanpa sasaran
+   transparan titik sekecil itu tidak bisa diketuk. */
+.panjar-dot .panjar-dot-core {
+  stroke: #ffffff;
+  stroke-width: 1.3;
+  transition: transform 0.14s ease, stroke-width 0.14s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.panjar-dot .panjar-hit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.panjar-dot:hover .panjar-dot-core,
+.panjar-dot:focus-visible .panjar-dot-core {
+  transform: scale(1.3);
+}
+
+.panjar-dot:hover .panjar-dot-core,
+.panjar-dot.is-on .panjar-dot-core {
+  stroke: var(--color-primary);
+  stroke-width: 2.4;
+}
+
+.panjar-dot:focus-visible {
+  outline: none;
+}
+
+.panjar-dot:focus-visible .panjar-dot-core {
+  stroke: var(--color-primary);
+  stroke-width: 3;
+}
+
+.panjar-dot[hidden] {
+  display: none;
+}
+
+.panjar-court circle {
+  fill: var(--color-primary);
+}
+
+.panjar-court-core {
+  fill: #ffffff !important;
+}
+
+.panjar-court-label {
+  fill: var(--color-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3.5px;
+  stroke-linejoin: round;
+}
+
+.panjar-map-caption {
+  margin: 8px 2px 0;
+  color: var(--color-muted);
+  font-size: var(--step--3);
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------------- panggung peta bertab
+   Dulu lima peta ditumpuk vertikal: peta utama 500px, lalu tiga inset, lalu panel
+   Anambas yang lebar. Tingginya ~1 500px dan Anambas terpisah jauh dari yang lain.
+   Sekarang satu panggung dengan pemilih pulau di bawahnya: peta aktif mengisi panggung,
+   peta lain menunggu di belakangnya, dan perpindahan dianimasikan sebagai geser-fokus
+   supaya terasa seperti berpindah tempat - bukan seperti memuat halaman baru. */
+.panjar-mapcol {
+  align-self: start;
+  min-width: 0;
+}
+
+/* Tinggi panggung dikunci supaya kolom daftar tidak melompat saat berpindah pulau;
+   lebarnya mengikuti bentuk peta masing-masing. Peta sempit (Subi) jadi kolom ramping
+   di tengah, peta lebar (Serasan) memenuhi kolom. */
+.panjar-stage-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.panjar-stage {
+  position: relative;
+  /* tanpa JavaScript tingginya harus tetap ada: isi panggung absolute, jadi tanpa
+     lebar bawaan kotaknya runtuh jadi 0 dan peta hilang sama sekali */
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: #dce9f0;
+  /* setiap peta punya bentuk sendiri; rasio ditimpa per peta oleh setupPanjarStage */
+  aspect-ratio: var(--stage-ratio, 13 / 10);
+}
+
+.panjar-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.06);
+  transform-origin: 50% 50%;
+  transition: opacity 0.42s ease, transform 0.55s cubic-bezier(0.22, 0.8, 0.28, 1);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.panjar-scene.is-active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* arah geser mengikuti posisi tab: peta yang datang dari kanan masuk dari kanan */
+.panjar-scene.is-leaving-left {
+  transform: scale(0.94) translateX(-6%);
+}
+
+.panjar-scene.is-leaving-right {
+  transform: scale(0.94) translateX(6%);
+}
+
+.panjar-scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.panjar-stage-caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  align-items: baseline;
+  margin: 8px 2px 0;
+  color: var(--color-muted);
+  font-size: var(--step--2);
+  line-height: 1.45;
+}
+
+.panjar-stage-caption strong {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.panjar-islands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.panjar-island {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: var(--color-surface);
+  padding: 6px 11px;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: var(--step--2);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.panjar-island:hover,
+.panjar-island:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-ink);
+}
+
+.panjar-island[aria-selected="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.panjar-island-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
+}
+
+
+
+/* --------------------------------------------------- animasi zona antar pulau
+   Zona "antar pulau" adalah satu-satunya kelompok yang tersebar di kepulauan jauh dan
+   tidak punya angka radius. Saat dipilih, titiknya berdenyut sekali supaya mata
+   menemukan di mana saja mereka berada - tanpa animasi, titik-titik itu hanya berubah
+   warna dan mudah terlewat. */
+/* Legenda zona: satu baris yang bisa digeser, bukan kotak-kotak bertumpuk. Tiga belas
+   zona berlabel akan menghabiskan tiga baris di kolom peta dan mendorong daftar turun. */
+.panjar-map-legend {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 2px 22px 4px 2px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  /* gradasi di tepi kanan menandakan masih ada zona lain yang bisa digeser; tanpa itu
+     legenda terlihat selesai di "51-75 km" padahal ada tujuh zona lagi */
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 22px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 22px), transparent 100%);
+}
+
+.panjar-legend-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: var(--color-surface);
+  padding: 5px 10px;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: var(--step--2);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.panjar-legend-chip:hover,
+.panjar-legend-chip:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-ink);
+}
+
+.panjar-legend-chip[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.panjar-legend-chip b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.panjar-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+@keyframes panjar-pulse {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  45%  { transform: scale(2.6);  opacity: 0.28; }
+  100% { transform: scale(1);    opacity: 0.55; }
+}
+
+.panjar-dot circle {
+  transition: stroke-width 0.16s ease, opacity 0.2s ease;
+}
+
+.panjar-dot .panjar-halo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panjar-dot.is-pulsing .panjar-halo {
+  opacity: 0.55;
+  animation: panjar-pulse 1.5s ease-out 2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.panjar-dot.is-off {
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.panjar-dot.is-off circle {
+  transition: opacity 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panjar-scene {
+    transition: opacity 0.01s linear;
+    transform: none;
+  }
+
+  .panjar-scene.is-leaving-left,
+  .panjar-scene.is-leaving-right {
+    transform: none;
+  }
+
+  .panjar-dot.is-pulsing .panjar-halo {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+
+
+
+/* ------------------------------------------------------------------ saringan */
+
+.panjar-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.panjar-search {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.panjar-search input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  padding: 9px 12px 9px 34px;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--step--1);
+}
+
+.panjar-search input:focus-visible {
+  border-color: var(--color-primary);
+  outline: 2px solid rgba(143, 31, 11, 0.16);
+  outline-offset: 1px;
+}
+
+.panjar-search svg {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  width: 15px;
+  height: 15px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--color-muted);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.panjar-select {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  padding: 9px 12px;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--step--1);
+}
+
+.panjar-reset {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-soft);
+  padding: 9px 14px;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.panjar-reset:hover {
+  background: var(--color-accent-soft);
+}
+
+.panjar-reset[hidden] {
+  display: none;
+}
+
+.panjar-count {
+  margin: 0 0 12px;
+  color: var(--color-muted);
+  font-size: var(--step--2);
+}
+
+.panjar-count b {
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------- daftar */
+
+/* Daftar 135 desa tingginya ~6100px. Ia digulir di dalam kotak setinggi peta supaya
+   kedua kolom tetap sejajar, dan gradasi di tepi bawah menandakan masih ada isi -
+   tanpa itu daftar tampak terpotong begitu saja di tengah baris. */
+.panjar-groups-wrap {
+  position: relative;
+}
+
+.panjar-groups-wrap::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 42px;
+  background: linear-gradient(to bottom, transparent, var(--color-surface));
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.panjar-groups-wrap.is-bottom::after {
+  opacity: 0;
+}
+
+.panjar-groups {
+  max-height: 640px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.panjar-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line);
+}
+
+.panjar-group + .panjar-group {
+  margin-top: 2px;
+}
+
+.panjar-group-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-soft);
+  padding: 7px 10px;
+  color: var(--color-muted);
+  font-size: var(--step--3);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.panjar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-line);
+  padding: 8px 10px;
+  font-size: var(--step--1);
+}
+
+.panjar-row:last-child {
+  border-bottom: 0;
+}
+
+.panjar-row:hover {
+  background: var(--color-soft);
+}
+
+.panjar-row.is-found {
+  background: var(--color-accent-soft);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.panjar-row[hidden] {
+  display: none;
+}
+
+.panjar-name {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.panjar-fee {
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.panjar-zone {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: var(--step--2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.panjar-zone--none {
+  background: var(--color-soft);
+  color: var(--color-muted);
+  border: 1px dashed var(--color-line);
+}
+
+.panjar-empty {
+  padding: 26px 14px;
+  color: var(--color-muted);
+  font-size: var(--step--1);
+  text-align: center;
+}
+
+.panjar-empty[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------- fakta */
+
+.panjar-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 18px 0 8px;
+}
+
+.panjar-fact {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  padding: 14px 16px;
+}
+
+.panjar-fact span {
+  display: block;
+  color: var(--color-muted);
+  font-size: var(--step--2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.panjar-fact b {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ layar sempit
+   Semua override panjar dikumpulkan di sini, setelah aturan dasarnya. Sebelumnya
+   override ditulis di tengah bagian dan kalah urutan: `max-height: 640px` pada daftar
+   tetap menang meski viewport 390 px. */
+@media (max-width: 900px) {
+  /* Daftar 135 desa mengalir penuh berarti 5.400 px sebelum bagian berikutnya, jadi
+     kotak gulirnya dipertahankan - tetapi `overscroll-behavior: contain` mencegah
+     geseran daftar merambat ke halaman, yang jadi keluhan utama kotak gulir bersarang. */
+  .panjar-groups {
+    max-height: min(70vh, 480px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Enam tab tidak muat satu baris dan membungkus 4+2 dengan lebar berbeda, yang
+     terbaca sebagai kesalahan. Grid dua kolom membuat keenamnya sejajar dan terlihat. */
+  .panjar-islands {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .panjar-island {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Baris di ponsel hanya muat 35-40 karakter; rata kanan-kiri pada lebar itu
+     memaksa celah antarkata yang lebar. */
+  .content-primary p,
+  .content-primary li {
+    text-align: start;
+  }
+}
+
+/* --------------------------------------------------- mode gelap: halaman dalam
+   `body.is-inner` menulis `background: var(--home-wash)` dan `body.is-inner
+   .site-main` menulis `background: #fff`, keduanya lebih bawah di berkas ini daripada
+   `body.is-dark`. Karena spesifisitasnya sama, aturan yang terakhir menang - sehingga
+   mode gelap hanya membalik `--color-ink` menjadi terang sementara latarnya tetap
+   putih: teks putih di atas putih, di semua halaman dalam. Blok ini memulihkan latar
+   gelapnya; diletakkan di akhir berkas supaya urutannya menang. */
+body.is-dark.is-inner {
+  background: #0f151a;
+}
+
+body.is-dark .site-main {
+  background: var(--color-surface);
+  border-color: var(--color-line);
+}
+
+body.is-dark .content-primary {
+  background: transparent;
+}
+
+/* Peta memakai warna tetap (laut biru muda, darat krem) agar terbaca sebagai peta.
+   Di mode gelap keduanya bidang terang; diganti versi gelap yang setara. */
+body.is-dark .panjar-stage {
+  background: #12202a;
+  border-color: var(--color-line);
+}
+
+body.is-dark .panjar-land path {
+  fill: #22303a;
+  stroke: #3d5060;
+}
+
+body.is-dark .panjar-dot-core {
+  stroke: #12202a;
+}
+
+body.is-dark .panjar-island,
+body.is-dark .panjar-legend-chip {
+  background: var(--dark-content-surface, #19232b);
+  border-color: var(--color-line);
+}
+
+body.is-dark .panjar-island[aria-selected="true"],
+body.is-dark .panjar-legend-chip[aria-pressed="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+body.is-dark .panjar-note {
+  background: rgba(185, 143, 36, 0.14);
+}
+
+body.is-dark .panjar-note--sk {
+  background: rgba(185, 143, 36, 0.18);
+}
+
+body.is-dark .panjar-gap-names {
+  color: var(--color-muted);
+}

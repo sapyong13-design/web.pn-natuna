@@ -1,0 +1,1089 @@
+{
+ "sk": {
+  "nomor": "541/KPN.W32.U.4/HK2.4/XI/2026",
+  "tanggal": "9 November 2026",
+  "tentang": "Besarnya Biaya Pemanggilan/Pemberitahuan terhadap Perkara-perkara di Wilayah Hukum Pengadilan Negeri Natuna"
+ },
+ "rows": [
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Bandarsyah",
+   "fee": 109200,
+   "band": "0-10",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Natuna Kota",
+   "fee": 109200,
+   "band": "0-10",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Natuna Darat",
+   "fee": 109200,
+   "band": "0-10",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Batu Hitam",
+   "fee": 109200,
+   "band": "0-10",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Sungai Ulu",
+   "fee": 109200,
+   "band": "11-15",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Batu Gajah",
+   "fee": 109200,
+   "band": "11-15",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur",
+   "desa": "Sepempang",
+   "fee": 109200,
+   "band": "11-15",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur Laut",
+   "desa": "Tanjung",
+   "fee": 109200,
+   "band": "15-20",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur Laut",
+   "desa": "Ceruk",
+   "fee": 109200,
+   "band": "15-20",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur Laut",
+   "desa": "Kelanga",
+   "fee": 109200,
+   "band": "21-30",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur Laut",
+   "desa": "Slemam",
+   "fee": 109200,
+   "band": "21-30",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur Laut",
+   "desa": "Pengadah",
+   "fee": 109200,
+   "band": "21-30",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Timur Laut",
+   "desa": "Sebadai Ulu",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Tengah",
+   "desa": "Harapan Jaya",
+   "fee": 109200,
+   "band": "15-20",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Tengah",
+   "desa": "Tapau",
+   "fee": 109200,
+   "band": "15-20",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Tengah",
+   "desa": "Air Lengit",
+   "fee": 109200,
+   "band": "21-30",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Selatan",
+   "desa": "Cemaga",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Selatan",
+   "desa": "Cemaga Selatan (Setengar)",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Selatan",
+   "desa": "Cemaga Utara (Singgang Bulan)",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Selatan",
+   "desa": "Cemaga Tengah",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Barat",
+   "desa": "Binjai",
+   "fee": 109200,
+   "band": "21-30",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Barat",
+   "desa": "Pian Tengah",
+   "fee": 109200,
+   "band": "51-75",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Barat",
+   "desa": "Mekar Jaya",
+   "fee": 109200,
+   "band": "51-75",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Barat",
+   "desa": "Segeram",
+   "fee": 109200,
+   "band": "51-75",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Barat",
+   "desa": "Sedanau",
+   "fee": 111600,
+   "band": "51-75",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Barat",
+   "desa": "Selaut",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Batubi",
+   "desa": "Batubi Jaya",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Batubi",
+   "desa": "Gunung Putri",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Batubi",
+   "desa": "Sedarat Baru",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Batubi",
+   "desa": "Semedang",
+   "fee": 109200,
+   "band": "76-100",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Batubi",
+   "desa": "Sedanau Timur",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga",
+   "desa": "Sabang Mawang Balai",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga",
+   "desa": "Sabang Mawang Barat",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga",
+   "desa": "Tanjung Batang",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga",
+   "desa": "Serantas",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga",
+   "desa": "Sededap",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga",
+   "desa": "Teluk Labuh",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga Barat",
+   "desa": "Pulau Tiga",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga Barat",
+   "desa": "Tanjung Kumbik Utara",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga Barat",
+   "desa": "Selading",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Tiga Barat",
+   "desa": "Setumuk",
+   "fee": 111600,
+   "band": "76-100",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Teluk Buton",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Belakang Gunung",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Gunung Durian",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Kelarik Air Mali",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Kelarik",
+   "fee": 109200,
+   "band": "31-50",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Kelarik Barat",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Kelarik Utara",
+   "fee": 109200,
+   "band": "51-75",
+   "ket": null
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Bunguran Utara",
+   "desa": "Seluan Barat",
+   "fee": 111600,
+   "band": "94-105",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Midai",
+   "desa": "Sabang Barat",
+   "fee": 111600,
+   "band": "115,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Midai",
+   "desa": "Sebelat",
+   "fee": 111600,
+   "band": "115,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Midai",
+   "desa": "Air Putih",
+   "fee": 111600,
+   "band": "115,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Suak Midai",
+   "desa": "Batu Belanak",
+   "fee": 111600,
+   "band": "115,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Suak Midai",
+   "desa": "Jambat",
+   "fee": 111600,
+   "band": "115,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Suak Midai",
+   "desa": "Air Kumpai",
+   "fee": 111600,
+   "band": "115,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Laut",
+   "desa": "Kadur",
+   "fee": 111600,
+   "band": "118,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Laut",
+   "desa": "Air Payang",
+   "fee": 111600,
+   "band": "118,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Pulau Laut",
+   "desa": "Tanjung Pala",
+   "fee": 111600,
+   "band": "118,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Subi",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Subi Besar",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Subi Besar Timur",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Meliah",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Meliah Selatan",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Terayak",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Pulau Panjang",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Subi",
+   "desa": "Kerdau",
+   "fee": 111600,
+   "band": "100,5",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Serasan",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Kampung Hilir",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Batang Baru",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Tanjung Baru",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Tanjung Setelung",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Tanjung Balau",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Pangkalan",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Jemalik",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan",
+   "desa": "Batu Berian",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan Timur",
+   "desa": "Arung Ayam",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan Timur",
+   "desa": "Air Nusa",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan Timur",
+   "desa": "Harapan Baru",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Natuna",
+   "kec": "Serasan Timur",
+   "desa": "Air Ranggau",
+   "fee": 111600,
+   "band": "156",
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Pesisir Timur",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Sri Tanjung",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Tarempa Barat",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Tarempa Barat Daya",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Tarempa Selatan",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Tarempa Timur (Antang, Tanjung, Momong Teluk Rit, Teluk Buluh, Buluh Kuning)",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Tarempa Timur (Sedak, Buton)",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Kota",
+   "desa": "Tarempa",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Timur",
+   "desa": "Air Putih",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Timur",
+   "desa": "Batu Belah",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Timur",
+   "desa": "Munjan",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Timur",
+   "desa": "Nyamuk",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Timur",
+   "desa": "Serat",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Timur",
+   "desa": "Temburun",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Air Bini (Genting)",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Air Bini (Hulu Lueng, Teluk Rambut)",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Kiabu",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Lingai",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Mengkait",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Telaga",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Telaga Kecil",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Selatan",
+   "desa": "Tiangau",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Tengah",
+   "desa": "Air Asuk",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Tengah",
+   "desa": "Air Sena",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Tengah",
+   "desa": "Lidi",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Tengah",
+   "desa": "Liuk",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Siantan Tengah",
+   "desa": "Teluk Siantan",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Air Biru",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Batu Berapit",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Impol",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Keramut",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Landak",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Mampok",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Rewak",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Sungak",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja",
+   "desa": "Letung",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja Timur",
+   "desa": "Bukit Padi",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja Timur",
+   "desa": "Genting Pulur",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja Timur",
+   "desa": "Kuala Maras",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Jemaja Timur",
+   "desa": "Ulu Maras",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Batu Ampar",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Bayat",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Belibah",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Candi",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Ladan",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Langir",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Matak",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Mubur (Palah, Wait)",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Mubur (Pian Pasir)",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Payalaman",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Payamaram",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Piabung",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Piasan",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Putik",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Tebang",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  },
+  {
+   "kab": "Kepulauan Anambas",
+   "kec": "Palmatak",
+   "desa": "Teluk Bayur",
+   "fee": 111600,
+   "band": null,
+   "ket": "Antar Pulau"
+  }
+ ]
+}

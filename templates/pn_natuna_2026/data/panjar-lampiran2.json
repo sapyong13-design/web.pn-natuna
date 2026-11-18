@@ -1,0 +1,273 @@
+{
+ "lampiran": "II",
+ "sk": {
+  "nomor": "541/KPN.W32.U.4/HK2.4/XI/2026",
+  "tanggal": "9 November 2026"
+ },
+ "groups": [
+  {
+   "no": "1",
+   "title": "Panjar Biaya Perkara Tingkat Pertama",
+   "sections": [
+    {
+     "letter": "A",
+     "title": "Perdata \u2014 Permohonan",
+     "rows": [
+      ["1", "Biaya Pendaftaran", "Rp 30.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK perkara", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Biaya Panggilan kepada Pemohon", "Sesuai tarif", "Biaya Jurusita"]
+     ]
+    },
+    {
+     "letter": "B",
+     "title": "Perdata \u2014 Gugatan, Perlawanan, Bantahan",
+     "rows": [
+      ["1", "Biaya Pendaftaran", "Rp 30.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK perkara", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Panggilan mediasi \u2014 penggugat 2\u00d7, tergugat 2\u00d7", "Sesuai tarif", "Biaya Jurusita"],
+      ["6", "Panggilan sidang \u2014 penggugat 3\u00d7, tergugat 4\u00d7", "Sesuai radius", "Biaya Jurusita"],
+      ["7", "Biaya Pos", "Sesuai tarif", "Beban biaya pos panggilan"]
+     ]
+    },
+    {
+     "letter": "C",
+     "title": "Keberatan atas Putusan BPSK / KPPU / Ganti Rugi Tanah",
+     "rows": [
+      ["1", "Biaya Pendaftaran", "Rp 30.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK perkara", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Panggilan sidang \u2014 penggugat 2\u00d7, tergugat 3\u00d7", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Biaya Pos", "Sesuai tarif", "Beban biaya pos"]
+     ]
+    },
+    {
+     "letter": "D",
+     "title": "Gugatan Sederhana",
+     "rows": [
+      ["1", "Biaya Pendaftaran", "Rp 30.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK perkara", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Panggilan sidang \u2014 penggugat 2\u00d7, tergugat 3\u00d7", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Biaya Pos", "Sesuai tarif", "Beban biaya pos"]
+     ]
+    },
+    {
+     "letter": "E",
+     "title": "Permohonan Keberatan atas Gugatan Sederhana",
+     "rows": [
+      ["1", "Biaya Pendaftaran", "Rp 10.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Panggilan sidang \u2014 pemohon 2\u00d7, termohon 3\u00d7", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Biaya Pos", "Sesuai tarif", "Beban biaya pos"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "2",
+   "title": "Panjar Biaya Perkara Tingkat Banding",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Biaya Pendaftaran Banding", "Rp 50.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK perkara", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Pemberitahuan banding kepada termohon banding", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Penyampaian memori banding kepada termohon banding", "Sesuai radius", "Biaya Jurusita"],
+      ["7", "Penyampaian kontra memori banding kepada pembanding", "Sesuai radius", "Biaya Jurusita"],
+      ["8", "Pemberitahuan inzage kepada pembanding", "Sesuai radius", "Biaya Jurusita"],
+      ["9", "Pemberitahuan inzage kepada terbanding", "Sesuai radius", "Biaya Jurusita"],
+      ["10", "Foto copy pemberkasan", "Rp 50.000,-", "Biaya foto copy"],
+      ["11", "Biaya pemberkasan", "Rp 50.000,-", "Biaya penjilidan"],
+      ["12", "Kirim berkas ke Pengadilan Tinggi", "Sesuai tarif", "Biaya Pos"],
+      ["13", "Pemberitahuan putusan banding kepada pembanding", "Sesuai radius", "Biaya Jurusita"],
+      ["14", "Pemberitahuan putusan banding kepada terbanding", "Sesuai radius", "Biaya Jurusita"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "3",
+   "title": "Panjar Biaya Perkara Tingkat Kasasi",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Biaya Pendaftaran Kasasi", "Rp 50.000,-", "Setor Kas Negara"],
+      ["2", "Biaya ATK perkara", "Rp 50.000,-", "Setor ke Pengelola"],
+      ["3", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Biaya Materai", "Rp 10.000,-", "Materai Penetapan"],
+      ["5", "Pemberitahuan kasasi kepada termohon kasasi", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Penyampaian memori kasasi kepada termohon kasasi", "Sesuai radius", "Biaya Jurusita"],
+      ["7", "Penyampaian kontra memori kasasi kepada pemohon kasasi", "Sesuai radius", "Biaya Jurusita"],
+      ["8", "Pemberitahuan inzage kepada pemohon kasasi", "Sesuai radius", "Biaya Jurusita"],
+      ["9", "Pemberitahuan inzage kepada termohon kasasi", "Sesuai radius", "Biaya Jurusita"],
+      ["10", "Foto copy pemberkasan", "Rp 50.000,-", "Biaya foto copy"],
+      ["11", "Biaya pemberkasan", "Rp 50.000,-", "Biaya penjilidan"],
+      ["12", "Kirim berkas ke Mahkamah Agung RI", "Sesuai tarif", "Biaya Pos"],
+      ["13", "Pemberitahuan putusan kasasi kepada pemohon kasasi", "Sesuai radius", "Biaya Jurusita"],
+      ["14", "Pemberitahuan putusan kasasi kepada termohon kasasi", "Sesuai radius", "Biaya Jurusita"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "4",
+   "title": "Panjar Biaya Perkara Perdata yang Dimohonkan PK",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Biaya Pendaftaran PK", "Rp 200.000,-", "Setor Kas Negara"],
+      ["2", "Biaya PK dikirim ke Mahkamah Agung RI", "Rp 2.500.000,-", "Setor ke MA.RI"],
+      ["3", "Pembuatan Akta PK", "Rp 10.000,-", "Setor Kas Negara"],
+      ["4", "Pemberitahuan dan penyerahan memori PK", "Sesuai radius", "Biaya Jurusita"],
+      ["5", "Pemberitahuan dan penyerahan kontra memori PK", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Panggilan PK untuk sidang sumpah adanya novum", "Sesuai radius", "Biaya Jurusita"],
+      ["7", "Pemberitahuan inzage kepada pemohon PK", "Sesuai radius", "Biaya Jurusita"],
+      ["8", "Pemberitahuan inzage kepada termohon PK", "Sesuai radius", "Biaya Jurusita"],
+      ["9", "Foto copy pemberkasan", "Rp 50.000,-", "Biaya foto copy"],
+      ["10", "Biaya pemberkasan", "Rp 50.000,-", "Biaya penjilidan"],
+      ["11", "Kirim berkas PK ke Mahkamah Agung RI", "Sesuai tarif", "Biaya Pos"],
+      ["12", "Pemberitahuan putusan PK kepada pemohon PK", "Sesuai radius", "Biaya Jurusita"],
+      ["13", "Pemberitahuan putusan PK kepada termohon PK", "Sesuai radius", "Biaya Jurusita"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "5",
+   "title": "Biaya Sita Jaminan / Pengangkatan Sita",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Pencatatan sita / pengangkatan sita", "Rp 25.000,-", "Setor Kas Negara"],
+      ["2", "Biaya Redaksi", "Rp 10.000,-", "Setor Kas Negara"],
+      ["3", "Biaya Materai 2 lembar", "Rp 20.000,-", "Materai penetapan dan BA sita"],
+      ["4", "Pemberitahuan pelaksanaan sita \u2014 pemohon, termohon, lurah/kades", "Sesuai radius", "Biaya Jurusita"],
+      ["5", "Koordinasi instansi terkait", "Sesuai radius", "Biaya Jurusita"],
+      ["6", "Biaya petugas ukur 2 orang", "\u2013", "Sesuai tarif instansi bersangkutan"],
+      ["7", "Biaya saksi 2 orang", "Sesuai radius", "Biaya Jurusita"],
+      ["8", "Pelaksanaan sita / pengangkatan sita", "Sesuai radius", "Biaya Jurusita"],
+      ["9", "Transportasi / akomodasi", "Disesuaikan", "Rental mobil, tiket kapal/udara, hotel jika di luar kota"],
+      ["10", "Penyampaian salinan BA sita \u2014 pemohon, termohon", "Sesuai radius", "Biaya Jurusita"],
+      ["11", "Pendaftaran sita / salinan BA sita ke BPN/Lurah/Kades", "Disesuaikan", "Sesuai tarif instansi bersangkutan"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "6",
+   "title": "Pemeriksaan Setempat (PS)",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Biaya pemeriksaan setempat", "Sesuai kebutuhan", "Pemberitahuan, transportasi, dan akomodasi"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "7",
+   "title": "Panjar Biaya Eksekusi BHT / Grosse Akta Hak Tanggungan / Pengosongan",
+   "sections": [
+    {
+     "letter": "A",
+     "title": "Tahap I \u2014 Aanmaning",
+     "rows": [
+      ["1", "Biaya Penetapan Aanmaning", "Rp 25.000,-", "Setor kas negara"],
+      ["2", "Biaya Redaksi", "Rp 10.000,-", "Setor kas negara"],
+      ["3", "Biaya Materai", "Rp 10.000,-", "Biaya materai"],
+      ["4", "Panggilan aanmaning \u2014 pemohon 1\u00d7, termohon 2\u00d7", "Sesuai radius", "Biaya Jurusita"]
+     ]
+    },
+    {
+     "letter": "B",
+     "title": "Tahap II \u2014 Sita Eksekusi",
+     "rows": [
+      ["1", "Biaya Penetapan Sita Eksekusi", "Rp 25.000,-", "Setor ke Kas Negara"],
+      ["2", "Biaya Redaksi", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["3", "Biaya Materai", "Rp 10.000,-", "Biaya materai"],
+      ["4", "Pemberitahuan sita eksekusi \u2014 pemohon, termohon", "Sesuai radius", "Biaya Jurusita"],
+      ["5", "Biaya petugas ukur 2 orang", "\u2013", "Sesuai tarif instansi bersangkutan"],
+      ["6", "Biaya saksi 2 orang", "Sesuai radius", "Biaya Jurusita"],
+      ["7", "Pelaksanaan sita eksekusi", "Sesuai radius", "Biaya Jurusita"],
+      ["8", "Transportasi / akomodasi", "Sesuai radius", "Rental mobil, tiket kapal/udara, hotel jika di luar kota"],
+      ["9", "Koordinasi instansi terkait", "Sesuai radius", "Biaya Jurusita"],
+      ["10", "Penyampaian sita eksekusi \u2014 pemohon, termohon", "Sesuai radius", "Biaya Jurusita"],
+      ["11", "Pendaftaran BA sita eksekusi ke BPN/Lurah/Kades", "Sesuai radius", "Biaya Jurusita"]
+     ]
+    },
+    {
+     "letter": "C",
+     "title": "Tahap III \u2014 Eksekusi",
+     "rows": [
+      ["1", "Biaya Penetapan Eksekusi", "Rp 25.000,-", "Setor ke Kas Negara"],
+      ["2", "Biaya Redaksi", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["3", "Biaya Materai 2 lembar", "Rp 20.000,-", "Materai penetapan dan BA sita eksekusi"],
+      ["4", "Pemberitahuan pelaksanaan eksekusi \u2014 pemohon, termohon, camat/lurah/kades/BPN", "Sesuai radius", "Biaya Jurusita"],
+      ["5", "Biaya saksi 2 orang", "\u2013", "Sesuai SBU"],
+      ["6", "Biaya petugas 2 orang", "\u2013", "Sesuai tarif instansi bersangkutan"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "8",
+   "title": "Biaya Lelang",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Biaya Penetapan Lelang", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["2", "Biaya Redaksi Surat Penetapan", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["3", "Biaya Materai Penetapan", "Rp 10.000,-", "Pembelian materai"],
+      ["4", "PNBP Berita Acara Lelang", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["5", "PNBP Pengumuman Lelang", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["6", "Pejabat Penjual (Panitera/Jurusita)", "\u2013", "Sesuai SBU"],
+      ["7", "Pelaksanaan lelang", "Sesuai radius", "Biaya Jurusita"],
+      ["8", "Biaya kantor lelang", "Disesuaikan", "Sesuai tarif kantor lelang"],
+      ["9", "Penaksiran harga/harga limit (appraisal)", "Disesuaikan", "Dibayar langsung oleh pemohon"],
+      ["10", "Penerbitan SKPT dari BPN", "Disesuaikan", "Dibayar langsung oleh pemohon"],
+      ["11", "Pengumuman lelang di koran/media", "Disesuaikan", "Sesuai tarif media cetak/elektronik"]
+     ]
+    }
+   ]
+  },
+  {
+   "no": "9",
+   "title": "Biaya Somasi",
+   "sections": [
+    {
+     "letter": null,
+     "title": null,
+     "rows": [
+      ["1", "Biaya Penetapan Somasi", "Rp 25.000,-", "Setor ke Kas Negara"],
+      ["2", "Biaya Redaksi", "Rp 10.000,-", "Setor ke Kas Negara"],
+      ["3", "Biaya Materai", "Rp 10.000,-", "Pembelian materai"],
+      ["4", "Biaya ATK", "Rp 50.000,-", "Pengelola biaya proses"],
+      ["5", "Panggilan \u2014 pemohon 2\u00d7, termohon 2\u00d7", "Sesuai radius", "Biaya Jurusita"]
+     ]
+    }
+   ]
+ }
+ ]
+}

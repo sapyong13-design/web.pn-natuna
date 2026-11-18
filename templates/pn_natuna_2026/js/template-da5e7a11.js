@@ -214,6 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupInstansiTabs();
   setupDipaPeriods();
   setupSurveyPeriods();
+  setupPanjarStage();
+  setupPanjarBoard();
   setupScrollReveal();
   setupCountUp();
   setupHeroBackdropPause();
@@ -2535,4 +2537,353 @@ function setupEditorialArticleToc() {
     mark(visible.length ? visible[visible.length - 1] : active);
   }, { rootMargin: '-88px 0px -55% 0px', threshold: 0 });
   links.forEach((_, heading) => observer.observe(heading));
+}
+/*
+ * Panel panjar biaya perkara: peta radius, saringan, dan daftar desa membaca satu
+ * set data yang sama dari DOM. Tanpa JS daftar tetap tampil utuh - semua 135 desa
+ * sudah dirender server - jadi panel ini hanya menambah cara mempersempitnya,
+ * bukan menjadi satu-satunya cara membacanya.
+ *
+ * Cincin pada peta radius bukan gambar geografis: ia deret jarak dari kantor
+ * pengadilan, karena jarak itulah yang menentukan biaya dalam SK. Mengklik cincin
+ * menyalakan saringan zona yang sama dengan chip di daftar.
+ */
+/*
+ * Panggung peta bertab: satu peta tampil, sisanya menunggu di belakang. Perpindahan
+ * dianimasikan sebagai geser-fokus - peta lama menyusut ke arah tab asalnya, peta baru
+ * masuk dari sisi tab yang dituju - supaya terasa seperti berpindah tempat, bukan
+ * memuat ulang.
+ *
+ * Tanpa JavaScript peta pertama dari server yang tampil (class `is-active` sudah ada di
+ * markup), jadi tidak ada panggung kosong.
+ */
+function setupPanjarStage() {
+  const stage = document.querySelector('[data-panjar-stage]');
+  if (!stage) return;
+
+  const scenes = Array.from(stage.querySelectorAll('[data-scene]'));
+  // tombol pulau ada di luar kotak panggung (di bawah legenda panggung), jadi cari
+  // dari wadah panel - bukan dari induk langsung stage
+  const scope = stage.closest('[data-panjar]') || document;
+  const tabs = Array.from(scope.querySelectorAll('[data-island]'));
+  if (scenes.length < 2 || !tabs.length) return;
+
+  let current = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+  if (current < 0) current = 0;
+
+  const wrap = stage.parentElement;
+  const mapcol = wrap.parentElement;
+
+  /* Tinggi panggung dikunci CSS; lebarnya harus mengikuti bentuk peta. Tanpa ini
+     panggung selalu selebar kolom, sehingga peta ramping (Subi) tampil sebagai garis
+     tipis di tengah lautan kosong. Lebar dihitung dari rasio viewBox dan tinggi wadah,
+     lalu dibatasi lebar kolom. */
+  scenes.forEach((scene, i) => {
+    if (i !== current) scene.inert = true;
+  });
+
+  const fitStage = (scene) => {
+    const svg = scene && scene.querySelector('svg');
+    const box = svg && svg.viewBox.baseVal;
+    if (!box || !box.width || !box.height) return;
+    const ratio = box.width / box.height;
+    // tinggi acuan: peta lebar dibatasi lebar kolom, peta ramping dibatasi tinggi ini.
+    // Kedua sisi diset eksplisit supaya wadah tidak menyisakan pita kosong di bawah
+    // peta lebar (Serasan) atau di samping peta ramping (Subi).
+    const ceiling = Math.round(Math.min(560, Math.max(300, mapcol.clientWidth * 0.9)));
+    const avail = mapcol.clientWidth;
+    const width = Math.min(avail, Math.round(ceiling * ratio));
+    const height = Math.round(width / ratio);
+    stage.style.setProperty('--stage-ratio', `${box.width} / ${box.height}`);
+    stage.style.width = `${width}px`;
+    stage.style.height = `${height}px`;
+  };
+
+  if (typeof ResizeObserver === 'function') {
+    let raf = 0;
+    new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => fitStage(scenes[current]));
+    }).observe(wrap);
+  }
+
+  const show = (index, moveFocus) => {
+    if (index === current && scenes[index].classList.contains('is-active')) {
+      if (moveFocus) tabs[index].focus();
+      return;
+    }
+    const forward = index > current;
+
+    fitStage(scenes[index]);
+
+    scenes.forEach((scene, i) => {
+      scene.classList.remove('is-leaving-left', 'is-leaving-right');
+      if (i === index) {
+        scene.classList.add('is-active');
+        scene.removeAttribute('aria-hidden');
+        scene.inert = false;
+      } else {
+        if (i === current) {
+          scene.classList.add(forward ? 'is-leaving-left' : 'is-leaving-right');
+        }
+        scene.classList.remove('is-active');
+        scene.setAttribute('aria-hidden', 'true');
+        // Titik desa di dalam peta lain masih punya tabindex=0. Tanpa `inert`, Tab
+        // membawa fokus ke tombol yang tidak terlihat di peta yang sedang disembunyikan.
+        scene.inert = true;
+      }
+    });
+
+    tabs.forEach((tab, i) => {
+      tab.setAttribute('aria-selected', String(i === index));
+      tab.tabIndex = i === index ? 0 : -1;
+    });
+
+    const caption = scope.querySelector('[data-stage-caption]');
+    if (caption) {
+      caption.innerHTML = tabs[index].dataset.caption || '';
+    }
+
+    current = index;
+    if (moveFocus) tabs[index].focus();
+  };
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => show(index));
+    tab.addEventListener('keydown', (event) => {
+      let next = null;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = tabs.length - 1;
+      if (next === null) return;
+      event.preventDefault();
+      show(next, true);
+    });
+  });
+
+  // peta pertama sudah aktif dari server, jadi show() akan langsung kembali;
+  // lebarnya disetel di sini supaya kotak tidak sempat memakai 13/10 bawaan
+  fitStage(scenes[current]);
+
+  show(current);
+}
+
+function setupPanjarBoard() {
+  document.querySelectorAll('[data-panjar]').forEach((board) => {
+    // baris daftar juga membawa data-panjar-zone (untuk saringan), jadi selektor harus
+    // dibatasi ke chip legenda. Tanpa ini mengklik satu baris memasang saringan zona
+    // sebesar zona baris itu.
+    const chips = Array.from(board.querySelectorAll('.panjar-legend-chip[data-panjar-zone]'));
+    const dots = Array.from(board.querySelectorAll('[data-panjar-dot]'));
+    const rows = Array.from(board.querySelectorAll('[data-panjar-row]'));
+    const groups = Array.from(board.querySelectorAll('[data-panjar-group]'));
+    const search = board.querySelector('[data-panjar-search]');
+    const select = board.querySelector('[data-panjar-select]');
+    const reset = board.querySelector('[data-panjar-reset]');
+    const count = board.querySelector('[data-panjar-count]');
+    const countTotal = board.querySelector('[data-panjar-total]');
+    const empty = board.querySelector('[data-panjar-empty]');
+    if (!rows.length || !count) return;
+
+    const total = rows.length;
+    let zone = null;
+    // Penyaring "belum punya titik peta". Delapan desa hanya ada di daftar karena
+    // koordinatnya tidak bisa dipastikan; tombol di catatan peta menyaring ke desa-desa
+    // itu supaya pembaca bisa menemukannya tanpa membaca daftar 135 baris.
+    let unmappedOnly = false;
+    const unmappedBtn = board.querySelector('[data-panjar-unmapped]');
+
+    const norm = (value) => (value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    const apply = () => {
+      const term = norm(search ? search.value.trim() : '');
+      const kec = select ? select.value : '';
+      let shown = 0;
+
+      rows.forEach((row) => {
+        const haystack = norm(row.dataset.panjarName + ' ' + row.dataset.panjarKec);
+        const matchText = !term || haystack.indexOf(term) !== -1;
+        const matchZone = !zone || row.dataset.panjarZone === zone;
+        const matchKec = !kec || row.dataset.panjarKec === kec;
+        const matchMapped = !unmappedOnly || row.dataset.panjarMapped === '0';
+        const visible = matchText && matchZone && matchKec && matchMapped;
+        row.hidden = !visible;
+        if (visible) shown += 1;
+      });
+
+      // the map follows the same filter: highlighted dots stay, the rest recede
+      dots.forEach((dot) => {
+        const matchZone = !zone || dot.dataset.zone === zone;
+        dot.classList.toggle('is-on', Boolean(zone) && matchZone);
+        dot.classList.toggle('is-off', Boolean(zone) && !matchZone);
+        // "antar pulau" is the only zone spread across the whole archipelago with no
+        // radius figure; a pulse makes those dots findable instead of just recoloured
+        dot.classList.toggle('is-pulsing', zone === 'antar' && matchZone);
+      });
+
+      // pastikan selalu ada tepat satu titik yang bisa dijangkau Tab per peta, dan
+      // bahwa titik itu bukan titik yang sedang dipudarkan saringan zona
+      scenes.forEach((scene) => {
+        const all = Array.from(scene.querySelectorAll('[data-panjar-dot]'));
+        const usable = all.filter((dot) => !dot.classList.contains('is-off'));
+        const keep = Math.max(0, usable.findIndex((dot) => dot.tabIndex === 0));
+        all.forEach((dot) => { dot.tabIndex = -1; });
+        usable.forEach((dot, i) => { dot.tabIndex = i === keep ? 0 : -1; });
+      });
+
+      groups.forEach((group) => {
+        group.hidden = !Array.from(group.querySelectorAll('[data-panjar-row]'))
+          .some((row) => !row.hidden);
+      });
+
+      chips.forEach((chip) => {
+        chip.setAttribute('aria-pressed',
+          String(Boolean(zone) && chip.dataset.panjarZone === zone));
+      });
+
+      if (countTotal) countTotal.textContent = String(shown);
+      count.hidden = shown === total && !term && !zone && !kec && !unmappedOnly;
+      if (empty) empty.hidden = shown !== 0;
+      if (reset) reset.hidden = !term && !zone && !kec && !unmappedOnly;
+      if (unmappedBtn) unmappedBtn.setAttribute('aria-pressed', String(unmappedOnly));
+    };
+
+    const setZone = (next) => {
+      zone = zone === next ? null : next;
+      apply();
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => setZone(chip.dataset.panjarZone));
+    });
+
+    const gapNames = board.querySelector('[data-panjar-gap-names]');
+
+    if (unmappedBtn) {
+      unmappedBtn.addEventListener('click', () => {
+        unmappedOnly = !unmappedOnly;
+        apply();
+        // Nama kedelapan desa juga dibuka: pembaca yang menyaring ingin tahu desa mana
+        // saja, dan daftar itu satu-satunya tempat namanya tertulis lengkap.
+        if (gapNames) gapNames.hidden = !unmappedOnly;
+        if (unmappedOnly) {
+          const first = rows.find((row) => !row.hidden);
+          if (first) first.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }
+
+    // Clicking a dot looks that village up: the point on the map and the row in the
+    // list are the same record, so the map becomes a second way to reach it.
+    const pickDot = (dot) => {
+      if (!search) return;
+      zone = null;
+      search.value = dot.dataset.desa;
+      apply();
+      const hit = rows.find((row) => row.dataset.panjarName === dot.dataset.desa
+        && !row.hidden);
+      if (hit) {
+        hit.scrollIntoView({ block: 'nearest' });
+        hit.classList.add('is-found');
+        window.setTimeout(() => hit.classList.remove('is-found'), 1600);
+      }
+    };
+
+    // stagger the pulse so the archipelago lights up like a ripple from west to east
+    // instead of every dot beating in unison
+    dots.forEach((dot, i) => {
+      const halo = dot.querySelector('.panjar-halo');
+      if (halo) halo.style.animationDelay = ((i % 12) * 90) + 'ms';
+    });
+
+    /* Roving tabindex: satu titik per peta masuk urutan Tab, sisanya dijangkau dengan
+       panah. Tanpa ini peta Bunguran sendiri menyumbang 38 perhentian Tab sebelum
+       kotak pencarian - pengguna keyboard harus menekan Tab puluhan kali untuk melewati
+       satu ilustrasi. */
+    const scenes = Array.from(new Set(dots.map((dot) => dot.closest('[data-scene]'))));
+    const dotsOf = (scene) => Array.from(scene.querySelectorAll('[data-panjar-dot]'))
+      .filter((dot) => !dot.classList.contains('is-off'));
+
+    const setRoving = (list, index) => {
+      list.forEach((dot, i) => { dot.tabIndex = i === index ? 0 : -1; });
+    };
+
+    dots.forEach((dot) => {
+      dot.style.cursor = 'pointer';
+      dot.addEventListener('click', () => pickDot(dot));
+
+      dot.addEventListener('focus', () => {
+        const scene = dot.closest('[data-scene]');
+        if (scene) setRoving(dotsOf(scene), dotsOf(scene).indexOf(dot));
+      });
+
+      dot.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          pickDot(dot);
+          return;
+        }
+
+        const scene = dot.closest('[data-scene]');
+        if (!scene) return;
+        const list = dotsOf(scene);
+        if (list.length < 2) return;
+
+        const here = list.indexOf(dot);
+        let next = null;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (here + 1) % list.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (here + list.length - 1) % list.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = list.length - 1;
+        if (next === null) return;
+
+        event.preventDefault();
+        setRoving(list, next);
+        list[next].focus();
+      });
+    });
+
+    if (search) {
+      search.addEventListener('input', apply);
+      search.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && search.value) {
+          event.stopPropagation();
+          search.value = '';
+          apply();
+        }
+      });
+    }
+    // the list is 6 000 px tall inside a fixed box; hide the bottom fade at the end
+    const scroller = board.querySelector('.panjar-groups');
+    const wrap = board.querySelector('[data-panjar-scroll]');
+    if (scroller && wrap) {
+      const syncFade = () => {
+        const atEnd = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
+        wrap.classList.toggle('is-bottom', atEnd);
+      };
+      scroller.addEventListener('scroll', syncFade, { passive: true });
+      window.addEventListener('resize', syncFade);
+      syncFade();
+      board.__panjarSyncFade = syncFade;
+    }
+
+    if (select) select.addEventListener('change', apply);
+    if (reset) {
+      reset.addEventListener('click', () => {
+        zone = null;
+        unmappedOnly = false;
+        if (search) search.value = '';
+        if (select) select.value = '';
+        if (gapNames) gapNames.hidden = true;
+        apply();
+        if (search) search.focus();
+      });
+    }
+
+    apply();
+  });
 }
