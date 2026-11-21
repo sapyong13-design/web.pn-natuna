@@ -50,7 +50,7 @@ $routes = [
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, follow">
     <title><?php echo $code; ?> - <?php echo $title; ?> | Pengadilan Negeri Natuna Kelas II</title>
-    <link href="<?php echo $baseUrl; ?>/images/favicon-pn-natuna.png" rel="icon" type="image/png">
+    <?php require __DIR__ . '/site-icons.php'; ?>
     <link href="<?php echo $baseUrl; ?>/templates/pn_natuna_2026/css/template-4b123344.css" rel="stylesheet">
 </head>
 <body class="site site-error">
@@ -61,7 +61,7 @@ $routes = [
     <main class="error-page">
         <div class="error-page__inner">
             <p class="error-page__masthead">
-                <img src="<?php echo $baseUrl; ?>/images/brand/logo-pn-natuna.webp" alt="" width="31" height="40" decoding="async">
+                <img src="<?php echo $baseUrl; ?>/images/brand/logo-pn-natuna.webp?v=<?php echo filemtime(JPATH_ROOT . '/images/brand/logo-pn-natuna.webp'); ?>" alt="" width="31" height="40" decoding="async">
                 <span>Pengadilan Negeri Natuna Kelas II</span>
             </p>
             <p class="error-page__code"><?php echo $code; ?></p>

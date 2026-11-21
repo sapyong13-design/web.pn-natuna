@@ -290,7 +290,7 @@
   const ensureLogos = async () => {
     if (!PN_LOGO || !ASN_LOGO || !ASN_LOGO_LIGHT || !QR_IMG) {
       const [pn, asn, asnLight, qr] = await Promise.all([
-        loadImage('/images/brand/logo-pn-natuna-mark.webp'),
+        loadImage(poster.querySelector('.sipp-poster__logo').src),
         loadImage('/images/brand/logo-asn-berakhlak.webp'),
         loadImage('/images/brand/logo-asn-berakhlak-light.webp'),
         loadImage('/images/brand/qr-sipp.png')

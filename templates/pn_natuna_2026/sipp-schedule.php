@@ -462,6 +462,8 @@ function pn_natuna_sipp_day_status(string $key): array
 function pn_natuna_sipp_render_schedule(): void
 {
     $url = 'https://sipp.pn-natuna.go.id/list_jadwal_sidang';
+    $logoPath = '/images/brand/logo-pn-natuna.webp';
+    $logoUrl = $logoPath . '?v=' . filemtime(JPATH_ROOT . $logoPath);
     $cache = pn_natuna_sipp_load_cache();
     $statuses = [
         'today' => pn_natuna_sipp_day_status('today'),
@@ -561,10 +563,10 @@ function pn_natuna_sipp_render_schedule(): void
       <?php endforeach; ?>
       <div class="sipp-stage" id="sipp-stage" role="dialog" aria-modal="true" aria-labelledby="sipp-stage-title" hidden>
         <figure class="sipp-poster" id="sipp-poster">
-          <img class="sipp-poster__watermark" src="/images/brand/logo-pn-natuna-mark.webp" alt="" aria-hidden="true">
+          <img class="sipp-poster__watermark" src="<?php echo $logoUrl; ?>" alt="" aria-hidden="true">
           <div class="sipp-poster__top">
             <div class="sipp-poster__identity">
-              <img class="sipp-poster__logo" src="/images/brand/logo-pn-natuna-mark.webp" alt="" width="313" height="420" aria-hidden="true">
+              <img class="sipp-poster__logo" src="<?php echo $logoUrl; ?>" alt="" width="316" height="420" aria-hidden="true">
               <div class="sipp-poster__brand">
                 <span class="sipp-poster__mahkamah">Mahkamah Agung RI</span>
                 <span class="sipp-poster__court">Pengadilan Negeri Natuna</span>

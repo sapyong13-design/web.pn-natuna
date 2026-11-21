@@ -62,12 +62,12 @@ foreach ([
     'images/profil/pegawai/hakim/joko-ciptanto-800.webp',
     'images/brand/commemorative/hut-ri-2026-header-128.webp',
     'images/brand/commemorative/hut-ma-ri-2026-header-128.webp',
-    'images/brand/logo-pn-natuna-96.webp',
+    'images/brand/logo-pn-natuna.webp',
 ] as $image) {
     $expect(is_file($root . '/' . $image), "Responsive menu-route image missing: {$image}");
 }
 $transparentVariants = [
-    'images/brand/logo-pn-natuna-96.webp',
+    'images/brand/logo-pn-natuna.webp',
     'images/brand/commemorative/hut-ri-2026-header-128.webp',
     'images/brand/commemorative/hut-ma-ri-2026-header-128.webp',
 ];
@@ -86,7 +86,6 @@ if (function_exists('imagecreatefromwebp')) {
 }
 $expect(str_contains($index, 'hut-ri-2026-header-128.webp?v=<?php echo $riCompactVersion; ?> 128w'), 'Shared August RI mark must use a cache-busted compact source candidate.');
 $expect(str_contains($index, 'hut-ma-ri-2026-header-128.webp?v=<?php echo $maCompactVersion; ?> 128w'), 'Shared August MA mark must use a cache-busted compact source candidate.');
-$expect(str_contains($index, 'logo-pn-natuna-96.webp?v=<?php echo $logoCompactVersion; ?> 96w'), 'Mobile menu logo must use a cache-busted compact source candidate.');
 $expect(str_contains($brandRepairMigration, 'logo-pn-natuna-96.webp?v=20260811-alpha 96w'), 'Published header logo markup must bypass the flattened long-lived cache entry.');
 $expect(str_contains($instagram, 'data-src="'), 'Offscreen Instagram fallback embed must defer its network request.');
 $expect(!str_contains($instagram, '<iframe title="Profil dan posting terbaru Instagram Pengadilan Negeri Natuna" src="'), 'Instagram fallback embed must not expose src before intersection.');

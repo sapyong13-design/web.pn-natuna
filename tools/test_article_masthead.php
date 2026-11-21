@@ -34,10 +34,10 @@ $expect(str_contains($template, '<span>Pengadilan Negeri Natuna Kelas II</span>'
 $expect(!str_contains($template, "'Berita' : 'Pengumuman Resmi'"), 'Masthead must not repeat the channel the back link and meta row already state.');
 $expect(str_contains($template, '/images/brand/logo-pn-natuna.webp'), 'Masthead must show the court emblem.');
 $expect(is_file($root . '/images/brand/logo-pn-natuna.webp'), 'Court emblem file is missing.');
-// Berkas lambangnya potret 179x232. Kotak bujur sangkar meletterboxingnya sampai
+// Berkas lambangnya potret. Kotak bujur sangkar meletterboxingnya sampai
 // terbaca sebagai cakram, jadi yang dikontrak adalah rasio dan tinggi minimalnya.
 $emblemFile = $root . '/images/brand/logo-pn-natuna.webp';
-$expect((bool) preg_match('/logo-pn-natuna\.webp" alt="" width="(\d+)" height="(\d+)"/', $template, $emblemBox), 'Emblem must be decorative and dimensioned to stop layout shift.');
+$expect((bool) preg_match('/logo-pn-natuna\.webp[^"]*" alt="" width="(\d+)" height="(\d+)"/', $template, $emblemBox), 'Emblem must be decorative and dimensioned to stop layout shift.');
 if (isset($emblemBox[1]) && is_file($emblemFile) && ($emblemSize = @getimagesize($emblemFile))) {
     $declaredRatio = (int) $emblemBox[1] / (int) $emblemBox[2];
     $intrinsicRatio = $emblemSize[0] / $emblemSize[1];

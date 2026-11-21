@@ -12,7 +12,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 ALLOW_ROOT_FILES = {
     ".htaccess", "htaccess.txt", "index.php", "LICENSE.txt", "README.txt",
-    "robots.txt", "web.config.txt",
+    "robots.txt", "web.config.txt", "favicon.ico",
 }
 ALLOW_DIRS = {
     "administrator", "api", "bin", "cli", "components", "files", "images",

@@ -36,6 +36,7 @@ if (is_file($instagramFeedHelper)) {
 }
 
 $siteUrl = rtrim(Joomla\CMS\Uri\Uri::root(), '/');
+$logoVersion = filemtime(JPATH_ROOT . '/images/brand/logo-pn-natuna.webp');
 if (trim((string) $this->getDescription()) === '') {
     $this->setDescription('Website resmi Pengadilan Negeri Natuna Kelas II — informasi layanan PTSP, jadwal sidang, perkara, berita, dan transparansi peradilan di Kabupaten Natuna, Kepulauan Riau.');
 }
@@ -65,9 +66,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/brand/favicon-32.png?v=20260804" />
-  <link rel="icon" type="image/png" sizes="512x512" href="/images/brand/favicon-512.png?v=20260804" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/brand/apple-touch-icon.png?v=20260804" />
+  <?php require __DIR__ . '/site-icons.php'; ?>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -75,7 +74,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
     "inLanguage": "id-ID",
     "name": "Pengadilan Negeri Natuna Kelas II",
     "url": "<?php echo $siteUrl; ?>/",
-    "logo": "<?php echo $siteUrl; ?>/images/brand/logo-pn-natuna.webp",
+    "logo": "<?php echo $siteUrl; ?>/images/brand/logo-pn-natuna.webp?v=<?php echo $logoVersion; ?>",
     "image": "<?php echo $siteUrl; ?>/images/brand/og-image.jpg",
     "telephone": "+62-773-3211203",
     "email": "pn.natuna@gmail.com",
@@ -123,7 +122,6 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
       $isAugustCommemoration = (int) $clockNow->format('n') === 8;
       $riCompactVersion = @filemtime(JPATH_ROOT . '/images/brand/commemorative/hut-ri-2026-header-128.webp') ?: '1';
       $maCompactVersion = @filemtime(JPATH_ROOT . '/images/brand/commemorative/hut-ma-ri-2026-header-128.webp') ?: '1';
-      $logoCompactVersion = @filemtime(JPATH_ROOT . '/images/brand/logo-pn-natuna-96.webp') ?: '1';
       ?>
       <div class="topbar-clock" aria-label="Tanggal dan waktu saat ini">
         <span id="live-clock-date"><?php echo htmlspecialchars($clockDate, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -157,7 +155,7 @@ $this->addHeadLink(htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8'), 'canoni
       <div id="main-menu-list" class="main-menu-list mobile-menu-panel" aria-label="Menu Navigasi">
         <div class="mobile-menu-heading">
           <div class="mobile-menu-brand" id="mobile-menu-title">
-            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp" srcset="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna-96.webp?v=<?php echo $logoCompactVersion; ?> 96w, <?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp 179w" sizes="40px" alt="" width="40" height="40" loading="lazy" decoding="async">
+            <img src="<?php echo $this->baseurl; ?>/images/brand/logo-pn-natuna.webp?v=<?php echo $logoVersion; ?>" alt="" width="40" height="40" loading="lazy" decoding="async">
             <span><strong>PN Natuna</strong><small>Pengadilan Negeri Kelas II</small></span>
           </div>
           <button class="menu-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>

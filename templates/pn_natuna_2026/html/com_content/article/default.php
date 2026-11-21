@@ -80,7 +80,7 @@ if ((int) $item->id === 53) {
       <section class="news-portal__section" aria-labelledby="portal-news-title"><header class="news-portal__heading"><div><p>Berita</p><h2 id="portal-news-title">Kabar dari pengadilan</h2></div><a href="<?php echo Route::_('/berita'); ?>">Semua berita</a></header>
         <div class="news-portal__news-grid">
         <?php foreach ($portalNews as $portalItem) : $portalItemImage = $articleImage((string) ($portalItem->images ?? ''), (string) ($portalItem->introtext ?? ''), (string) ($portalItem->fulltext ?? '')); [$portalDateTime, $portalDate] = $formatPortalDate((string) ($portalItem->publish_up ?? ''), (string) ($portalItem->created ?? '')); ?>
-          <article class="news-portal__news-card"><a href="<?php echo Route::_(RouteHelper::getArticleRoute($portalItem->id . ':' . $portalItem->alias, $portalItem->catid, $portalItem->language)); ?>"><span class="news-portal__news-image"><?php if ($portalItemImage) : ?><img src="<?php echo $this->escape($portalItemImage); ?>" alt="" width="640" height="400" loading="lazy" decoding="async"><?php else : ?><span aria-hidden="true">PN</span><?php endif; ?></span><span class="news-portal__news-copy"><time datetime="<?php echo $portalDateTime; ?>"><?php echo $portalDate; ?></time><strong><?php echo $this->escape($portalItem->title); ?></strong></span></a></article>
+          <article class="news-portal__news-card"><a href="<?php echo Route::_(RouteHelper::getArticleRoute($portalItem->id . ':' . $portalItem->alias, $portalItem->catid, $portalItem->language)); ?>"><span class="news-portal__news-image"><?php if ($portalItemImage) : ?><img src="<?php echo $this->escape($portalItemImage); ?>" alt="" width="640" height="400" loading="lazy" decoding="async"><?php else : ?><span class="court-fallback-mark" aria-hidden="true"></span><?php endif; ?></span><span class="news-portal__news-copy"><time datetime="<?php echo $portalDateTime; ?>"><?php echo $portalDate; ?></time><strong><?php echo $this->escape($portalItem->title); ?></strong></span></a></article>
         <?php endforeach; ?>
         </div>
       </section>
@@ -142,6 +142,15 @@ $profileUnitLabel = str_starts_with($profilePath, '/profil-pengadilan/profil-kep
     : 'Bagian Kesekretariatan';
 if ($channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath])) {
     ?><nav class="svc-subnav" aria-label="Navigasi Tentang Pengadilan"><a href="/profil-pengadilan">Ringkasan</a><?php foreach ($profilePages as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?></nav><?php if ($showProfileUnits) : ?><nav class="svc-subnav svc-subnav--unit" aria-label="<?php echo $this->escape($profileUnitLabel); ?>"><span class="svc-subnav__label"><?php echo $this->escape($profileUnitLabel); ?></span><?php foreach ($profileUnitPaths as $route => $label) : ?><a href="<?php echo $this->escape($route); ?>"<?php echo $profilePath === $route ? ' aria-current="page"' : ''; ?>><?php echo $this->escape($label); ?></a><?php endforeach; ?></nav><?php endif;
+}
+if ((int) $item->id === 56 && (string) $item->alias === 'struktur-organisasi') {
+    $assets = $app->getDocument()->getWebAssetManager();
+    $base = '/templates/pn_natuna_2026/';
+    $assetUrl = static fn (string $file): string => Uri::root(true) . $base . $file . '?v=' . filemtime(JPATH_ROOT . $base . $file);
+    $assets->registerAndUseStyle('template.pn-organization', $assetUrl('css/organization.css'));
+    $assets->registerAndUseScript('template.pn-organization', $assetUrl('js/organization.js'), [], ['defer' => true]);
+    require __DIR__ . '/organization.php';
+    return;
 }
 $isProfileRoute = $channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath]);
 if ($isProfileRoute) {
@@ -664,7 +673,7 @@ if ($referrer !== '') {
   <meta itemprop="inLanguage" content="<?php echo $this->escape($item->language === '*' ? $app->get('language') : $item->language); ?>">
   <header class="editorial-article__header">
     <a class="editorial-article__back" href="<?php echo $this->escape($listingReturnUrl); ?>">← Daftar <?php echo $channel === 'news' ? 'berita' : 'pengumuman'; ?></a>
-    <p class="editorial-article__masthead"><img src="/images/brand/logo-pn-natuna.webp" alt="" width="31" height="40" loading="eager" decoding="async"><span>Pengadilan Negeri Natuna Kelas II</span></p>
+    <p class="editorial-article__masthead"><img src="/images/brand/logo-pn-natuna.webp?v=<?php echo filemtime(JPATH_ROOT . '/images/brand/logo-pn-natuna.webp'); ?>" alt="" width="31" height="40" loading="eager" decoding="async"><span>Pengadilan Negeri Natuna Kelas II</span></p>
     <?php
     // Judul dibungkus serakah supaya tiap baris mengisi kolom - lihat catatan pada
     // `.editorial-article__title` di template.css. Konsekuensinya baris terakhir bisa
@@ -725,9 +734,9 @@ if ($referrer !== '') {
       <?php if ($imageCaption) : ?><figcaption><?php echo $this->escape($imageCaption); ?></figcaption><?php endif; ?>
     </figure>
   <?php elseif ($channel === 'announcement') : ?>
-    <figure class="editorial-article__hero editorial-article__hero--document"><img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="Pengumuman Resmi Pengadilan Negeri Natuna" width="1200" height="675"></figure>
+    <figure class="editorial-article__hero editorial-article__hero--document"><img src="/images/brand/pengumuman-resmi-pn-natuna.webp?v=20261120-logo" alt="Pengumuman Resmi Pengadilan Negeri Natuna" width="800" height="500"></figure>
   <?php else : ?>
-    <div class="editorial-article__hero-fallback" role="img" aria-label="<?php echo $this->escape($channelLabel); ?>"><span>PN</span><strong>Pengadilan Negeri Natuna</strong><small><?php echo $channelLabel; ?></small></div>
+    <div class="editorial-article__hero-fallback" role="img" aria-label="<?php echo $this->escape($channelLabel); ?>"><span class="court-fallback-mark" aria-hidden="true"></span><strong>Pengadilan Negeri Natuna</strong><small><?php echo $channelLabel; ?></small></div>
   <?php endif; ?>
 
   <?php echo $item->event->beforeDisplayContent; ?>
@@ -787,7 +796,7 @@ if ($referrer !== '') {
   <section class="editorial-article__related" aria-labelledby="related-heading"><h2 id="related-heading"><?php echo $hasGenuineRelation ? ($channel === 'news' ? 'Berita terkait' : 'Pengumuman terkait') : ($channel === 'news' ? 'Berita di sekitar tanggal ini' : 'Pengumuman di sekitar tanggal ini'); ?></h2><div class="editorial-article__related-grid">
     <?php foreach ($related as $relatedItem) : $relatedImageUrl = $articleImage((string) $relatedItem->images, (string) $relatedItem->introtext, (string) $relatedItem->fulltext); $relatedDateRaw = !empty($relatedItem->publish_up) && $relatedItem->publish_up > '2000-01-02 00:00:00' ? $relatedItem->publish_up : $relatedItem->created; $relatedDate = Factory::getDate($relatedDateRaw); ?>
       <a class="editorial-article__related-card" href="<?php echo Route::_(RouteHelper::getArticleRoute($relatedItem->id . ':' . $relatedItem->alias, $relatedItem->catid, $relatedItem->language)); ?>">
-        <?php if ($relatedImageUrl) : $relatedSrcset = $photoSrcset($relatedImageUrl); ?><img src="<?php echo $this->escape($relatedImageUrl); ?>"<?php echo $relatedSrcset ? ' srcset="' . $this->escape($relatedSrcset) . '" sizes="(max-width: 760px) 128px, 320px"' : ''; ?> alt="" width="480" height="270" loading="lazy" decoding="async"><?php elseif ($channel === 'announcement') : ?><img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="" width="480" height="270" loading="lazy" decoding="async"><?php else : ?><span class="editorial-article__related-fallback" aria-hidden="true">PN</span><?php endif; ?>
+        <?php if ($relatedImageUrl) : $relatedSrcset = $photoSrcset($relatedImageUrl); ?><img src="<?php echo $this->escape($relatedImageUrl); ?>"<?php echo $relatedSrcset ? ' srcset="' . $this->escape($relatedSrcset) . '" sizes="(max-width: 760px) 128px, 320px"' : ''; ?> alt="" width="480" height="270" loading="lazy" decoding="async"><?php elseif ($channel === 'announcement') : ?><img src="/images/brand/pengumuman-resmi-pn-natuna.webp?v=20261120-logo" alt="" width="480" height="270" loading="lazy" decoding="async"><?php else : ?><span class="editorial-article__related-fallback" aria-hidden="true"><span class="court-fallback-mark"></span></span><?php endif; ?>
         <time datetime="<?php echo $relatedDate->format(DATE_ATOM); ?>"><?php echo $formatIdDate($relatedDate); ?></time><strong><span><?php echo $this->escape($relatedItem->title); ?></span></strong>
       </a>
     <?php endforeach; ?>

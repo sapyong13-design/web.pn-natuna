@@ -12680,7 +12680,8 @@ body.is-dark .transparency-family { color: var(--color-ink); }
   outline-offset: 4px;
 }
 .editorial-article__hero-fallback { display: grid; place-content: center; min-height: clamp(260px, 42vw, 500px); border: 1px solid rgba(185, 143, 36, .45); padding: 32px; text-align: center; color: #fff8e9; background: radial-gradient(circle at 70% 20%, rgba(215, 171, 57, .32), transparent 35%), linear-gradient(135deg, #681923, #321713); }
-.editorial-article__hero-fallback span { width: 76px; height: 76px; margin: 0 auto 20px; border: 1px solid #d9b555; border-radius: 50%; padding-top: 23px; font-family: Fraunces, Georgia, serif; font-size: 1.4rem; }
+.court-fallback-mark { display: block; width: clamp(32px, 8vw, 52px); aspect-ratio: 2055 / 2730; background: url('/images/brand/logo-pn-natuna.webp?v=20261120-fullsize') center / contain no-repeat; }
+.editorial-article__hero-fallback .court-fallback-mark { width: 57px; margin: 0 auto 20px; }
 .editorial-article__hero-fallback strong { font-family: Fraunces, Georgia, serif; font-size: clamp(1.45rem, 3vw, 2.5rem); }
 .editorial-article__hero-fallback small { margin-top: 8px; color: #e9cc7c; letter-spacing: .12em; text-transform: uppercase; }
 .editorial-article--announcement .editorial-article__hero-fallback { min-height: 220px; background: linear-gradient(120deg, #f4eadb, #fffdf9); color: #551822; }
@@ -16329,6 +16330,9 @@ body.is-dark .dossier-body::after { background: linear-gradient(transparent, #19
   outline: 3px solid var(--color-primary);
   outline-offset: 3px;
 }
+
+:is(.roster-card, .roster-featured)[id^="org-"] { scroll-margin-block-start: 7rem; }
+:is(.roster-card, .roster-featured)[id^="org-"]:target { outline: 3px solid var(--dossier-rule, #9d761e); outline-offset: 4px; }
 
 .apparatus-editorial .roster-photo {
   position: relative;

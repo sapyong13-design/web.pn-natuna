@@ -1,0 +1,259 @@
+/* Dedicated organization article. The surrounding Joomla profile navigation stays native. */
+.pn-org {
+  --org-ink: #202f31;
+  --org-muted: #53615e;
+  --org-plum: #76263b;
+  --org-pine: #15584b;
+  --org-brass: #775826;
+  --org-track: #a3967a;
+  --org-rule: #d7d7ca;
+  --org-paper: #faf9f3;
+  --org-panel: #fffef9;
+  --org-tint: #edf1e8;
+  --org-hit: #fff0bd;
+  --org-focus: #076a91;
+  --org-display: 'Fraunces', Georgia, serif;
+  --org-gap: clamp(1.25rem, 3vw, 2.75rem);
+  min-width: 0;
+  color: var(--org-ink);
+  background: var(--org-paper);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+body.is-dark .pn-org {
+  --org-ink: #f7f4e9;
+  --org-muted: #bac8c0;
+  --org-plum: #ffb4c4;
+  --org-pine: #9adbc0;
+  --org-brass: #e8c785;
+  --org-track: #9b9278;
+  --org-rule: #46534d;
+  --org-paper: #182322;
+  --org-panel: #1e2d2a;
+  --org-tint: #30453f;
+  --org-hit: #514321;
+  --org-focus: #9dddff;
+}
+.pn-org *, .pn-org *::before, .pn-org *::after { box-sizing: border-box; }
+.pn-org [hidden], .pn-org:not(.is-ready) [data-org-tools] { display: none !important; }
+.pn-org :is(button, input) { font: inherit; }
+.pn-org button, .pn-org summary { cursor: pointer; }
+.pn-org :is(a, button, summary, input):focus-visible { outline: 3px solid var(--org-focus); outline-offset: 2px; }
+.pn-org ::selection { color: #222b28; background: #f4d592; }
+.pn-org :is(p, li) { text-align: start; hyphens: manual; }
+.pn-org .org-mast {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.6rem, 3.8vw, 3.75rem);
+  border-bottom: 3px solid #c8a665;
+  background: #132e2c;
+  color: #fffaf0;
+}
+.pn-org .org-mast::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(105deg, #172828 10%, #183a35 67%, #0e2b26);
+}
+.pn-org .org-mast-text { position: relative; z-index: 1; }
+.pn-org .org-mast .org-title {
+  margin: 0; border: 0; padding: 0;
+  font: 550 clamp(2.65rem, 4.8vw, 4.9rem)/1.03 var(--org-display);
+  letter-spacing: -.035em; color: #fff9e9; text-wrap: balance;
+}
+.pn-org .org-mast .org-court {
+  margin: .5rem 0 0; font-weight: 650; color: #e8c580;
+  font-size: clamp(1rem, 1.4vw, 1.35rem); letter-spacing: .012em;
+}
+.pn-org .org-mast .org-intro { max-width: 56ch; margin: 1.05rem 0 .35rem; color: #e2e9e1; line-height: 1.65; }
+.pn-org .org-mast a.org-poster {
+  display: inline-flex; align-items: center; gap: .55rem; min-height: 44px;
+  color: #f8dfaa; font-weight: 700; font-size: .875rem; text-decoration: underline;
+  text-underline-offset: .26em; text-decoration-color: #b9985c;
+}
+.pn-org .org-poster:hover { text-decoration-thickness: 2px; }
+.pn-org .org-poster:focus-visible { outline-color: #f6d594; }
+.pn-org .org-map { display: block; position: relative; width: 100%; height: auto; max-height: 18rem; }
+
+/* Tools sit outside the topology: filtering never reassigns an edge. */
+.pn-org .org-tools {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .85rem 1.2rem;
+  background: var(--org-panel); border-bottom: 1px solid var(--org-rule);
+  padding: 1rem var(--org-gap);
+}
+.pn-org .org-tools .org-search-label { color: var(--org-ink); font-weight: 750; }
+.pn-org .org-search-box {
+  display: flex; align-items: center; gap: .5rem; min-height: 46px; width: min(100%, 27rem);
+  padding: 0 .7rem; border: 1px solid var(--org-track); border-radius: 6px;
+  background: var(--org-panel); color: var(--org-brass);
+}
+.pn-org .org-search-box:focus-within { outline: 2px solid var(--org-focus); outline-offset: 1px; }
+.pn-org .org-search-box svg { flex: none; }
+.pn-org .org-search-box input {
+  flex: 1; min-width: 0; width: 0; min-height: 44px; margin: 0; border: 0; border-radius: 0;
+  padding: .3rem 0; background: transparent; color: var(--org-ink); box-shadow: none;
+  outline: none; font-size: 1rem; caret-color: var(--org-plum);
+}
+.pn-org .org-search-box input::placeholder { color: var(--org-muted); opacity: 1; }
+.pn-org .org-search-box input::-webkit-search-cancel-button { display: none; }
+.pn-org .org-search-box button { min-height: 44px; min-width: 44px; border: 0; padding: 0; background: transparent; color: var(--org-plum); font-size: .84rem; font-weight: 750; }
+.pn-org .org-status { font-size: .87rem; color: var(--org-muted); }
+.pn-org .org-vacancy-filter { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 44px; padding: .45rem .8rem; border: 1px dashed var(--org-brass); border-radius: 8px; background: var(--org-panel); color: var(--org-brass); font-size: .87rem; font-weight: 700; }
+.pn-org .org-vacancy-filter span { border-radius: 4px; padding: .05rem .4rem; background: var(--org-hit); font-variant-numeric: tabular-nums; }
+.pn-org .org-vacancy-filter[aria-pressed="true"] { background: var(--org-hit); border-style: solid; }
+.pn-org .org-status:empty { display: none; }
+
+.pn-org .org-chart {
+  --org-rail: clamp(1.4rem, 2.6vw, 2.7rem);
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--org-rail) var(--org-gap); padding: var(--org-gap);
+}
+.pn-org .org-branch { --branch-color: var(--org-pine); min-width: 0; position: relative; margin: 0; }
+.pn-org .org-branch--pimpinan { grid-column: 3 / span 2; grid-row: 1; --branch-color: var(--org-plum); align-self: stretch; }
+.pn-org .org-branch--hakim { grid-column: 1 / span 2; grid-row: 1; }
+.pn-org .org-branch--ad-hoc { grid-column: 5 / span 2; grid-row: 1; }
+.pn-org .org-branch--kepaniteraan { grid-column: 1 / span 3; grid-row: 2; --branch-color: var(--org-plum); }
+.pn-org .org-branch--kesekretariatan { grid-column: 4 / span 3; grid-row: 2; }
+.pn-org .org-summary {
+  position: relative; display: flex; justify-content: space-between; align-items: center; gap: .65rem;
+  min-height: 48px; list-style: none; border-top: 2px solid var(--branch-color);
+  border-bottom: 1px solid var(--org-rule); padding: .65rem .25rem; color: var(--branch-color);
+}
+.pn-org .org-summary::-webkit-details-marker { display: none; }
+.pn-org .org-summary::after {
+  content: ''; width: .55rem; height: .55rem; flex: none; margin: 0 .4rem .2rem;
+  border: solid currentColor; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg);
+}
+.pn-org details[open] > .org-summary::after { transform: rotate(225deg); margin-top: .35rem; }
+.pn-org .org-summary:is(:hover, :focus-visible), .pn-org .org-branch.is-active > .org-summary { background: var(--org-tint); }
+.pn-org .org-branch .org-branch-title { margin: 0; padding: 0; border: 0; color: var(--branch-color); font: 600 clamp(1.25rem, 2vw, 2.1rem)/1.17 var(--org-display); letter-spacing: -.022em; }
+.pn-org .org-branch--pimpinan { display: flex; flex-direction: column; }
+.pn-org .org-branch--pimpinan > .org-branch-title {
+  background: #612237; color: #fff5d8; border-top: 2px solid #d5b476;
+  padding: .7rem 1rem; text-align: center;
+}
+.pn-org .org-branch--pimpinan > .org-units { padding-top: .5rem; }
+.pn-org .org-branch--pimpinan .org-entry { padding-block: .85rem; }
+.pn-org .org-branch--pimpinan .org-person-name { font: 600 clamp(1.23rem, 1.7vw, 1.7rem)/1.25 var(--org-display); }
+.pn-org .org-branch--pimpinan .org-person-text .org-role { margin-bottom: .25rem; }
+.pn-org .org-branch--pimpinan::after { content: ''; flex: 1; min-height: .8rem; width: 1px; align-self: center; background: var(--org-track); }
+.pn-org .org-branch--pimpinan::before {
+  content: ''; position: absolute; left: calc(-1 * var(--org-gap)); right: calc(-1 * var(--org-gap)); top: 1.5rem;
+  border-top: 1px dashed var(--org-track); pointer-events: none;
+}
+.pn-org .org-branch--pimpinan > .org-branch-title { position: relative; }
+.pn-org .org-branch:is(.org-branch--kepaniteraan, .org-branch--kesekretariatan)::before {
+  content: ''; position: absolute; bottom: 100%; height: var(--org-rail);
+  width: calc(50% + var(--org-gap) / 2); border-top: 1px solid var(--org-track); pointer-events: none;
+}
+.pn-org .org-branch--kepaniteraan::before { left: 50%; border-left: 1px solid var(--org-track); border-top-left-radius: 8px; }
+.pn-org .org-branch--kesekretariatan::before { right: 50%; border-right: 1px solid var(--org-track); border-top-right-radius: 8px; }
+.pn-org .org-branch:is(.org-branch--kepaniteraan, .org-branch--kesekretariatan) > .org-summary { padding: .9rem 1rem; border: 0; background: #612237; color: #f7e6ce; }
+.pn-org .org-branch--kesekretariatan > .org-summary.org-summary { background: #195144; }
+.pn-org .org-branch:is(.org-branch--kepaniteraan, .org-branch--kesekretariatan) > .org-summary .org-branch-title { color: #fff7e5; }
+.pn-org .org-branch:is(.org-branch--kepaniteraan, .org-branch--kesekretariatan).is-active > .org-summary { box-shadow: inset 0 -3px #dcb76e; }
+.pn-org .org-unit { min-width: 0; }
+.pn-org .org-branch:is(.org-branch--kepaniteraan, .org-branch--kesekretariatan) .org-units { padding: 0 0 .25rem; }
+.pn-org .org-unit--head { margin: .5rem 0 0; }
+.pn-org .org-unit--head .org-person-name { font: 600 clamp(1.2rem, 1.55vw, 1.6rem)/1.25 var(--org-display); }
+.pn-org .org-unit--head ~ .org-unit {
+  position: relative; margin-left: clamp(.75rem, 2vw, 2rem);
+  padding: 1.4rem 0 0 clamp(.85rem, 2vw, 2rem); border-left: 1px solid var(--org-track);
+}
+.pn-org .org-unit--head ~ .org-unit::before {
+  content: ''; position: absolute; left: 0; top: 2.1rem;
+  width: clamp(.55rem, 1.5vw, 1.55rem); border-top: 1px solid var(--org-track);
+}
+.pn-org .org-unit--head ~ .org-unit:last-child { border-left-color: transparent; }
+.pn-org .org-unit--head ~ .org-unit:last-child::after { content: ''; position: absolute; left: -1px; top: 0; height: 2.1rem; border-left: 1px solid var(--org-track); }
+.pn-org .org-unit--head ~ .org-unit.is-active::before { border-top: 3px solid var(--branch-color); }
+.pn-org .org-unit--head ~ .org-unit.is-active:not(:last-child) { border-left: 2px solid var(--branch-color); }
+.pn-org .org-unit--head ~ .org-unit.is-active:last-child::after { border-left: 2px solid var(--branch-color); }
+.pn-org .org-branch:is(.org-branch--kepaniteraan, .org-branch--kesekretariatan).is-active::before { border-color: var(--branch-color); border-top-width: 2px; }
+.pn-org .org-unit .org-unit-title { margin: 0 0 .35rem; padding: 0 0 .4rem; color: var(--branch-color); border: 0; border-bottom: 1px solid var(--org-rule); font: 650 clamp(1.04rem, 1.42vw, 1.4rem)/1.3 var(--org-display); }
+.pn-org .org-unit.is-active .org-unit-title { text-decoration: underline; text-underline-offset: .2em; }
+.pn-org .org-entry {
+  display: flex; align-items: center; gap: .65rem; min-height: 44px; width: 100%;
+  border: 1px solid var(--org-rule); border-radius: 10px; margin: 0; padding: .65rem .75rem;
+  color: var(--org-ink); background: var(--org-panel); text-align: left; text-decoration: none;
+  line-height: 1.4; font-size: clamp(.875rem, .96vw, .98rem);
+}
+.pn-org .org-entry + .org-entry, .pn-org .org-summary + .org-units { margin-top: .45rem; }
+.pn-org .org-avatar { position: relative; flex: 0 0 46px; height: 58px; overflow: hidden; border-radius: 6px; background: var(--org-tint); }
+.pn-org .org-monogram { position: absolute; inset: 0; display: grid; place-items: center; color: var(--branch-color); font: 650 .95rem var(--org-display); }
+/* Also beats Joomla's dark .content-primary :is(a, .svc-more) link colour. */
+body .pn-org .org-unit .org-entry.org-person { color: var(--org-ink); }
+.pn-org .org-person-text { display: block; flex: 1; min-width: 0; }
+.pn-org .org-person-name { display: block; font-weight: 700; }
+.pn-org .org-role { display: block; font-size: .77rem; line-height: 1.35; color: var(--org-muted); font-weight: 600; }
+.pn-org .org-entry-arrow { flex: none; margin-left: auto; color: var(--branch-color); }
+.pn-org .org-entry--vacant { gap: .75rem; border: 1px dashed var(--org-track); background: var(--org-paper); }
+.pn-org .org-entry--vacant svg { color: var(--org-brass); flex: none; }
+.pn-org .org-entry--vacant .org-role { color: var(--org-brass); font-weight: 750; }
+.pn-org .org-avatar .org-portrait { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pn-org .org-entry.is-match:not(.org-entry--vacant), .pn-org.is-vacancy-filtered .org-entry--vacant { background: var(--org-hit); }
+.pn-org.is-vacancy-filtered .org-entry--vacant { border-color: var(--org-brass); }
+.pn-org .org-entry:is(.is-active, :hover, :focus-visible):not(.org-entry--vacant) { border-color: var(--branch-color); background: var(--org-tint); }
+.pn-org .org-entry:is(.is-active, :hover, :focus-visible) .org-person-name { text-decoration: underline; text-underline-offset: .2em; }
+.pn-org .org-entry.is-active .org-entry-arrow { transform: translateX(2px); }
+.pn-org:not(.is-ready) button.org-person { cursor: default; }
+.pn-org:not(.is-ready) button.org-person .org-entry-arrow { display: none; }
+.pn-org .org-empty { margin: 0; padding: 1rem var(--org-gap) 2rem; color: var(--org-muted); }
+/* A filtered subset is a roster, not a new organization tree. */
+.pn-org .org-chart:has([data-org-entry][hidden]) { display: flex; flex-wrap: wrap; align-items: flex-start; }
+.pn-org .org-chart:has([data-org-entry][hidden]) .org-branch { flex: 1 1 21rem; }
+.pn-org .org-chart:has([data-org-entry][hidden]) .org-branch::before,
+.pn-org .org-chart:has([data-org-entry][hidden]) .org-branch::after { content: none; }
+.pn-org .org-chart:not(:has([data-org-branch]:not([hidden]))) { padding: 0; }
+
+/* Fixed coordinates belong to organization.js. Avoid transformed ancestors here. */
+.pn-org .org-preview {
+  position: fixed; z-index: 1301; width: min(23rem, calc(100vw - 24px)); max-height: calc(100dvh - 24px);
+  overflow-y: auto; overscroll-behavior: contain; border-radius: 10px; background: var(--org-panel);
+  color: var(--org-ink); box-shadow: 0 10px 44px rgb(15 28 24 / .34);
+  scrollbar-color: var(--org-track) var(--org-panel);
+}
+.pn-org .org-preview-head { display: flex; align-items: center; gap: .7rem; position: relative; background: #183d35; padding: 1rem 2.9rem 1rem 1rem; }
+.pn-org .org-preview-head .org-preview-photo { width: 58px; height: 72px; flex: none; object-fit: cover; object-position: center 20%; border-radius: 3px; }
+.pn-org .org-preview-head .org-preview-name { margin: 0; color: #fff5df; font: 600 1.38rem/1.2 var(--org-display); letter-spacing: -.02em; }
+.pn-org .org-preview-head .org-preview-context { margin: .25rem 0 0; font-size: .84rem; line-height: 1.45; color: #d5e5da; }
+.pn-org .org-close { position: absolute; right: .14rem; top: .14rem; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 4px; color: #fff5df; background: transparent; }
+.pn-org .org-close:is(:hover, :focus-visible) { background: #325747; }
+.pn-org .org-preview-body { padding: 1rem 1.15rem; }
+.pn-org .org-preview-body .org-preview-label { margin: 0; color: var(--org-ink); font: 750 .87rem/1.4 'Plus Jakarta Sans',sans-serif; }
+.pn-org .org-preview-roles { margin: .45rem 0 0; padding: 0 0 0 1.1rem; }
+.pn-org .org-preview-roles li { padding: .14rem 0; font-size: .84rem; color: var(--org-ink); }
+.pn-org .org-preview-body .org-preview-note { margin: .7rem 0 0; color: var(--org-muted); font-size: .84rem; }
+body .pn-org .org-preview-body a.org-profile-link { display: inline-flex; gap: .6rem; align-items: center; min-height: 44px; margin: .65rem 0 0; color: var(--org-plum); font-weight: 750; font-size: .9rem; text-decoration: underline; text-underline-offset: .25em; }
+@media (min-width: 721px) and (max-width: 1040px) {
+  .pn-org .org-chart { --org-gap: 1.25rem; }
+  .pn-org .org-avatar { flex-basis: 38px; height: 48px; }
+  .pn-org .org-branch--pimpinan > .org-units { padding-inline: .45rem; }
+}
+@media (max-width: 720px) {
+  .pn-org .org-mast { display: block; padding: 1.5rem 1.1rem 1rem; }
+  .pn-org .org-mast-text { max-width: 34rem; }
+  .pn-org .org-map { height: 6.25rem; margin: 0 auto; }
+  .pn-org .org-mast .org-intro { margin-top: .7rem; font-size: .93rem; }
+  .pn-org .org-tools { display: grid; gap: .45rem; padding: .85rem 1rem; }
+  .pn-org .org-search-box { width: 100%; }
+  .pn-org .org-chart, .pn-org .org-chart:has([data-org-entry][hidden]) { display: flex; flex-direction: column; align-items: stretch; padding: 1rem; gap: .8rem; }
+  .pn-org .org-chart:has([data-org-entry][hidden]) .org-branch { flex: auto; }
+  .pn-org .org-chart .org-branch::before, .pn-org .org-chart .org-branch::after { content: none; }
+  .pn-org .org-summary { padding: .8rem .4rem; }
+  .pn-org .org-branch--pimpinan > .org-branch-title { padding: .75rem 1rem; text-align: start; }
+  .pn-org .org-branch .org-branch-title { font-size: 1.35rem; }
+  .pn-org .org-unit--head ~ .org-unit { padding-top: 1.1rem; }
+  .pn-org .org-unit--head ~ .org-unit::before { top: 1.8rem; }
+  .pn-org .org-unit--head ~ .org-unit:last-child::after { height: 1.8rem; }
+  .pn-org .org-preview { inset: auto 0 0; width: 100%; max-height: min(77dvh, 35rem); border-radius: 14px 14px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pn-org .org-entry-arrow, .pn-org .org-summary::after { transition: transform .16s ease-out; }
+}
+@media (forced-colors: active) {
+  .pn-org .org-preview, .pn-org .org-branch-title, .pn-org .org-summary { border: 1px solid CanvasText; }
+  .pn-org .org-entry:is(.is-active, .is-match) { outline: 2px solid Highlight; outline-offset: -2px; }
+}

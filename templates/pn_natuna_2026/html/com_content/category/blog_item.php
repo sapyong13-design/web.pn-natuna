@@ -84,9 +84,9 @@ $excerpt = HTMLHelper::_('string.truncate', $excerpt, $isAnnouncement ? 220 : 15
         <?php if ($image) : $cardCandidates = $cardSrcset('/' . ltrim($image, '/')); ?>
             <img src="/<?php echo ltrim($this->escape($image), '/'); ?>"<?php echo $cardCandidates ? ' srcset="' . $this->escape($cardCandidates) . '" sizes="' . $this->escape($cardSizes) . '"' : ''; ?> alt="<?php echo $this->escape($imageAlt); ?>" width="800" height="500" loading="lazy" decoding="async">
         <?php elseif ($isAnnouncement) : ?>
-            <img src="/images/brand/pengumuman-resmi-pn-natuna.webp" alt="Pengumuman Resmi Pengadilan Negeri Natuna" width="800" height="500" loading="lazy" decoding="async">
+            <img src="/images/brand/pengumuman-resmi-pn-natuna.webp?v=20261120-logo" alt="Pengumuman Resmi Pengadilan Negeri Natuna" width="800" height="500" loading="lazy" decoding="async">
         <?php else : ?>
-            <span aria-hidden="true">PN</span>
+            <span class="court-fallback-mark" aria-hidden="true"></span>
         <?php endif; ?>
     </div>
 

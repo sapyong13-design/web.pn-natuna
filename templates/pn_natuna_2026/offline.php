@@ -28,7 +28,8 @@ if ($offlineImage !== '') {
         $offlineImage = Uri::root() . ltrim($offlineImage, '/');
     }
 }
-$logo = Uri::root() . 'images/brand/logo-pn-natuna.webp';
+$logoPath = '/images/brand/logo-pn-natuna.webp';
+$logo = Uri::root(true) . $logoPath . '?v=' . filemtime(JPATH_ROOT . $logoPath);
 ?>
 <!doctype html>
 <html lang="id-ID" dir="<?php echo $this->direction; ?>">
@@ -37,7 +38,7 @@ $logo = Uri::root() . 'images/brand/logo-pn-natuna.webp';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#781b18">
-  <link rel="icon" type="image/png" href="<?php echo Uri::root(); ?>images/brand/favicon-32.png">
+  <?php require __DIR__ . '/site-icons.php'; ?>
   <link rel="preload" href="<?php echo Uri::root(); ?>templates/pn_natuna_2026/fonts/plus-jakarta-sans-var.woff2" as="font" type="font/woff2" crossorigin>
   <style>
     @font-face{font-family:"Plus Jakarta Sans";src:url("<?php echo Uri::root(); ?>templates/pn_natuna_2026/fonts/plus-jakarta-sans-var.woff2") format("woff2");font-weight:400 800;font-display:swap}

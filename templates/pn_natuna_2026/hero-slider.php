@@ -92,7 +92,7 @@ function pn_natuna_hero_article_url(object $article, int $catId): string
 function pn_natuna_hero_article_image(object $article): string
 {
     $fallback = (int) ($article->catid ?? 0) === 13
-        ? '/images/brand/pengumuman-resmi-pn-natuna.webp'
+        ? '/images/brand/pengumuman-resmi-pn-natuna.webp?v=20261120-logo'
         : '/images/sejarah/sejarah-pn-natuna.jpg';
     $decoded = json_decode((string) ($article->images ?? ''), true) ?: [];
     $img = trim((string) ($decoded['image_intro'] ?? '')) ?: trim((string) ($decoded['image_fulltext'] ?? ''));
@@ -143,7 +143,7 @@ function pn_natuna_announcement_image(object $article): string
         }
     }
     if ($img === '') {
-        return '/images/brand/pengumuman-resmi-pn-natuna.webp';
+        return '/images/brand/pengumuman-resmi-pn-natuna.webp?v=20261120-logo';
     }
     return '/' . ltrim(explode('#', $img)[0], '/');
 }
@@ -155,7 +155,7 @@ function pn_natuna_announcement_image(object $article): string
  */
 function pn_natuna_announcement_is_portrait(string $image): bool
 {
-    $path = JPATH_SITE . $image;
+    $path = JPATH_SITE . parse_url($image, PHP_URL_PATH);
     if (!is_file($path)) {
         return false;
     }
