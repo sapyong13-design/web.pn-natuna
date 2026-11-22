@@ -115,7 +115,7 @@ $profilePages = [
     '/profil-pengadilan/visi-misi' => 'Visi & Misi',
     '/profil-pengadilan/tugas-pokok-fungsi' => 'Tugas & Fungsi',
     '/profil-pengadilan/struktur-organisasi' => 'Struktur',
-    '/profil-pengadilan/wilayah-yurisdiksi' => 'Wilayah Hukum',
+    '/profil-pengadilan/wilayah-yurisdiksi' => 'Wilayah Yurisdiksi',
     '/profil-pengadilan/profil-hakim' => 'Hakim',
     '/profil-pengadilan/profil-kepaniteraan' => 'Kepaniteraan',
     '/profil-pengadilan/profil-kesekretariatan' => 'Kesekretariatan',
@@ -150,6 +150,15 @@ if ((int) $item->id === 56 && (string) $item->alias === 'struktur-organisasi') {
     $assets->registerAndUseStyle('template.pn-organization', $assetUrl('css/organization.css'));
     $assets->registerAndUseScript('template.pn-organization', $assetUrl('js/organization.js'), [], ['defer' => true]);
     require __DIR__ . '/organization.php';
+    return;
+}
+if ((string) $item->alias === 'wilayah-yurisdiksi' && $profilePath === '/profil-pengadilan/wilayah-yurisdiksi') {
+    $assets = $app->getDocument()->getWebAssetManager();
+    $base = '/templates/pn_natuna_2026/';
+    $assetUrl = static fn (string $file): string => Uri::root(true) . $base . $file . '?v=' . filemtime(JPATH_ROOT . $base . $file);
+    $assets->registerAndUseStyle('template.pn-jurisdiction', $assetUrl('css/jurisdiction.css'));
+    $assets->registerAndUseScript('template.pn-jurisdiction', $assetUrl('js/jurisdiction.js'), [], ['defer' => true]);
+    require __DIR__ . '/jurisdiction.php';
     return;
 }
 $isProfileRoute = $channel === null && str_starts_with($profilePath, '/profil-pengadilan/') && isset($profileRoutes[$profilePath]);
